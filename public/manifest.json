@@ -1,0 +1,43 @@
+{
+  "name": "KEYSHOP - Always Curly",
+  "short_name": "KEYSHOP",
+  "description": "Diagnóstico capilar profesional para rizos y afro — by Keila Moreno",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#5B2D8E",
+  "theme_color": "#5B2D8E",
+  "orientation": "portrait",
+  "lang": "es",
+  "categories": ["beauty", "lifestyle", "utilities"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Nueva consulta",
+      "short_name": "Consulta",
+      "description": "Iniciar diagnóstico capilar",
+      "url": "/diagnostico",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Clientas",
+      "short_name": "Clientas",
+      "description": "Ver lista de clientas",
+      "url": "/clientas",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
