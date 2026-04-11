@@ -617,48 +617,58 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
 
             {/* Mensaje de distancia */}
             {distanceResult && distanceResult.status !== 'perfect' && (
-              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-black/60 px-4 py-2 rounded-xl">
+              <div className="absolute left-1/2 -translate-x-1/2 bg-black/60 px-4 py-2 rounded-xl" style={{ bottom: 168 }}>
                 <p className="text-white text-xs text-center">{distanceResult.message}</p>
               </div>
             )}
-          </div>
 
-          {/* Instrucción del ángulo actual */}
-          <div className="px-5 pt-3 pb-2">
-            <div className="flex items-center gap-2 mb-1">
-              <AnguloIcon icono={SECUENCIA_ANGULOS[anguloIndex].icono} size={14} />
-              <span className="text-white font-bold text-sm" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                {SECUENCIA_ANGULOS[anguloIndex].titulo}
-              </span>
+            {/* Instrucción del ángulo — superpuesta dentro del viewfinder */}
+            <div
+              className="absolute left-0 right-0 px-5 py-2 bg-black/50"
+              style={{ bottom: 106 }}
+            >
+              <div className="flex items-center gap-2 mb-0.5">
+                <AnguloIcon icono={SECUENCIA_ANGULOS[anguloIndex].icono} size={14} />
+                <span className="text-white font-bold text-sm" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+                  {SECUENCIA_ANGULOS[anguloIndex].titulo}
+                </span>
+              </div>
+              <p className="text-white/70 text-xs">{SECUENCIA_ANGULOS[anguloIndex].instruccion}</p>
             </div>
-            <p className="text-white/70 text-xs">{SECUENCIA_ANGULOS[anguloIndex].instruccion}</p>
-          </div>
 
-          {/* Botón captura + retomar */}
-          <div
-            className="flex items-center justify-center gap-6 pt-4"
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 28px)' }}
-          >
+            {/* Botón deshacer — dentro del viewfinder, izquierda */}
             {fotos.length > 0 && (
               <button
                 onClick={() => {
                   setFotos((prev) => prev.slice(0, -1));
                   setAnguloIndex((i) => Math.max(0, i - 1));
                 }}
-                className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-white"
+                className="absolute w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-white"
+                style={{ bottom: 24 + 70 / 2 - 22, left: 'calc(50% - 80px)', zIndex: 50 }}
               >
                 <RotateCcw size={18} />
               </button>
             )}
+
+            {/* Botón captura — superpuesto dentro del viewfinder */}
             <button
               onClick={handleCapture}
               disabled={capturando}
-              className="w-18 h-18 rounded-full bg-white flex items-center justify-center active:scale-90 transition-transform disabled:opacity-50"
-              style={{ width: 72, height: 72 }}
+              className="absolute flex items-center justify-center active:scale-90 transition-transform disabled:opacity-50"
+              style={{
+                bottom: 24,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 70,
+                height: 70,
+                borderRadius: '50%',
+                background: 'white',
+                border: '4px solid #2D5A27',
+                zIndex: 50,
+              }}
             >
               <Camera size={28} className="text-[#2D5A27]" />
             </button>
-            <div className="w-11 h-11" />
           </div>
         </div>
       )}
