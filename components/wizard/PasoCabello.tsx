@@ -221,7 +221,8 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady }: 
     tipoRizoPrincipal: string,
     tiposSecundarios: string[],
     captureMetadata: CaptureMetadata,
-    analysisResult: HairAnalysisResult
+    analysisResult: HairAnalysisResult,
+    fotoUrls: string[]
   ) => {
     console.log('[PasoCabello] Datos recibidos de cámara:', { tipoRizoPrincipal, tiposSecundarios, captureMetadata, analysisResult });
 
@@ -230,6 +231,7 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady }: 
       tipoRizoPrincipal,
       tiposSecundarios,
       captureMetadata,
+      fotoAnalisis: fotoUrls,
     };
 
     // Pre-llenar campos desde IA
@@ -523,7 +525,7 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady }: 
           className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-dashed border-[#CCCCCC] text-xs font-semibold text-[#888] hover:border-[#90B98A] hover:text-[#2D5A27] transition-colors"
         >
           {showDetalle ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          + Más detalles (historial, cuero cabelludo, salud)
+          + Más detalles (historial, cuero cabelludo)
         </button>
       </div>
 
@@ -641,63 +643,6 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady }: 
                   selected={data.tipoDano}
                   onChange={(v) => onChange({ tipoDano: v })}
                 />
-              </Section>
-
-              {/* Embarazo / Estrés */}
-              <Section title="Información de salud" serif={serif}>
-                <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-[#E5E5E5]">
-                  <span className="text-sm text-[#2D2D2D]">Embarazo / Lactancia</span>
-                  <button
-                    type="button"
-                    onClick={() => { vibracionSutil(); onChange({ embarazo: !data.embarazo }); }}
-                    className={`relative w-12 h-6 rounded-full transition-colors ${
-                      data.embarazo ? 'bg-[#2D5A27]' : 'bg-[#DDDDDD]'
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                        data.embarazo ? 'translate-x-6' : 'translate-x-0.5'
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                <div className="mt-2">
-                  <p className="text-xs font-semibold text-[#444] mb-1.5" style={serif}>Nivel de estrés</p>
-                  <div className="flex gap-1.5">
-                    {ESTRES.map(({ v, label }) => (
-                      <button
-                        key={v}
-                        type="button"
-                        onClick={() => { vibracionSutil(); onChange({ nivelEstres: v }); }}
-                        className={`flex-1 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 ${
-                          data.nivelEstres === v
-                            ? 'bg-[#2D5A27] text-white border-[#2D5A27]'
-                            : 'bg-white text-[#666] border-[#E5E5E5]'
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-2 flex flex-col gap-2">
-                  <textarea
-                    value={data.alergias}
-                    onChange={(e) => onChange({ alergias: e.target.value })}
-                    placeholder="Alergias conocidas (opcional)"
-                    rows={2}
-                    className="w-full px-3 py-2 text-xs border border-[#E5E5E5] rounded-xl bg-white resize-none focus:outline-none focus:border-[#2D5A27]"
-                  />
-                  <textarea
-                    value={data.condicionesMedicas}
-                    onChange={(e) => onChange({ condicionesMedicas: e.target.value })}
-                    placeholder="Condiciones médicas o medicamentos (opcional)"
-                    rows={2}
-                    className="w-full px-3 py-2 text-xs border border-[#E5E5E5] rounded-xl bg-white resize-none focus:outline-none focus:border-[#2D5A27]"
-                  />
-                </div>
               </Section>
 
               {/* Botón cerrar */}

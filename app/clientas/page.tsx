@@ -61,9 +61,9 @@ export default function ClientasPage() {
               <span className="ml-2 text-sm font-normal text-[#999999]">({clientas.length})</span>
             )}
           </h1>
-          <Link href="/diagnostico">
+          <Link href="/clientas/nueva">
             <Button variant="primary" size="sm" icon={<Plus size={14} />}>
-              Nueva
+              Nueva clienta
             </Button>
           </Link>
         </div>

@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Phone, MessageCircle, Trash2, Plus, Calendar, Hash,
-  Pencil, Check, X,
+  Pencil, Check, X, RotateCcw, Image as ImageIcon,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Avatar from '@/components/ui/Avatar';
@@ -17,7 +17,88 @@ import { getClientaById, getConsultasByClienta, deleteClienta, updateClienta } f
 import { Clienta, Consulta } from '@/lib/types';
 import { formatDate, getRizoLabel } from '@/lib/utils';
 
-type Tab = 'info' | 'historial';
+type Tab = 'info' | 'historial' | 'galeria';
+
+// ── Galería de fotos por visita ────────────────────────────────────────────
+
+function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
+  const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
+  const [lightbox, setLightbox] = useState<string | null>(null);
+
+  const visitasConFotos = [...consultas].reverse().filter((c) =>
+    (c.fotoAnalisis && c.fotoAnalisis.length > 0) || c.fotoAntes || c.fotoDespues
+  );
+
+  if (visitasConFotos.length === 0) {
+    return (
+      <div className="text-center py-12 bg-white rounded-2xl border border-[#E5E5E5]">
+        <ImageIcon size={32} className="text-[#CCCCCC] mx-auto mb-3" />
+        <p className="text-sm text-[#999999]">Aún no hay fotos</p>
+        <p className="text-xs text-[#AAAAAA] mt-1">Las fotos del diagnóstico IA y antes/después aparecerán aquí</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-5">
+      {visitasConFotos.map((c) => {
+        const fotos: { url: string; label: string }[] = [];
+        if (c.fotoAntes) fotos.push({ url: c.fotoAntes, label: 'Antes' });
+        if (c.fotoDespues) fotos.push({ url: c.fotoDespues, label: 'Después' });
+        (c.fotoAnalisis || []).forEach((url, i) =>
+          fotos.push({ url, label: `Foto ${i + 1}` })
+        );
+
+        return (
+          <div key={c.id} className="bg-white rounded-2xl border border-[#E5E5E5] p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <p className="text-xs font-bold text-[#2D2D2D]" style={serif}>
+                Visita #{c.numeroConsulta}
+              </p>
+              <span className="text-[10px] text-[#999999]">{formatDate(c.fecha)}</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {fotos.map(({ url, label }, i) => (
+                <button key={i} type="button" onClick={() => setLightbox(url)} className="relative group">
+                  <img
+                    src={url}
+                    alt={label}
+                    className="w-full aspect-square object-cover rounded-xl border border-[#E5E5E5]"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 rounded-b-xl py-0.5">
+                    <p className="text-[9px] text-white text-center font-semibold">{label}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setLightbox(null)}
+            className="absolute top-4 right-4 w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-white"
+          >
+            <X size={18} />
+          </button>
+          <img
+            src={lightbox}
+            alt="Foto completa"
+            className="max-w-full max-h-full rounded-2xl object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ClientaPage() {
   const params = useParams();
@@ -85,11 +166,11 @@ export default function ClientaPage() {
         edad: Number(editData.edad) || clienta.edad,
         telefono: editData.telefono ?? clienta.telefono,
         email: editData.email || undefined,
+        nivelEstres: (editData.nivelEstres as Clienta['nivelEstres']) ?? clienta.nivelEstres,
+        embarazo: editData.embarazo ?? clienta.embarazo,
         alergias: editData.alergias || undefined,
         condicionesMedicas: editData.condicionesMedicas || undefined,
         medicamentos: editData.medicamentos || undefined,
-        embarazo: editData.embarazo ?? clienta.embarazo,
-        nivelEstres: (editData.nivelEstres as Clienta['nivelEstres']) ?? clienta.nivelEstres,
       };
       await updateClienta(updated);
       setClienta(updated);
@@ -235,14 +316,26 @@ export default function ClientaPage() {
                   </button>
                 </>
               )}
-              <Link
-                href={`/diagnostico?clientaId=${clienta.id}`}
-                className="ml-auto flex items-center gap-1.5 px-3 py-2 bg-[#C9956B] rounded-xl text-white text-xs font-semibold hover:bg-[#D4A882]"
-                style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
-              >
-                <Plus size={14} />
-                Nueva consulta
-              </Link>
+              <div className="ml-auto flex gap-2">
+                {consultas.length > 0 && (
+                  <Link
+                    href={`/diagnostico?clientaId=${clienta.id}&repeatFrom=${consultas.at(-1)?.id}`}
+                    className="flex items-center gap-1 px-2.5 py-2 bg-white/20 rounded-xl text-white text-xs font-semibold hover:bg-white/30"
+                    style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+                  >
+                    <RotateCcw size={13} />
+                    Repetir
+                  </Link>
+                )}
+                <Link
+                  href={`/diagnostico?clientaId=${clienta.id}`}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-[#C9956B] rounded-xl text-white text-xs font-semibold hover:bg-[#D4A882]"
+                  style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+                >
+                  <Plus size={14} />
+                  Nueva consulta
+                </Link>
+              </div>
             </div>
           )}
         </div>
@@ -317,43 +410,54 @@ export default function ClientaPage() {
               </div>
             </div>
 
-            <div className="border-t border-[#E5E5E5] pt-4">
-              <p className="text-xs font-bold text-[#666666] mb-3" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                Salud (opcional)
+            <div className="border-t border-[#E5E5E5] pt-4 flex flex-col gap-4">
+              <p className="text-xs font-bold text-[#999999] uppercase tracking-wide" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+                Datos de salud
               </p>
+
+              {/* Embarazo / Lactancia — Sí/No */}
+              <div>
+                <p className="text-xs font-semibold text-[#444] mb-2" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+                  ¿Embarazo o lactancia?
+                </p>
+                <div className="flex gap-2">
+                  {([{ v: true, label: 'Sí' }, { v: false, label: 'No' }]).map(({ v, label }) => (
+                    <button
+                      key={String(v)}
+                      type="button"
+                      onClick={() => setEditData((p) => ({ ...p, embarazo: v }))}
+                      className={`flex-1 py-2 rounded-xl text-xs font-semibold border-2 transition-all ${
+                        (editData.embarazo ?? false) === v
+                          ? 'border-[#2D5A27] bg-[#EEF5ED] text-[#2D5A27]'
+                          : 'border-[#E5E5E5] text-[#666666]'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex flex-col gap-3">
                 <Input
-                  label="Alergias"
+                  label="Alergias a productos capilares"
                   value={String(editData.alergias ?? '')}
                   onChange={(e) => setEditData((p) => ({ ...p, alergias: e.target.value }))}
-                  placeholder="Alergias conocidas"
+                  placeholder="Opcional — ej: sulfatos, siliconas..."
                 />
                 <Input
-                  label="Condiciones médicas"
+                  label="Condiciones médicas relevantes"
                   value={String(editData.condicionesMedicas ?? '')}
                   onChange={(e) => setEditData((p) => ({ ...p, condicionesMedicas: e.target.value }))}
-                  placeholder="Condiciones relevantes"
+                  placeholder="tiroides, anemia, SOP, etc."
                 />
                 <Input
-                  label="Medicamentos"
+                  label="Medicamentos que afectan el cabello"
                   value={String(editData.medicamentos ?? '')}
                   onChange={(e) => setEditData((p) => ({ ...p, medicamentos: e.target.value }))}
-                  placeholder="Medicamentos actuales"
+                  placeholder="Opcional"
                 />
               </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 bg-[#FBF4EC] rounded-xl border border-[#E0C4A0]">
-              <input
-                type="checkbox"
-                id="embarazo-edit"
-                checked={editData.embarazo ?? false}
-                onChange={(e) => setEditData((p) => ({ ...p, embarazo: e.target.checked }))}
-                className="w-4 h-4 accent-[#2D5A27]"
-              />
-              <label htmlFor="embarazo-edit" className="text-sm text-[#2D2D2D]">
-                Embarazo o lactancia activa
-              </label>
             </div>
 
             <Button
@@ -374,6 +478,7 @@ export default function ClientaPage() {
               {[
                 { key: 'info', label: 'Información' },
                 { key: 'historial', label: `Historial (${consultas.length})` },
+                { key: 'galeria', label: 'Galería' },
               ].map(({ key, label }) => (
                 <button
                   key={key}
@@ -393,6 +498,17 @@ export default function ClientaPage() {
             <div className="px-4 pt-3 pb-6">
               {tab === 'info' && (
                 <div className="flex flex-col gap-4">
+                  {/* Notas de la última visita — destacado */}
+                  {consultas.at(-1)?.notasEstilista && (
+                    <div className="bg-[#EEF5ED] rounded-2xl border border-[#90B98A] p-4">
+                      <h3 className="text-xs font-bold text-[#2D5A27] mb-2 uppercase tracking-wide" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+                        Notas de la última visita
+                      </h3>
+                      <p className="text-sm text-[#2D2D2D] leading-relaxed">{consultas.at(-1)!.notasEstilista}</p>
+                      <p className="text-[10px] text-[#7A9B76] mt-2">{formatDate(consultas.at(-1)!.fecha)}</p>
+                    </div>
+                  )}
+
                   <div className="bg-white rounded-2xl border border-[#E5E5E5] p-4">
                     <h3 className="text-xs font-bold text-[#999999] mb-3 uppercase tracking-wide" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
                       Datos personales
@@ -459,6 +575,10 @@ export default function ClientaPage() {
 
               {tab === 'historial' && (
                 <HistorialTimeline consultas={consultas} clienta={clienta} />
+              )}
+
+              {tab === 'galeria' && (
+                <GaleriaTab consultas={consultas} />
               )}
             </div>
           </>

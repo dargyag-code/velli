@@ -8,8 +8,8 @@ import PasoCabello from '@/components/wizard/PasoCabello';
 import PasoPlan from '@/components/wizard/PasoPlan';
 import Button from '@/components/ui/Button';
 import { WizardData, WIZARD_INITIAL_DATA, Consulta, Clienta } from '@/lib/types';
-import { generateDiagnosis } from '@/lib/diagnosticEngine';
-import { createConsulta, createClienta, getClientaById, getConsultasByClienta } from '@/lib/db';
+import { generateDiagnosis, SaludClienta } from '@/lib/diagnosticEngine';
+import { createConsulta, createClienta, getClientaById, getConsultasByClienta, getConsultaById } from '@/lib/db';
 import { generateId, todayISO } from '@/lib/utils';
 import { generateConsultaPDF } from '@/lib/pdfGenerator';
 
@@ -22,6 +22,7 @@ function WizardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const clientaIdParam = searchParams.get('clientaId');
+  const repeatFromParam = searchParams.get('repeatFrom');
 
   const [paso, setPaso] = useState(0);
   // Iniciar siempre con WIZARD_INITIAL_DATA (igual en server y client).
@@ -33,13 +34,48 @@ function WizardContent() {
   const [consulta, setConsulta] = useState<Consulta | null>(null);
   const [clienta, setClienta] = useState<Clienta | null>(null);
 
-  // Cargar borrador guardado (solo en cliente, después de hidratación)
+  // Cargar borrador guardado (solo si no hay repeatFrom)
   useEffect(() => {
+    if (repeatFromParam) return;
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) setData(JSON.parse(saved));
     } catch {}
-  }, []);
+  }, [repeatFromParam]);
+
+  // Repetir último diagnóstico: pre-llenar con datos de consulta anterior
+  useEffect(() => {
+    if (!repeatFromParam) return;
+    getConsultaById(repeatFromParam).then((consulta) => {
+      if (!consulta) return;
+      setData((prev) => ({
+        ...prev,
+        quimicos: consulta.quimicos,
+        ultimoQuimico: consulta.ultimoQuimico || '',
+        usoCalor: consulta.usoCalor,
+        frecuenciaCalor: consulta.frecuenciaCalor,
+        usaProtectorTermico: consulta.usaProtectorTermico,
+        frecuenciaLavado: consulta.frecuenciaLavado,
+        metodoLavado: consulta.metodoLavado,
+        productosActuales: consulta.productosActuales,
+        problemas: consulta.problemas,
+        otroProblema: consulta.otroProblema || '',
+        tipoRizoPrincipal: consulta.tipoRizoPrincipal,
+        tiposSecundarios: consulta.tiposSecundarios || [],
+        zonasCambio: consulta.zonasCambio || '',
+        porosidad: consulta.porosidad || '',
+        densidad: consulta.densidad || '',
+        grosor: consulta.grosor || '',
+        elasticidad: consulta.elasticidad || '',
+        balanceHP: consulta.balanceHP || '',
+        estadoCueroCabelludo: consulta.estadoCueroCabelludo,
+        estadoPuntas: consulta.estadoPuntas || '',
+        tipoDano: consulta.tipoDano,
+        lineaDemarcacion: consulta.lineaDemarcacion || '',
+      }));
+      setPaso(1);
+    });
+  }, [repeatFromParam]);
 
   // Pre-cargar clienta si viene por param
   useEffect(() => {
@@ -53,11 +89,6 @@ function WizardContent() {
             edad: String(c.edad || ''),
             telefono: c.telefono || '',
             email: c.email || '',
-            alergias: c.alergias || '',
-            condicionesMedicas: c.condicionesMedicas || '',
-            medicamentos: c.medicamentos || '',
-            embarazo: c.embarazo,
-            nivelEstres: c.nivelEstres || '',
           }));
           setClienta(c);
         }
@@ -96,7 +127,15 @@ function WizardContent() {
   // Construye y almacena la consulta pre-guardado
   const buildConsulta = useCallback(
     async (wizardData: WizardData): Promise<Consulta> => {
-      const res = generateDiagnosis(wizardData);
+      // Leer datos de salud desde el perfil de la clienta (no del wizard)
+      const saludClienta: SaludClienta | undefined = clienta ? {
+        embarazo: clienta.embarazo,
+        nivelEstres: clienta.nivelEstres,
+        alergias: clienta.alergias,
+        condicionesMedicas: clienta.condicionesMedicas,
+        medicamentos: clienta.medicamentos,
+      } : undefined;
+      const res = generateDiagnosis(wizardData, saludClienta);
 
       let clientaObj = clienta;
       if (!wizardData.clientaId && !clienta) {
@@ -133,13 +172,15 @@ function WizardContent() {
         estadoPuntas: wizardData.estadoPuntas,
         tipoDano: wizardData.tipoDano,
         lineaDemarcacion: wizardData.lineaDemarcacion,
-        alergias: wizardData.alergias,
-        condicionesMedicas: wizardData.condicionesMedicas,
-        medicamentos: wizardData.medicamentos,
-        embarazo: wizardData.embarazo,
-        nivelEstres: wizardData.nivelEstres,
+        // Salud: snapshot desde el perfil de la clienta al momento del diagnóstico
+        alergias: clienta?.alergias,
+        condicionesMedicas: clienta?.condicionesMedicas,
+        medicamentos: clienta?.medicamentos,
+        embarazo: clienta?.embarazo ?? false,
+        nivelEstres: clienta?.nivelEstres ?? '',
         resultado: res,
         captureMetadata: wizardData.captureMetadata,
+        fotoAnalisis: wizardData.fotoAnalisis,
       };
 
       setConsulta(c);
@@ -174,7 +215,7 @@ function WizardContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSave = async (proximaCita: string, notas: string, esBorrador: boolean) => {
+  const handleSave = async (proximaCita: string, notas: string, esBorrador: boolean, fotoAntes?: string, fotoDespues?: string) => {
     if (!consulta) return;
     setSaving(true);
     try {
@@ -188,11 +229,6 @@ function WizardContent() {
           telefono: data.telefono,
           email: data.email || undefined,
           fechaRegistro: todayISO(),
-          alergias: data.alergias || undefined,
-          condicionesMedicas: data.condicionesMedicas || undefined,
-          medicamentos: data.medicamentos || undefined,
-          embarazo: data.embarazo,
-          nivelEstres: (data.nivelEstres || 'bajo') as 'bajo' | 'medio' | 'alto',
           tipoRizoPrincipal: data.tipoRizoPrincipal,
           totalVisitas: 0,
         };
@@ -213,6 +249,8 @@ function WizardContent() {
         proximaCita,
         notasEstilista: notas,
         esBorrador,
+        fotoAntes,
+        fotoDespues,
       };
 
       await createConsulta(finalConsulta);
@@ -235,8 +273,6 @@ function WizardContent() {
       edad: parseInt(data.edad) || 0,
       telefono: data.telefono,
       fechaRegistro: todayISO(),
-      embarazo: data.embarazo,
-      nivelEstres: 'bajo' as const,
       totalVisitas: 0,
     };
     await generateConsultaPDF(c, consulta);

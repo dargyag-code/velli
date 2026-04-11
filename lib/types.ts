@@ -5,11 +5,12 @@ export interface Clienta {
   telefono: string;
   email?: string;
   fechaRegistro: string;
+  // Datos de salud (se llenan en el perfil)
+  nivelEstres?: 'bajo' | 'medio' | 'alto';
+  embarazo?: boolean;
   alergias?: string;
   condicionesMedicas?: string;
   medicamentos?: string;
-  embarazo: boolean;
-  nivelEstres: 'bajo' | 'medio' | 'alto';
   tipoRizoPrincipal?: string;
   ultimaVisita?: string;
   totalVisitas: number;
@@ -104,6 +105,11 @@ export interface Consulta {
   notasEstilista?: string;
   proximaCita?: string;
 
+  // Fotos del servicio (antes/después) y fotos del análisis IA
+  fotoAntes?: string;
+  fotoDespues?: string;
+  fotoAnalisis?: string[];
+
   // Metadata de captura estandarizada
   captureMetadata?: CaptureMetadata;
 
@@ -193,12 +199,10 @@ export interface WizardData {
   tipoDano: string[];
   lineaDemarcacion: string;
 
-  // Paso 5
-  alergias: string;
-  condicionesMedicas: string;
-  medicamentos: string;
-  embarazo: boolean;
-  nivelEstres: string;
+  // Fotos IA y servicio
+  fotoAnalisis?: string[];
+  fotoAntes?: string;
+  fotoDespues?: string;
 }
 
 export const WIZARD_INITIAL_DATA: WizardData = {
@@ -230,9 +234,7 @@ export const WIZARD_INITIAL_DATA: WizardData = {
   estadoPuntas: '',
   tipoDano: [],
   lineaDemarcacion: '',
-  alergias: '',
-  condicionesMedicas: '',
-  medicamentos: '',
-  embarazo: false,
-  nivelEstres: '',
+  fotoAnalisis: undefined,
+  fotoAntes: undefined,
+  fotoDespues: undefined,
 };

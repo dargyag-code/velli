@@ -37,7 +37,8 @@ interface Props {
     tipoRizoPrincipal: string,
     tiposSecundarios: string[],
     captureMetadata: CaptureMetadata,
-    analysisResult: HairAnalysisResult
+    analysisResult: HairAnalysisResult,
+    fotoUrls: string[]
   ) => void;
   onCancel: () => void;
 }
@@ -356,8 +357,11 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
       ubicacion,
     };
 
-    onComplete(analysisResult.tipoRizoPrincipal, analysisResult.tiposSecundarios ?? [], metadata, analysisResult);
-  }, [analysisResult, estadoCabello, scoreResult, fotos, onComplete]);
+    const fotoUrls = fotos.length > 0
+      ? fotos.map((f) => f.dataUrl)
+      : uploadedPhotos;
+    onComplete(analysisResult.tipoRizoPrincipal, analysisResult.tiposSecundarios ?? [], metadata, analysisResult, fotoUrls);
+  }, [analysisResult, estadoCabello, scoreResult, fotos, uploadedPhotos, onComplete]);
 
   // ── Subir fotos desde galería ──────────────────────────────────────────
   // Paso 1: leer archivos → mostrar preview en 'gallery'

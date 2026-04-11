@@ -1,8 +1,8 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Sparkles, Calendar, Check, Droplets, Leaf, Zap, Star,
-  Clock, AlertCircle, FileText, Save,
+  Clock, AlertCircle, FileText, Save, Camera, X as XIcon,
 } from 'lucide-react';
 import { Consulta, Clienta, WizardData } from '@/lib/types';
 import {
@@ -17,7 +17,7 @@ interface Props {
   consulta: Consulta;
   clienta: Clienta | null;
   wizardData: WizardData;
-  onSave: (proximaCita: string, notas: string, esBorrador: boolean) => Promise<void>;
+  onSave: (proximaCita: string, notas: string, esBorrador: boolean, fotoAntes?: string, fotoDespues?: string) => Promise<void>;
   saving: boolean;
 }
 
@@ -65,8 +65,7 @@ function hasDetallesCompletos(data: WizardData): boolean {
     data.estadoCueroCabelludo.length > 0 ||
     !!data.estadoPuntas ||
     data.quimicos.length > 0 ||
-    !!data.frecuenciaLavado ||
-    !!data.nivelEstres
+    !!data.frecuenciaLavado
   );
 }
 
@@ -76,14 +75,34 @@ export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving
     consulta.proximaCita || addWeeks(todayISO(), 4)
   );
   const [notas, setNotas] = useState(consulta.notasEstilista || '');
+  const [fotoAntes, setFotoAntes] = useState<string | undefined>(consulta.fotoAntes);
+  const [fotoDespues, setFotoDespues] = useState<string | undefined>(consulta.fotoDespues);
+  const fotoAntesRef = useRef<HTMLInputElement>(null);
+  const fotoDespuesRef = useRef<HTMLInputElement>(null);
   const [saved, setSaved] = useState<'express' | 'completo' | null>(null);
+
+  const handleFotoAntes = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setFotoAntes(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleFotoDespues = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setFotoDespues(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
 
   const tieneDetalles = hasDetallesCompletos(wizardData);
   const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 
   const handleGuardar = async (esBorrador: boolean) => {
     vibracionConfirmacion();
-    await onSave(proximaCita, notas, esBorrador);
+    await onSave(proximaCita, notas, esBorrador, fotoAntes, fotoDespues);
     setSaved(esBorrador ? 'express' : 'completo');
   };
 
@@ -228,25 +247,88 @@ export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving
           </div>
           <h3 className="text-sm font-bold text-[#2D2D2D]" style={serif}>Próxima cita</h3>
         </div>
-
         <p className="text-xs text-[#2D5A27] font-semibold mb-2" style={serif}>
           {resultado.intervaloSugerido}
         </p>
-
         <input
           type="date"
           value={proximaCita}
           onChange={(e) => setProximaCita(e.target.value)}
-          className="w-full px-4 py-2.5 rounded-xl border border-[#E5E5E5] text-sm bg-white mb-3"
+          className="w-full px-4 py-2.5 rounded-xl border border-[#E5E5E5] text-sm bg-white"
           min={todayISO()}
         />
+      </div>
 
+      {/* Fotos antes / después */}
+      <div className="bg-white rounded-2xl p-4 border border-[#E5E5E5]">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-7 h-7 bg-[#EEF5ED] rounded-lg flex items-center justify-center text-[#2D5A27]">
+            <Camera size={14} />
+          </div>
+          <h3 className="text-sm font-bold text-[#2D2D2D]" style={serif}>Fotos del servicio</h3>
+        </div>
+        <div className="flex gap-3">
+          {/* Foto antes */}
+          <div className="flex-1">
+            <p className="text-[10px] font-bold text-[#999] mb-1.5 uppercase" style={serif}>Antes</p>
+            {fotoAntes ? (
+              <div className="relative">
+                <img src={fotoAntes} alt="Antes" className="w-full h-28 object-cover rounded-xl" />
+                <button
+                  type="button"
+                  onClick={() => { setFotoAntes(undefined); if (fotoAntesRef.current) fotoAntesRef.current.value = ''; }}
+                  className="absolute top-1 right-1 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center"
+                >
+                  <XIcon size={12} className="text-white" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center w-full h-28 rounded-xl border-2 border-dashed border-[#CCCCCC] cursor-pointer hover:border-[#2D5A27] transition-colors">
+                <Camera size={20} className="text-[#CCCCCC] mb-1" />
+                <span className="text-[10px] text-[#999]">Agregar foto</span>
+                <input ref={fotoAntesRef} type="file" accept="image/*" className="hidden" onChange={handleFotoAntes} />
+              </label>
+            )}
+          </div>
+          {/* Foto después */}
+          <div className="flex-1">
+            <p className="text-[10px] font-bold text-[#999] mb-1.5 uppercase" style={serif}>Después</p>
+            {fotoDespues ? (
+              <div className="relative">
+                <img src={fotoDespues} alt="Después" className="w-full h-28 object-cover rounded-xl" />
+                <button
+                  type="button"
+                  onClick={() => { setFotoDespues(undefined); if (fotoDespuesRef.current) fotoDespuesRef.current.value = ''; }}
+                  className="absolute top-1 right-1 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center"
+                >
+                  <XIcon size={12} className="text-white" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center w-full h-28 rounded-xl border-2 border-dashed border-[#CCCCCC] cursor-pointer hover:border-[#2D5A27] transition-colors">
+                <Camera size={20} className="text-[#CCCCCC] mb-1" />
+                <span className="text-[10px] text-[#999]">Agregar foto</span>
+                <input ref={fotoDespuesRef} type="file" accept="image/*" className="hidden" onChange={handleFotoDespues} />
+              </label>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Notas para la próxima visita */}
+      <div className="bg-white rounded-2xl p-4 border border-[#E5E5E5]">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-7 h-7 bg-[#EEF5ED] rounded-lg flex items-center justify-center text-[#2D5A27]">
+            <FileText size={14} />
+          </div>
+          <h3 className="text-sm font-bold text-[#2D2D2D]" style={serif}>Notas para la próxima visita</h3>
+        </div>
         <textarea
           value={notas}
           onChange={(e) => setNotas(e.target.value)}
-          placeholder="Notas de la estilista (opcional)..."
-          className="w-full px-3 py-2.5 rounded-xl border border-[#E5E5E5] text-sm bg-white resize-none focus:outline-none focus:border-[#2D5A27]"
-          rows={2}
+          placeholder="Ej: le queda bien el fleco, no le gusta el gel, prefiere productos sin olor fuerte..."
+          className="w-full px-3 py-2.5 rounded-xl border border-[#E5E5E5] text-sm bg-[#FAFAFA] resize-none focus:outline-none focus:border-[#2D5A27]"
+          rows={3}
         />
       </div>
 

@@ -1,6 +1,14 @@
 import { WizardData, ResultadoConsulta, CronogramaResult, CuidadoCasaResult } from './types';
 
-export function generateDiagnosis(data: WizardData): ResultadoConsulta {
+export interface SaludClienta {
+  embarazo?: boolean;
+  nivelEstres?: string;
+  alergias?: string;
+  condicionesMedicas?: string;
+  medicamentos?: string;
+}
+
+export function generateDiagnosis(data: WizardData, saludClienta?: SaludClienta): ResultadoConsulta {
   // ── Defaults para datos mínimos (modo express) ──
   const tipoRizoPrincipal = data.tipoRizoPrincipal || '';
   const porosidad = data.porosidad || 'media';
@@ -11,8 +19,9 @@ export function generateDiagnosis(data: WizardData): ResultadoConsulta {
   const estadoCueroCabelludo = data.estadoCueroCabelludo || [];
   const estadoPuntas = data.estadoPuntas || '';
   const problemas = data.problemas || [];
-  const embarazo = data.embarazo || false;
-  const nivelEstres = data.nivelEstres || '';
+  // Datos de salud: priorizar los del perfil de la clienta
+  const embarazo = saludClienta?.embarazo ?? false;
+  const nivelEstres = saludClienta?.nivelEstres ?? '';
 
   // Inferir balanceHP si no fue especificado
   let balanceHP = data.balanceHP;
