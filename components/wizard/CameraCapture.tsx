@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   X, Camera, RotateCcw, Check, Zap, Sun, Eye, EyeOff,
-  User, ArrowRight, ChevronDown, Loader2, AlertCircle,
+  User, ArrowRight, ChevronDown, Loader2, AlertCircle, SwitchCamera,
 } from 'lucide-react';
 import {
   EstadoCabelloFoto, AnguloCaptura, CaptureMetadata,
@@ -98,6 +98,9 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
   const [focusResult, setFocusResult] = useState<FocusResult | null>(null);
   const [distanceResult, setDistanceResult] = useState<DistanceResult | null>(null);
 
+  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
+  const facingModeRef = useRef<'environment' | 'user'>('environment');
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -132,7 +135,7 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: { facingMode: facingModeRef.current, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
       });
       streamRef.current = stream;
@@ -166,6 +169,30 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
+    }
+  }, []);
+
+  const switchCamera = useCallback(async () => {
+    // Detener solo los tracks (el intervalo de calidad sigue activo)
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    const next: 'environment' | 'user' = facingModeRef.current === 'environment' ? 'user' : 'environment';
+    facingModeRef.current = next;
+    setFacingMode(next);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: next, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+    } catch (err) {
+      console.log('[CameraCapture] switchCamera error:', err);
     }
   }, []);
 
@@ -554,6 +581,16 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
 
             {/* Guía de ángulo */}
             <AnguloGuide angulo={SECUENCIA_ANGULOS[anguloIndex].angulo} />
+
+            {/* Botón alternar cámara frontal/trasera */}
+            <button
+              type="button"
+              onClick={switchCamera}
+              className="absolute top-3 left-3 z-10 w-9 h-9 bg-black/50 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform"
+              aria-label={facingMode === 'environment' ? 'Cambiar a cámara frontal' : 'Cambiar a cámara trasera'}
+            >
+              <SwitchCamera size={18} />
+            </button>
 
             {/* Indicador de luz */}
             <div className="absolute top-12 left-4 flex items-center gap-1.5">
