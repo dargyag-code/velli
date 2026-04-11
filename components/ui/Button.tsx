@@ -14,15 +14,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<Variant, string> = {
   primary:
-    'bg-[#2D5A27] text-white hover:bg-[#3D7A35] active:bg-[#4A2275] shadow-sm hover:shadow-md',
+    'bg-[#2D5A27] text-white hover:bg-[#3D7A35] active:scale-95 active:bg-[#1A3D16] shadow-sm hover:shadow-md',
   secondary:
-    'bg-[#C9956B] text-white hover:bg-[#D4A882] active:bg-[#B8963A] shadow-sm',
+    'bg-[#C9956B] text-white hover:bg-[#D4A882] active:scale-95 active:bg-[#B8803A] shadow-sm',
   ghost:
-    'bg-transparent text-[#2D5A27] hover:bg-[#EEF5ED] active:bg-[#E8D9F5]',
+    'bg-transparent text-[#2D5A27] hover:bg-[#EEF5ED] active:scale-95',
   danger:
-    'bg-[#8E2D2D] text-white hover:bg-[#A03333] active:bg-[#7A2626]',
+    'bg-[#8E2D2D] text-white hover:bg-[#A03333] active:scale-95 active:bg-[#7A2626]',
   outline:
-    'bg-transparent border-2 border-[#2D5A27] text-[#2D5A27] hover:bg-[#EEF5ED]',
+    'bg-transparent border-2 border-[#2D5A27] text-[#2D5A27] hover:bg-[#EEF5ED] active:scale-95',
 };
 
 const sizeStyles: Record<Size, string> = {

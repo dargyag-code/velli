@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Users, CalendarDays, TrendingUp, Clock, Plus, ChevronRight } from 'lucide-react';
+import { Users, CalendarDays, TrendingUp, Clock, Plus, ChevronRight, Sparkles } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import StatCard from '@/components/dashboard/StatCard';
@@ -14,6 +14,8 @@ import {
 } from '@/lib/db';
 import { Clienta } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
+
+const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 
 export default function Dashboard() {
   const [search, setSearch] = useState('');
@@ -63,42 +65,74 @@ export default function Dashboard() {
         {loading ? (
           <div className="grid grid-cols-2 gap-3 mb-5">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white rounded-2xl h-24 loading-pulse border border-[#E5E5E5]" />
+              <div key={i} className="skeleton-shimmer h-28" />
             ))}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 mb-5">
-            <StatCard title="Clientas" value={stats.total} icon={<Users size={18} />} color="purple" />
-            <StatCard title="Consultas este mes" value={stats.thisMonth} icon={<TrendingUp size={18} />} color="gold" />
+            <StatCard title="Clientas" value={stats.total} icon={<Users size={20} />} color="green" />
+            <StatCard title="Consultas este mes" value={stats.thisMonth} icon={<TrendingUp size={20} />} color="gold" />
             <StatCard
               title="Próxima cita"
               value={stats.nextCita ? formatDate(stats.nextCita.fecha) : '—'}
-              icon={<CalendarDays size={18} />}
-              color="green"
+              icon={<CalendarDays size={20} />}
+              color="blue"
               subtitle={stats.nextCita?.nombre}
             />
             <StatCard
               title="Tratamiento frecuente"
               value={stats.frecuente === 'Sin datos' ? '—' : stats.frecuente.split(' ')[0]}
-              icon={<Clock size={18} />}
-              color="blue"
+              icon={<Clock size={20} />}
+              color="purple"
             />
           </div>
         )}
 
-        {/* CTA */}
-        <Link href="/diagnostico">
-          <div className="bg-gradient-to-r from-[#2D5A27] to-[#3D7A35] rounded-3xl p-5 mb-5 cursor-pointer hover:shadow-lg transition-all duration-300">
+        {/* Hero CTA */}
+        <Link href="/diagnostico" className="block mb-5">
+          <div
+            className="rounded-3xl p-5 cursor-pointer active:scale-[0.98] transition-all duration-200"
+            style={{
+              background: 'linear-gradient(135deg, #1A2E1A 0%, #2D5A27 60%, #3D7A35 100%)',
+              boxShadow: '0 8px 32px rgba(45,90,39,0.35)',
+            }}
+          >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white text-base font-bold mb-0.5" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+                <div className="flex items-center gap-2 mb-1">
+                  <span
+                    className="text-xs font-bold text-[#A8D0A3] uppercase tracking-wider"
+                    style={serif}
+                  >
+                    Diagnóstico IA
+                  </span>
+                </div>
+                <p className="text-white text-xl font-bold leading-tight mb-1" style={serif}>
                   Nueva consulta
                 </p>
-                <p className="text-[#B8D4B5] text-xs">Diagnóstico completo + plan personalizado</p>
+                <p className="text-[#A8D0A3] text-xs">
+                  Plan personalizado en minutos
+                </p>
               </div>
-              <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
-                <Plus size={24} className="text-white" />
+              <div
+                className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0"
+                style={{ background: 'rgba(255,255,255,0.15)' }}
+              >
+                <Plus size={32} className="text-white icon-pulse" strokeWidth={2} />
               </div>
+            </div>
+
+            {/* Badge row */}
+            <div className="flex gap-2 mt-3">
+              {['✨ Cámara IA', '📋 Manual', '🚀 Express'].map((tag) => (
+                <span
+                  key={tag}
+                  className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
+                  style={{ background: 'rgba(255,255,255,0.15)', color: '#D4EACE' }}
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
           </div>
         </Link>
@@ -109,12 +143,15 @@ export default function Dashboard() {
         {/* Clientas */}
         <div className="mt-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-[#2D2D2D]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+            <h2 className="text-base font-bold text-[#1A2E1A]" style={serif}>
               {search ? `Resultados (${searchResults.length})` : 'Clientas recientes'}
             </h2>
             {!search && (
-              <Link href="/clientas" className="text-xs text-[#2D5A27] font-semibold hover:underline flex items-center gap-1">
-                Ver todas <ChevronRight size={14} />
+              <Link
+                href="/clientas"
+                className="text-xs text-[#2D5A27] font-semibold flex items-center gap-1 hover:underline"
+              >
+                Ver todas <ChevronRight size={13} />
               </Link>
             )}
           </div>
@@ -122,7 +159,7 @@ export default function Dashboard() {
           {loading ? (
             <div className="flex flex-col gap-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white rounded-2xl h-16 loading-pulse border border-[#E5E5E5]" />
+                <div key={i} className="skeleton-shimmer h-16" />
               ))}
             </div>
           ) : displayClientas.length === 0 ? (
@@ -130,7 +167,7 @@ export default function Dashboard() {
               <div className="w-20 h-20 bg-[#EEF5ED] rounded-full mx-auto mb-4 flex items-center justify-center">
                 <Users size={32} className="text-[#90B98A]" />
               </div>
-              <p className="text-base font-bold text-[#666666] mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+              <p className="text-base font-bold text-[#666666] mb-1" style={serif}>
                 {search ? 'Sin resultados' : 'Aún no tienes clientas'}
               </p>
               <p className="text-sm text-[#999999] mb-5">

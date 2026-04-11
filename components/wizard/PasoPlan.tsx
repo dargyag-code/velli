@@ -108,68 +108,85 @@ export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving
 
   return (
     <div className="flex flex-col gap-4 step-enter pb-6">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-[#2D5A27] to-[#3D7A35] rounded-3xl p-4 text-white">
-        <div className="flex items-center gap-2 mb-2">
-          <Sparkles size={16} className="text-[#FFD700]" />
-          <span className="text-xs font-semibold text-[#B8D4B5]" style={serif}>Plan generado</span>
-        </div>
-        {clienta && (
-          <p className="text-base font-bold mb-0.5" style={serif}>{clienta.nombre}</p>
-        )}
-        <p className="text-xs text-[#B8D4B5]">{formatDate(consulta.fecha)}</p>
-      </div>
-
-      {/* Diagnóstico rápido */}
-      <SectionCard icon={<Star size={14} />} title="Diagnóstico">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="bg-[#F5F0E8] rounded-xl p-2.5">
-            <RizoPattern tipo={consulta.tipoRizoPrincipal} />
-          </div>
+      {/* Hero card — Tipo de cabello detectado */}
+      <div
+        className="rounded-3xl p-5 text-white overflow-hidden relative"
+        style={{
+          background: 'linear-gradient(135deg, #1A2E1A 0%, #2D5A27 60%, #3D7A35 100%)',
+          boxShadow: '0 8px 32px rgba(45,90,39,0.30)',
+        }}
+      >
+        <div className="flex items-center justify-between">
           <div>
-            <p className="text-2xl font-extrabold text-[#2D5A27]" style={serif}>
-              {consulta.tipoRizoPrincipal || '—'}
-            </p>
-            {consulta.tipoRizoPrincipal && (
-              <p className="text-xs text-[#666]">{getRizoLabel(consulta.tipoRizoPrincipal)}</p>
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles size={14} className="text-[#FFD700]" />
+              <span className="text-xs font-semibold text-[#A8D0A3]" style={serif}>
+                Plan generado
+              </span>
+            </div>
+            {clienta && (
+              <p className="text-sm text-[#B8D4B5] mb-2" style={serif}>{clienta.nombre} · {formatDate(consulta.fecha)}</p>
             )}
+            {/* Tipo grande */}
+            <div className="flex items-end gap-3">
+              <p
+                className="font-extrabold text-white leading-none"
+                style={{ ...serif, fontSize: 64, lineHeight: 1 }}
+              >
+                {consulta.tipoRizoPrincipal || '—'}
+              </p>
+              <div className="mb-1">
+                <p className="text-sm font-semibold text-[#A8D0A3]" style={serif}>
+                  {getRizoLabel(consulta.tipoRizoPrincipal)}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="opacity-30 absolute right-4 top-1/2 -translate-y-1/2">
+            <RizoPattern tipo={consulta.tipoRizoPrincipal} />
           </div>
         </div>
 
         {/* Pills de medición */}
-        <div className="grid grid-cols-2 gap-1.5 mb-3">
-          {[
-            { label: 'Porosidad', value: consulta.porosidad },
-            { label: 'Densidad', value: consulta.densidad },
-            { label: 'Grosor', value: consulta.grosor },
-            { label: 'Elasticidad', value: consulta.elasticidad },
-          ].filter(({ value }) => !!value).map(({ label, value }) => (
-            <div key={label} className="bg-[#F5F0E8] rounded-xl p-2 text-center">
-              <p className="text-[10px] text-[#999] mb-0.5" style={serif}>{label}</p>
-              <p className="text-xs font-bold text-[#2D5A27] capitalize" style={serif}>{value}</p>
-            </div>
-          ))}
-        </div>
+        {[consulta.porosidad, consulta.densidad, consulta.grosor, consulta.elasticidad].some(Boolean) && (
+          <div className="flex gap-2 mt-4 flex-wrap">
+            {[
+              { label: 'Por', value: consulta.porosidad },
+              { label: 'Den', value: consulta.densidad },
+              { label: 'Gro', value: consulta.grosor },
+              { label: 'Ela', value: consulta.elasticidad },
+            ].filter(({ value }) => !!value).map(({ label, value }) => (
+              <div key={label} className="px-3 py-1.5 rounded-full text-center" style={{ background: 'rgba(255,255,255,0.15)' }}>
+                <span className="text-[10px] text-[#A8D0A3]" style={serif}>{label} </span>
+                <span className="text-xs font-bold text-white capitalize" style={serif}>{value}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-        {/* Balance */}
+      {/* Balance + problemas */}
+      <SectionCard icon={<Star size={14} />} title="Estado capilar">
         {consulta.balanceHP && (
-          <div className={`rounded-xl px-3 py-2 text-center text-xs font-bold ${
-            consulta.balanceHP === 'proteina' ? 'bg-orange-100 text-orange-700'
-            : consulta.balanceHP === 'hidratacion' ? 'bg-blue-100 text-blue-700'
-            : consulta.balanceHP === 'nutricion' ? 'bg-green-100 text-green-700'
-            : 'bg-purple-100 text-purple-700'
-          }`} style={serif}>
+          <div
+            className={`rounded-xl px-3 py-2.5 text-center text-xs font-bold mb-2 ${
+              consulta.balanceHP === 'proteina'  ? 'bg-[#FFF3E0] text-[#D4820A]'
+              : consulta.balanceHP === 'hidratacion' ? 'bg-[#E8F4FD] text-[#1A5276]'
+              : consulta.balanceHP === 'nutricion'   ? 'bg-[#EEF5ED] text-[#2D5A27]'
+              : 'bg-[#F3EDF9] text-[#6B3FA0]'
+            }`}
+            style={serif}
+          >
             {consulta.balanceHP === 'hidratacion' ? '💧 Necesita HIDRATACIÓN'
               : consulta.balanceHP === 'nutricion' ? '🌿 Necesita NUTRICIÓN'
-              : consulta.balanceHP === 'proteina' ? '⚡ Necesita PROTEÍNA'
+              : consulta.balanceHP === 'proteina'  ? '⚡ Necesita PROTEÍNA'
               : '✨ En MANTENIMIENTO'}
           </div>
         )}
-
         {consulta.problemas.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1 mt-1">
             {consulta.problemas.map((p) => (
-              <span key={p} className="text-[10px] bg-[#EEF5ED] text-[#2D5A27] px-2 py-0.5 rounded-full border border-[#90B98A]">
+              <span key={p} className="text-[10px] bg-[#EEF5ED] text-[#2D5A27] px-2.5 py-1 rounded-full border border-[#90B98A]">
                 {p}
               </span>
             ))}
@@ -205,13 +222,33 @@ export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving
         )}
       </SectionCard>
 
-      {/* Cronograma */}
+      {/* Cronograma — timeline horizontal */}
       <SectionCard icon={<Calendar size={14} />} title="Cronograma 4 semanas">
-        <div className="flex gap-1.5">
-          <CronogramaCard semana="Sem 1" tratamiento={resultado.cronograma.semana1} />
-          <CronogramaCard semana="Sem 2" tratamiento={resultado.cronograma.semana2} />
-          <CronogramaCard semana="Sem 3" tratamiento={resultado.cronograma.semana3} />
-          <CronogramaCard semana="Sem 4" tratamiento={resultado.cronograma.semana4} />
+        <div className="relative flex items-start justify-between pt-2">
+          {/* Línea conectora */}
+          <div className="absolute top-5 left-5 right-5 h-0.5 bg-[#E5E5E5] z-0" />
+          {[
+            { sem: 'Sem 1', t: resultado.cronograma.semana1 },
+            { sem: 'Sem 2', t: resultado.cronograma.semana2 },
+            { sem: 'Sem 3', t: resultado.cronograma.semana3 },
+            { sem: 'Sem 4', t: resultado.cronograma.semana4 },
+          ].map(({ sem, t }) => {
+            const bg = getTratamientoBg(t);
+            const color = getTratamientoTextColor(t);
+            return (
+              <div key={sem} className="flex-1 flex flex-col items-center gap-1.5 z-10">
+                {/* Nodo */}
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm flex-shrink-0"
+                  style={{ background: bg, border: `2px solid ${color}` }}
+                >
+                  <TratamientoIcon t={t} />
+                </div>
+                <p className="text-[9px] font-bold text-[#999]" style={serif}>{sem}</p>
+                <p className="text-[9px] font-bold text-center leading-tight px-0.5" style={{ color, ...serif }}>{t.split(' ')[0]}</p>
+              </div>
+            );
+          })}
         </div>
       </SectionCard>
 

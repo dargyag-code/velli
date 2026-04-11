@@ -78,20 +78,31 @@ export function getTratamientoColor(tratamiento: string): string {
 
 export function getTratamientoBg(tratamiento: string): string {
   const t = tratamiento.toLowerCase();
-  if (t.includes('hidratac')) return '#DBEAFE';
-  if (t.includes('nutrici')) return '#D1FAE5';
-  if (t.includes('reconstru') || t.includes('proteína')) return '#FFEDD5';
-  if (t.includes('mantenimiento')) return '#EDE9FE';
-  return '#F3F4F6';
+  if (t.includes('hidratac')) return '#E8F4FD';
+  if (t.includes('nutrici')) return '#EEF5ED';
+  if (t.includes('reconstru') || t.includes('proteína') || t.includes('proteina')) return '#FFF3E0';
+  if (t.includes('repolariz')) return '#F3EDF9';
+  if (t.includes('mantenimiento')) return '#F5F5F5';
+  return '#F5F5F5';
 }
 
 export function getTratamientoTextColor(tratamiento: string): string {
   const t = tratamiento.toLowerCase();
-  if (t.includes('hidratac')) return '#1D4ED8';
-  if (t.includes('nutrici')) return '#065F46';
-  if (t.includes('reconstru') || t.includes('proteína')) return '#9A3412';
-  if (t.includes('mantenimiento')) return '#5B21B6';
-  return '#374151';
+  if (t.includes('hidratac')) return '#1A5276';
+  if (t.includes('nutrici')) return '#2D5A27';
+  if (t.includes('reconstru') || t.includes('proteína') || t.includes('proteina')) return '#D4820A';
+  if (t.includes('repolariz')) return '#6B3FA0';
+  if (t.includes('mantenimiento')) return '#6B6560';
+  return '#6B6560';
+}
+
+export function getTratamientoBorderColor(tratamiento: string): string {
+  const t = tratamiento.toLowerCase();
+  if (t.includes('hidratac')) return '#1A5276';
+  if (t.includes('nutrici')) return '#2D5A27';
+  if (t.includes('reconstru') || t.includes('proteína') || t.includes('proteina')) return '#D4820A';
+  if (t.includes('repolariz')) return '#6B3FA0';
+  return '#6B6560';
 }
 
 export function nowISO(): string {

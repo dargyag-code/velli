@@ -1,14 +1,14 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Users, CalendarDays, BarChart2, Settings } from 'lucide-react';
+import { Home, Users, CalendarDays, BarChart2, Settings, Plus } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { href: '/',              icon: Home,         label: 'Inicio'    },
-  { href: '/clientas',      icon: Users,        label: 'Clientas'  },
-  { href: '/agenda',        icon: CalendarDays, label: 'Agenda'    },
-  { href: '/reportes',      icon: BarChart2,    label: 'Reportes'  },
-  { href: '/configuracion', icon: Settings,     label: 'Config'    },
+  { href: '/',              icon: Home,         label: 'Inicio'   },
+  { href: '/clientas',      icon: Users,        label: 'Clientas' },
+  { href: '/diagnostico',   icon: null,         label: ''         }, // FAB slot
+  { href: '/agenda',        icon: CalendarDays, label: 'Agenda'   },
+  { href: '/configuracion', icon: Settings,     label: 'Config'   },
 ];
 
 export default function BottomNav() {
@@ -16,38 +16,70 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#E5E5E5]"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      className="fixed bottom-0 left-0 right-0 z-40 bg-white"
+      style={{
+        boxShadow: '0 -2px 20px rgba(0,0,0,0.08)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
     >
-      <div className="max-w-2xl mx-auto flex">
-        {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
-          // Para "/" solo exacto; para el resto, coincide con la sección
+      <div className="max-w-2xl mx-auto flex items-end h-16">
+        {NAV_ITEMS.map(({ href, icon: Icon, label }, index) => {
+          // FAB central
+          if (index === 2) {
+            return (
+              <div key={href} className="flex-1 flex justify-center items-end pb-2">
+                <Link
+                  href={href}
+                  className="flex items-center justify-center w-14 h-14 rounded-full text-white active:scale-90 transition-transform"
+                  style={{
+                    background: 'linear-gradient(135deg, #2D5A27, #3D7A35)',
+                    boxShadow: '0 4px 16px rgba(45,90,39,0.45)',
+                    marginBottom: 8,
+                  }}
+                  aria-label="Nueva consulta"
+                >
+                  <Plus size={26} strokeWidth={2.5} />
+                </Link>
+              </div>
+            );
+          }
+
           const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
 
           return (
             <Link
               key={href}
               href={href}
-              className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors ${
-                isActive ? 'text-[#2D5A27]' : 'text-[#AAAAAA] hover:text-[#7A9B76]'
-              }`}
+              className="flex-1 flex flex-col items-center justify-end pb-2 pt-1 gap-0.5 relative transition-colors"
             >
-              <Icon
-                size={22}
-                strokeWidth={isActive ? 2.5 : 1.8}
-              />
+              {/* Active bar */}
+              {isActive && (
+                <span
+                  className="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-[3px] rounded-full bg-[#2D5A27]"
+                />
+              )}
+
+              {Icon && (
+                <Icon
+                  size={22}
+                  className={isActive ? 'text-[#2D5A27]' : 'text-[#BBBBBB]'}
+                  strokeWidth={isActive ? 2.5 : 1.8}
+                />
+              )}
+
+              {/* Label: solo visible si activo */}
               <span
-                className="text-[10px] leading-none"
+                className="text-[10px] leading-none transition-all duration-200"
                 style={{
                   fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif",
                   fontWeight: isActive ? 700 : 500,
+                  color: isActive ? '#2D5A27' : 'transparent',
+                  maxHeight: isActive ? 12 : 0,
+                  overflow: 'hidden',
                 }}
               >
                 {label}
               </span>
-              {isActive && (
-                <span className="absolute -bottom-0 w-6 h-0.5 bg-[#2D5A27] rounded-full" />
-              )}
             </Link>
           );
         })}

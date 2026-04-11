@@ -2,6 +2,7 @@
 
 :root {
   --primary: #2D5A27;
+  --primary-dark: #1A2E1A;
   --primary-light: #EEF5ED;
   --primary-hover: #3D7A35;
   --secondary: #C9956B;
@@ -16,11 +17,21 @@
   --success: #2D8E5B;
   --warning: #C97A4C;
   --danger: #8E2D2D;
+
+  /* Treatment colors */
+  --treat-hidrat-bg: #E8F4FD;
+  --treat-hidrat-color: #1A5276;
+  --treat-nutri-bg: #EEF5ED;
+  --treat-nutri-color: #2D5A27;
+  --treat-recon-bg: #FFF3E0;
+  --treat-recon-color: #D4820A;
+  --treat-repol-bg: #F3EDF9;
+  --treat-repol-color: #6B3FA0;
+  --treat-mant-bg: #F5F5F5;
+  --treat-mant-color: #6B6560;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 html, body {
   margin: 0;
@@ -32,10 +43,9 @@ html, body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-dm-serif), 'DM Serif Display', serif;
-  font-weight: 400; /* DM Serif Display solo tiene weight 400 */
+  font-weight: 400;
 }
 
-/* Clase utilitaria para fuente de marca en elementos inline */
 .font-brand {
   font-family: var(--font-dm-serif), 'DM Serif Display', serif;
 }
@@ -46,12 +56,13 @@ h1, h2, h3, h4, h5, h6 {
 
 * { -webkit-tap-highlight-color: transparent; }
 
+/* ── Card hover ─────────────────────────────────────────────────────────── */
 .card-hover {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .card-hover:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(45, 90, 39, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(45, 90, 39, 0.14);
 }
 
 .selection-card {
@@ -64,33 +75,20 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.15);
 }
 
+/* ── Animations ─────────────────────────────────────────────────────────── */
+
 @keyframes slideIn {
   from { opacity: 0; transform: translateX(30px); }
-  to { opacity: 1; transform: translateX(0); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 .step-enter { animation: slideIn 0.3s ease forwards; }
 
 @keyframes bounceIn {
-  0% { transform: scale(0); opacity: 0; }
-  60% { transform: scale(1.1); opacity: 1; }
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.1); opacity: 1; }
   100% { transform: scale(1); }
 }
 .success-bounce { animation: bounceIn 0.5s ease forwards; }
-
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: var(--primary) !important;
-  box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.1);
-}
-
-.pb-safe {
-  padding-bottom: max(20px, env(safe-area-inset-bottom));
-}
-
-/* Páginas con bottom nav: deja espacio para la barra fija (56px) + safe area */
-.pb-nav {
-  padding-bottom: max(80px, calc(56px + env(safe-area-inset-bottom)));
-}
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
@@ -98,10 +96,72 @@ input:focus, select:focus, textarea:focus {
 }
 .fade-in { animation: fadeIn 0.25s ease forwards; }
 
+/* Stagger fade-up — aplica a listas de cards */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.stagger-item {
+  opacity: 0;
+  animation: fadeUp 0.35s ease forwards;
+}
+.stagger-item:nth-child(1) { animation-delay: 0ms; }
+.stagger-item:nth-child(2) { animation-delay: 80ms; }
+.stagger-item:nth-child(3) { animation-delay: 160ms; }
+.stagger-item:nth-child(4) { animation-delay: 240ms; }
+.stagger-item:nth-child(5) { animation-delay: 320ms; }
+.stagger-item:nth-child(6) { animation-delay: 400ms; }
+.stagger-item:nth-child(7) { animation-delay: 480ms; }
+.stagger-item:nth-child(8) { animation-delay: 560ms; }
+
+/* Pulse ring — paso actual en ProgressBar */
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(45, 90, 39, 0.45); }
+  70%  { box-shadow: 0 0 0 8px rgba(45, 90, 39, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(45, 90, 39, 0); }
+}
+.pulse-ring { animation: pulse-ring 1.8s ease-in-out infinite; }
+
+/* Subtle icon pulse — botones hero */
+@keyframes icon-pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.12); }
+}
+.icon-pulse { animation: icon-pulse 2.2s ease-in-out infinite; }
+
+/* Shimmer skeleton */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #ede9e0 25%, #e2ddd4 50%, #ede9e0 75%);
+  background-size: 200% auto;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 16px;
+}
+
+/* Loading pulse (fallback) */
 .loading-pulse {
   animation: pulse 1.5s ease-in-out infinite;
 }
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.5; }
+  50%       { opacity: 0.45; }
+}
+
+/* ── Focus ─────────────────────────────────────────────────────────────── */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.1);
+}
+
+/* ── Safe area padding ─────────────────────────────────────────────────── */
+.pb-safe {
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+
+.pb-nav {
+  padding-bottom: max(88px, calc(72px + env(safe-area-inset-bottom)));
 }
