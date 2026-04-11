@@ -10,28 +10,32 @@ interface StatCardProps {
 
 const colorMap = {
   green: {
-    ring:   'bg-[#EEF5ED]',
-    dot:    'linear-gradient(135deg, #2D5A27, #3D7A35)',
-    value:  '#2D5A27',
-    glow:   'rgba(45,90,39,0.15)',
+    ring:    'bg-[#EEF5ED]',
+    dot:     'linear-gradient(135deg, #2D5A27, #3D7A35)',
+    value:   '#2D5A27',
+    glow:    'rgba(45,90,39,0.15)',
+    border:  '#2D5A27',
   },
   gold: {
-    ring:   'bg-[#FBF4EC]',
-    dot:    'linear-gradient(135deg, #C9956B, #D4A882)',
-    value:  '#C9956B',
-    glow:   'rgba(201,149,107,0.15)',
+    ring:    'bg-[#FBF4EC]',
+    dot:     'linear-gradient(135deg, #C9956B, #D4A882)',
+    value:   '#C9956B',
+    glow:    'rgba(201,149,107,0.15)',
+    border:  '#C9956B',
   },
   blue: {
-    ring:   'bg-[#E8F4FD]',
-    dot:    'linear-gradient(135deg, #1A5276, #2E86C1)',
-    value:  '#1A5276',
-    glow:   'rgba(26,82,118,0.12)',
+    ring:    'bg-[#E8F4FD]',
+    dot:     'linear-gradient(135deg, #1A5276, #2E86C1)',
+    value:   '#1A5276',
+    glow:    'rgba(26,82,118,0.12)',
+    border:  '#1A5276',
   },
   purple: {
-    ring:   'bg-[#EEF5ED]',
-    dot:    'linear-gradient(135deg, #2D5A27, #4A8A40)',
-    value:  '#2D5A27',
-    glow:   'rgba(45,90,39,0.15)',
+    ring:    'bg-[#F3EDF9]',
+    dot:     'linear-gradient(135deg, #6B3FA0, #9B6FD0)',
+    value:   '#6B3FA0',
+    glow:    'rgba(107,63,160,0.12)',
+    border:  '#6B3FA0',
   },
 };
 
@@ -41,12 +45,19 @@ export default function StatCard({ title, value, icon, color = 'green', subtitle
 
   return (
     <div
-      className="bg-white rounded-2xl p-4 border border-[#E5E5E5] flex flex-col gap-3 transition-all duration-200 hover:-translate-y-0.5"
-      style={{ boxShadow: `0 2px 12px ${c.glow}` }}
+      className="bg-white rounded-2xl p-4 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-0.5"
+      style={{
+        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+        borderLeft: `4px solid ${c.border}`,
+        borderTop: '1px solid #E5E5E5',
+        borderRight: '1px solid #E5E5E5',
+        borderBottom: '1px solid #E5E5E5',
+        borderRadius: 16,
+      }}
     >
       {/* Icon circle */}
       <div
-        className="w-11 h-11 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-sm"
+        className="w-12 h-12 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-sm"
         style={{ background: c.dot }}
       >
         <span className="[&>svg]:w-5 [&>svg]:h-5">{icon}</span>
@@ -55,8 +66,8 @@ export default function StatCard({ title, value, icon, color = 'green', subtitle
       {/* Value */}
       <div>
         <p
-          className="text-3xl font-bold leading-none"
-          style={{ color: c.value, ...serif }}
+          className="font-bold leading-none"
+          style={{ color: c.value, fontSize: 36, ...serif }}
         >
           {value}
         </p>

@@ -91,10 +91,12 @@ export default function Dashboard() {
         {/* Hero CTA */}
         <Link href="/diagnostico" className="block mb-5">
           <div
-            className="rounded-3xl p-5 cursor-pointer active:scale-[0.98] transition-all duration-200"
+            className="cursor-pointer active:scale-[0.98] transition-all duration-200"
             style={{
-              background: 'linear-gradient(135deg, #1A2E1A 0%, #2D5A27 60%, #3D7A35 100%)',
-              boxShadow: '0 8px 32px rgba(45,90,39,0.35)',
+              background: 'linear-gradient(135deg, #2D5A27, #4A8C42)',
+              borderRadius: 20,
+              padding: '20px 24px',
+              boxShadow: '0 8px 32px rgba(45,90,39,0.40)',
             }}
           >
             <div className="flex items-center justify-between">
@@ -118,7 +120,7 @@ export default function Dashboard() {
                 className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0"
                 style={{ background: 'rgba(255,255,255,0.15)' }}
               >
-                <Plus size={32} className="text-white icon-pulse" strokeWidth={2} />
+                <Plus size={32} className="text-white animate-pulse-soft" strokeWidth={2} />
               </div>
             </div>
 

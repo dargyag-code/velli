@@ -32,9 +32,9 @@ export default function BottomNav() {
                   href={href}
                   className="flex items-center justify-center w-14 h-14 rounded-full text-white active:scale-90 transition-transform"
                   style={{
-                    background: 'linear-gradient(135deg, #2D5A27, #3D7A35)',
-                    boxShadow: '0 4px 16px rgba(45,90,39,0.45)',
-                    marginBottom: 8,
+                    background: 'linear-gradient(135deg, #2D5A27, #4A8C42)',
+                    boxShadow: '0 4px 16px rgba(45,90,39,0.40)',
+                    marginTop: -20,
                   }}
                   aria-label="Nueva consulta"
                 >
@@ -52,10 +52,10 @@ export default function BottomNav() {
               href={href}
               className="flex-1 flex flex-col items-center justify-end pb-2 pt-1 gap-0.5 relative transition-colors"
             >
-              {/* Active bar */}
+              {/* Active dot */}
               {isActive && (
                 <span
-                  className="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-[3px] rounded-full bg-[#2D5A27]"
+                  className="absolute top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#2D5A27]"
                 />
               )}
 

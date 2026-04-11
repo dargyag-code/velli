@@ -57,7 +57,7 @@ export default function Header({ showBack, title, rightAction }: HeaderProps) {
         boxShadow: '0 2px 16px rgba(26,46,26,0.28)',
       }}
     >
-      <div className="max-w-2xl mx-auto px-4 py-3.5 flex items-center justify-between">
+      <div className="max-w-2xl mx-auto px-4 py-5 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex flex-col leading-none gap-0.5">
           <span

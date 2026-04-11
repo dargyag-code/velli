@@ -51,9 +51,9 @@ function PillRow({
             key={v}
             type="button"
             onClick={() => { vibracionSutil(); onSelect(v); }}
-            className={`flex-1 py-2 rounded-xl text-xs font-bold border-2 transition-all duration-150 active:scale-95 ${
+            className={`flex-1 py-2 rounded-full text-xs font-bold border-2 transition-all duration-200 active:scale-95 ${
               value === v
-                ? 'bg-[#2D5A27] text-white border-[#2D5A27]'
+                ? 'bg-[#2D5A27] text-white border-[#2D5A27] scale-105'
                 : 'bg-white text-[#666] border-[#E5E5E5] hover:border-[#90B98A]'
             }`}
           >
@@ -92,9 +92,9 @@ function ChipGroup({
             key={opt}
             type="button"
             onClick={() => toggle(opt)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all duration-150 active:scale-95 ${
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all duration-200 active:scale-95 ${
               on
-                ? 'bg-[#2D5A27] text-white border-[#2D5A27]'
+                ? 'bg-[#EEF5ED] text-[#2D5A27] border-[#2D5A27]'
                 : 'bg-white text-[#666] border-[#E5E5E5] hover:border-[#90B98A]'
             }`}
           >
@@ -494,9 +494,9 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady }: 
                 key={v}
                 type="button"
                 onClick={() => { vibracionSutil(); onChange({ balanceHP: v as WizardData['balanceHP'] }); }}
-                className={`flex-1 py-2 rounded-xl text-[11px] font-bold border-2 transition-all duration-150 active:scale-95 ${
+                className={`flex-1 py-2 rounded-full text-[11px] font-bold border-2 transition-all duration-200 active:scale-95 ${
                   data.balanceHP === v
-                    ? 'bg-[#2D5A27] text-white border-[#2D5A27]'
+                    ? 'bg-[#EEF5ED] text-[#2D5A27] border-[#2D5A27]'
                     : 'bg-white text-[#666] border-[#E5E5E5] hover:border-[#90B98A]'
                 }`}
               >
