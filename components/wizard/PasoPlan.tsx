@@ -3,10 +3,11 @@ import React, { useState, useRef } from 'react';
 import {
   Sparkles, Calendar, Check, Droplets, Leaf, Zap, Star,
   Clock, AlertCircle, FileText, Save, Camera, X as XIcon,
+  Moon, Wind, ShoppingBag, Home as HomeIcon,
 } from 'lucide-react';
 import { Consulta, Clienta, WizardData } from '@/lib/types';
 import {
-  getTratamientoBg, getTratamientoTextColor,
+  getTratamientoBg, getTratamientoTextColor, getTratamientoBorderColor,
   formatDate, addWeeks, todayISO, getRizoLabel,
 } from '@/lib/utils';
 import { getTratamientoPrincipalExplicacion } from '@/lib/diagnosticEngine';
@@ -259,6 +260,87 @@ export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving
         </div>
         <p className="text-xs text-[#555] leading-relaxed">{resultado.tecnicaDescripcion}</p>
       </SectionCard>
+
+      {/* Productos recomendados */}
+      {resultado.productosPonto.length > 0 && (
+        <SectionCard icon={<ShoppingBag size={14} />} title="Productos recomendados">
+          <div className="flex flex-col gap-2">
+            {resultado.productosPonto.map((producto, i) => {
+              const borderColor = getTratamientoBorderColor(resultado.tratamientoPrincipal);
+              return (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 p-2.5 rounded-xl bg-[#F9F9F9] border border-[#E5E5E5]"
+                  style={{ borderLeft: `3px solid ${borderColor}` }}
+                >
+                  <Leaf size={13} className="flex-shrink-0" style={{ color: borderColor }} />
+                  <p className="text-xs font-medium text-[#2D2D2D] leading-tight">{producto}</p>
+                </div>
+              );
+            })}
+          </div>
+        </SectionCard>
+      )}
+
+      {/* Cuidado en casa */}
+      {(resultado.cuidadoCasa.diaLavado.length > 0 || resultado.cuidadoCasa.nocturno.length > 0 || resultado.cuidadoCasa.refresh.length > 0 || resultado.cuidadoCasa.evitar.length > 0) && (
+        <SectionCard icon={<HomeIcon size={14} />} title="Cuidado en casa">
+          <div className="flex flex-col gap-3.5">
+            {resultado.cuidadoCasa.diaLavado.length > 0 && (
+              <div>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Droplets size={12} className="text-[#1A5276]" />
+                  <p className="text-[10px] font-bold text-[#1A5276] uppercase tracking-wide" style={serif}>Día de lavado</p>
+                </div>
+                <div className="flex flex-col gap-1 pl-4">
+                  {resultado.cuidadoCasa.diaLavado.map((tip, i) => (
+                    <p key={i} className="text-xs text-[#555] leading-relaxed">{tip}</p>
+                  ))}
+                </div>
+              </div>
+            )}
+            {resultado.cuidadoCasa.nocturno.length > 0 && (
+              <div>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Moon size={12} className="text-[#6B3FA0]" />
+                  <p className="text-[10px] font-bold text-[#6B3FA0] uppercase tracking-wide" style={serif}>Rutina nocturna</p>
+                </div>
+                <div className="flex flex-col gap-1 pl-4">
+                  {resultado.cuidadoCasa.nocturno.map((tip, i) => (
+                    <p key={i} className="text-xs text-[#555] leading-relaxed">{tip}</p>
+                  ))}
+                </div>
+              </div>
+            )}
+            {resultado.cuidadoCasa.refresh.length > 0 && (
+              <div>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Wind size={12} className="text-[#2D5A27]" />
+                  <p className="text-[10px] font-bold text-[#2D5A27] uppercase tracking-wide" style={serif}>Días de refresh</p>
+                </div>
+                <div className="flex flex-col gap-1 pl-4">
+                  {resultado.cuidadoCasa.refresh.map((tip, i) => (
+                    <p key={i} className="text-xs text-[#555] leading-relaxed">{tip}</p>
+                  ))}
+                </div>
+              </div>
+            )}
+            {resultado.cuidadoCasa.evitar.length > 0 && (
+              <div>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <AlertCircle size={12} className="text-[#8E2D2D]" />
+                  <p className="text-[10px] font-bold text-[#8E2D2D] uppercase tracking-wide" style={serif}>Qué evitar</p>
+                </div>
+                <div className="flex flex-col gap-1 pl-4">
+                  {resultado.cuidadoCasa.evitar.map((tip, i) => (
+                    <p key={i} className="text-xs text-[#555] leading-relaxed">{tip}</p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </SectionCard>
+      )}
 
       {/* Notas adicionales */}
       {resultado.notasAdicionales.length > 0 && (
