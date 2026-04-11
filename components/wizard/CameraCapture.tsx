@@ -586,10 +586,11 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
             <button
               type="button"
               onClick={switchCamera}
-              className="absolute top-3 left-3 z-10 w-9 h-9 bg-black/50 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform"
+              className="absolute bg-black/50 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform"
+              style={{ top: 16, left: 16, width: 44, height: 44, zIndex: 50 }}
               aria-label={facingMode === 'environment' ? 'Cambiar a cámara frontal' : 'Cambiar a cámara trasera'}
             >
-              <SwitchCamera size={18} />
+              <SwitchCamera size={20} />
             </button>
 
             {/* Indicador de luz */}
@@ -634,7 +635,10 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
           </div>
 
           {/* Botón captura + retomar */}
-          <div className="flex items-center justify-center gap-6 pb-8 pt-2">
+          <div
+            className="flex items-center justify-center gap-6 pt-4"
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 28px)' }}
+          >
             {fotos.length > 0 && (
               <button
                 onClick={() => {
