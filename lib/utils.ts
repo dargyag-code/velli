@@ -34,6 +34,7 @@ export function getInitials(nombre: string): string {
 }
 
 export function getRizoColor(tipo: string): string {
+  if (['1A', '1B', '1C'].includes(tipo)) return 'bg-slate-400';
   if (['2A', '2B', '2C'].includes(tipo)) return 'bg-blue-500';
   if (['3A', '3B', '3C'].includes(tipo)) return 'bg-purple-600';
   if (['4A', '4B', '4C'].includes(tipo)) return 'bg-amber-500';
@@ -41,6 +42,7 @@ export function getRizoColor(tipo: string): string {
 }
 
 export function getRizoColorHex(tipo: string): string {
+  if (['1A', '1B', '1C'].includes(tipo)) return '#64748B';
   if (['2A', '2B', '2C'].includes(tipo)) return '#3B82F6';
   if (['3A', '3B', '3C'].includes(tipo)) return '#7C3AED';
   if (['4A', '4B', '4C'].includes(tipo)) return '#F59E0B';
@@ -49,6 +51,9 @@ export function getRizoColorHex(tipo: string): string {
 
 export function getRizoLabel(tipo: string): string {
   const labels: Record<string, string> = {
+    '1A': 'Liso 1A',
+    '1B': 'Liso 1B',
+    '1C': 'Liso 1C',
     '2A': 'Ondulado 2A',
     '2B': 'Ondulado 2B',
     '2C': 'Ondulado 2C',

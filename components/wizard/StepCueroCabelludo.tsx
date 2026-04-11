@@ -38,8 +38,8 @@ const DANO_OPTIONS = [
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="flex flex-col gap-3">
     <h3
-      className="text-sm font-bold text-[#5B2D8E] border-b border-[#E5E5E5] pb-2"
-      style={{ fontFamily: "'Montserrat', sans-serif" }}
+      className="text-sm font-bold text-[#2D5A27] border-b border-[#E5E5E5] pb-2"
+      style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
     >
       {title}
     </h3>
@@ -55,7 +55,7 @@ export default function StepCueroCabelludo({ data, onChange, errors }: Props) {
       <div>
         <h2
           className="text-lg font-bold text-[#2D2D2D] mb-1"
-          style={{ fontFamily: "'Montserrat', sans-serif" }}
+          style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
         >
           Cuero cabelludo y estado del cabello
         </h2>
@@ -99,7 +99,7 @@ export default function StepCueroCabelludo({ data, onChange, errors }: Props) {
                         : opt.includes('leves')
                         ? 'border-[#C97A4C] bg-orange-50 text-[#C97A4C]'
                         : 'border-[#2D8E5B] bg-green-50 text-[#2D8E5B]'
-                      : 'border-[#E5E5E5] bg-white text-[#2D2D2D] hover:border-[#C4A0E8]'
+                      : 'border-[#E5E5E5] bg-white text-[#2D2D2D] hover:border-[#90B98A]'
                   }
                 `}
               >
@@ -137,7 +137,7 @@ export default function StepCueroCabelludo({ data, onChange, errors }: Props) {
         />
 
         {enTransicion && (
-          <div className="mt-1 p-3 bg-[#FDF8EE] rounded-xl border border-[#E8D090]">
+          <div className="mt-1 p-3 bg-[#FBF4EC] rounded-xl border border-[#E0C4A0]">
             <Input
               label="Línea de demarcación"
               value={data.lineaDemarcacion}

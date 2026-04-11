@@ -5,9 +5,9 @@ export default function Footer() {
     <footer className="text-center py-4 mt-6">
       <p
         className="text-xs text-[#CCCCCC]"
-        style={{ fontFamily: "'Montserrat', sans-serif" }}
+        style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
       >
-        KEYSHOP • Always Curly • by Keila Moreno
+        Velli Pro • Inteligencia capilar a tu alcance
       </p>
     </footer>
   );

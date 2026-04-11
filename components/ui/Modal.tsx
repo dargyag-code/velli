@@ -41,7 +41,7 @@ export default function Modal({ open, onClose, title, children, size = 'md' }: M
             <div className="flex items-center justify-between mb-4">
               <h3
                 className="text-lg font-bold text-[#2D2D2D]"
-                style={{ fontFamily: "'Montserrat', sans-serif" }}
+                style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
               >
                 {title}
               </h3>

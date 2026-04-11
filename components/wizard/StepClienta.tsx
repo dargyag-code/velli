@@ -43,7 +43,7 @@ export default function StepClienta({ data, onChange, errors }: Props) {
       <div>
         <h2
           className="text-lg font-bold text-[#2D2D2D] mb-1"
-          style={{ fontFamily: "'Montserrat', sans-serif" }}
+          style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
         >
           Datos de la clienta
         </h2>
@@ -54,14 +54,14 @@ export default function StepClienta({ data, onChange, errors }: Props) {
 
       {/* Select existing */}
       {existingClientas.length > 0 && (
-        <div className="bg-[#F3EDF9] rounded-2xl p-4">
-          <p className="text-sm font-semibold text-[#5B2D8E] mb-3" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+        <div className="bg-[#EEF5ED] rounded-2xl p-4">
+          <p className="text-sm font-semibold text-[#2D5A27] mb-3" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             Clienta existente
           </p>
           <button
             type="button"
             onClick={() => setShowSearch(!showSearch)}
-            className="w-full flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl border border-[#C4A0E8] text-sm text-[#666666] hover:border-[#5B2D8E] transition-colors"
+            className="w-full flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl border border-[#90B98A] text-sm text-[#666666] hover:border-[#2D5A27] transition-colors"
           >
             <Search size={15} />
             <span>Buscar clienta...</span>
@@ -75,7 +75,7 @@ export default function StepClienta({ data, onChange, errors }: Props) {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Nombre de la clienta..."
-                className="w-full px-4 py-2.5 rounded-xl border border-[#C4A0E8] bg-white text-sm mb-2"
+                className="w-full px-4 py-2.5 rounded-xl border border-[#90B98A] bg-white text-sm mb-2"
               />
               <div className="max-h-48 overflow-y-auto flex flex-col gap-1">
                 {filtered.slice(0, 10).map((c) => (
@@ -83,7 +83,7 @@ export default function StepClienta({ data, onChange, errors }: Props) {
                     key={c.id}
                     type="button"
                     onClick={() => selectClienta(c)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#F3EDF9] transition-colors text-left"
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#EEF5ED] transition-colors text-left"
                   >
                     <Avatar nombre={c.nombre} tipoRizo={c.tipoRizoPrincipal} size="sm" />
                     <div>
@@ -105,7 +105,7 @@ export default function StepClienta({ data, onChange, errors }: Props) {
             <div className="mt-2 flex items-center gap-2">
               <Avatar nombre={data.nombre} tipoRizo={undefined} size="sm" />
               <div>
-                <p className="text-sm font-semibold text-[#5B2D8E]">{data.nombre}</p>
+                <p className="text-sm font-semibold text-[#2D5A27]">{data.nombre}</p>
                 <p className="text-xs text-[#999999]">Clienta seleccionada</p>
               </div>
               <button

@@ -28,7 +28,7 @@ export default function CheckboxGroup({
   return (
     <div className="flex flex-col gap-2">
       {label && (
-        <p className="text-sm font-semibold text-[#2D2D2D]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+        <p className="text-sm font-semibold text-[#2D2D2D]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
           {label}
         </p>
       )}
@@ -45,8 +45,8 @@ export default function CheckboxGroup({
                 transition-all duration-200
                 ${
                   isSelected
-                    ? 'border-[#5B2D8E] bg-[#F3EDF9] text-[#5B2D8E]'
-                    : 'border-[#E5E5E5] bg-white text-[#2D2D2D] hover:border-[#C4A0E8] hover:bg-[#FAF6FF]'
+                    ? 'border-[#2D5A27] bg-[#EEF5ED] text-[#2D5A27]'
+                    : 'border-[#E5E5E5] bg-white text-[#2D2D2D] hover:border-[#90B98A] hover:bg-[#F0F5EF]'
                 }
               `}
             >
@@ -54,7 +54,7 @@ export default function CheckboxGroup({
                 className={`
                   flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center
                   transition-all duration-200
-                  ${isSelected ? 'bg-[#5B2D8E] border-[#5B2D8E]' : 'border-[#CCCCCC]'}
+                  ${isSelected ? 'bg-[#2D5A27] border-[#2D5A27]' : 'border-[#CCCCCC]'}
                 `}
               >
                 {isSelected && <Check size={12} className="text-white" strokeWidth={3} />}

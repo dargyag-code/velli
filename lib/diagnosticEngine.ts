@@ -1,20 +1,27 @@
 import { WizardData, ResultadoConsulta, CronogramaResult, CuidadoCasaResult } from './types';
 
 export function generateDiagnosis(data: WizardData): ResultadoConsulta {
-  const {
-    tipoRizoPrincipal,
-    porosidad,
-    densidad,
-    grosor,
-    elasticidad,
-    balanceHP,
-    tipoDano,
-    estadoCueroCabelludo,
-    estadoPuntas,
-    problemas,
-    embarazo,
-    nivelEstres,
-  } = data;
+  // ── Defaults para datos mínimos (modo express) ──
+  const tipoRizoPrincipal = data.tipoRizoPrincipal || '';
+  const porosidad = data.porosidad || 'media';
+  const densidad = data.densidad || 'media';
+  const grosor = data.grosor || 'medio';
+  const elasticidad = data.elasticidad || 'media';
+  const tipoDano = data.tipoDano || [];
+  const estadoCueroCabelludo = data.estadoCueroCabelludo || [];
+  const estadoPuntas = data.estadoPuntas || '';
+  const problemas = data.problemas || [];
+  const embarazo = data.embarazo || false;
+  const nivelEstres = data.nivelEstres || '';
+
+  // Inferir balanceHP si no fue especificado
+  let balanceHP = data.balanceHP;
+  if (!balanceHP) {
+    if (elasticidad === 'baja') balanceHP = 'proteina';
+    else if (porosidad === 'alta') balanceHP = 'hidratacion';
+    else if (porosidad === 'baja') balanceHP = 'nutricion';
+    else balanceHP = 'hidratacion';
+  }
 
   const transicion = tipoDano.includes('En transición capilar (dos texturas visibles)');
 
@@ -127,7 +134,15 @@ export function generateDiagnosis(data: WizardData): ResultadoConsulta {
 
   const rizo = tipoRizoPrincipal;
 
-  if (rizo === '2A' || rizo === '2B') {
+  if (rizo === '1A' || rizo === '1B' || rizo === '1C') {
+    tecnicaDefinicion = 'Secado natural';
+    tecnicaDescripcion =
+      rizo === '1C'
+        ? 'Lava con shampoo suave y acondicionador. Aplica leave-in en cabello húmedo y peina de puntas a raíz con peine de dientes anchos. Haz scrunch suave en las puntas para potenciar la ondulación sutil. Deja secar sin tocar para evitar frizz. Si usas calor, aplica protector térmico antes.'
+        : 'Lava con shampoo suave y acondicionador hidratante. Aplica leave-in en cabello húmedo y peina con peine de dientes anchos. Deja secar sin tocar para máximo brillo y sin frizz. Evita frotar con la toalla — usa microinfibra o camiseta de algodón.';
+    metodoSecado = 'Secado natural o difusor en frío';
+    gelRecomendado = '';
+  } else if (rizo === '2A' || rizo === '2B') {
     tecnicaDefinicion = 'Scrunch';
     tecnicaDescripcion =
       'Aplica crema de peinar en el cabello húmedo. Distribuye con rake (peine de dientes anchos) de puntas a raíz. Luego haz scrunch (aprieta el cabello de abajo hacia arriba) para reforzar las ondas. Deja secar sin tocar.';
@@ -182,7 +197,12 @@ export function generateDiagnosis(data: WizardData): ResultadoConsulta {
   // ── Productos Ponto Hair ──
   const productosPonto: string[] = ['Mascarilla 3 en 1 (base de todo tratamiento)'];
 
-  if (['2A', '2B', '2C', '3A'].includes(rizo)) {
+  if (['1A', '1B', '1C'].includes(rizo)) {
+    productosPonto.push('Leave-in liviano (aplicar en cabello húmedo de medios a puntas)');
+    if (porosidad === 'alta') {
+      productosPonto.push('Aceite de sellado (aplicar sobre el leave-in para cerrar la cutícula)');
+    }
+  } else if (['2A', '2B', '2C', '3A'].includes(rizo)) {
     productosPonto.push('Crema de peinar (aplicar en cabello húmedo, sección por sección)');
     productosPonto.push('Gel definidor (encima de la crema para fijar y reducir frizz)');
     if (porosidad === 'alta') {

@@ -14,7 +14,7 @@ export default function Toggle({ checked, onChange, label, hint }: ToggleProps) 
       {(label || hint) && (
         <div>
           {label && (
-            <p className="text-sm font-semibold text-[#2D2D2D]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+            <p className="text-sm font-semibold text-[#2D2D2D]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
               {label}
             </p>
           )}
@@ -26,7 +26,7 @@ export default function Toggle({ checked, onChange, label, hint }: ToggleProps) 
         onClick={() => onChange(!checked)}
         className={`
           relative flex-shrink-0 w-12 h-6 rounded-full transition-colors duration-300
-          ${checked ? 'bg-[#5B2D8E]' : 'bg-gray-200'}
+          ${checked ? 'bg-[#2D5A27]' : 'bg-gray-200'}
         `}
       >
         <span

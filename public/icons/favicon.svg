@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#C9A84C"/>
-  <text x="32" y="46" text-anchor="middle" font-family="Arial Black, sans-serif" font-weight="900" font-size="38" fill="#5B2D8E">K</text>
+  <!-- Background -->
+  <rect width="64" height="64" rx="14" fill="#F5F0E8"/>
+  <!-- V shape: left arm (17,14)→(32,44), right arm (47,14)→(32,44) -->
+  <path d="M17 14 L32 44 L47 14" fill="none" stroke="#1C1C1C" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Stem rising from follicle -->
+  <line x1="32" y1="44" x2="32" y2="36" stroke="#4A8C42" stroke-width="3" stroke-linecap="round"/>
+  <!-- Follicle dot -->
+  <circle cx="32" cy="44" r="5.5" fill="#2D5A27"/>
 </svg>

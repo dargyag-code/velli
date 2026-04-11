@@ -1,34 +1,36 @@
 import type { Metadata, Viewport } from 'next';
-import { Montserrat, DM_Sans } from 'next/font/google';
+import { DM_Serif_Display, DM_Sans } from 'next/font/google';
+import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
 import './globals.css';
 
-const montserrat = Montserrat({
+const dmSerifDisplay = DM_Serif_Display({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-montserrat',
+  weight: ['400'],
+  style: ['normal', 'italic'],
+  variable: '--font-dm-serif',
   display: 'swap',
 });
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
-  weight: ['400', '500'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-dm-sans',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'KEYSHOP — Always Curly',
-  description: 'Diagnóstico capilar profesional para rizos y afro — by Keila Moreno',
+  title: 'Velli Pro — Inteligencia capilar a tu alcance',
+  description: 'Diagnóstico capilar profesional para todo tipo de cabello',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'KEYSHOP',
+    title: 'Velli',
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#5B2D8E',
+  themeColor: '#2D5A27',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -36,7 +38,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${montserrat.variable} ${dmSans.variable}`}>
+    <html lang="es" className={`${dmSerifDisplay.variable} ${dmSans.variable}`}>
       <head>
         <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
@@ -46,24 +48,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         style={{
           fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
-          backgroundColor: '#FAFAFA',
+          backgroundColor: '#F5F0E8',
           minHeight: '100vh',
         }}
       >
         {children}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').catch(function(err) {
-                    console.log('SW registration failed:', err);
-                  });
-                });
-              }
-            `,
-          }}
-        />
+        <ServiceWorkerRegistrar />
       </body>
     </html>
   );

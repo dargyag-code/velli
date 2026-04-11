@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Users, Plus, SlidersHorizontal } from 'lucide-react';
 import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
+import BottomNav from '@/components/layout/BottomNav';
 import ClientaCard from '@/components/dashboard/ClientaCard';
 import SearchBar from '@/components/dashboard/SearchBar';
 import Button from '@/components/ui/Button';
@@ -50,12 +50,12 @@ export default function ClientasPage() {
     });
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="min-h-screen bg-[#F5F0E8]">
       <Header />
-      <main className="max-w-2xl mx-auto px-4 py-5 pb-safe">
+      <main className="max-w-2xl mx-auto px-4 py-5 pb-nav">
 
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold text-[#2D2D2D]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+          <h1 className="text-xl font-bold text-[#2D2D2D]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             Clientas
             {!loading && (
               <span className="ml-2 text-sm font-normal text-[#999999]">({clientas.length})</span>
@@ -77,7 +77,7 @@ export default function ClientasPage() {
             onClick={() => setShowFilters(!showFilters)}
             className={`flex-shrink-0 p-2.5 rounded-xl border-2 transition-colors ${
               showFilters || filterRizo !== 'todas' || sort !== 'ultima'
-                ? 'border-[#5B2D8E] bg-[#F3EDF9] text-[#5B2D8E]'
+                ? 'border-[#2D5A27] bg-[#EEF5ED] text-[#2D5A27]'
                 : 'border-[#E5E5E5] bg-white text-[#666666]'
             }`}
           >
@@ -88,7 +88,7 @@ export default function ClientasPage() {
         {showFilters && (
           <div className="bg-white rounded-2xl border border-[#E5E5E5] p-4 mb-4 flex flex-col gap-4">
             <div>
-              <p className="text-xs font-bold text-[#666666] mb-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              <p className="text-xs font-bold text-[#666666] mb-2" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
                 Ordenar por:
               </p>
               <div className="flex gap-2 flex-wrap">
@@ -102,10 +102,10 @@ export default function ClientasPage() {
                     onClick={() => setSort(key as SortKey)}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                       sort === key
-                        ? 'bg-[#5B2D8E] text-white'
-                        : 'bg-[#F0F0F0] text-[#666666] hover:bg-[#F3EDF9] hover:text-[#5B2D8E]'
+                        ? 'bg-[#2D5A27] text-white'
+                        : 'bg-[#F0F0F0] text-[#666666] hover:bg-[#EEF5ED] hover:text-[#2D5A27]'
                     }`}
-                    style={{ fontFamily: "'Montserrat', sans-serif" }}
+                    style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
                   >
                     {label}
                   </button>
@@ -113,25 +113,26 @@ export default function ClientasPage() {
               </div>
             </div>
             <div>
-              <p className="text-xs font-bold text-[#666666] mb-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                Filtrar por tipo de rizo:
+              <p className="text-xs font-bold text-[#666666] mb-2" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+                Filtrar por tipo de cabello:
               </p>
               <div className="flex gap-2 flex-wrap">
                 {[
                   { key: 'todas', label: 'Todas' },
+                  { key: '1', label: 'Liso (1)' },
                   { key: '2', label: 'Ondulado (2)' },
                   { key: '3', label: 'Rizado (3)' },
-                  { key: '4', label: 'Afro (4)' },
+                  { key: '4', label: 'Tipo 4' },
                 ].map(({ key, label }) => (
                   <button
                     key={key}
                     onClick={() => setFilterRizo(key as FilterRizo)}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                       filterRizo === key
-                        ? 'bg-[#C9A84C] text-white'
-                        : 'bg-[#F0F0F0] text-[#666666] hover:bg-[#FDF8EE] hover:text-[#C9A84C]'
+                        ? 'bg-[#C9956B] text-white'
+                        : 'bg-[#F0F0F0] text-[#666666] hover:bg-[#FBF4EC] hover:text-[#C9956B]'
                     }`}
-                    style={{ fontFamily: "'Montserrat', sans-serif" }}
+                    style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
                   >
                     {label}
                   </button>
@@ -150,10 +151,10 @@ export default function ClientasPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-12">
-            <div className="w-20 h-20 bg-[#F3EDF9] rounded-full mx-auto mb-4 flex items-center justify-center">
-              <Users size={32} className="text-[#C4A0E8]" />
+            <div className="w-20 h-20 bg-[#EEF5ED] rounded-full mx-auto mb-4 flex items-center justify-center">
+              <Users size={32} className="text-[#90B98A]" />
             </div>
-            <p className="text-base font-bold text-[#666666]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+            <p className="text-base font-bold text-[#666666]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
               {search || filterRizo !== 'todas' ? 'Sin resultados' : 'Aún no tienes clientas'}
             </p>
             <p className="text-sm text-[#999999] mt-1 mb-5">
@@ -173,7 +174,7 @@ export default function ClientasPage() {
           </div>
         )}
       </main>
-      <Footer />
+      <BottomNav />
     </div>
   );
 }

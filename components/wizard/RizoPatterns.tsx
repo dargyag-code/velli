@@ -2,6 +2,33 @@ import React from 'react';
 
 // SVG patterns for each curl type
 const patterns: Record<string, React.ReactNode> = {
+  '1A': (
+    <svg viewBox="0 0 80 40" fill="none" className="w-16 h-8">
+      <line x1="5" y1="20" x2="75" y2="20" stroke="#64748B" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  ),
+  '1B': (
+    <svg viewBox="0 0 80 40" fill="none" className="w-16 h-8">
+      <path
+        d="M5 20 Q25 17 40 20 Q55 23 75 20"
+        stroke="#64748B"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        fill="none"
+      />
+    </svg>
+  ),
+  '1C': (
+    <svg viewBox="0 0 80 40" fill="none" className="w-16 h-8">
+      <path
+        d="M5 19 Q20 17 35 20 Q50 24 65 20 Q72 18 75 21"
+        stroke="#64748B"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        fill="none"
+      />
+    </svg>
+  ),
   '2A': (
     <svg viewBox="0 0 80 40" fill="none" className="w-16 h-8">
       <path
@@ -100,21 +127,21 @@ const patterns: Record<string, React.ReactNode> = {
     <svg viewBox="0 0 80 50" fill="none" className="w-16 h-10">
       <path
         d="M10 10 Q20 5 20 15 Q20 25 10 25 Q20 25 20 35 Q20 45 10 45"
-        stroke="#C9A84C"
+        stroke="#C9956B"
         strokeWidth="2.5"
         strokeLinecap="round"
         fill="none"
       />
       <path
         d="M35 10 Q45 5 45 15 Q45 25 35 25 Q45 25 45 35 Q45 45 35 45"
-        stroke="#C9A84C"
+        stroke="#C9956B"
         strokeWidth="2.5"
         strokeLinecap="round"
         fill="none"
       />
       <path
         d="M60 10 Q70 5 70 15 Q70 25 60 25 Q70 25 70 35 Q70 45 60 45"
-        stroke="#C9A84C"
+        stroke="#C9956B"
         strokeWidth="2.5"
         strokeLinecap="round"
         fill="none"
@@ -125,7 +152,7 @@ const patterns: Record<string, React.ReactNode> = {
     <svg viewBox="0 0 80 50" fill="none" className="w-16 h-10">
       <polyline
         points="8,10 18,5 18,20 28,15 28,30 18,25 18,40 8,35"
-        stroke="#C9A84C"
+        stroke="#C9956B"
         strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -133,7 +160,7 @@ const patterns: Record<string, React.ReactNode> = {
       />
       <polyline
         points="40,10 50,5 50,20 60,15 60,30 50,25 50,40 40,35"
-        stroke="#C9A84C"
+        stroke="#C9956B"
         strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -145,7 +172,7 @@ const patterns: Record<string, React.ReactNode> = {
     <svg viewBox="0 0 80 50" fill="none" className="w-16 h-10">
       <polyline
         points="5,10 12,5 12,15 19,10 19,20 12,15 12,25 19,20 19,30 12,25 12,35 5,30"
-        stroke="#C9A84C"
+        stroke="#C9956B"
         strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -153,7 +180,7 @@ const patterns: Record<string, React.ReactNode> = {
       />
       <polyline
         points="30,10 37,5 37,15 44,10 44,20 37,15 37,25 44,20 44,30 37,25 37,35 30,30"
-        stroke="#C9A84C"
+        stroke="#C9956B"
         strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -161,7 +188,7 @@ const patterns: Record<string, React.ReactNode> = {
       />
       <polyline
         points="55,10 62,5 62,15 69,10 69,20 62,15 62,25 69,20 69,30 62,25 62,35 55,30"
-        stroke="#C9A84C"
+        stroke="#C9956B"
         strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -172,6 +199,15 @@ const patterns: Record<string, React.ReactNode> = {
 };
 
 export const rizoTypes = [
+  {
+    group: 'LISO',
+    groupColor: '#64748B',
+    types: [
+      { id: '1A', desc: 'Completamente liso, sin cuerpo' },
+      { id: '1B', desc: 'Liso con leve cuerpo y volumen' },
+      { id: '1C', desc: 'Liso con ondulación sutil en las puntas' },
+    ],
+  },
   {
     group: 'ONDULADO',
     groupColor: '#3B82F6',
@@ -192,7 +228,7 @@ export const rizoTypes = [
   },
   {
     group: 'AFRO',
-    groupColor: '#C9A84C',
+    groupColor: '#C9956B',
     types: [
       { id: '4A', desc: 'Espiral muy apretada en forma de S pequeña' },
       { id: '4B', desc: 'Zigzag apretado, patrón en Z' },

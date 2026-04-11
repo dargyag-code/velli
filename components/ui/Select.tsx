@@ -17,7 +17,7 @@ export default function Select({ label, error, hint, options, placeholder, class
         <label
           htmlFor={selectId}
           className="text-sm font-semibold text-[#2D2D2D]"
-          style={{ fontFamily: "'Montserrat', sans-serif" }}
+          style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
         >
           {label}
           {props.required && <span className="text-[#8E2D2D] ml-1">*</span>}

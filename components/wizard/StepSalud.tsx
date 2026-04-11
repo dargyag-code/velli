@@ -24,7 +24,7 @@ export default function StepSalud({ data, onChange, errors }: Props) {
       <div>
         <h2
           className="text-lg font-bold text-[#2D2D2D] mb-1"
-          style={{ fontFamily: "'Montserrat', sans-serif" }}
+          style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
         >
           Información de salud
         </h2>
@@ -33,9 +33,9 @@ export default function StepSalud({ data, onChange, errors }: Props) {
         </p>
       </div>
 
-      <div className="bg-[#FDF8EE] rounded-2xl p-4 flex items-start gap-3">
-        <AlertTriangle size={18} className="text-[#C9A84C] flex-shrink-0 mt-0.5" />
-        <p className="text-xs text-[#9A7A2A]">
+      <div className="bg-[#FBF4EC] rounded-2xl p-4 flex items-start gap-3">
+        <AlertTriangle size={18} className="text-[#C9956B] flex-shrink-0 mt-0.5" />
+        <p className="text-xs text-[#9A6A3A]">
           Esta información es confidencial y solo se usa para adaptar el tratamiento capilar de forma segura.
         </p>
       </div>
@@ -72,7 +72,7 @@ export default function StepSalud({ data, onChange, errors }: Props) {
         placeholder="Ej: anticonceptivos, antidepresivos, isotretinoína..."
       />
 
-      <div className="bg-[#F3EDF9] rounded-2xl p-4">
+      <div className="bg-[#EEF5ED] rounded-2xl p-4">
         <Toggle
           label="¿Embarazo o lactancia?"
           hint="Importante para evitar ciertos ingredientes"
@@ -80,8 +80,8 @@ export default function StepSalud({ data, onChange, errors }: Props) {
           onChange={(v) => onChange({ embarazo: v })}
         />
         {data.embarazo && (
-          <div className="mt-3 p-3 bg-white rounded-xl border border-[#C4A0E8]">
-            <p className="text-xs text-[#5B2D8E] font-semibold" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+          <div className="mt-3 p-3 bg-white rounded-xl border border-[#90B98A]">
+            <p className="text-xs text-[#2D5A27] font-semibold" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
               ⚠️ Importante:
             </p>
             <p className="text-xs text-[#666666] mt-1">

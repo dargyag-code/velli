@@ -2,9 +2,9 @@ import jsPDF from 'jspdf';
 import { Clienta, Consulta } from './types';
 import { formatDate, getTratamientoBg, getTratamientoTextColor } from './utils';
 
-const PURPLE = '#5B2D8E';
-const GOLD = '#C9A84C';
-const LIGHT_PURPLE = '#F3EDF9';
+const GREEN = '#2D5A27';
+const AMBER = '#C9956B';
+const LIGHT_GREEN = '#EEF5ED';
 const TEXT_DARK = '#2D2D2D';
 const TEXT_GRAY = '#666666';
 
@@ -45,27 +45,27 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
     doc.setFontSize(8);
     setTextColor('#999999');
     doc.setFont('helvetica', 'italic');
-    doc.text('KEYSHOP • Always Curly • by Keila Moreno', pageW / 2, 287, { align: 'center' });
+    doc.text('Velli Pro • Inteligencia capilar a tu alcance', pageW / 2, 287, { align: 'center' });
   };
 
   // ── Header ──
-  setFill(PURPLE);
+  setFill(GREEN);
   doc.rect(0, 0, pageW, 35, 'F');
 
   doc.setFontSize(20);
   setTextColor('#FFFFFF');
   doc.setFont('helvetica', 'bold');
-  doc.text('KEYSHOP', margin, 15);
+  doc.text('Velli', margin, 15);
 
   doc.setFontSize(10);
-  setTextColor(GOLD);
+  setTextColor(AMBER);
   doc.setFont('helvetica', 'bold');
-  doc.text('ALWAYS CURLY', margin, 22);
+  doc.text('INTELIGENCIA CAPILAR', margin, 22);
 
   doc.setFontSize(8);
-  setTextColor('#E0D0F0');
+  setTextColor('#B8D4B5');
   doc.setFont('helvetica', 'italic');
-  doc.text('by Keila Moreno', margin, 28);
+  doc.text('Inteligencia capilar profesional', margin, 28);
 
   // Date
   doc.setFontSize(9);
@@ -79,7 +79,7 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
 
   // Client name
   doc.setFontSize(16);
-  setTextColor(PURPLE);
+  setTextColor(GREEN);
   doc.setFont('helvetica', 'bold');
   doc.text(clienta.nombre, margin, y);
   y += 6;
@@ -95,17 +95,17 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
   y += 8;
 
   // Divider
-  setFill(GOLD);
+  setFill(AMBER);
   doc.rect(margin, y, pageW - margin * 2, 1, 'F');
   y += 6;
 
   // ── Diagnóstico Summary ──
   const sectionTitle = (title: string) => {
     checkNewPage(15);
-    setFill(LIGHT_PURPLE);
+    setFill(LIGHT_GREEN);
     doc.rect(margin, y - 4, pageW - margin * 2, 10, 'F');
     doc.setFontSize(11);
-    setTextColor(PURPLE);
+    setTextColor(GREEN);
     doc.setFont('helvetica', 'bold');
     doc.text(title, margin + 2, y + 2);
     y += 10;
@@ -139,22 +139,22 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
   // Badges row
   const badges = [
     { label: 'Tipo de Rizo', value: consulta.tipoRizoPrincipal },
-    { label: 'Porosidad', value: consulta.porosidad },
-    { label: 'Densidad', value: consulta.densidad },
-    { label: 'Grosor', value: consulta.grosor },
-    { label: 'Elasticidad', value: consulta.elasticidad },
+    { label: 'Porosidad', value: consulta.porosidad || '—' },
+    { label: 'Densidad', value: consulta.densidad || '—' },
+    { label: 'Grosor', value: consulta.grosor || '—' },
+    { label: 'Elasticidad', value: consulta.elasticidad || '—' },
   ];
 
   const badgeW = (pageW - margin * 2) / badges.length;
   badges.forEach((b, i) => {
-    setFill('#F3EDF9');
+    setFill('#EEF5ED');
     doc.roundedRect(margin + i * badgeW, y, badgeW - 2, 14, 2, 2, 'F');
     doc.setFontSize(7);
     setTextColor(TEXT_GRAY);
     doc.setFont('helvetica', 'normal');
     doc.text(b.label, margin + i * badgeW + badgeW / 2 - 1, y + 4, { align: 'center' });
     doc.setFontSize(9);
-    setTextColor(PURPLE);
+    setTextColor(GREEN);
     doc.setFont('helvetica', 'bold');
     doc.text(b.value.charAt(0).toUpperCase() + b.value.slice(1), margin + i * badgeW + badgeW / 2 - 1, y + 10, {
       align: 'center',
@@ -191,7 +191,7 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
   doc.setFontSize(10);
   setTextColor(balanceText);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Balance: ${balanceLabels[consulta.balanceHP] || consulta.balanceHP}`, pageW / 2, y + 7, {
+  doc.text(`Balance: ${(consulta.balanceHP ? balanceLabels[consulta.balanceHP] : undefined) || consulta.balanceHP || '—'}`, pageW / 2, y + 7, {
     align: 'center',
   });
   y += 15;
@@ -260,10 +260,10 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
   // Section 4: Técnica
   sectionTitle('4. Técnica de Definición');
 
-  setFill('#FDF8EE');
+  setFill('#FBF4EC');
   doc.roundedRect(margin, y, pageW - margin * 2, 8, 2, 2, 'F');
   doc.setFontSize(10);
-  setTextColor(GOLD);
+  setTextColor(AMBER);
   doc.setFont('helvetica', 'bold');
   doc.text(consulta.resultado.tecnicaDefinicion, margin + 3, y + 5);
   y += 12;
@@ -286,7 +286,7 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
   const routineBlock = (title: string, items: string[]) => {
     checkNewPage(10 + items.length * 6);
     doc.setFontSize(9);
-    setTextColor(PURPLE);
+    setTextColor(GREEN);
     doc.setFont('helvetica', 'bold');
     doc.text(title, margin + 2, y);
     y += 5;
@@ -317,14 +317,14 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
   checkNewPage(25);
   sectionTitle('8. Próxima Cita');
 
-  setFill(LIGHT_PURPLE);
+  setFill(LIGHT_GREEN);
   doc.roundedRect(margin, y, pageW - margin * 2, 16, 3, 3, 'F');
   doc.setFontSize(9);
   setTextColor(TEXT_GRAY);
   doc.setFont('helvetica', 'normal');
   doc.text('Intervalo recomendado:', margin + 4, y + 7);
   doc.setFontSize(10);
-  setTextColor(PURPLE);
+  setTextColor(GREEN);
   doc.setFont('helvetica', 'bold');
   doc.text(consulta.resultado.intervaloSugerido, margin + 4, y + 13);
 
@@ -334,7 +334,7 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
     doc.setFont('helvetica', 'normal');
     doc.text('Fecha agendada:', pageW / 2 + 4, y + 7);
     doc.setFontSize(10);
-    setTextColor(PURPLE);
+    setTextColor(GREEN);
     doc.setFont('helvetica', 'bold');
     doc.text(formatDate(consulta.proximaCita), pageW / 2 + 4, y + 13);
   }
@@ -342,5 +342,5 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
 
   addFooter();
 
-  doc.save(`KEYSHOP-${clienta.nombre.replace(/\s+/g, '_')}-${consulta.fecha}.pdf`);
+  doc.save(`Velli-${clienta.nombre.replace(/\s+/g, '_')}-${consulta.fecha}.pdf`);
 }

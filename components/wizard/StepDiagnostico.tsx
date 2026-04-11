@@ -117,10 +117,10 @@ function HelpTooltip({ text, open, onClose }: { text: string; open: boolean; onC
           <X size={16} className="text-gray-500" />
         </button>
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 bg-[#F3EDF9] rounded-full flex items-center justify-center">
-            <HelpCircle size={18} className="text-[#5B2D8E]" />
+          <div className="w-8 h-8 bg-[#EEF5ED] rounded-full flex items-center justify-center">
+            <HelpCircle size={18} className="text-[#2D5A27]" />
           </div>
-          <p className="font-bold text-[#2D2D2D] text-sm" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+          <p className="font-bold text-[#2D2D2D] text-sm" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             ¿Cómo hacer la prueba?
           </p>
         </div>
@@ -138,7 +138,7 @@ export default function StepDiagnostico({ data, onChange, errors }: Props) {
       <div>
         <h2
           className="text-lg font-bold text-[#2D2D2D] mb-1"
-          style={{ fontFamily: "'Montserrat', sans-serif" }}
+          style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
         >
           Diagnóstico técnico
         </h2>
@@ -154,16 +154,16 @@ export default function StepDiagnostico({ data, onChange, errors }: Props) {
             <div className="flex items-center gap-2">
               <h3
                 className="text-sm font-bold text-[#2D2D2D]"
-                style={{ fontFamily: "'Montserrat', sans-serif" }}
+                style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
               >
                 {test.title}
               </h3>
               <button
                 type="button"
                 onClick={() => setOpenHelp(test.key)}
-                className="p-1 rounded-full bg-[#F3EDF9] hover:bg-[#E8D9F5] transition-colors"
+                className="p-1 rounded-full bg-[#EEF5ED] hover:bg-[#E8D9F5] transition-colors"
               >
-                <HelpCircle size={15} className="text-[#5B2D8E]" />
+                <HelpCircle size={15} className="text-[#2D5A27]" />
               </button>
               {errors[test.key] && (
                 <span className="text-xs text-[#8E2D2D] ml-auto">{errors[test.key]}</span>
@@ -184,7 +184,7 @@ export default function StepDiagnostico({ data, onChange, errors }: Props) {
                       text-left p-3.5 rounded-2xl border-2 transition-all duration-200
                       ${isSelected
                         ? 'shadow-md scale-[1.01]'
-                        : 'border-[#E5E5E5] bg-white hover:border-[#C4A0E8] hover:bg-[#FAF6FF]'
+                        : 'border-[#E5E5E5] bg-white hover:border-[#90B98A] hover:bg-[#F0F5EF]'
                       }
                     `}
                     style={
@@ -208,7 +208,7 @@ export default function StepDiagnostico({ data, onChange, errors }: Props) {
                         className="text-sm font-bold"
                         style={{
                           color: isSelected ? colors.text : '#2D2D2D',
-                          fontFamily: "'Montserrat', sans-serif",
+                          fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif",
                         }}
                       >
                         {opt.label}

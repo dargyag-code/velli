@@ -35,7 +35,7 @@ const CronogramaCard = ({ semana, tratamiento }: { semana: string; tratamiento: 
       className="flex-1 rounded-2xl p-3 text-center border-2"
       style={{ backgroundColor: bg, borderColor: color + '50' }}
     >
-      <p className="text-xs font-bold text-[#999999] mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+      <p className="text-xs font-bold text-[#999999] mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
         {semana}
       </p>
       <div
@@ -44,7 +44,7 @@ const CronogramaCard = ({ semana, tratamiento }: { semana: string; tratamiento: 
       >
         <TratamientoIcon t={tratamiento} />
       </div>
-      <p className="text-xs font-bold leading-tight" style={{ color, fontFamily: "'Montserrat', sans-serif" }}>
+      <p className="text-xs font-bold leading-tight" style={{ color, fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
         {tratamiento}
       </p>
     </div>
@@ -53,12 +53,12 @@ const CronogramaCard = ({ semana, tratamiento }: { semana: string; tratamiento: 
 
 const SectionTitle = ({ icon, title }: { icon: React.ReactNode; title: string }) => (
   <div className="flex items-center gap-2 mb-3">
-    <div className="w-8 h-8 bg-[#F3EDF9] rounded-xl flex items-center justify-center text-[#5B2D8E]">
+    <div className="w-8 h-8 bg-[#EEF5ED] rounded-xl flex items-center justify-center text-[#2D5A27]">
       {icon}
     </div>
     <h3
       className="text-base font-bold text-[#2D2D2D]"
-      style={{ fontFamily: "'Montserrat', sans-serif" }}
+      style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
     >
       {title}
     </h3>
@@ -81,13 +81,13 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
   const handleWhatsApp = () => {
     const nombre = clienta?.nombre || 'clienta';
     const msg = encodeURIComponent(
-      `Hola ${nombre}! 🌸 Aquí tu resumen de diagnóstico capilar de KEYSHOP — Always Curly:\n\n` +
-      `✨ Tipo de rizo: ${getRizoLabel(consulta.tipoRizoPrincipal)}\n` +
+      `Hola ${nombre}! 🌸 Aquí tu resumen de diagnóstico capilar de Velli — Inteligencia capilar a tu alcance:\n\n` +
+      `✨ Tipo de cabello: ${getRizoLabel(consulta.tipoRizoPrincipal)}\n` +
       `💧 Porosidad: ${consulta.porosidad}\n` +
       `⚖️ Balance: ${consulta.balanceHP}\n\n` +
       `🎯 Tratamiento: ${resultado.tratamientoPrincipal}\n\n` +
       `📅 Próxima cita sugerida: ${formatDate(proximaCita)}\n\n` +
-      `Con amor por tu cabello, Keila — KEYSHOP Always Curly 💜`
+      `Con amor por tu cabello — Velli Pro, Inteligencia capilar a tu alcance 💚`
     );
     const tel = clienta?.telefono?.replace(/\D/g, '') || '';
     window.open(`https://wa.me/${tel}?text=${msg}`, '_blank');
@@ -96,23 +96,23 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
   return (
     <div className="flex flex-col gap-5 step-enter">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#5B2D8E] to-[#7B4DB0] rounded-3xl p-5 text-white">
+      <div className="bg-gradient-to-br from-[#2D5A27] to-[#3D7A35] rounded-3xl p-5 text-white">
         <div className="flex items-center gap-2 mb-3">
-          <Sparkles size={18} className="text-[#C9A84C]" />
-          <span className="text-sm font-semibold text-[#E0D0F0]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+          <Sparkles size={18} className="text-[#C9956B]" />
+          <span className="text-sm font-semibold text-[#B8D4B5]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             Plan de tratamiento generado
           </span>
         </div>
         {clienta && (
-          <p className="text-lg font-bold mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+          <p className="text-lg font-bold mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             {clienta.nombre}
           </p>
         )}
-        <p className="text-sm text-[#E0D0F0]">{formatDate(consulta.fecha)}</p>
+        <p className="text-sm text-[#B8D4B5]">{formatDate(consulta.fecha)}</p>
       </div>
 
       {/* 1. Resumen del diagnóstico */}
-      <div className="bg-[#F3EDF9] rounded-3xl p-4">
+      <div className="bg-[#EEF5ED] rounded-3xl p-4">
         <SectionTitle icon={<Star size={16} />} title="Diagnóstico" />
 
         {/* Rizo type */}
@@ -121,7 +121,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
             <RizoPattern tipo={consulta.tipoRizoPrincipal} />
           </div>
           <div>
-            <p className="text-2xl font-extrabold text-[#5B2D8E]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+            <p className="text-2xl font-extrabold text-[#2D5A27]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
               {consulta.tipoRizoPrincipal}
             </p>
             <p className="text-sm text-[#666666]">{getRizoLabel(consulta.tipoRizoPrincipal)}</p>
@@ -137,10 +137,10 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
             { label: 'Elasticidad', value: consulta.elasticidad },
           ].map(({ label, value }) => (
             <div key={label} className="bg-white rounded-xl p-2.5 text-center shadow-sm">
-              <p className="text-xs text-[#999999] mb-0.5" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              <p className="text-xs text-[#999999] mb-0.5" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
                 {label}
               </p>
-              <p className="text-sm font-bold text-[#5B2D8E] capitalize" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              <p className="text-sm font-bold text-[#2D5A27] capitalize" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
                 {value}
               </p>
             </div>
@@ -158,7 +158,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
               ? 'bg-green-100 text-green-700'
               : 'bg-purple-100 text-purple-700'
           }`}
-          style={{ fontFamily: "'Montserrat', sans-serif" }}
+          style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
         >
           Tu cabello necesita:{' '}
           {consulta.balanceHP === 'hidratacion'
@@ -172,14 +172,14 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
 
         {consulta.problemas.length > 0 && (
           <div className="mt-3">
-            <p className="text-xs font-semibold text-[#666666] mb-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+            <p className="text-xs font-semibold text-[#666666] mb-2" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
               Problemas detectados:
             </p>
             <div className="flex flex-wrap gap-1.5">
               {consulta.problemas.map((p) => (
                 <span
                   key={p}
-                  className="text-xs bg-white text-[#5B2D8E] px-2 py-1 rounded-full border border-[#C4A0E8]"
+                  className="text-xs bg-white text-[#2D5A27] px-2 py-1 rounded-full border border-[#90B98A]"
                 >
                   {p}
                 </span>
@@ -190,7 +190,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
       </div>
 
       {/* 2. Tratamiento */}
-      <div className="bg-white rounded-3xl p-4 border-2 border-[#C9A84C] shadow-sm">
+      <div className="bg-white rounded-3xl p-4 border-2 border-[#C9956B] shadow-sm">
         <SectionTitle icon={<Zap size={16} />} title="Tratamiento recomendado" />
 
         <div
@@ -198,7 +198,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
           style={{
             backgroundColor: getTratamientoBg(resultado.tratamientoPrincipal),
             color: getTratamientoTextColor(resultado.tratamientoPrincipal),
-            fontFamily: "'Montserrat', sans-serif",
+            fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif",
           }}
         >
           {resultado.tratamientoPrincipal}
@@ -209,13 +209,13 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
         </p>
 
         {resultado.tratamientosAdicionales.length > 0 && (
-          <div className="bg-[#FDF8EE] rounded-xl p-3">
-            <p className="text-xs font-bold text-[#9A7A2A] mb-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+          <div className="bg-[#FBF4EC] rounded-xl p-3">
+            <p className="text-xs font-bold text-[#9A6A3A] mb-2" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
               Tratamientos adicionales:
             </p>
             {resultado.tratamientosAdicionales.map((t) => (
               <div key={t} className="flex items-start gap-2 mb-1.5">
-                <Check size={14} className="text-[#C9A84C] flex-shrink-0 mt-0.5" />
+                <Check size={14} className="text-[#C9956B] flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-[#666666]">{t}</p>
               </div>
             ))}
@@ -238,8 +238,8 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
       <div className="bg-white rounded-3xl p-4 border border-[#E5E5E5] shadow-sm">
         <SectionTitle icon={<Sparkles size={16} />} title="Técnica de definición" />
 
-        <div className="bg-[#FDF8EE] rounded-2xl p-3 mb-3">
-          <p className="text-base font-bold text-[#C9A84C]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+        <div className="bg-[#FBF4EC] rounded-2xl p-3 mb-3">
+          <p className="text-base font-bold text-[#C9956B]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             {resultado.tecnicaDefinicion}
           </p>
         </div>
@@ -261,7 +261,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
         <SectionTitle icon={<Leaf size={16} />} title="Rutina para casa" />
 
         {[
-          { title: 'Día de lavado (Wash day)', items: resultado.cuidadoCasa.diaLavado, color: '#5B2D8E', bg: '#F3EDF9' },
+          { title: 'Día de lavado (Wash day)', items: resultado.cuidadoCasa.diaLavado, color: '#2D5A27', bg: '#EEF5ED' },
           { title: 'Mantenimiento nocturno', items: resultado.cuidadoCasa.nocturno, color: '#3B82F6', bg: '#EFF6FF' },
           { title: 'Refresh día 2-3', items: resultado.cuidadoCasa.refresh, color: '#2D8E5B', bg: '#F0FDF4' },
         ].map(({ title, items, color, bg }) => (
@@ -272,7 +272,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
             >
               <p
                 className="text-xs font-bold"
-                style={{ color, fontFamily: "'Montserrat', sans-serif" }}
+                style={{ color, fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
               >
                 {title}
               </p>
@@ -282,7 +282,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
                 <div key={i} className="flex items-start gap-2">
                   <span
                     className="text-xs font-bold flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-white mt-0.5"
-                    style={{ backgroundColor: color, fontSize: '9px', fontFamily: "'Montserrat', sans-serif" }}
+                    style={{ backgroundColor: color, fontSize: '9px', fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
                   >
                     {i + 1}
                   </span>
@@ -295,7 +295,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
 
         {/* Evitar */}
         <div className="bg-red-50 rounded-2xl p-3">
-          <p className="text-xs font-bold text-[#8E2D2D] mb-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+          <p className="text-xs font-bold text-[#8E2D2D] mb-2" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             ❌ Evitar:
           </p>
           {resultado.cuidadoCasa.evitar.map((item, i) => (
@@ -312,8 +312,8 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
         <SectionTitle icon={<Star size={16} />} title="Productos Ponto Hair" />
         <div className="flex flex-col gap-2">
           {resultado.productosPonto.map((p, i) => (
-            <div key={i} className="flex items-start gap-3 p-2.5 bg-[#FDF8EE] rounded-xl">
-              <div className="w-6 h-6 bg-[#C9A84C] rounded-full flex items-center justify-center flex-shrink-0">
+            <div key={i} className="flex items-start gap-3 p-2.5 bg-[#FBF4EC] rounded-xl">
+              <div className="w-6 h-6 bg-[#C9956B] rounded-full flex items-center justify-center flex-shrink-0">
                 <Check size={12} className="text-white" strokeWidth={3} />
               </div>
               <p className="text-xs text-[#444444] leading-snug">{p}</p>
@@ -338,14 +338,14 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
       )}
 
       {/* 8. Próxima cita */}
-      <div className="bg-white rounded-3xl p-4 border-2 border-[#5B2D8E] shadow-sm">
+      <div className="bg-white rounded-3xl p-4 border-2 border-[#2D5A27] shadow-sm">
         <SectionTitle icon={<Clock size={16} />} title="Próxima cita" />
 
-        <div className="bg-[#F3EDF9] rounded-2xl p-3 mb-4">
-          <p className="text-xs text-[#999999] mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+        <div className="bg-[#EEF5ED] rounded-2xl p-3 mb-4">
+          <p className="text-xs text-[#999999] mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             Intervalo recomendado:
           </p>
-          <p className="text-sm font-bold text-[#5B2D8E]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+          <p className="text-sm font-bold text-[#2D5A27]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             {resultado.intervaloSugerido}
           </p>
         </div>
@@ -354,7 +354,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
           <div>
             <label
               className="text-xs font-semibold text-[#2D2D2D] block mb-1.5"
-              style={{ fontFamily: "'Montserrat', sans-serif" }}
+              style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
             >
               Fecha de próxima cita:
             </label>
@@ -369,7 +369,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
           <div>
             <label
               className="text-xs font-semibold text-[#2D2D2D] block mb-1.5"
-              style={{ fontFamily: "'Montserrat', sans-serif" }}
+              style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
             >
               Notas de la estilista:
             </label>
@@ -392,7 +392,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
               <Check size={18} className="text-white" />
             </div>
             <div>
-              <p className="font-bold text-green-700 text-sm" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              <p className="font-bold text-green-700 text-sm" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
                 ¡Consulta guardada!
               </p>
               <p className="text-xs text-green-600">Los datos se guardaron correctamente</p>

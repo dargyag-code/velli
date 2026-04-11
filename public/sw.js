@@ -1,4 +1,4 @@
-const CACHE_NAME = 'keyshop-v1';
+const CACHE_NAME = 'velli-v1';
 const STATIC_ASSETS = [
   '/',
   '/clientas',

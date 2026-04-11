@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Users, CalendarDays, TrendingUp, Clock, Plus, ChevronRight } from 'lucide-react';
 import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
+import BottomNav from '@/components/layout/BottomNav';
 import StatCard from '@/components/dashboard/StatCard';
 import ClientaCard from '@/components/dashboard/ClientaCard';
 import SearchBar from '@/components/dashboard/SearchBar';
@@ -55,9 +55,9 @@ export default function Dashboard() {
   const displayClientas = search ? searchResults : recentClientas;
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="min-h-screen bg-[#F5F0E8]">
       <Header />
-      <main className="max-w-2xl mx-auto px-4 py-5 pb-safe">
+      <main className="max-w-2xl mx-auto px-4 py-5 pb-nav">
 
         {/* Stats */}
         {loading ? (
@@ -88,13 +88,13 @@ export default function Dashboard() {
 
         {/* CTA */}
         <Link href="/diagnostico">
-          <div className="bg-gradient-to-r from-[#5B2D8E] to-[#7B4DB0] rounded-3xl p-5 mb-5 cursor-pointer hover:shadow-lg transition-all duration-300">
+          <div className="bg-gradient-to-r from-[#2D5A27] to-[#3D7A35] rounded-3xl p-5 mb-5 cursor-pointer hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white text-base font-bold mb-0.5" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                <p className="text-white text-base font-bold mb-0.5" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
                   Nueva consulta
                 </p>
-                <p className="text-[#E0D0F0] text-xs">Diagnóstico completo + plan personalizado</p>
+                <p className="text-[#B8D4B5] text-xs">Diagnóstico completo + plan personalizado</p>
               </div>
               <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
                 <Plus size={24} className="text-white" />
@@ -109,11 +109,11 @@ export default function Dashboard() {
         {/* Clientas */}
         <div className="mt-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-[#2D2D2D]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+            <h2 className="text-sm font-bold text-[#2D2D2D]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
               {search ? `Resultados (${searchResults.length})` : 'Clientas recientes'}
             </h2>
             {!search && (
-              <Link href="/clientas" className="text-xs text-[#5B2D8E] font-semibold hover:underline flex items-center gap-1">
+              <Link href="/clientas" className="text-xs text-[#2D5A27] font-semibold hover:underline flex items-center gap-1">
                 Ver todas <ChevronRight size={14} />
               </Link>
             )}
@@ -127,10 +127,10 @@ export default function Dashboard() {
             </div>
           ) : displayClientas.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-20 h-20 bg-[#F3EDF9] rounded-full mx-auto mb-4 flex items-center justify-center">
-                <Users size={32} className="text-[#C4A0E8]" />
+              <div className="w-20 h-20 bg-[#EEF5ED] rounded-full mx-auto mb-4 flex items-center justify-center">
+                <Users size={32} className="text-[#90B98A]" />
               </div>
-              <p className="text-base font-bold text-[#666666] mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              <p className="text-base font-bold text-[#666666] mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
                 {search ? 'Sin resultados' : 'Aún no tienes clientas'}
               </p>
               <p className="text-sm text-[#999999] mb-5">
@@ -149,7 +149,7 @@ export default function Dashboard() {
           )}
         </div>
       </main>
-      <Footer />
+      <BottomNav />
     </div>
   );
 }

@@ -14,15 +14,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<Variant, string> = {
   primary:
-    'bg-[#5B2D8E] text-white hover:bg-[#7B4DB0] active:bg-[#4A2275] shadow-sm hover:shadow-md',
+    'bg-[#2D5A27] text-white hover:bg-[#3D7A35] active:bg-[#4A2275] shadow-sm hover:shadow-md',
   secondary:
-    'bg-[#C9A84C] text-white hover:bg-[#D4B56A] active:bg-[#B8963A] shadow-sm',
+    'bg-[#C9956B] text-white hover:bg-[#D4A882] active:bg-[#B8963A] shadow-sm',
   ghost:
-    'bg-transparent text-[#5B2D8E] hover:bg-[#F3EDF9] active:bg-[#E8D9F5]',
+    'bg-transparent text-[#2D5A27] hover:bg-[#EEF5ED] active:bg-[#E8D9F5]',
   danger:
     'bg-[#8E2D2D] text-white hover:bg-[#A03333] active:bg-[#7A2626]',
   outline:
-    'bg-transparent border-2 border-[#5B2D8E] text-[#5B2D8E] hover:bg-[#F3EDF9]',
+    'bg-transparent border-2 border-[#2D5A27] text-[#2D5A27] hover:bg-[#EEF5ED]',
 };
 
 const sizeStyles: Record<Size, string> = {
@@ -55,7 +55,7 @@ export default function Button({
         ${fullWidth ? 'w-full' : ''}
         ${className}
       `}
-      style={{ fontFamily: "'Montserrat', sans-serif" }}
+      style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
       {...props}
     >
       {loading ? (

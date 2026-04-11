@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #5B2D8E;
-  --primary-light: #F3EDF9;
-  --primary-hover: #7B4DB0;
-  --secondary: #C9A84C;
-  --secondary-light: #FDF8EE;
-  --secondary-hover: #D4B56A;
-  --bg: #FAFAFA;
+  --primary: #2D5A27;
+  --primary-light: #EEF5ED;
+  --primary-hover: #3D7A35;
+  --secondary: #C9956B;
+  --secondary-light: #FBF4EC;
+  --secondary-hover: #D4A882;
+  --bg: #F5F0E8;
   --bg-card: #FFFFFF;
   --text-main: #2D2D2D;
   --text-secondary: #666666;
@@ -31,8 +31,13 @@ html, body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 600;
+  font-family: var(--font-dm-serif), 'DM Serif Display', serif;
+  font-weight: 400; /* DM Serif Display solo tiene weight 400 */
+}
+
+/* Clase utilitaria para fuente de marca en elementos inline */
+.font-brand {
+  font-family: var(--font-dm-serif), 'DM Serif Display', serif;
 }
 
 ::-webkit-scrollbar { width: 4px; }
@@ -46,7 +51,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 .card-hover:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(91, 45, 142, 0.12);
+  box-shadow: 0 8px 25px rgba(45, 90, 39, 0.12);
 }
 
 .selection-card {
@@ -56,7 +61,7 @@ h1, h2, h3, h4, h5, h6 {
 .selection-card.selected {
   border-color: var(--primary) !important;
   background-color: var(--primary-light) !important;
-  box-shadow: 0 0 0 3px rgba(91, 45, 142, 0.15);
+  box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.15);
 }
 
 @keyframes slideIn {
@@ -75,9 +80,28 @@ h1, h2, h3, h4, h5, h6 {
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--primary) !important;
-  box-shadow: 0 0 0 3px rgba(91, 45, 142, 0.1);
+  box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.1);
 }
 
 .pb-safe {
   padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+
+/* Páginas con bottom nav: deja espacio para la barra fija (56px) + safe area */
+.pb-nav {
+  padding-bottom: max(80px, calc(56px + env(safe-area-inset-bottom)));
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 0.25s ease forwards; }
+
+.loading-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
 }

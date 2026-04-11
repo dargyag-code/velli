@@ -1,12 +1,12 @@
 import Dexie, { Table } from 'dexie';
 import { Clienta, Consulta } from './types';
 
-class KeyshopDatabase extends Dexie {
+class VelliDatabase extends Dexie {
   clientas!: Table<Clienta>;
   consultas!: Table<Consulta>;
 
   constructor() {
-    super('KeyshopDB');
+    super('VelliDB');
     this.version(1).stores({
       clientas: 'id, nombre, fechaRegistro, ultimaVisita, tipoRizoPrincipal',
       consultas: 'id, clientaId, fecha, numeroConsulta',
@@ -14,7 +14,7 @@ class KeyshopDatabase extends Dexie {
   }
 }
 
-export const db = new KeyshopDatabase();
+export const db = new VelliDatabase();
 
 // ── Clientas ──
 export async function getAllClientas(): Promise<Clienta[]> {
@@ -96,6 +96,78 @@ export async function getMostFrequentTratamiento(): Promise<string> {
     counts[t] = (counts[t] || 0) + 1;
   }
   return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Sin datos';
+}
+
+// ── Agenda ────────────────────────────────────────────────────────────────
+
+export async function getUpcomingCitas(): Promise<
+  Array<{ consulta: Consulta; clienta: Clienta }>
+> {
+  const today = new Date().toISOString().split('T')[0];
+  const consultas = await db.consultas
+    .filter((c) => !!c.proximaCita && c.proximaCita >= today)
+    .toArray();
+  consultas.sort((a, b) => (a.proximaCita! < b.proximaCita! ? -1 : 1));
+
+  const pairs = await Promise.all(
+    consultas.map(async (c) => {
+      const clienta = await db.clientas.get(c.clientaId);
+      return clienta ? { consulta: c, clienta } : null;
+    })
+  );
+  return pairs.filter((p): p is { consulta: Consulta; clienta: Clienta } => p !== null);
+}
+
+export async function getPastCitas(limit = 20): Promise<
+  Array<{ consulta: Consulta; clienta: Clienta }>
+> {
+  const today = new Date().toISOString().split('T')[0];
+  const consultas = await db.consultas
+    .filter((c) => !!c.proximaCita && c.proximaCita < today)
+    .toArray();
+  consultas.sort((a, b) => (a.proximaCita! > b.proximaCita! ? -1 : 1));
+  const slice = consultas.slice(0, limit);
+
+  const pairs = await Promise.all(
+    slice.map(async (c) => {
+      const clienta = await db.clientas.get(c.clientaId);
+      return clienta ? { consulta: c, clienta } : null;
+    })
+  );
+  return pairs.filter((p): p is { consulta: Consulta; clienta: Clienta } => p !== null);
+}
+
+// ── Reportes ───────────────────────────────────────────────────────────────
+
+export async function getConsultasByMonth(): Promise<Record<string, number>> {
+  const consultas = await db.consultas.toArray();
+  const result: Record<string, number> = {};
+  for (const c of consultas) {
+    const month = c.fecha.substring(0, 7); // YYYY-MM
+    result[month] = (result[month] || 0) + 1;
+  }
+  return result;
+}
+
+export async function getRizoDistribution(): Promise<Record<string, number>> {
+  const clientas = await db.clientas.toArray();
+  const result: Record<string, number> = {};
+  for (const c of clientas) {
+    if (c.tipoRizoPrincipal) {
+      result[c.tipoRizoPrincipal] = (result[c.tipoRizoPrincipal] || 0) + 1;
+    }
+  }
+  return result;
+}
+
+export async function getTratamientosDistribution(): Promise<Record<string, number>> {
+  const consultas = await db.consultas.toArray();
+  const result: Record<string, number> = {};
+  for (const c of consultas) {
+    const t = c.resultado?.tratamientoPrincipal;
+    if (t) result[t] = (result[t] || 0) + 1;
+  }
+  return result;
 }
 
 export async function getNextCita(): Promise<{ nombre: string; fecha: string } | null> {

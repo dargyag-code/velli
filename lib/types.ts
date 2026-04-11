@@ -74,18 +74,18 @@ export interface Consulta {
   tiposSecundarios?: string[];
   zonasCambio?: string;
 
-  // Paso 3: Diagnóstico técnico
-  porosidad: 'baja' | 'media' | 'alta';
+  // Paso 3: Diagnóstico técnico (opcionales en modo express)
+  porosidad?: 'baja' | 'media' | 'alta';
   porosidadObs?: string;
-  densidad: 'baja' | 'media' | 'alta';
-  grosor: 'fino' | 'medio' | 'grueso';
-  elasticidad: 'baja' | 'media' | 'alta';
-  balanceHP: 'hidratacion' | 'nutricion' | 'proteina' | 'equilibrado';
+  densidad?: 'baja' | 'media' | 'alta';
+  grosor?: 'fino' | 'medio' | 'grueso';
+  elasticidad?: 'baja' | 'media' | 'alta';
+  balanceHP?: 'hidratacion' | 'nutricion' | 'proteina' | 'equilibrado';
 
-  // Paso 4: Cuero cabelludo y daño
+  // Paso 4: Cuero cabelludo y daño (opcionales en borrador)
   estadoCueroCabelludo: string[];
   obsCueroCabelludo?: string;
-  estadoPuntas: string;
+  estadoPuntas?: string;
   tipoDano: string[];
   lineaDemarcacion?: string;
 
@@ -103,9 +103,54 @@ export interface Consulta {
   satisfaccion?: 'muy_satisfecha' | 'satisfecha' | 'parcial' | 'necesita_ajustes';
   notasEstilista?: string;
   proximaCita?: string;
+
+  // Metadata de captura estandarizada
+  captureMetadata?: CaptureMetadata;
+
+  // Modo borrador (diagnóstico express sin detalles opcionales)
+  esBorrador?: boolean;
 }
 
-export type TipoRizo = '2A' | '2B' | '2C' | '3A' | '3B' | '3C' | '4A' | '4B' | '4C';
+export type TipoRizo = '1A' | '1B' | '1C' | '2A' | '2B' | '2C' | '3A' | '3B' | '3C' | '4A' | '4B' | '4C';
+
+// ── Captura estandarizada ──────────────────────────────────────────────────
+
+export type EstadoCabelloFoto = 'seco_natural' | 'humedo' | 'con_producto' | 'recien_lavado';
+export type AnguloCaptura = 'frontal' | 'lateral' | 'corona';
+
+export interface CaptureMetadata {
+  estadoCabello: EstadoCabelloFoto;
+  qualityScore: number;
+  qualityDesglose: {
+    luz: number;
+    distancia: number;
+    enfoque: number;
+    angulos: number;
+  };
+  fotos: Array<{
+    angulo: AnguloCaptura;
+    timestamp: string;
+    luminanciaPromedio: number;
+    sharpnessScore: number;
+    faceRatio: number;
+    resolucion: { width: number; height: number };
+    formato: 'webp' | 'jpeg';
+    flashActivo: boolean;
+    orientacion: 'portrait' | 'landscape';
+  }>;
+  dispositivo: {
+    userAgent: string;
+    platform: string;
+    screenWidth: number;
+    screenHeight: number;
+  };
+  ubicacion?: {
+    ciudad?: string;
+    pais?: string;
+    latApprox?: number;
+    lonApprox?: number;
+  };
+}
 
 export interface WizardData {
   // Paso 0
@@ -131,6 +176,7 @@ export interface WizardData {
   tipoRizoPrincipal: string;
   tiposSecundarios: string[];
   zonasCambio: string;
+  captureMetadata?: CaptureMetadata;
 
   // Paso 3
   porosidad: string;
