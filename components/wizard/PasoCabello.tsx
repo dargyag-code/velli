@@ -12,6 +12,7 @@ interface Props {
   onChange: (patch: Partial<WizardData>) => void;
   errors: Record<string, string>;
   onExpressReady?: () => void;
+  autoCamera?: boolean;
 }
 
 type Mode = 'choose' | 'camera' | 'form';
@@ -208,8 +209,8 @@ const ESTRES = [
 
 // ── Componente principal ─────────────────────────────────────────────────────
 
-export default function PasoCabello({ data, onChange, errors, onExpressReady }: Props) {
-  const [mode, setMode] = useState<Mode>('choose');
+export default function PasoCabello({ data, onChange, errors, onExpressReady, autoCamera }: Props) {
+  const [mode, setMode] = useState<Mode>(autoCamera ? 'camera' : 'choose');
   const [iaCampos, setIaCampos] = useState<IACampos>(new Set());
   const [expressReady, setExpressReady] = useState(false);
   const [showDetalle, setShowDetalle] = useState(false);

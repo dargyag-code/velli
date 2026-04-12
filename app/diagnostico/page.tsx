@@ -23,6 +23,7 @@ function WizardContent() {
   const router = useRouter();
   const clientaIdParam = searchParams.get('clientaId');
   const repeatFromParam = searchParams.get('repeatFrom');
+  const modeParam = searchParams.get('mode');
 
   const [paso, setPaso] = useState(0);
   // Iniciar siempre con WIZARD_INITIAL_DATA (igual en server y client).
@@ -301,6 +302,7 @@ function WizardContent() {
             onChange={update}
             errors={errors}
             onExpressReady={handleExpressReady}
+            autoCamera={modeParam === 'camera'}
           />
         )}
         {paso === 2 && consulta && (

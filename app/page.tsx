@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Users, CalendarDays, TrendingUp, Clock, Plus, ChevronRight, Sparkles } from 'lucide-react';
+import { Users, CalendarDays, TrendingUp, Clock, Plus, ChevronRight, Camera } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import StatCard from '@/components/dashboard/StatCard';
@@ -143,6 +143,40 @@ export default function Dashboard() {
                 </span>
               ))}
             </div>
+          </div>
+        </Link>
+
+        {/* Camera IA hero */}
+        <Link href="/diagnostico?mode=camera" className="block mb-3">
+          <div
+            className="flex items-center gap-4 active:scale-[0.98] transition-all duration-200 relative overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, #1A2E1A 0%, #2D5A27 100%)',
+              borderRadius: 16,
+              padding: '16px 20px',
+              boxShadow: '0 4px 16px rgba(26,46,26,0.28)',
+            }}
+          >
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'rgba(255,255,255,0.15)' }}
+            >
+              <Camera size={28} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="text-white text-base font-bold leading-tight" style={serif}>
+                Escanear cabello con IA
+              </p>
+              <p className="text-[#A8D0A3] text-xs mt-0.5">
+                Análisis automático en segundos
+              </p>
+            </div>
+            <span
+              className="flex-shrink-0 text-[10px] font-bold px-2.5 py-1.5 rounded-full"
+              style={{ background: 'rgba(255,255,255,0.18)', color: '#FFD700' }}
+            >
+              ✨ Rápido
+            </span>
           </div>
         </Link>
 

@@ -62,15 +62,22 @@ export default function Header({ showBack, title, rightAction }: HeaderProps) {
         <Link href="/" className="flex flex-col leading-none gap-0.5">
           <span
             className="text-2xl text-white tracking-tight"
-            style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+            style={{
+              fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif",
+              textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+            }}
           >
             Velli
           </span>
           <span
-            className="text-[9px] font-semibold text-[#A8D0A3] tracking-widest uppercase"
-            style={{ fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif", letterSpacing: '0.12em' }}
+            className="text-[9px] font-bold uppercase tracking-widest"
+            style={{
+              fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
+              letterSpacing: '0.14em',
+              color: '#C9956B',
+            }}
           >
-            Inteligencia capilar
+            Inteligencia Capilar
           </span>
         </Link>
 
