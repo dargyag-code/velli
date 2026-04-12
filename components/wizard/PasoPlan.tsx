@@ -1,5 +1,6 @@
 'use client';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Sparkles, Calendar, Check, Droplets, Leaf, Zap, Star,
   Clock, AlertCircle, FileText, Save, Camera, X as XIcon,
@@ -18,7 +19,7 @@ interface Props {
   consulta: Consulta;
   clienta: Clienta | null;
   wizardData: WizardData;
-  onSave: (proximaCita: string, notas: string, esBorrador: boolean, fotoAntes?: string, fotoDespues?: string) => Promise<void>;
+  onSave: (proximaCita: string, notas: string, esBorrador: boolean, fotoAntes?: string, fotoDespues?: string, estrellas?: number) => Promise<string>;
   saving: boolean;
 }
 
@@ -71,6 +72,7 @@ function hasDetallesCompletos(data: WizardData): boolean {
 }
 
 export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving }: Props) {
+  const router = useRouter();
   const { resultado } = consulta;
   const [proximaCita, setProximaCita] = useState(
     consulta.proximaCita || addWeeks(todayISO(), 4)
@@ -80,7 +82,8 @@ export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving
   const [fotoDespues, setFotoDespues] = useState<string | undefined>(consulta.fotoDespues);
   const fotoAntesRef = useRef<HTMLInputElement>(null);
   const fotoDespuesRef = useRef<HTMLInputElement>(null);
-  const [saved, setSaved] = useState<'express' | 'completo' | null>(null);
+  const [estrellas, setEstrellas] = useState<number>(0);
+  const [savedOverlay, setSavedOverlay] = useState<{ tipo: 'express' | 'completo'; clientaId: string } | null>(null);
 
   const handleFotoAntes = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -103,9 +106,17 @@ export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving
 
   const handleGuardar = async (esBorrador: boolean) => {
     vibracionConfirmacion();
-    await onSave(proximaCita, notas, esBorrador, fotoAntes, fotoDespues);
-    setSaved(esBorrador ? 'express' : 'completo');
+    const clientaId = await onSave(proximaCita, notas, esBorrador, fotoAntes, fotoDespues, estrellas > 0 ? estrellas as 1|2|3|4|5 : undefined);
+    setSavedOverlay({ tipo: esBorrador ? 'express' : 'completo', clientaId });
   };
+
+  useEffect(() => {
+    if (!savedOverlay) return;
+    const t = setTimeout(() => {
+      if (savedOverlay.clientaId) router.push(`/clientas/${savedOverlay.clientaId}`);
+    }, 2000);
+    return () => clearTimeout(t);
+  }, [savedOverlay, router]);
 
   return (
     <div className="flex flex-col gap-4 step-enter pb-6">
@@ -451,63 +462,107 @@ export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving
         />
       </div>
 
-      {/* Botones de guardar */}
-      {saved ? (
-        <div className="flex items-center justify-center gap-3 bg-green-50 border border-green-200 rounded-2xl p-4">
-          <div className="w-9 h-9 bg-green-500 rounded-full flex items-center justify-center success-bounce">
-            <Check size={18} className="text-white" />
+      {/* Satisfacción de la clienta */}
+      <div className="bg-white rounded-2xl p-4 border border-[#E5E5E5]">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-7 h-7 bg-[#FBF4EC] rounded-lg flex items-center justify-center text-[#C9956B]">
+            <Star size={14} />
           </div>
-          <div>
-            <p className="font-bold text-green-700 text-sm" style={serif}>
-              {saved === 'express' ? '¡Diagnóstico guardado como borrador!' : '¡Diagnóstico guardado!'}
-            </p>
-            <p className="text-xs text-green-600">
-              {saved === 'express' ? 'Puedes completar los detalles después.' : 'Los datos se guardaron correctamente.'}
-            </p>
-          </div>
+          <h3 className="text-sm font-bold text-[#2D2D2D]" style={serif}>¿Cómo quedó la clienta?</h3>
         </div>
-      ) : (
-        <div className="flex flex-col gap-2">
-          {/* Guardar completo */}
-          <button
-            type="button"
-            onClick={() => handleGuardar(false)}
-            disabled={saving}
-            className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-sm transition-all active:scale-[0.98] ${
-              tieneDetalles
-                ? 'bg-[#2D5A27] text-white shadow-lg shadow-green-900/20'
-                : 'bg-[#CCCCCC] text-white cursor-not-allowed'
-            }`}
-            style={serif}
-          >
-            {saving ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Save size={18} />
-            )}
-            Guardar diagnóstico completo
-          </button>
+        <div className="flex gap-2 justify-center">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => { vibracionSutil(); setEstrellas(n === estrellas ? 0 : n); }}
+              className="p-1 transition-transform active:scale-90"
+            >
+              <Star
+                size={32}
+                className="transition-colors duration-150"
+                fill={n <= estrellas ? '#C9956B' : 'none'}
+                stroke={n <= estrellas ? '#C9956B' : '#CCCCCC'}
+                strokeWidth={1.5}
+              />
+            </button>
+          ))}
+        </div>
+        {estrellas > 0 && (
+          <p className="text-xs text-center text-[#C9956B] mt-2 font-semibold" style={serif}>
+            {estrellas === 5 ? '¡Excelente! 😍' : estrellas === 4 ? 'Muy bien 😊' : estrellas === 3 ? 'Bien 🙂' : estrellas === 2 ? 'Regular 😐' : 'Necesita mejorar 😟'}
+          </p>
+        )}
+      </div>
 
-          {!tieneDetalles && (
-            <p className="text-[10px] text-center text-[#AAAAAA]">
-              Llena los detalles opcionales (+ Más detalles) para guardar como completo
-            </p>
+      {/* Botones de guardar */}
+      <div className="flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={() => handleGuardar(false)}
+          disabled={saving}
+          className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-sm transition-all active:scale-[0.98] ${
+            tieneDetalles
+              ? 'bg-[#2D5A27] text-white shadow-lg shadow-green-900/20'
+              : 'bg-[#CCCCCC] text-white cursor-not-allowed'
+          }`}
+          style={serif}
+        >
+          {saving ? (
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Save size={18} />
           )}
+          Guardar diagnóstico completo
+        </button>
 
-          {/* Guardar express / borrador */}
-          <button
-            type="button"
-            onClick={() => handleGuardar(true)}
-            disabled={saving}
-            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm border-2 border-[#2D5A27] text-[#2D5A27] bg-white transition-all active:scale-[0.98] hover:bg-[#EEF5ED]"
-            style={serif}
-          >
-            <FileText size={16} />
-            Guardar express
-            <span className="ml-1 bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-              Borrador
-            </span>
-          </button>
+        {!tieneDetalles && (
+          <p className="text-[10px] text-center text-[#AAAAAA]">
+            Llena los detalles opcionales (+ Más detalles) para guardar como completo
+          </p>
+        )}
+
+        <button
+          type="button"
+          onClick={() => handleGuardar(true)}
+          disabled={saving}
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm border-2 border-[#2D5A27] text-[#2D5A27] bg-white transition-all active:scale-[0.98] hover:bg-[#EEF5ED]"
+          style={serif}
+        >
+          <FileText size={16} />
+          Guardar express
+          <span className="ml-1 bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+            Borrador
+          </span>
+        </button>
+      </div>
+
+      {/* ── Overlay de éxito ── */}
+      {savedOverlay && (
+        <div
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center"
+          style={{ background: 'rgba(20, 50, 20, 0.92)' }}
+        >
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+            <circle
+              cx="40" cy="40" r="32"
+              stroke="white" strokeWidth="3"
+              strokeDasharray="210"
+              strokeLinecap="round"
+              className="animate-draw-circle"
+            />
+            <polyline
+              points="24,40 34,52 56,28"
+              stroke="white" strokeWidth="3.5"
+              strokeLinecap="round" strokeLinejoin="round"
+              strokeDasharray="60"
+              className="animate-draw-check"
+            />
+          </svg>
+          <p className="text-white text-xl font-bold mt-5" style={serif}>
+            {savedOverlay.tipo === 'express' ? '¡Guardado como borrador!' : '¡Diagnóstico guardado!'}
+          </p>
+          <p className="text-green-300 text-sm mt-2">Redirigiendo al perfil...</p>
         </div>
       )}
     </div>

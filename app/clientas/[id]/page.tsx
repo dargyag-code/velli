@@ -29,6 +29,12 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
     (c.fotoAnalisis && c.fotoAnalisis.length > 0) || c.fotoAntes || c.fotoDespues
   );
 
+  // Comparativa primera vs última visita
+  const primera = visitasConFotos.length >= 2 ? visitasConFotos[visitasConFotos.length - 1] : null;
+  const ultima  = visitasConFotos.length >= 2 ? visitasConFotos[0] : null;
+  const fotoP = primera?.fotoAntes || primera?.fotoDespues || primera?.fotoAnalisis?.[0];
+  const fotoU = ultima?.fotoDespues || ultima?.fotoAntes || ultima?.fotoAnalisis?.[0];
+
   if (visitasConFotos.length === 0) {
     return (
       <div className="text-center py-12 bg-white rounded-2xl border border-[#E5E5E5]">
@@ -41,6 +47,36 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
 
   return (
     <div className="flex flex-col gap-5">
+      {/* ── Comparativa evolución ── */}
+      {fotoP && fotoU && (
+        <div
+          className="rounded-2xl p-4 border border-[#E5E5E5] overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, #1A2E1A 0%, #2D5A27 100%)' }}
+        >
+          <p className="text-xs font-bold text-[#A8D0A3] uppercase tracking-wide mb-3" style={serif}>
+            ✨ Evolución — Primera vs Última visita
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { foto: fotoP, label: 'Primera visita', sub: formatDate(primera!.fecha) },
+              { foto: fotoU, label: 'Última visita',  sub: formatDate(ultima!.fecha)  },
+            ].map(({ foto, label, sub }) => (
+              <button key={label} type="button" onClick={() => setLightbox(foto)} className="relative active:scale-95 transition-transform">
+                <img
+                  src={foto}
+                  alt={label}
+                  className="w-full aspect-square object-cover rounded-xl border-2 border-white/20"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-black/60 rounded-b-xl py-1.5 px-2">
+                  <p className="text-[10px] text-white font-bold">{label}</p>
+                  <p className="text-[9px] text-white/70">{sub}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {visitasConFotos.map((c) => {
         const fotos: { url: string; label: string }[] = [];
         if (c.fotoAntes) fotos.push({ url: c.fotoAntes, label: 'Antes' });

@@ -5,7 +5,7 @@ import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import {
   getAllClientas, getStatsThisMonth, getConsultasByMonth,
-  getRizoDistribution, getTratamientosDistribution,
+  getRizoDistribution, getTratamientosDistribution, getSatisfaccionPromedio,
 } from '@/lib/db';
 import { getTratamientoBg, getTratamientoTextColor } from '@/lib/utils';
 
@@ -56,21 +56,24 @@ export default function ReportesPage() {
   const [rizoDistrib, setRizoDistrib] = useState<Record<string, number>>({});
   const [tratDistrib, setTratDistrib] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [satisfaccionProm, setSatisfaccionProm] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const [all, month, months, rizo, trat] = await Promise.all([
+      const [all, month, months, rizo, trat, sat] = await Promise.all([
         getAllClientas(),
         getStatsThisMonth(),
         getConsultasByMonth(),
         getRizoDistribution(),
         getTratamientosDistribution(),
+        getSatisfaccionPromedio(),
       ]);
       setTotalClientas(all.length);
       setThisMonth(month);
       setByMonth(months);
       setRizoDistrib(rizo);
       setTratDistrib(trat);
+      setSatisfaccionProm(sat);
     } finally {
       setLoading(false);
     }
@@ -100,7 +103,7 @@ export default function ReportesPage() {
       <main className="max-w-2xl mx-auto px-4 py-5 pb-nav">
 
         {/* Métricas clave */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-2 gap-3 mb-6">
           {[
             { label: 'Clientas', value: totalClientas, icon: <Users size={16} />, color: '#2D5A27' },
             { label: 'Consultas total', value: totalConsultas, icon: <CalendarDays size={16} />, color: '#C9956B' },
@@ -114,6 +117,16 @@ export default function ReportesPage() {
               <p className="text-[10px] text-[#999999]">{label}</p>
             </div>
           ))}
+          {/* Satisfacción promedio */}
+          <div className="bg-white rounded-2xl border border-[#E5E5E5] p-3 text-center">
+            <div className="flex justify-center mb-1 text-[#C9956B]">
+              <BarChart2 size={16} />
+            </div>
+            <p className="text-2xl font-extrabold text-[#2D2D2D]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+              {loading ? '—' : satisfaccionProm !== null ? `${satisfaccionProm}★` : '—'}
+            </p>
+            <p className="text-[10px] text-[#999999]">Satisfacción / 5</p>
+          </div>
         </div>
 
         {/* ── Consultas por mes ── */}

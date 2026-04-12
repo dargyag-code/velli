@@ -169,6 +169,23 @@ h1, h2, h3, h4, h5, h6 {
   animation: pulse-soft 2s ease-in-out infinite;
 }
 
+/* Save success overlay animations */
+@keyframes draw-circle {
+  from { stroke-dashoffset: 200; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes draw-check {
+  from { stroke-dashoffset: 60; opacity: 0; }
+  to   { stroke-dashoffset: 0;  opacity: 1; }
+}
+.animate-draw-circle {
+  animation: draw-circle 0.55s cubic-bezier(.4,0,.2,1) forwards;
+}
+.animate-draw-check {
+  animation: draw-check 0.35s ease-out 0.45s forwards;
+  opacity: 0;
+}
+
 /* ── Focus ─────────────────────────────────────────────────────────────── */
 input:focus, select:focus, textarea:focus {
   outline: none;

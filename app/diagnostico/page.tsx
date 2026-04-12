@@ -215,8 +215,8 @@ function WizardContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSave = async (proximaCita: string, notas: string, esBorrador: boolean, fotoAntes?: string, fotoDespues?: string) => {
-    if (!consulta) return;
+  const handleSave = async (proximaCita: string, notas: string, esBorrador: boolean, fotoAntes?: string, fotoDespues?: string, estrellas?: number): Promise<string> => {
+    if (!consulta) return '';
     setSaving(true);
     try {
       let clientaObj = clienta;
@@ -251,15 +251,16 @@ function WizardContent() {
         esBorrador,
         fotoAntes,
         fotoDespues,
+        satisfaccionEstrellas: estrellas as (1|2|3|4|5) | undefined,
       };
 
       await createConsulta(finalConsulta);
       setConsulta(finalConsulta);
 
-      // Limpiar borrador
       if (typeof window !== 'undefined') {
         localStorage.removeItem(STORAGE_KEY);
       }
+      return clientaObj?.id || data.clientaId || '';
     } finally {
       setSaving(false);
     }

@@ -8,6 +8,62 @@ const LIGHT_GREEN = '#EEF5ED';
 const TEXT_DARK = '#2D2D2D';
 const TEXT_GRAY = '#666666';
 
+// ── Image helpers ──────────────────────────────────────────────────────────
+
+function getImageFormat(dataUrl: string): string {
+  if (dataUrl.includes('image/png')) return 'PNG';
+  // jsPDF handles JPEG/JPG; treat everything else as JPEG
+  return 'JPEG';
+}
+
+function scaleToBounds(nw: number, nh: number, maxW: number, maxH: number): { w: number; h: number } {
+  if (nw <= 0 || nh <= 0) return { w: maxW, h: maxH };
+  const ratio = Math.min(maxW / nw, maxH / nh);
+  return { w: nw * ratio, h: nh * ratio };
+}
+
+async function getImageDimensions(dataUrl: string): Promise<{ w: number; h: number }> {
+  return new Promise((resolve) => {
+    try {
+      const img = new window.Image();
+      img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+      img.onerror = () => resolve({ w: 1, h: 1 });
+      img.src = dataUrl;
+    } catch {
+      resolve({ w: 1, h: 1 });
+    }
+  });
+}
+
+async function addPhotoToDoc(
+  doc: jsPDF,
+  dataUrl: string,
+  x: number,
+  y: number,
+  maxW: number,
+  maxH: number
+): Promise<number> {
+  try {
+    const dims = await getImageDimensions(dataUrl);
+    const { w, h } = scaleToBounds(dims.w, dims.h, maxW, maxH);
+    const format = getImageFormat(dataUrl);
+    doc.addImage(dataUrl, format, x, y, w, h);
+    return h;
+  } catch {
+    return 0;
+  }
+}
+
+// ── One-line summary ───────────────────────────────────────────────────────
+
+function buildOneLiner(consulta: Consulta): string {
+  const tipo = consulta.tipoRizoPrincipal || '—';
+  const por = consulta.porosidad ? `, porosidad ${consulta.porosidad}` : '';
+  const trat = consulta.resultado?.tratamientoPrincipal || '';
+  if (trat) return `Cabello ${tipo}${por} — requiere ${trat.toLowerCase()}`;
+  return `Cabello tipo ${tipo}${por}`;
+}
+
 export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta): Promise<void> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
@@ -71,14 +127,15 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
   doc.setFontSize(9);
   setTextColor('#FFFFFF');
   doc.setFont('helvetica', 'normal');
-  doc.text(`Diagnóstico Capilar Profesional`, pageW - margin, 15, { align: 'right' });
+  doc.text('Diagnóstico Capilar Profesional', pageW - margin, 15, { align: 'right' });
   doc.text(formatDate(consulta.fecha), pageW - margin, 22, { align: 'right' });
   doc.text(`Consulta #${consulta.numeroConsulta}`, pageW - margin, 28, { align: 'right' });
 
   y = 42;
 
+  // ── Resumen ejecutivo ──────────────────────────────────────────────────────
   // Client name
-  doc.setFontSize(16);
+  doc.setFontSize(18);
   setTextColor(GREEN);
   doc.setFont('helvetica', 'bold');
   doc.text(clienta.nombre, margin, y);
@@ -91,15 +148,46 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
     clienta.edad ? `${clienta.edad} años` : '',
     clienta.telefono ? `Tel: ${clienta.telefono}` : '',
   ].filter(Boolean).join('  |  ');
-  doc.text(infoLine, margin, y);
-  y += 8;
+  if (infoLine) { doc.text(infoLine, margin, y); y += 6; }
+
+  // One-liner summary box
+  const oneLiner = buildOneLiner(consulta);
+  setFill('#FBF4EC');
+  doc.roundedRect(margin, y, pageW - margin * 2, 10, 2, 2, 'F');
+  doc.setFontSize(9);
+  setTextColor(AMBER);
+  doc.setFont('helvetica', 'bold');
+  doc.text(oneLiner, margin + 3, y + 6.5);
+  y += 14;
+
+  // Hair type + key badges row
+  const summaryBadges = [
+    { label: 'Tipo', value: consulta.tipoRizoPrincipal || '—' },
+    { label: 'Tratamiento', value: consulta.resultado?.tratamientoPrincipal?.split(' ')[0] || '—' },
+    { label: 'Porosidad', value: consulta.porosidad || '—' },
+    { label: 'Fecha', value: formatDate(consulta.fecha) },
+  ];
+  const sbW = (pageW - margin * 2) / summaryBadges.length;
+  summaryBadges.forEach((b, i) => {
+    setFill(i === 0 ? LIGHT_GREEN : '#F9F9F9');
+    doc.roundedRect(margin + i * sbW, y, sbW - 1.5, 13, 2, 2, 'F');
+    doc.setFontSize(7);
+    setTextColor(TEXT_GRAY);
+    doc.setFont('helvetica', 'normal');
+    doc.text(b.label, margin + i * sbW + sbW / 2, y + 4, { align: 'center' });
+    doc.setFontSize(i === 0 ? 11 : 8);
+    setTextColor(i === 0 ? GREEN : TEXT_DARK);
+    doc.setFont('helvetica', 'bold');
+    doc.text(b.value.charAt(0).toUpperCase() + b.value.slice(1), margin + i * sbW + sbW / 2, y + 10, { align: 'center' });
+  });
+  y += 17;
 
   // Divider
   setFill(AMBER);
-  doc.rect(margin, y, pageW - margin * 2, 1, 'F');
+  doc.rect(margin, y, pageW - margin * 2, 0.8, 'F');
   y += 6;
 
-  // ── Diagnóstico Summary ──
+  // ── Section helpers ────────────────────────────────────────────────────────
   const sectionTitle = (title: string) => {
     checkNewPage(15);
     setFill(LIGHT_GREEN);
@@ -133,10 +221,9 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
     y += 6;
   };
 
-  // Section 1: Diagnóstico
+  // ── Section 1: Diagnóstico ─────────────────────────────────────────────────
   sectionTitle('1. Diagnóstico Capilar');
 
-  // Badges row
   const badges = [
     { label: 'Tipo de Rizo', value: consulta.tipoRizoPrincipal },
     { label: 'Porosidad', value: consulta.porosidad || '—' },
@@ -156,44 +243,29 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
     doc.setFontSize(9);
     setTextColor(GREEN);
     doc.setFont('helvetica', 'bold');
-    doc.text(b.value.charAt(0).toUpperCase() + b.value.slice(1), margin + i * badgeW + badgeW / 2 - 1, y + 10, {
-      align: 'center',
-    });
+    doc.text(b.value.charAt(0).toUpperCase() + b.value.slice(1), margin + i * badgeW + badgeW / 2 - 1, y + 10, { align: 'center' });
   });
   y += 18;
 
-  // Balance
   const balanceLabels: Record<string, string> = {
     hidratacion: 'Necesita HIDRATACIÓN',
     nutricion: 'Necesita NUTRICIÓN',
     proteina: 'Necesita PROTEÍNA',
     equilibrado: 'EQUILIBRADO',
   };
-  const balanceBg =
-    consulta.balanceHP === 'proteina'
-      ? '#FFEDD5'
-      : consulta.balanceHP === 'hidratacion'
-      ? '#DBEAFE'
-      : consulta.balanceHP === 'nutricion'
-      ? '#D1FAE5'
-      : '#EDE9FE';
-  const balanceText =
-    consulta.balanceHP === 'proteina'
-      ? '#9A3412'
-      : consulta.balanceHP === 'hidratacion'
-      ? '#1D4ED8'
-      : consulta.balanceHP === 'nutricion'
-      ? '#065F46'
-      : '#5B21B6';
+  const balanceBg = consulta.balanceHP === 'proteina' ? '#FFEDD5'
+    : consulta.balanceHP === 'hidratacion' ? '#DBEAFE'
+    : consulta.balanceHP === 'nutricion' ? '#D1FAE5' : '#EDE9FE';
+  const balanceText = consulta.balanceHP === 'proteina' ? '#9A3412'
+    : consulta.balanceHP === 'hidratacion' ? '#1D4ED8'
+    : consulta.balanceHP === 'nutricion' ? '#065F46' : '#5B21B6';
 
   setFill(balanceBg);
   doc.roundedRect(margin, y, pageW - margin * 2, 10, 3, 3, 'F');
   doc.setFontSize(10);
   setTextColor(balanceText);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Balance: ${(consulta.balanceHP ? balanceLabels[consulta.balanceHP] : undefined) || consulta.balanceHP || '—'}`, pageW / 2, y + 7, {
-    align: 'center',
-  });
+  doc.text(`Balance: ${(consulta.balanceHP ? balanceLabels[consulta.balanceHP] : undefined) || consulta.balanceHP || '—'}`, pageW / 2, y + 7, { align: 'center' });
   y += 15;
 
   if (consulta.problemas.length) {
@@ -206,7 +278,7 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
   }
   y += 3;
 
-  // Section 2: Treatment
+  // ── Section 2: Treatment ───────────────────────────────────────────────────
   sectionTitle('2. Tratamiento Recomendado');
 
   const tratBg = getTratamientoBg(consulta.resultado.tratamientoPrincipal);
@@ -229,7 +301,7 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
   }
   y += 3;
 
-  // Section 3: Cronograma
+  // ── Section 3: Cronograma ──────────────────────────────────────────────────
   sectionTitle('3. Cronograma Capilar — 4 Semanas');
 
   const semanas = [
@@ -238,7 +310,6 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
     { label: 'Semana 3', value: consulta.resultado.cronograma.semana3 },
     { label: 'Semana 4', value: consulta.resultado.cronograma.semana4 },
   ];
-
   const semW = (pageW - margin * 2) / 4;
   semanas.forEach((s, i) => {
     const bg = getTratamientoBg(s.value);
@@ -257,7 +328,7 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
   });
   y += 24;
 
-  // Section 4: Técnica
+  // ── Section 4: Técnica ─────────────────────────────────────────────────────
   sectionTitle('4. Técnica de Definición');
 
   setFill('#FBF4EC');
@@ -279,7 +350,7 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
   labelValue('Método de secado', consulta.resultado.metodoSecado);
   y += 3;
 
-  // Section 5: Routine
+  // ── Section 5: Routine ─────────────────────────────────────────────────────
   checkNewPage(30);
   sectionTitle('5. Rutina para Casa');
 
@@ -299,13 +370,13 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
   routineBlock('Refresh Días 2-3', consulta.resultado.cuidadoCasa.refresh);
   routineBlock('Evitar', consulta.resultado.cuidadoCasa.evitar);
 
-  // Section 6: Products
+  // ── Section 6: Products ────────────────────────────────────────────────────
   checkNewPage(20);
   sectionTitle('6. Productos Ponto Hair Recomendados');
   consulta.resultado.productosPonto.forEach((p) => bulletItem(p));
   y += 3;
 
-  // Section 7: Notes
+  // ── Section 7: Notes ───────────────────────────────────────────────────────
   if (consulta.resultado.notasAdicionales.length) {
     checkNewPage(20);
     sectionTitle('7. Notas Adicionales');
@@ -313,9 +384,32 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
     y += 3;
   }
 
-  // Section 8: Next appointment
+  // ── Section 8: Estilista notes + satisfaction ──────────────────────────────
+  if (consulta.notasEstilista || consulta.satisfaccionEstrellas) {
+    checkNewPage(25);
+    sectionTitle('8. Notas de la Estilista');
+    if (consulta.notasEstilista) {
+      const nLines = doc.splitTextToSize(consulta.notasEstilista, pageW - margin * 2 - 4);
+      doc.setFontSize(9);
+      setTextColor(TEXT_DARK);
+      doc.setFont('helvetica', 'normal');
+      doc.text(nLines, margin + 2, y);
+      y += nLines.length * 5 + 4;
+    }
+    if (consulta.satisfaccionEstrellas) {
+      doc.setFontSize(9);
+      setTextColor(AMBER);
+      doc.setFont('helvetica', 'bold');
+      const stars = '★'.repeat(consulta.satisfaccionEstrellas) + '☆'.repeat(5 - consulta.satisfaccionEstrellas);
+      doc.text(`Satisfacción: ${stars} (${consulta.satisfaccionEstrellas}/5)`, margin + 2, y);
+      y += 7;
+    }
+    y += 3;
+  }
+
+  // ── Section 9: Next appointment ────────────────────────────────────────────
   checkNewPage(25);
-  sectionTitle('8. Próxima Cita');
+  sectionTitle('9. Próxima Cita');
 
   setFill(LIGHT_GREEN);
   doc.roundedRect(margin, y, pageW - margin * 2, 16, 3, 3, 'F');
@@ -338,9 +432,67 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
     doc.setFont('helvetica', 'bold');
     doc.text(formatDate(consulta.proximaCita), pageW / 2 + 4, y + 13);
   }
-  y += 20;
+  y += 22;
+
+  // ── Section 10: Registro fotográfico ──────────────────────────────────────
+  const hasAntes = !!consulta.fotoAntes;
+  const hasDespues = !!consulta.fotoDespues;
+  const hasAnalisis = !!(consulta.fotoAnalisis && consulta.fotoAnalisis.length > 0);
+
+  if (hasAntes || hasDespues || hasAnalisis) {
+    addPage();
+    sectionTitle('10. Registro Fotográfico');
+    y += 2;
+
+    // Before / After side by side
+    if (hasAntes || hasDespues) {
+      const maxPhotoW = 85;
+      const maxPhotoH = 80;
+      let rowHeight = 0;
+
+      if (hasAntes) {
+        const h = await addPhotoToDoc(doc, consulta.fotoAntes!, margin, y, maxPhotoW, maxPhotoH);
+        if (h > rowHeight) rowHeight = h;
+        doc.setFontSize(8);
+        setTextColor(TEXT_GRAY);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ANTES', margin + maxPhotoW / 2, y + h + 4, { align: 'center' });
+      }
+
+      if (hasDespues) {
+        const xD = margin + 90;
+        const h = await addPhotoToDoc(doc, consulta.fotoDespues!, xD, y, maxPhotoW, maxPhotoH);
+        if (h > rowHeight) rowHeight = h;
+        doc.setFontSize(8);
+        setTextColor(TEXT_GRAY);
+        doc.setFont('helvetica', 'bold');
+        doc.text('DESPUÉS', xD + maxPhotoW / 2, y + h + 4, { align: 'center' });
+      }
+
+      y += rowHeight + 10;
+    }
+
+    // Analysis photos row (up to 3)
+    if (hasAnalisis) {
+      checkNewPage(65);
+      const photoW = 53;
+      const photoH = 55;
+      const angleLabels = ['Frontal', 'Lateral', 'Corona'];
+      let rowH = 0;
+
+      for (let i = 0; i < Math.min(consulta.fotoAnalisis!.length, 3); i++) {
+        const xP = margin + i * (photoW + 4);
+        const h = await addPhotoToDoc(doc, consulta.fotoAnalisis![i], xP, y, photoW, photoH);
+        if (h > rowH) rowH = h;
+        doc.setFontSize(7);
+        setTextColor(TEXT_GRAY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(angleLabels[i] || `Foto ${i + 1}`, xP + photoW / 2, y + h + 3, { align: 'center' });
+      }
+      y += rowH + 8;
+    }
+  }
 
   addFooter();
-
   doc.save(`Velli-${clienta.nombre.replace(/\s+/g, '_')}-${consulta.fecha}.pdf`);
 }

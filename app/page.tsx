@@ -11,8 +11,9 @@ import Button from '@/components/ui/Button';
 import {
   getAllClientas, getRecentClientas, getStatsThisMonth,
   getMostFrequentTratamiento, getNextCita,
+  getClientasInactivas, getConsultasBorrador,
 } from '@/lib/db';
-import { Clienta } from '@/lib/types';
+import { Clienta, Consulta } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 
 const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
@@ -28,19 +29,25 @@ export default function Dashboard() {
     frecuente: '',
   });
   const [loading, setLoading] = useState(true);
+  const [inactivas, setInactivas] = useState<Array<Clienta & { diasInactiva: number }>>([]);
+  const [borradores, setBorradores] = useState<Array<{ consulta: Consulta; clienta: Clienta }>>([]);
 
   const loadData = useCallback(async () => {
     try {
-      const [all, recent, month, frecuente, next] = await Promise.all([
+      const [all, recent, month, frecuente, next, inact, borr] = await Promise.all([
         getAllClientas(),
         getRecentClientas(8),
         getStatsThisMonth(),
         getMostFrequentTratamiento(),
         getNextCita(),
+        getClientasInactivas(45),
+        getConsultasBorrador(),
       ]);
       setClientas(all);
       setRecentClientas(recent);
       setStats({ total: all.length, thisMonth: month, nextCita: next, frecuente });
+      setInactivas(inact.slice(0, 3));
+      setBorradores(borr.slice(0, 3));
     } catch (e) {
       console.error(e);
     } finally {
@@ -138,6 +145,53 @@ export default function Dashboard() {
             </div>
           </div>
         </Link>
+
+        {/* Alertas inteligentes */}
+        {!loading && (inactivas.length > 0 || borradores.length > 0) && (
+          <div className="mb-5">
+            <h2 className="text-sm font-bold text-[#1A2E1A] mb-2" style={serif}>Atención</h2>
+            <div className="flex flex-col gap-2">
+              {inactivas.map((c) => {
+                const tel = c.telefono?.replace(/\D/g, '');
+                const msg = encodeURIComponent(`Hola ${c.nombre}! 🌿 Han pasado ${c.diasInactiva} días desde tu última visita en Velli Pro. ¿Agendamos tu próxima consulta?`);
+                return (
+                  <div key={c.id} className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
+                    <span className="text-base flex-shrink-0">⚠️</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-amber-800 truncate" style={serif}>{c.nombre}</p>
+                      <p className="text-[10px] text-amber-600">No viene hace {c.diasInactiva} días</p>
+                    </div>
+                    {tel && (
+                      <a
+                        href={`https://wa.me/${tel}?text=${msg}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-shrink-0 text-[10px] font-bold px-2.5 py-1.5 bg-amber-600 text-white rounded-xl active:scale-95 transition-transform"
+                      >
+                        WhatsApp
+                      </a>
+                    )}
+                  </div>
+                );
+              })}
+              {borradores.map(({ consulta, clienta: c }) => (
+                <div key={consulta.id} className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-2xl px-4 py-3">
+                  <span className="text-base flex-shrink-0">📝</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-blue-800 truncate" style={serif}>{c.nombre}</p>
+                    <p className="text-[10px] text-blue-600">Diagnóstico borrador pendiente</p>
+                  </div>
+                  <Link
+                    href={`/clientas/${c.id}`}
+                    className="flex-shrink-0 text-[10px] font-bold px-2.5 py-1.5 bg-blue-600 text-white rounded-xl active:scale-95 transition-transform"
+                  >
+                    Completar
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Search */}
         <SearchBar value={search} onChange={setSearch} />

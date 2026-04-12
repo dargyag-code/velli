@@ -102,6 +102,7 @@ export interface Consulta {
 
   // Post-consulta
   satisfaccion?: 'muy_satisfecha' | 'satisfecha' | 'parcial' | 'necesita_ajustes';
+  satisfaccionEstrellas?: 1 | 2 | 3 | 4 | 5;
   notasEstilista?: string;
   proximaCita?: string;
 

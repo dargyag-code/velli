@@ -170,6 +170,41 @@ export async function getTratamientosDistribution(): Promise<Record<string, numb
   return result;
 }
 
+export async function getClientasInactivas(days = 45): Promise<Array<Clienta & { diasInactiva: number }>> {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  const cutoffStr = cutoff.toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
+  const all = await db.clientas
+    .filter((c) => !!c.ultimaVisita && c.ultimaVisita <= cutoffStr)
+    .toArray();
+  return all.map((c) => {
+    const diff = Math.floor((new Date(today).getTime() - new Date(c.ultimaVisita!).getTime()) / 86400000);
+    return { ...c, diasInactiva: diff };
+  }).sort((a, b) => b.diasInactiva - a.diasInactiva);
+}
+
+export async function getConsultasBorrador(): Promise<Array<{ consulta: Consulta; clienta: Clienta }>> {
+  const borradores = await db.consultas.filter((c) => !!c.esBorrador).toArray();
+  const pairs = await Promise.all(
+    borradores.map(async (c) => {
+      const clienta = await db.clientas.get(c.clientaId);
+      return clienta ? { consulta: c, clienta } : null;
+    })
+  );
+  return pairs.filter((p): p is { consulta: Consulta; clienta: Clienta } => p !== null);
+}
+
+export async function getSatisfaccionPromedio(yearMonth?: string): Promise<number | null> {
+  const ym = yearMonth || new Date().toISOString().substring(0, 7);
+  const consultas = await db.consultas
+    .filter((c) => c.fecha.startsWith(ym) && !!c.satisfaccionEstrellas)
+    .toArray();
+  if (!consultas.length) return null;
+  const sum = consultas.reduce((s, c) => s + (c.satisfaccionEstrellas ?? 0), 0);
+  return Math.round((sum / consultas.length) * 10) / 10;
+}
+
 export async function getNextCita(): Promise<{ nombre: string; fecha: string } | null> {
   const today = new Date().toISOString().split('T')[0];
   const consultas = await db.consultas
