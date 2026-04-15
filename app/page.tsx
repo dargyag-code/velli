@@ -11,7 +11,7 @@ import Button from '@/components/ui/Button';
 import {
   getAllClientas, getRecentClientas, getStatsThisMonth,
   getMostFrequentTratamiento, getNextCita,
-  getClientasInactivas, getConsultasBorrador,
+  getClientasInactivas, getConsultasBorrador, getLastTratamientosMap,
 } from '@/lib/db';
 import { Clienta, Consulta } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
@@ -31,6 +31,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [inactivas, setInactivas] = useState<Array<Clienta & { diasInactiva: number }>>([]);
   const [borradores, setBorradores] = useState<Array<{ consulta: Consulta; clienta: Clienta }>>([]);
+  const [tratamientosMap, setTratamientosMap] = useState<Record<string, string>>({});
 
   const loadData = useCallback(async () => {
     try {
@@ -48,6 +49,8 @@ export default function Dashboard() {
       setStats({ total: all.length, thisMonth: month, nextCita: next, frecuente });
       setInactivas(inact.slice(0, 3));
       setBorradores(borr.slice(0, 3));
+      const tMap = await getLastTratamientosMap(recent.map((c) => c.id));
+      setTratamientosMap(tMap);
     } catch (e) {
       console.error(e);
     } finally {
@@ -271,7 +274,9 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {displayClientas.map((c) => <ClientaCard key={c.id} clienta={c} />)}
+              {displayClientas.map((c) => (
+                <ClientaCard key={c.id} clienta={c} ultimoTratamiento={tratamientosMap[c.id]} />
+              ))}
             </div>
           )}
         </div>

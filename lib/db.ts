@@ -205,6 +205,20 @@ export async function getSatisfaccionPromedio(yearMonth?: string): Promise<numbe
   return Math.round((sum / consultas.length) * 10) / 10;
 }
 
+export async function getLastTratamientosMap(clientaIds: string[]): Promise<Record<string, string>> {
+  if (!clientaIds.length) return {};
+  const allConsultas = await db.consultas.where('clientaId').anyOf(clientaIds).toArray();
+  const latest: Record<string, { fecha: string; tratamiento: string }> = {};
+  for (const c of allConsultas) {
+    const t = c.resultado?.tratamientoPrincipal;
+    if (!t) continue;
+    if (!latest[c.clientaId] || c.fecha > latest[c.clientaId].fecha) {
+      latest[c.clientaId] = { fecha: c.fecha, tratamiento: t };
+    }
+  }
+  return Object.fromEntries(Object.entries(latest).map(([k, v]) => [k, v.tratamiento]));
+}
+
 export async function getNextCita(): Promise<{ nombre: string; fecha: string } | null> {
   const today = new Date().toISOString().split('T')[0];
   const consultas = await db.consultas

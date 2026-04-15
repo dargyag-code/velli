@@ -46,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-capable" content="yes" />
       </head>
       <body
+        className="velli-grain"
         style={{
           fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
           backgroundColor: '#F5F0E8',

@@ -8,6 +8,7 @@ import Avatar from '../ui/Avatar';
 
 interface ClientaCardProps {
   clienta: Clienta;
+  ultimoTratamiento?: string;
 }
 
 const rizoColors: Record<string, { bg: string; text: string; border: string }> = {
@@ -22,9 +23,25 @@ function getRizoColors(tipo?: string) {
   return rizoColors[tipo[0]] ?? rizoColors['3'];
 }
 
-export default function ClientaCard({ clienta }: ClientaCardProps) {
+function getHealthDots(tratamiento?: string): { green: number; tooltip: string } {
+  if (!tratamiento) return { green: 0, tooltip: 'Sin diagnóstico' };
+  const t = tratamiento.toLowerCase();
+  if (t.includes('mantenimiento') || t.includes('equilibrado')) {
+    return { green: 3, tooltip: 'Cabello sano' };
+  }
+  if (t.includes('hidratacion') || t.includes('hidratación') || t.includes('nutricion') || t.includes('nutrición')) {
+    return { green: 2, tooltip: 'Necesita atención' };
+  }
+  if (t.includes('reconstruccion') || t.includes('reconstrucción') || t.includes('repolarizacion') || t.includes('repolarización')) {
+    return { green: 1, tooltip: 'Tratamiento urgente' };
+  }
+  return { green: 0, tooltip: 'Sin diagnóstico' };
+}
+
+export default function ClientaCard({ clienta, ultimoTratamiento }: ClientaCardProps) {
   const rizoType = clienta.tipoRizoPrincipal;
   const colors = getRizoColors(rizoType);
+  const { green: greenDots, tooltip: dotsTooltip } = getHealthDots(ultimoTratamiento);
 
   return (
     <Link href={`/clientas/${clienta.id}`} className="stagger-item block">
@@ -55,6 +72,22 @@ export default function ClientaCard({ clienta }: ClientaCardProps) {
                 {getRizoLabel(rizoType)}
               </span>
             )}
+            <span
+              className="flex items-center gap-[3px]"
+              title={dotsTooltip}
+            >
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="rounded-full flex-shrink-0"
+                  style={{
+                    width: 8,
+                    height: 8,
+                    backgroundColor: i < greenDots ? '#2D8E5B' : '#DDDDDD',
+                  }}
+                />
+              ))}
+            </span>
             {clienta.ultimaVisita && (
               <span className="text-[10px] text-[#AAAAAA]">
                 {formatDate(clienta.ultimaVisita)}

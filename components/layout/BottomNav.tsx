@@ -16,9 +16,12 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 bg-white"
+      className="fixed bottom-0 left-0 right-0 z-40"
       style={{
-        boxShadow: '0 -2px 20px rgba(0,0,0,0.08)',
+        background: 'rgba(255, 255, 255, 0.80)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        boxShadow: '0 -4px 20px rgba(0,0,0,0.06)',
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
