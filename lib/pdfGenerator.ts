@@ -10,9 +10,9 @@ const TEXT_GRAY = '#666666';
 
 // ── Image helpers ──────────────────────────────────────────────────────────
 
-function getImageFormat(dataUrl: string): string {
-  if (dataUrl.includes('image/png')) return 'PNG';
-  // jsPDF handles JPEG/JPG; treat everything else as JPEG
+function getImageFormat(source: string): string {
+  if (source.includes('image/png') || /\.png(\?|$)/i.test(source)) return 'PNG';
+  if (source.includes('image/webp') || /\.webp(\?|$)/i.test(source)) return 'WEBP';
   return 'JPEG';
 }
 
@@ -20,6 +20,18 @@ function scaleToBounds(nw: number, nh: number, maxW: number, maxH: number): { w:
   if (nw <= 0 || nh <= 0) return { w: maxW, h: maxH };
   const ratio = Math.min(maxW / nw, maxH / nh);
   return { w: nw * ratio, h: nh * ratio };
+}
+
+async function toDataUrl(source: string): Promise<string> {
+  if (source.startsWith('data:')) return source;
+  const res = await fetch(source, { mode: 'cors' });
+  const blob = await res.blob();
+  return await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
 }
 
 async function getImageDimensions(dataUrl: string): Promise<{ w: number; h: number }> {
@@ -37,19 +49,21 @@ async function getImageDimensions(dataUrl: string): Promise<{ w: number; h: numb
 
 async function addPhotoToDoc(
   doc: jsPDF,
-  dataUrl: string,
+  source: string,
   x: number,
   y: number,
   maxW: number,
   maxH: number
 ): Promise<number> {
   try {
+    const dataUrl = await toDataUrl(source);
     const dims = await getImageDimensions(dataUrl);
     const { w, h } = scaleToBounds(dims.w, dims.h, maxW, maxH);
     const format = getImageFormat(dataUrl);
     doc.addImage(dataUrl, format, x, y, w, h);
     return h;
-  } catch {
+  } catch (err) {
+    console.warn('[pdf] no se pudo incrustar foto:', err);
     return 0;
   }
 }

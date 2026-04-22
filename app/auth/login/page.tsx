@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, LogIn } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { friendlyAuthError } from '@/lib/errors';
 
 const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 
@@ -32,11 +33,8 @@ export default function LoginPage() {
     setLoading(false);
 
     if (error) {
-      setError(
-        error.message === 'Invalid login credentials'
-          ? 'Email o contraseña incorrectos'
-          : error.message
-      );
+      console.error('[auth.login]', error);
+      setError(friendlyAuthError(error.message));
       return;
     }
 
@@ -48,13 +46,13 @@ export default function LoginPage() {
     <div className="w-full max-w-sm flex flex-col items-center">
       {/* Logo V */}
       <div
-        className="w-20 h-20 rounded-3xl flex items-center justify-center mb-5"
+        className="w-24 h-24 rounded-3xl flex items-center justify-center mb-5"
         style={{
           background: 'linear-gradient(135deg, #1A2E1A 0%, #2D5A27 100%)',
-          boxShadow: '0 8px 32px rgba(45,90,39,0.40)',
+          boxShadow: '0 10px 36px rgba(45,90,39,0.42)',
         }}
       >
-        <span className="text-white text-5xl leading-none" style={serif}>
+        <span className="text-white text-6xl leading-none" style={serif}>
           V
         </span>
       </div>
@@ -122,7 +120,10 @@ export default function LoginPage() {
           }}
         >
           {loading ? (
-            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <>
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Iniciando sesión…
+            </>
           ) : (
             <>
               <LogIn size={16} />

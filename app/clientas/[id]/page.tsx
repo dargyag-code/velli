@@ -16,6 +16,7 @@ import HistorialTimeline from '@/components/clienta/HistorialTimeline';
 import { getClientaById, getConsultasByClienta, deleteClienta, updateClienta } from '@/lib/db';
 import { Clienta, Consulta } from '@/lib/types';
 import { formatDate, getRizoLabel } from '@/lib/utils';
+import { showToast } from '@/lib/toast';
 
 type Tab = 'info' | 'historial' | 'galeria';
 
@@ -211,10 +212,14 @@ export default function ClientaPage() {
       await updateClienta(updated);
       setClienta(updated);
       setSaveOk(true);
+      showToast('Clienta actualizada', 'success');
       setTimeout(() => {
         setEditing(false);
         setSaveOk(false);
       }, 1200);
+    } catch (e) {
+      console.error('[clientas.update]', e);
+      showToast('No se pudieron guardar los cambios', 'error');
     } finally {
       setSaving(false);
     }
@@ -222,8 +227,15 @@ export default function ClientaPage() {
 
   const handleDelete = async () => {
     setDeleting(true);
-    await deleteClienta(id);
-    router.push('/clientas');
+    try {
+      await deleteClienta(id);
+      showToast(`${clienta?.nombre || 'Clienta'} eliminada`, 'success');
+      router.push('/clientas');
+    } catch (e) {
+      console.error('[clientas.delete]', e);
+      showToast('No se pudo eliminar la clienta', 'error');
+      setDeleting(false);
+    }
   };
 
   const handleWhatsApp = () => {
@@ -623,8 +635,12 @@ export default function ClientaPage() {
 
       {/* Delete modal */}
       <Modal open={showDelete} onClose={() => setShowDelete(false)} title="Eliminar clienta">
+        <p className="text-sm text-[#2D2D2D] mb-2">
+          Esto borrará toda la información de <strong>{clienta.nombre}</strong> y su historial
+          ({consultas.length} {consultas.length === 1 ? 'consulta' : 'consultas'}).
+        </p>
         <p className="text-sm text-[#666666] mb-4">
-          ¿Estás segura de que quieres eliminar a <strong>{clienta.nombre}</strong>? Se eliminarán todas sus consultas. Esta acción no se puede deshacer.
+          La acción no se puede deshacer. ¿Estás segura?
         </p>
         <div className="flex gap-3">
           <Button variant="ghost" size="md" fullWidth onClick={() => setShowDelete(false)}>

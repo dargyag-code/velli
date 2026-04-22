@@ -1,9 +1,10 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   User, Download, Upload, Trash2,
-  ChevronRight, Check, AlertCircle, Info, LogOut,
+  ChevronRight, Check, AlertCircle, LogOut,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
@@ -16,6 +17,8 @@ import {
 } from '@/lib/db';
 import { getProfile, updateProfile, signOut } from '@/lib/profile';
 import type { Profile } from '@/lib/profile';
+import { showToast } from '@/lib/toast';
+import { friendlyError } from '@/lib/errors';
 
 const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 
@@ -80,6 +83,7 @@ export default function ConfiguracionPage() {
   const [clearDone, setClearDone] = useState(false);
 
   const [signingOut, setSigningOut] = useState(false);
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   useEffect(() => {
     getProfile()
@@ -106,10 +110,14 @@ export default function ConfiguracionPage() {
       });
       setProfile(p);
       setSaveOk(true);
+      showToast('Perfil actualizado', 'success');
       setTimeout(() => {
         setSaveOk(false);
         setEditingProfile(false);
       }, 1200);
+    } catch (e) {
+      console.error('[profile.save]', e);
+      showToast('No se pudo guardar el perfil', 'error');
     } finally {
       setSaving(false);
     }
@@ -135,6 +143,10 @@ export default function ConfiguracionPage() {
       a.download = `velli-backup-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
+      showToast('Backup descargado', 'success');
+    } catch (e) {
+      console.error('[backup.export]', e);
+      showToast('No se pudo crear el backup', 'error');
     } finally {
       setExportLoading(false);
     }
@@ -177,9 +189,12 @@ export default function ConfiguracionPage() {
       await clearAllData();
       setShowClearConfirm(false);
       setClearDone(true);
+      showToast('Datos eliminados', 'success');
       setTimeout(() => setClearDone(false), 3000);
-    } catch {
+    } catch (e) {
+      console.error('[data.clear]', e);
       setShowClearConfirm(false);
+      showToast('No se pudieron eliminar los datos', 'error');
     }
   };
 
@@ -189,8 +204,10 @@ export default function ConfiguracionPage() {
       await signOut();
       router.push('/auth/login');
       router.refresh();
-    } catch {
+    } catch (e) {
+      console.error('[auth.signOut]', e);
       setSigningOut(false);
+      showToast(friendlyError(e), 'error');
     }
   };
 
@@ -203,7 +220,13 @@ export default function ConfiguracionPage() {
         {/* ── Perfil ── */}
         <Section title="Perfil">
           {profileLoading ? (
-            <div className="px-4 py-4 text-xs text-[#999999]">Cargando perfil…</div>
+            <div className="flex items-center gap-3 px-4 py-3.5">
+              <div className="w-8 h-8 rounded-xl skeleton-shimmer shrink-0" />
+              <div className="flex-1 flex flex-col gap-1.5">
+                <div className="h-3 w-32 skeleton-shimmer" />
+                <div className="h-2.5 w-48 skeleton-shimmer" />
+              </div>
+            </div>
           ) : editingProfile ? (
             <div className="p-4 flex flex-col gap-3">
               <div>
@@ -312,24 +335,6 @@ export default function ConfiguracionPage() {
           </div>
         )}
 
-        {/* ── IA ── */}
-        <Section title="Inteligencia Artificial">
-          <div className="px-4 py-3.5 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#EEF5ED] flex items-center justify-center shrink-0">
-              <Info size={16} className="text-[#2D5A27]" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[#2D2D2D] mb-0.5">API de OpenAI (GPT-4o)</p>
-              <p className="text-xs text-[#666666] leading-relaxed">
-                El análisis de cámara IA usa GPT-4o desde el servidor. La clave se configura en{' '}
-                <code className="bg-[#EEF5ED] text-[#2D5A27] px-1 py-0.5 rounded text-[10px]">OPENAI_API_KEY</code>{' '}
-                en el archivo{' '}
-                <code className="bg-[#EEF5ED] text-[#2D5A27] px-1 py-0.5 rounded text-[10px]">.env.local</code>.
-              </p>
-            </div>
-          </div>
-        </Section>
-
         {/* ── Zona de peligro ── */}
         <Section title="Zona de peligro">
           {showClearConfirm ? (
@@ -369,28 +374,86 @@ export default function ConfiguracionPage() {
 
         {/* ── Sesión ── */}
         <Section title="Sesión">
-          <ActionRow
-            icon={<LogOut size={16} />}
-            label={signingOut ? 'Cerrando sesión…' : 'Cerrar sesión'}
-            sublabel={profile ? `Sesión activa como ${profile.nombre}` : undefined}
-            onClick={handleSignOut}
-            danger
-            rightEl={signingOut ? (
-              <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-            ) : undefined}
-          />
+          {showSignOutConfirm ? (
+            <div className="p-4">
+              <p className="text-sm text-[#2D2D2D] mb-1 font-semibold text-center" style={serif}>
+                ¿Cerrar tu sesión?
+              </p>
+              <p className="text-xs text-[#666666] text-center mb-4">
+                Tendrás que volver a iniciar sesión para acceder a tus clientas.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowSignOutConfirm(false)}
+                  disabled={signingOut}
+                  className="flex-1 py-2.5 rounded-xl border-2 border-[#E5E5E5] text-sm text-[#666666] font-semibold disabled:opacity-60"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSignOut}
+                  disabled={signingOut}
+                  className="flex-1 py-2.5 rounded-xl bg-red-500 text-sm text-white font-bold flex items-center justify-center gap-2 disabled:opacity-60"
+                  style={serif}
+                >
+                  {signingOut ? (
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    'Sí, cerrar sesión'
+                  )}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <ActionRow
+              icon={<LogOut size={16} />}
+              label="Cerrar sesión"
+              sublabel={profile ? `Sesión activa como ${profile.nombre}` : undefined}
+              onClick={() => setShowSignOutConfirm(true)}
+              danger
+            />
+          )}
         </Section>
 
         {/* ── Acerca de ── */}
         <Section title="Acerca de">
-          <div className="px-4 py-4 text-center">
-            <p className="text-sm font-bold text-[#2D5A27] mb-0.5" style={serif}>
-              Velli — Inteligencia capilar a tu alcance
+          <div className="px-4 py-6 flex flex-col items-center text-center">
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
+              style={{
+                background: 'linear-gradient(135deg, #1A2E1A 0%, #2D5A27 100%)',
+                boxShadow: '0 4px 16px rgba(45,90,39,0.28)',
+              }}
+            >
+              <span className="text-white text-3xl leading-none" style={serif}>V</span>
+            </div>
+            <p className="text-base font-bold text-[#2D5A27]" style={serif}>
+              Velli Pro <span className="text-[#999999] font-normal text-sm">v1.0</span>
             </p>
-            <p className="text-xs text-[#999999]">Velli Pro · Fase 2</p>
-            <p className="text-xs text-[#CCCCCC] mt-2">
-              Diagnóstico capilar profesional para todo tipo de cabello
+            <p className="text-xs text-[#C9956B] mt-0.5 mb-3" style={serif}>
+              Inteligencia capilar a tu alcance
             </p>
+            <p className="text-xs text-[#666666] leading-relaxed max-w-xs">
+              Velli Pro es una herramienta profesional para estilistas que combina inteligencia
+              artificial con conocimiento tricológico para ofrecer diagnósticos precisos y planes
+              de tratamiento personalizados.
+            </p>
+            <div className="flex gap-4 mt-5 text-[11px] text-[#999999]">
+              <Link href="/legal/terminos" className="hover:text-[#2D5A27] hover:underline">
+                Términos de uso
+              </Link>
+              <span className="text-[#E5E5E5]">·</span>
+              <Link href="/legal/privacidad" className="hover:text-[#2D5A27] hover:underline">
+                Privacidad
+              </Link>
+              <span className="text-[#E5E5E5]">·</span>
+              <a
+                href="mailto:soporte@velli.app?subject=Soporte%20Velli%20Pro"
+                className="hover:text-[#2D5A27] hover:underline"
+              >
+                Soporte
+              </a>
+            </div>
           </div>
         </Section>
 

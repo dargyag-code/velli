@@ -7,12 +7,14 @@ import BottomNav from '@/components/layout/BottomNav';
 import StatCard from '@/components/dashboard/StatCard';
 import ClientaCard from '@/components/dashboard/ClientaCard';
 import SearchBar from '@/components/dashboard/SearchBar';
+import Onboarding from '@/components/dashboard/Onboarding';
 import Button from '@/components/ui/Button';
 import {
   getAllClientas, getRecentClientas, getStatsThisMonth,
   getMostFrequentTratamiento, getNextCita,
   getClientasInactivas, getConsultasBorrador, getLastTratamientosMap,
 } from '@/lib/db';
+import { getProfile, type Profile } from '@/lib/profile';
 import { Clienta, Consulta } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 
@@ -32,10 +34,11 @@ export default function Dashboard() {
   const [inactivas, setInactivas] = useState<Array<Clienta & { diasInactiva: number }>>([]);
   const [borradores, setBorradores] = useState<Array<{ consulta: Consulta; clienta: Clienta }>>([]);
   const [tratamientosMap, setTratamientosMap] = useState<Record<string, string>>({});
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   const loadData = useCallback(async () => {
     try {
-      const [all, recent, month, frecuente, next, inact, borr] = await Promise.all([
+      const [all, recent, month, frecuente, next, inact, borr, prof] = await Promise.all([
         getAllClientas(),
         getRecentClientas(8),
         getStatsThisMonth(),
@@ -43,12 +46,14 @@ export default function Dashboard() {
         getNextCita(),
         getClientasInactivas(45),
         getConsultasBorrador(),
+        getProfile().catch(() => null),
       ]);
       setClientas(all);
       setRecentClientas(recent);
       setStats({ total: all.length, thisMonth: month, nextCita: next, frecuente });
       setInactivas(inact.slice(0, 3));
       setBorradores(borr.slice(0, 3));
+      setProfile(prof);
       const tMap = await getLastTratamientosMap(recent.map((c) => c.id));
       setTratamientosMap(tMap);
     } catch (e) {
@@ -65,12 +70,18 @@ export default function Dashboard() {
     : [];
 
   const displayClientas = search ? searchResults : recentClientas;
+  const isFirstTime = !loading && clientas.length === 0;
+  const profileCompleto = !!(profile?.nombre && profile?.nombreNegocio);
 
   return (
     <div className="min-h-screen bg-[#F5F0E8]">
       <Header />
       <main className="max-w-2xl mx-auto px-4 py-5 pb-nav">
 
+        {isFirstTime ? (
+          <Onboarding nombre={profile?.nombre} profileCompleto={profileCompleto} />
+        ) : (
+        <>
         {/* Stats */}
         {loading ? (
           <div className="grid grid-cols-2 gap-3 mb-5">
@@ -280,6 +291,8 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+        </>
+        )}
       </main>
       <BottomNav />
     </div>

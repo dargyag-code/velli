@@ -13,6 +13,7 @@ import { createConsulta, createClienta, getClientaById, getConsultasByClienta, g
 import { generateId, todayISO } from '@/lib/utils';
 import { generateConsultaPDF } from '@/lib/pdfGenerator';
 import { uploadFoto, uploadFotos } from '@/lib/storage';
+import { showToast } from '@/lib/toast';
 
 const TOTAL_PASOS = 3;
 const STORAGE_KEY = 'velli_wizard_v2_draft';
@@ -273,7 +274,12 @@ function WizardContent() {
       if (typeof window !== 'undefined') {
         localStorage.removeItem(STORAGE_KEY);
       }
+      showToast(esBorrador ? 'Borrador guardado' : 'Diagnóstico guardado', 'success');
       return clientaObj?.id || data.clientaId || '';
+    } catch (e) {
+      console.error('[diagnostico.save]', e);
+      showToast('No se pudo guardar el diagnóstico', 'error');
+      throw e;
     } finally {
       setSaving(false);
     }

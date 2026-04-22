@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import { BarChart2, Users, CalendarDays, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
+import { BarChart2, Users, CalendarDays, TrendingUp, Sparkles } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import {
@@ -95,6 +96,43 @@ export default function ReportesPage() {
   // Ordenar tratamientos por cantidad
   const tratEntries = Object.entries(tratDistrib).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const maxTrat = Math.max(...tratEntries.map((e) => e[1]), 1);
+
+  const isEmpty = !loading && totalClientas === 0 && totalConsultas === 0;
+
+  if (isEmpty) {
+    return (
+      <div className="min-h-screen bg-[#F5F0E8]">
+        <Header title="Reportes" />
+        <main className="max-w-2xl mx-auto px-4 py-14 pb-nav text-center">
+          <div
+            className="w-24 h-24 rounded-3xl mx-auto mb-5 flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #EEF5ED 0%, #FBF4EC 100%)' }}
+          >
+            <BarChart2 size={40} className="text-[#2D5A27]" />
+          </div>
+          <h2 className="text-xl text-[#2D5A27] mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+            Tus reportes todavía están vacíos
+          </h2>
+          <p className="text-sm text-[#666666] mb-6 max-w-sm mx-auto leading-relaxed">
+            Cuando empieces a registrar diagnósticos aparecerán aquí tus tendencias: tipos de
+            cabello, tratamientos más frecuentes y crecimiento mes a mes.
+          </p>
+          <Link
+            href="/diagnostico"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-white text-sm font-bold"
+            style={{
+              background: 'linear-gradient(135deg, #2D5A27, #4A8C42)',
+              boxShadow: '0 6px 20px rgba(45,90,39,0.28)',
+              fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif",
+            }}
+          >
+            <Sparkles size={16} /> Empezar primer diagnóstico
+          </Link>
+        </main>
+        <BottomNav />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F0E8]">
@@ -262,7 +300,7 @@ export default function ReportesPage() {
 
         {/* Footer note */}
         <p className="text-center text-xs text-[#CCCCCC] pb-2" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-          Datos almacenados localmente en este dispositivo
+          Solo tú ves estos datos · Velli Pro
         </p>
       </main>
 

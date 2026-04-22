@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User, Mail, Lock, Store, Check } from 'lucide-react';
+import { User, Mail, Lock, Store, Check, ArrowRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { friendlyAuthError } from '@/lib/errors';
 
 const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 
@@ -17,6 +18,7 @@ export default function RegistroPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [autoLogged, setAutoLogged] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,18 +44,73 @@ export default function RegistroPage() {
     setLoading(false);
 
     if (error) {
-      setError(error.message);
+      console.error('[auth.signUp]', error);
+      setError(friendlyAuthError(error.message));
       return;
     }
 
     // Si Supabase tiene confirmación de email activa, no hay sesión aún.
     if (data.session) {
-      router.push('/');
-      router.refresh();
+      setAutoLogged(true);
     } else {
       setSuccess(true);
     }
   };
+
+  const goCompletarPerfil = () => {
+    router.push('/configuracion');
+    router.refresh();
+  };
+
+  const goDashboard = () => {
+    router.push('/');
+    router.refresh();
+  };
+
+  if (autoLogged) {
+    return (
+      <div className="w-full max-w-sm text-center">
+        <div
+          className="w-20 h-20 rounded-3xl mx-auto mb-5 flex items-center justify-center"
+          style={{
+            background: 'linear-gradient(135deg, #1A2E1A 0%, #2D5A27 100%)',
+            boxShadow: '0 8px 32px rgba(45,90,39,0.40)',
+          }}
+        >
+          <span className="text-white text-5xl leading-none" style={serif}>V</span>
+        </div>
+        <h1 className="text-2xl text-[#2D5A27] mb-1" style={serif}>
+          ¡Bienvenida, {nombre.split(' ')[0] || 'estilista'}!
+        </h1>
+        <p className="text-sm text-[#C9956B] mb-1" style={serif}>
+          Tu cuenta está lista
+        </p>
+        <p className="text-sm text-[#666666] mb-7">
+          Completa tu perfil para que tus diagnósticos y reportes salgan con tu información
+          profesional.
+        </p>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={goCompletarPerfil}
+            className="w-full py-3 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2"
+            style={{
+              background: 'linear-gradient(135deg, #2D5A27, #4A8C42)',
+              boxShadow: '0 4px 16px rgba(45,90,39,0.28)',
+              ...serif,
+            }}
+          >
+            Completar mi perfil <ArrowRight size={16} />
+          </button>
+          <button
+            onClick={goDashboard}
+            className="text-sm text-[#666666] hover:text-[#2D5A27]"
+          >
+            Ahora no, llévame al inicio
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (success) {
     return (
@@ -88,13 +145,13 @@ export default function RegistroPage() {
   return (
     <div className="w-full max-w-sm flex flex-col items-center">
       <div
-        className="w-20 h-20 rounded-3xl flex items-center justify-center mb-5"
+        className="w-24 h-24 rounded-3xl flex items-center justify-center mb-5"
         style={{
           background: 'linear-gradient(135deg, #1A2E1A 0%, #2D5A27 100%)',
-          boxShadow: '0 8px 32px rgba(45,90,39,0.40)',
+          boxShadow: '0 10px 36px rgba(45,90,39,0.42)',
         }}
       >
-        <span className="text-white text-5xl leading-none" style={serif}>
+        <span className="text-white text-6xl leading-none" style={serif}>
           V
         </span>
       </div>
@@ -103,7 +160,7 @@ export default function RegistroPage() {
         Crear cuenta
       </h1>
       <p className="text-sm text-[#C9956B] mb-6" style={serif}>
-        Únete a Velli Pro
+        Inteligencia capilar a tu alcance
       </p>
 
       <form
@@ -213,7 +270,10 @@ export default function RegistroPage() {
           }}
         >
           {loading ? (
-            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <>
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Creando cuenta…
+            </>
           ) : (
             'Crear cuenta'
           )}

@@ -148,19 +148,26 @@ export default function AgendaPage() {
           </div>
         ) : upcoming.length === 0 ? (
           <div className="text-center py-14">
-            <div className="w-20 h-20 bg-[#EEF5ED] rounded-full mx-auto mb-4 flex items-center justify-center">
-              <CalendarX size={32} className="text-[#90B98A]" />
+            <div
+              className="w-24 h-24 rounded-3xl mx-auto mb-4 flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #EEF5ED 0%, #FBF4EC 100%)' }}
+            >
+              <CalendarX size={40} className="text-[#2D5A27]" />
             </div>
-            <p className="text-base font-bold text-[#666666] mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-              Sin citas programadas
+            <p className="text-lg font-bold text-[#2D5A27] mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+              Agenda en calma
             </p>
-            <p className="text-sm text-[#999999] mb-5">
-              Las citas se guardan al finalizar un diagnóstico
+            <p className="text-sm text-[#666666] mb-5 max-w-xs mx-auto leading-relaxed">
+              Aquí aparecerán tus próximas citas. Se agendan al finalizar cada diagnóstico.
             </p>
             <Link href="/diagnostico">
               <button
-                className="px-6 py-3 rounded-2xl bg-[#2D5A27] text-white text-sm font-bold flex items-center gap-2 mx-auto"
-                style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+                className="px-6 py-3 rounded-2xl text-white text-sm font-bold flex items-center gap-2 mx-auto"
+                style={{
+                  background: 'linear-gradient(135deg, #2D5A27, #4A8C42)',
+                  boxShadow: '0 6px 20px rgba(45,90,39,0.28)',
+                  fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif",
+                }}
               >
                 <Plus size={16} />
                 Nueva consulta

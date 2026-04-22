@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { DM_Serif_Display, DM_Sans } from 'next/font/google';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
+import ToastHost from '@/components/ui/ToastHost';
 import './globals.css';
 
 const dmSerifDisplay = DM_Serif_Display({
@@ -18,14 +19,48 @@ const dmSans = DM_Sans({
   display: 'swap',
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://velli.app';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'Velli Pro — Inteligencia capilar a tu alcance',
-  description: 'Diagnóstico capilar profesional para todo tipo de cabello',
+  description:
+    'Velli Pro es la herramienta profesional para estilistas: diagnóstico capilar con IA, planes de tratamiento personalizados e historial de clientas para todo tipo de cabello (1A–4C).',
+  applicationName: 'Velli Pro',
   manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/icons/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: '/icons/icon-192.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'Velli',
+  },
+  openGraph: {
+    type: 'website',
+    siteName: 'Velli Pro',
+    title: 'Velli Pro — Inteligencia capilar a tu alcance',
+    description:
+      'Diagnóstico capilar profesional con IA y planes de tratamiento personalizados para estilistas.',
+    locale: 'es_CO',
+    images: [
+      {
+        url: '/icons/icon-512.png',
+        width: 512,
+        height: 512,
+        alt: 'Velli Pro',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Velli Pro — Inteligencia capilar a tu alcance',
+    description: 'Diagnóstico capilar profesional con IA para estilistas.',
+    images: ['/icons/icon-512.png'],
   },
 };
 
@@ -54,6 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         }}
       >
         {children}
+        <ToastHost />
         <ServiceWorkerRegistrar />
       </body>
     </html>

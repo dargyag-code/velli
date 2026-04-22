@@ -8,6 +8,8 @@ import Button from '@/components/ui/Button';
 import { createClienta } from '@/lib/db';
 import { Clienta } from '@/lib/types';
 import { generateId, todayISO } from '@/lib/utils';
+import { showToast } from '@/lib/toast';
+import { friendlyError } from '@/lib/errors';
 
 export default function NuevaClientaPage() {
   const router = useRouter();
@@ -47,8 +49,15 @@ export default function NuevaClientaPage() {
         medicamentos: medicamentos || undefined,
         totalVisitas: 0,
       };
-      await createClienta(nueva);
-      router.push(`/clientas/${nueva.id}`);
+      try {
+        await createClienta(nueva);
+        showToast('Clienta creada', 'success');
+        router.push(`/clientas/${nueva.id}`);
+      } catch (e) {
+        console.error('[clientas.create]', e);
+        setError(friendlyError(e));
+        showToast('No se pudo guardar la clienta', 'error');
+      }
     } finally {
       setSaving(false);
     }
