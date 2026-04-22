@@ -12,6 +12,7 @@ import { generateDiagnosis, SaludClienta } from '@/lib/diagnosticEngine';
 import { createConsulta, createClienta, getClientaById, getConsultasByClienta, getConsultaById } from '@/lib/db';
 import { generateId, todayISO } from '@/lib/utils';
 import { generateConsultaPDF } from '@/lib/pdfGenerator';
+import { uploadFoto, uploadFotos } from '@/lib/storage';
 
 const TOTAL_PASOS = 3;
 const STORAGE_KEY = 'velli_wizard_v2_draft';
@@ -243,6 +244,16 @@ function WizardContent() {
       const existingConsultas = await getConsultasByClienta(clientaObj?.id || data.clientaId || '');
       const numeroConsulta = existingConsultas.length + 1;
 
+      // Subir fotos a Supabase Storage: base64 → URL pública
+      const basePath = `diagnosticos/${consulta.id}`;
+      const [uploadedAnalisis, uploadedAntes, uploadedDespues] = await Promise.all([
+        consulta.fotoAnalisis && consulta.fotoAnalisis.length > 0
+          ? uploadFotos(consulta.fotoAnalisis, `${basePath}/analisis`)
+          : Promise.resolve(undefined),
+        fotoAntes ? uploadFoto(fotoAntes, `${basePath}/antes`).catch(() => undefined) : Promise.resolve(undefined),
+        fotoDespues ? uploadFoto(fotoDespues, `${basePath}/despues`).catch(() => undefined) : Promise.resolve(undefined),
+      ]);
+
       const finalConsulta: Consulta = {
         ...consulta,
         clientaId: clientaObj?.id || data.clientaId || '',
@@ -250,8 +261,9 @@ function WizardContent() {
         proximaCita,
         notasEstilista: notas,
         esBorrador,
-        fotoAntes,
-        fotoDespues,
+        fotoAnalisis: uploadedAnalisis,
+        fotoAntes: uploadedAntes,
+        fotoDespues: uploadedDespues,
         satisfaccionEstrellas: estrellas as (1|2|3|4|5) | undefined,
       };
 

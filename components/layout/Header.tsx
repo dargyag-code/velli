@@ -3,8 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-
-const STYLIST_KEY = 'velli_stylist_name';
+import { getProfile } from '@/lib/profile';
 
 interface HeaderProps {
   showBack?: boolean;
@@ -17,7 +16,17 @@ export default function Header({ showBack, title, rightAction }: HeaderProps) {
   const [stylistName, setStylistName] = useState<string | null>(null);
 
   useEffect(() => {
-    setStylistName(localStorage.getItem(STYLIST_KEY) ?? '');
+    let active = true;
+    getProfile()
+      .then((p) => {
+        if (active) setStylistName(p?.nombre ?? '');
+      })
+      .catch(() => {
+        if (active) setStylistName('');
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   // ── Header de detalle / wizard ──────────────────────────────────────────

@@ -1,24 +1,28 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
-  Settings, User, Download, Upload, Trash2,
-  ChevronRight, Check, AlertCircle, Info,
+  User, Download, Upload, Trash2,
+  ChevronRight, Check, AlertCircle, Info, LogOut,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
-import { db } from '@/lib/db';
+import {
+  getAllClientas,
+  getAllConsultas,
+  bulkUpsertClientas,
+  bulkUpsertConsultas,
+  clearAllData,
+} from '@/lib/db';
+import { getProfile, updateProfile, signOut } from '@/lib/profile';
+import type { Profile } from '@/lib/profile';
 
-const STYLIST_KEY = 'velli_stylist_name';
-const BUSINESS_KEY = 'velli_business_name';
+const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 
-// ── Sección genérica ───────────────────────────────────────────────────────
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-5">
-      <h2
-        className="text-[10px] font-bold text-[#999999] uppercase tracking-widest px-1 mb-2"
-        style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
-      >
+      <h2 className="text-[10px] font-bold text-[#999999] uppercase tracking-widest px-1 mb-2" style={serif}>
         {title}
       </h2>
       <div className="bg-white rounded-2xl border border-[#E5E5E5] overflow-hidden">
@@ -28,7 +32,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-// ── Fila de acción ─────────────────────────────────────────────────────────
 function ActionRow({
   icon, label, sublabel, onClick, danger = false, rightEl,
 }: {
@@ -59,38 +62,68 @@ function ActionRow({
 }
 
 export default function ConfiguracionPage() {
-  const [stylistName, setStylistName] = useState('');
-  const [businessName, setBusinessName] = useState('');
+  const router = useRouter();
+
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [editingProfile, setEditingProfile] = useState(false);
+  const [nombre, setNombre] = useState('');
+  const [nombreNegocio, setNombreNegocio] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [ciudad, setCiudad] = useState('');
   const [saveOk, setSaveOk] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const [exportLoading, setExportLoading] = useState(false);
   const [importMsg, setImportMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [clearDone, setClearDone] = useState(false);
 
+  const [signingOut, setSigningOut] = useState(false);
+
   useEffect(() => {
-    setStylistName(localStorage.getItem(STYLIST_KEY) ?? '');
-    setBusinessName(localStorage.getItem(BUSINESS_KEY) ?? '');
+    getProfile()
+      .then((p) => {
+        if (p) {
+          setProfile(p);
+          setNombre(p.nombre);
+          setNombreNegocio(p.nombreNegocio ?? '');
+          setTelefono(p.telefono ?? '');
+          setCiudad(p.ciudad ?? '');
+        }
+      })
+      .finally(() => setProfileLoading(false));
   }, []);
 
-  const saveProfile = () => {
-    localStorage.setItem(STYLIST_KEY, stylistName.trim());
-    localStorage.setItem(BUSINESS_KEY, businessName.trim());
-    setSaveOk(true);
-    setTimeout(() => { setSaveOk(false); setEditingProfile(false); }, 1200);
+  const saveProfile = async () => {
+    setSaving(true);
+    try {
+      const p = await updateProfile({
+        nombre: nombre.trim() || 'Estilista',
+        nombreNegocio: nombreNegocio.trim(),
+        telefono: telefono.trim(),
+        ciudad: ciudad.trim(),
+      });
+      setProfile(p);
+      setSaveOk(true);
+      setTimeout(() => {
+        setSaveOk(false);
+        setEditingProfile(false);
+      }, 1200);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  // ── Exportar datos ──────────────────────────────────────────────────────
   const handleExport = async () => {
     setExportLoading(true);
     try {
       const [clientas, consultas] = await Promise.all([
-        db.clientas.toArray(),
-        db.consultas.toArray(),
+        getAllClientas(),
+        getAllConsultas(),
       ]);
       const data = {
-        version: 1,
+        version: 2,
         exportadoEn: new Date().toISOString(),
         clientas,
         consultas,
@@ -102,14 +135,11 @@ export default function ConfiguracionPage() {
       a.download = `velli-backup-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch {
-      // silently fail
     } finally {
       setExportLoading(false);
     }
   };
 
-  // ── Importar datos ──────────────────────────────────────────────────────
   const handleImport = () => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -126,11 +156,8 @@ export default function ConfiguracionPage() {
           return;
         }
 
-        // Upsert para no duplicar
-        await db.transaction('rw', db.clientas, db.consultas, async () => {
-          for (const c of data.clientas) await db.clientas.put(c);
-          for (const c of data.consultas) await db.consultas.put(c);
-        });
+        await bulkUpsertClientas(data.clientas);
+        await bulkUpsertConsultas(data.consultas);
 
         setImportMsg({
           type: 'ok',
@@ -145,15 +172,26 @@ export default function ConfiguracionPage() {
     input.click();
   };
 
-  // ── Borrar todos los datos ──────────────────────────────────────────────
   const handleClearAll = async () => {
-    await db.transaction('rw', db.clientas, db.consultas, async () => {
-      await db.clientas.clear();
-      await db.consultas.clear();
-    });
-    setShowClearConfirm(false);
-    setClearDone(true);
-    setTimeout(() => setClearDone(false), 3000);
+    try {
+      await clearAllData();
+      setShowClearConfirm(false);
+      setClearDone(true);
+      setTimeout(() => setClearDone(false), 3000);
+    } catch {
+      setShowClearConfirm(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    try {
+      await signOut();
+      router.push('/auth/login');
+      router.refresh();
+    } catch {
+      setSigningOut(false);
+    }
   };
 
   return (
@@ -162,53 +200,73 @@ export default function ConfiguracionPage() {
 
       <main className="max-w-2xl mx-auto px-4 py-5 pb-nav">
 
-        {/* ── Perfil de la estilista ── */}
+        {/* ── Perfil ── */}
         <Section title="Perfil">
-          {editingProfile ? (
+          {profileLoading ? (
+            <div className="px-4 py-4 text-xs text-[#999999]">Cargando perfil…</div>
+          ) : editingProfile ? (
             <div className="p-4 flex flex-col gap-3">
               <div>
-                <label className="text-xs text-[#666666] block mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                  Nombre de la estilista
-                </label>
+                <label className="text-xs text-[#666666] block mb-1" style={serif}>Nombre</label>
                 <input
                   className="w-full border-2 border-[#E5E5E5] rounded-xl px-3 py-2 text-sm text-[#2D2D2D] focus:border-[#2D5A27] outline-none"
-                  value={stylistName}
-                  onChange={(e) => setStylistName(e.target.value)}
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
                   placeholder="Tu nombre"
                 />
               </div>
               <div>
-                <label className="text-xs text-[#666666] block mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                  Nombre del negocio
-                </label>
+                <label className="text-xs text-[#666666] block mb-1" style={serif}>Nombre del salón</label>
                 <input
                   className="w-full border-2 border-[#E5E5E5] rounded-xl px-3 py-2 text-sm text-[#2D2D2D] focus:border-[#2D5A27] outline-none"
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
+                  value={nombreNegocio}
+                  onChange={(e) => setNombreNegocio(e.target.value)}
                   placeholder="Velli — Inteligencia capilar a tu alcance"
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs text-[#666666] block mb-1" style={serif}>Teléfono</label>
+                  <input
+                    className="w-full border-2 border-[#E5E5E5] rounded-xl px-3 py-2 text-sm text-[#2D2D2D] focus:border-[#2D5A27] outline-none"
+                    value={telefono}
+                    onChange={(e) => setTelefono(e.target.value)}
+                    placeholder="+57 ..."
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-[#666666] block mb-1" style={serif}>Ciudad</label>
+                  <input
+                    className="w-full border-2 border-[#E5E5E5] rounded-xl px-3 py-2 text-sm text-[#2D2D2D] focus:border-[#2D5A27] outline-none"
+                    value={ciudad}
+                    onChange={(e) => setCiudad(e.target.value)}
+                    placeholder="Bogotá"
+                  />
+                </div>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => setEditingProfile(false)}
+                  disabled={saving}
                   className="flex-1 py-2.5 rounded-xl border-2 border-[#E5E5E5] text-sm text-[#666666] font-semibold"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={saveProfile}
-                  className="flex-1 py-2.5 rounded-xl bg-[#2D5A27] text-sm text-white font-bold flex items-center justify-center gap-2"
-                  style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+                  disabled={saving}
+                  className="flex-1 py-2.5 rounded-xl bg-[#2D5A27] text-sm text-white font-bold flex items-center justify-center gap-2 disabled:opacity-60"
+                  style={serif}
                 >
-                  {saveOk ? <><Check size={16} /> Guardado</> : 'Guardar'}
+                  {saveOk ? <><Check size={16} /> Guardado</> : saving ? 'Guardando…' : 'Guardar'}
                 </button>
               </div>
             </div>
           ) : (
             <ActionRow
               icon={<User size={16} />}
-              label={stylistName || 'Tu nombre'}
-              sublabel={businessName || 'Velli — Inteligencia capilar a tu alcance'}
+              label={profile?.nombre || 'Tu nombre'}
+              sublabel={profile?.nombreNegocio || 'Velli — Inteligencia capilar a tu alcance'}
               onClick={() => setEditingProfile(true)}
             />
           )}
@@ -233,7 +291,6 @@ export default function ConfiguracionPage() {
           />
         </Section>
 
-        {/* Mensaje de importación */}
         {importMsg && (
           <div className={`flex items-start gap-2 p-3 rounded-xl mb-4 border ${
             importMsg.type === 'ok'
@@ -264,12 +321,10 @@ export default function ConfiguracionPage() {
             <div>
               <p className="text-sm font-semibold text-[#2D2D2D] mb-0.5">API de OpenAI (GPT-4o)</p>
               <p className="text-xs text-[#666666] leading-relaxed">
-                El análisis de cámara IA usa GPT-4o. Para activarlo, agrega tu clave en el archivo{' '}
-                <code className="bg-[#EEF5ED] text-[#2D5A27] px-1 py-0.5 rounded text-[10px]">.env.local</code>{' '}
-                con el valor{' '}
-                <code className="bg-[#EEF5ED] text-[#2D5A27] px-1 py-0.5 rounded text-[10px]">OPENAI_API_KEY=sk-...</code>{' '}
-                — Consíguelo en{' '}
-                <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-[#2D5A27] underline">platform.openai.com/api-keys</a>
+                El análisis de cámara IA usa GPT-4o desde el servidor. La clave se configura en{' '}
+                <code className="bg-[#EEF5ED] text-[#2D5A27] px-1 py-0.5 rounded text-[10px]">OPENAI_API_KEY</code>{' '}
+                en el archivo{' '}
+                <code className="bg-[#EEF5ED] text-[#2D5A27] px-1 py-0.5 rounded text-[10px]">.env.local</code>.
               </p>
             </div>
           </div>
@@ -280,10 +335,10 @@ export default function ConfiguracionPage() {
           {showClearConfirm ? (
             <div className="p-4">
               <p className="text-sm text-red-700 mb-3 font-semibold text-center">
-                ¿Eliminar TODOS los datos permanentemente?
+                ¿Eliminar TODOS tus datos permanentemente?
               </p>
               <p className="text-xs text-[#666666] text-center mb-4">
-                Se borrarán todas las clientas y consultas. No se puede deshacer. Exporta un backup primero.
+                Se borrarán todas tus clientas y consultas. No se puede deshacer. Exporta un backup primero.
               </p>
               <div className="flex gap-2">
                 <button
@@ -295,7 +350,7 @@ export default function ConfiguracionPage() {
                 <button
                   onClick={handleClearAll}
                   className="flex-1 py-2.5 rounded-xl bg-red-500 text-sm text-white font-bold"
-                  style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+                  style={serif}
                 >
                   Sí, borrar todo
                 </button>
@@ -305,20 +360,34 @@ export default function ConfiguracionPage() {
             <ActionRow
               icon={<Trash2 size={16} />}
               label="Borrar todos los datos"
-              sublabel="Elimina clientas y consultas de este dispositivo"
+              sublabel="Elimina tus clientas y consultas de la nube"
               onClick={() => setShowClearConfirm(true)}
               danger
             />
           )}
         </Section>
 
+        {/* ── Sesión ── */}
+        <Section title="Sesión">
+          <ActionRow
+            icon={<LogOut size={16} />}
+            label={signingOut ? 'Cerrando sesión…' : 'Cerrar sesión'}
+            sublabel={profile ? `Sesión activa como ${profile.nombre}` : undefined}
+            onClick={handleSignOut}
+            danger
+            rightEl={signingOut ? (
+              <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+            ) : undefined}
+          />
+        </Section>
+
         {/* ── Acerca de ── */}
         <Section title="Acerca de">
           <div className="px-4 py-4 text-center">
-            <p className="text-sm font-bold text-[#2D5A27] mb-0.5" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+            <p className="text-sm font-bold text-[#2D5A27] mb-0.5" style={serif}>
               Velli — Inteligencia capilar a tu alcance
             </p>
-            <p className="text-xs text-[#999999]">Velli Pro · Versión 1.0</p>
+            <p className="text-xs text-[#999999]">Velli Pro · Fase 2</p>
             <p className="text-xs text-[#CCCCCC] mt-2">
               Diagnóstico capilar profesional para todo tipo de cabello
             </p>
