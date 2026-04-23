@@ -88,12 +88,9 @@ CREATE TABLE public.consultas (
   tipo_dano TEXT[] NOT NULL DEFAULT '{}',
   linea_demarcacion TEXT,
 
-  -- Paso 5: snapshot de salud al momento del diagnóstico
-  alergias TEXT,
-  condiciones_medicas TEXT,
-  medicamentos TEXT,
-  embarazo BOOLEAN NOT NULL DEFAULT FALSE,
-  nivel_estres TEXT NOT NULL DEFAULT '',
+  -- Los campos de salud (alergias, condiciones_medicas, medicamentos,
+  -- embarazo_lactancia, nivel_estres) viven SOLO en clientas — no se duplican
+  -- como snapshot aquí. Si el motor los necesita, los lee de clientas.
 
   -- Resultado generado por el motor (ResultadoConsulta)
   resultado JSONB NOT NULL,

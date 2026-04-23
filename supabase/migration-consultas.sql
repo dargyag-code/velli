@@ -122,12 +122,7 @@ CREATE TABLE IF NOT EXISTS public.consultas (
   tipo_dano TEXT[] NOT NULL DEFAULT '{}',
   linea_demarcacion TEXT,
 
-  -- Paso 5: snapshot de salud
-  alergias TEXT,
-  condiciones_medicas TEXT,
-  medicamentos TEXT,
-  embarazo BOOLEAN NOT NULL DEFAULT FALSE,
-  nivel_estres TEXT NOT NULL DEFAULT '',
+  -- Los campos de salud viven SOLO en clientas — no se duplican aquí.
 
   -- Resultado generado por el motor
   resultado JSONB NOT NULL,

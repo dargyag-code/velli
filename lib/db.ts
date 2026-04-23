@@ -63,11 +63,8 @@ type ConsultaRow = {
   estado_puntas: string | null;
   tipo_dano: string[];
   linea_demarcacion: string | null;
-  alergias: string | null;
-  condiciones_medicas: string | null;
-  medicamentos: string | null;
-  embarazo: boolean;
-  nivel_estres: string;
+  // Los campos de salud (alergias, condiciones_medicas, medicamentos,
+  // embarazo_lactancia, nivel_estres) viven SOLO en clientas, no en consultas.
   resultado: ResultadoConsulta;
   satisfaccion: Consulta['satisfaccion'] | null;
   satisfaccion_estrellas: number | null;
@@ -149,11 +146,12 @@ function rowToConsulta(r: ConsultaRow): Consulta {
     estadoPuntas: r.estado_puntas ?? undefined,
     tipoDano: r.tipo_dano,
     lineaDemarcacion: r.linea_demarcacion ?? undefined,
-    alergias: r.alergias ?? undefined,
-    condicionesMedicas: r.condiciones_medicas ?? undefined,
-    medicamentos: r.medicamentos ?? undefined,
-    embarazo: r.embarazo,
-    nivelEstres: r.nivel_estres,
+    // Salud: no vive en consultas. Se lee de clientas cuando haga falta.
+    alergias: undefined,
+    condicionesMedicas: undefined,
+    medicamentos: undefined,
+    embarazo: false,
+    nivelEstres: '',
     resultado: r.resultado,
     satisfaccion: r.satisfaccion ?? undefined,
     satisfaccionEstrellas:
@@ -201,11 +199,7 @@ function consultaToRow(c: Consulta): Omit<ConsultaRow, 'user_id'> {
     estado_puntas: c.estadoPuntas ?? null,
     tipo_dano: c.tipoDano,
     linea_demarcacion: c.lineaDemarcacion ?? null,
-    alergias: c.alergias ?? null,
-    condiciones_medicas: c.condicionesMedicas ?? null,
-    medicamentos: c.medicamentos ?? null,
-    embarazo: c.embarazo,
-    nivel_estres: c.nivelEstres,
+    // Salud: NO se envía a consultas. Esos campos viven en clientas.
     resultado: c.resultado,
     // satisfaccion tiene CHECK — strings vacíos deben ir como null.
     satisfaccion: c.satisfaccion || null,
@@ -334,7 +328,16 @@ export async function createConsulta(consulta: Consulta): Promise<void> {
   const { error: insertError } = await supabase
     .from('consultas')
     .insert({ ...consultaToRow(consulta), user_id: userId });
-  if (insertError) throw insertError;
+  if (insertError) {
+    console.error('[db.createConsulta] insert consulta failed', {
+      code: insertError.code,
+      message: insertError.message,
+      details: insertError.details,
+      hint: insertError.hint,
+      clientaId: consulta.clientaId,
+    });
+    throw insertError;
+  }
 
   // Actualizar clienta: última visita, total de visitas, tipo de rizo principal.
   // Los errores del select/update aquí ANTES se tragaban — ahora se capturan
