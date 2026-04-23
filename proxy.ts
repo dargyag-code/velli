@@ -47,7 +47,10 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Corre en todo menos assets estáticos, service worker, manifest y api
-    '/((?!_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js|api).*)',
+    // Excluir: _next/static, _next/image, api, y cualquier archivo con extensión
+    // (.*\..*) — esto cubre manifest.json, sw.js, favicon.ico, icons/*.png,
+    // *.svg, *.webp, etc. de forma automática. /auth NO se excluye aquí porque
+    // el handler de arriba tiene lógica específica (redirige si ya hay sesión).
+    '/((?!_next/static|_next/image|api|.*\\..*).*)',
   ],
 };
