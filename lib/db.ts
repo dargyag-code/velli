@@ -330,21 +330,34 @@ export async function createConsulta(consulta: Consulta): Promise<void> {
   const supabase = createClient();
   const userId = await currentUserId();
 
-  const { error } = await supabase
+  const { error: insertError } = await supabase
     .from('consultas')
     .insert({ ...consultaToRow(consulta), user_id: userId });
-  if (error) throw error;
+  if (insertError) throw insertError;
 
-  // Actualizar clienta: última visita, total de visitas, tipo de rizo principal
-  const { data: clientaRow } = await supabase
+  // Actualizar clienta: última visita, total de visitas, tipo de rizo principal.
+  // Los errores del select/update aquí ANTES se tragaban — ahora se capturan
+  // para superficiar 400s de Supabase (RLS, constraints, etc.).
+  const { data: clientaRow, error: selectError } = await supabase
     .from('clientas')
     .select('total_visitas')
     .eq('id', consulta.clientaId)
     .maybeSingle();
 
+  if (selectError) {
+    console.error('[db.createConsulta] select clienta failed', {
+      code: selectError.code,
+      message: selectError.message,
+      details: selectError.details,
+      hint: selectError.hint,
+      clientaId: consulta.clientaId,
+    });
+    throw selectError;
+  }
+
   const nextTotal = (clientaRow?.total_visitas ?? 0) + 1;
 
-  await supabase
+  const { error: updateError } = await supabase
     .from('clientas')
     .update({
       ultima_visita: consulta.fecha,
@@ -352,6 +365,22 @@ export async function createConsulta(consulta: Consulta): Promise<void> {
       tipo_rizo_principal: consulta.tipoRizoPrincipal || null,
     })
     .eq('id', consulta.clientaId);
+
+  if (updateError) {
+    console.error('[db.createConsulta] update clienta failed', {
+      code: updateError.code,
+      message: updateError.message,
+      details: updateError.details,
+      hint: updateError.hint,
+      clientaId: consulta.clientaId,
+      payload: {
+        ultima_visita: consulta.fecha,
+        total_visitas: nextTotal,
+        tipo_rizo_principal: consulta.tipoRizoPrincipal || null,
+      },
+    });
+    throw updateError;
+  }
 }
 
 export async function getStatsThisMonth(): Promise<number> {
