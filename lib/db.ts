@@ -21,13 +21,14 @@ type ClientaRow = {
   edad: number | null;
   telefono: string | null;
   email: string | null;
-  fecha_registro: string;
+  // La tabla real NO tiene fecha_registro — se deriva de created_at al leer.
+  created_at: string | null;
   nivel_estres: 'bajo' | 'medio' | 'alto' | null;
-  embarazo: boolean | null;
+  embarazo_lactancia: boolean | null;
   alergias: string | null;
   condiciones_medicas: string | null;
   medicamentos: string | null;
-  tipo_rizo_principal: string | null;
+  tipo_cabello_principal: string | null;
   ultima_visita: string | null;
   total_visitas: number;
 };
@@ -86,33 +87,33 @@ function rowToClienta(r: ClientaRow): Clienta {
     edad: r.edad ?? 0,
     telefono: r.telefono ?? '',
     email: r.email ?? undefined,
-    fechaRegistro: r.fecha_registro,
+    // fechaRegistro se deriva de created_at (la tabla no tiene fecha_registro).
+    fechaRegistro: r.created_at ? r.created_at.substring(0, 10) : '',
     nivelEstres: r.nivel_estres ?? undefined,
-    embarazo: r.embarazo ?? undefined,
+    embarazo: r.embarazo_lactancia ?? undefined,
     alergias: r.alergias ?? undefined,
     condicionesMedicas: r.condiciones_medicas ?? undefined,
     medicamentos: r.medicamentos ?? undefined,
-    tipoRizoPrincipal: r.tipo_rizo_principal ?? undefined,
+    tipoRizoPrincipal: r.tipo_cabello_principal ?? undefined,
     ultimaVisita: r.ultima_visita ?? undefined,
     totalVisitas: r.total_visitas,
   };
 }
 
-function clientaToRow(c: Clienta): Omit<ClientaRow, 'user_id'> {
+function clientaToRow(c: Clienta): Omit<ClientaRow, 'user_id' | 'created_at'> {
   return {
     id: c.id,
     nombre: c.nombre,
     edad: c.edad ?? 0,
     telefono: c.telefono ?? null,
     email: c.email ?? null,
-    fecha_registro: c.fechaRegistro,
     // nivel_estres tiene CHECK en Supabase — strings vacíos deben ir como null.
     nivel_estres: c.nivelEstres || null,
-    embarazo: c.embarazo ?? null,
+    embarazo_lactancia: c.embarazo ?? null,
     alergias: c.alergias ?? null,
     condiciones_medicas: c.condicionesMedicas ?? null,
     medicamentos: c.medicamentos ?? null,
-    tipo_rizo_principal: c.tipoRizoPrincipal ?? null,
+    tipo_cabello_principal: c.tipoRizoPrincipal ?? null,
     ultima_visita: c.ultimaVisita ?? null,
     total_visitas: c.totalVisitas,
   };
@@ -362,7 +363,7 @@ export async function createConsulta(consulta: Consulta): Promise<void> {
     .update({
       ultima_visita: consulta.fecha,
       total_visitas: nextTotal,
-      tipo_rizo_principal: consulta.tipoRizoPrincipal || null,
+      tipo_cabello_principal: consulta.tipoRizoPrincipal || null,
     })
     .eq('id', consulta.clientaId);
 
@@ -376,7 +377,7 @@ export async function createConsulta(consulta: Consulta): Promise<void> {
       payload: {
         ultima_visita: consulta.fecha,
         total_visitas: nextTotal,
-        tipo_rizo_principal: consulta.tipoRizoPrincipal || null,
+        tipo_cabello_principal: consulta.tipoRizoPrincipal || null,
       },
     });
     throw updateError;
@@ -514,11 +515,11 @@ export async function getRizoDistribution(): Promise<Record<string, number>> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from('clientas')
-    .select('tipo_rizo_principal');
+    .select('tipo_cabello_principal');
   if (error) throw error;
   const result: Record<string, number> = {};
   for (const row of data ?? []) {
-    const t = row.tipo_rizo_principal as string | null;
+    const t = row.tipo_cabello_principal as string | null;
     if (t) result[t] = (result[t] || 0) + 1;
   }
   return result;
