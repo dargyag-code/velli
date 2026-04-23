@@ -45,60 +45,48 @@ CREATE TABLE public.clientas (
 );
 
 -- ── Consultas (diagnósticos) ─────────────────────────────────────────────
--- Un registro por consulta. Los bloques "resultado", "productos actuales" y
--- la metadata de captura se guardan como JSONB para preservar el shape del
--- wizard y del motor de diagnóstico sin necesidad de normalizar.
+-- Un registro por consulta. Refleja el schema real vigente en producción:
+-- el motor guarda el resultado completo como JSONB en resultado_ia y
+-- duplica los campos clave en columnas derivadas para facilitar queries.
 CREATE TABLE public.consultas (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   clienta_id UUID NOT NULL REFERENCES public.clientas(id) ON DELETE CASCADE,
 
   fecha TEXT NOT NULL,                      -- ISO yyyy-mm-dd
-  numero_consulta INTEGER NOT NULL DEFAULT 1,
 
-  -- Paso 1: historial
-  quimicos TEXT[] NOT NULL DEFAULT '{}',
-  ultimo_quimico TEXT,
-  uso_calor TEXT[] NOT NULL DEFAULT '{}',
-  frecuencia_calor TEXT,
-  usa_protector_termico BOOLEAN NOT NULL DEFAULT FALSE,
-  frecuencia_lavado TEXT,
-  metodo_lavado TEXT,
-  productos_actuales JSONB NOT NULL DEFAULT '{}'::jsonb,
-  problemas TEXT[] NOT NULL DEFAULT '{}',
-  otro_problema TEXT,
-
-  -- Paso 2: tipo de rizo
-  tipo_rizo_principal TEXT,
-  tipos_secundarios TEXT[],
-  zonas_cambio TEXT,
-
-  -- Paso 3: diagnóstico técnico
+  -- Wizard técnico
+  tipo_cabello TEXT,
   porosidad TEXT CHECK (porosidad IN ('baja', 'media', 'alta')),
-  porosidad_obs TEXT,
   densidad TEXT CHECK (densidad IN ('baja', 'media', 'alta')),
-  grosor TEXT CHECK (grosor IN ('fino', 'medio', 'grueso')),
+  grosor_hebra TEXT CHECK (grosor_hebra IN ('fino', 'medio', 'grueso')),
   elasticidad TEXT CHECK (elasticidad IN ('baja', 'media', 'alta')),
   balance_hp TEXT CHECK (balance_hp IN ('hidratacion', 'nutricion', 'proteina', 'equilibrado')),
-
-  -- Paso 4: cuero cabelludo y daño
-  estado_cuero_cabelludo TEXT[] NOT NULL DEFAULT '{}',
-  obs_cuero_cabelludo TEXT,
   estado_puntas TEXT,
-  tipo_dano TEXT[] NOT NULL DEFAULT '{}',
-  linea_demarcacion TEXT,
+  nivel_dano TEXT,
+  estado_transicion TEXT,
+  estado_cuero_cabelludo TEXT[] NOT NULL DEFAULT '{}',
 
-  -- Los campos de salud (alergias, condiciones_medicas, medicamentos,
-  -- embarazo_lactancia, nivel_estres) viven SOLO en clientas — no se duplican
-  -- como snapshot aquí. Si el motor los necesita, los lee de clientas.
+  -- Wizard historial
+  historial_quimicos TEXT[] NOT NULL DEFAULT '{}',
+  problemas TEXT[] NOT NULL DEFAULT '{}',
+  frecuencia_calor TEXT,
+  frecuencia_lavado TEXT,
 
-  -- Resultado generado por el motor (ResultadoConsulta)
-  resultado JSONB NOT NULL,
+  -- Motor de diagnóstico (columnas derivadas + JSONB catch-all)
+  necesidad_principal TEXT,
+  tecnica_definicion TEXT,
+  productos_recomendados TEXT[],
+  recomendaciones_casa JSONB,
+  resultado_esperado TEXT,
+  tratamientos TEXT[],
+  cronograma JSONB,
+  resultado_ia JSONB,
+  ia_confirmada BOOLEAN NOT NULL DEFAULT FALSE,
 
   -- Post-consulta
-  satisfaccion TEXT CHECK (satisfaccion IN ('muy_satisfecha', 'satisfecha', 'parcial', 'necesita_ajustes')),
-  satisfaccion_estrellas INTEGER CHECK (satisfaccion_estrellas BETWEEN 1 AND 5),
-  notas_estilista TEXT,
+  observaciones_estilista TEXT,
+  satisfaccion_clienta TEXT CHECK (satisfaccion_clienta IN ('muy_satisfecha', 'satisfecha', 'parcial', 'necesita_ajustes')),
   proxima_cita TEXT,                        -- ISO yyyy-mm-dd
 
   -- Fotos (URLs en Supabase Storage) y metadata de captura

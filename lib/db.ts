@@ -3,6 +3,8 @@ import type {
   Clienta,
   Consulta,
   CaptureMetadata,
+  CronogramaResult,
+  CuidadoCasaResult,
   ProductosActuales,
   ResultadoConsulta,
 } from './types';
@@ -38,38 +40,37 @@ type ConsultaRow = {
   user_id: string;
   clienta_id: string;
   fecha: string;
-  numero_consulta: number;
-  quimicos: string[];
-  ultimo_quimico: string | null;
-  uso_calor: string[];
-  frecuencia_calor: string | null;
-  usa_protector_termico: boolean;
-  frecuencia_lavado: string | null;
-  metodo_lavado: string | null;
-  productos_actuales: ProductosActuales;
-  problemas: string[];
-  otro_problema: string | null;
-  tipo_rizo_principal: string | null;
-  tipos_secundarios: string[] | null;
-  zonas_cambio: string | null;
+  // Wizard técnico
+  tipo_cabello: string | null;
   porosidad: 'baja' | 'media' | 'alta' | null;
-  porosidad_obs: string | null;
   densidad: 'baja' | 'media' | 'alta' | null;
-  grosor: 'fino' | 'medio' | 'grueso' | null;
+  grosor_hebra: 'fino' | 'medio' | 'grueso' | null;
   elasticidad: 'baja' | 'media' | 'alta' | null;
   balance_hp: 'hidratacion' | 'nutricion' | 'proteina' | 'equilibrado' | null;
-  estado_cuero_cabelludo: string[];
-  obs_cuero_cabelludo: string | null;
   estado_puntas: string | null;
-  tipo_dano: string[];
-  linea_demarcacion: string | null;
-  // Los campos de salud (alergias, condiciones_medicas, medicamentos,
-  // embarazo_lactancia, nivel_estres) viven SOLO en clientas, no en consultas.
-  resultado: ResultadoConsulta;
-  satisfaccion: Consulta['satisfaccion'] | null;
-  satisfaccion_estrellas: number | null;
-  notas_estilista: string | null;
+  nivel_dano: string | null;
+  estado_transicion: string | null;
+  estado_cuero_cabelludo: string[];
+  // Wizard historial
+  historial_quimicos: string[];
+  problemas: string[];
+  frecuencia_calor: string | null;
+  frecuencia_lavado: string | null;
+  // Motor (columnas derivadas + catch-all JSONB)
+  necesidad_principal: string | null;
+  tecnica_definicion: string | null;
+  productos_recomendados: string[] | null;
+  recomendaciones_casa: CuidadoCasaResult | null;
+  resultado_esperado: string | null;
+  tratamientos: string[] | null;
+  cronograma: CronogramaResult | null;
+  resultado_ia: ResultadoConsulta | null;
+  ia_confirmada: boolean;
+  // Post-consulta
+  observaciones_estilista: string | null;
+  satisfaccion_clienta: Consulta['satisfaccion'] | null;
   proxima_cita: string | null;
+  // Fotos y captura
   foto_antes: string | null;
   foto_despues: string | null;
   foto_analisis: string[] | null;
@@ -116,49 +117,75 @@ function clientaToRow(c: Clienta): Omit<ClientaRow, 'user_id' | 'created_at'> {
   };
 }
 
+const EMPTY_CRONOGRAMA: CronogramaResult = {
+  semana1: '', semana2: '', semana3: '', semana4: '',
+};
+const EMPTY_CUIDADO_CASA: CuidadoCasaResult = {
+  diaLavado: [], nocturno: [], refresh: [], evitar: [],
+};
+const EMPTY_PRODUCTOS_ACTUALES: ProductosActuales = {};
+
 function rowToConsulta(r: ConsultaRow): Consulta {
+  // Preferir resultado_ia (catch-all JSONB). Si no está, reconstruir desde
+  // las columnas split. Algunos subcampos del tipo Consulta no se almacenan
+  // en la tabla y se completan con defaults — se regeneran al editar.
+  const resultado: ResultadoConsulta =
+    (r.resultado_ia as ResultadoConsulta | null) ?? {
+      tratamientoPrincipal: r.necesidad_principal ?? '',
+      tratamientosAdicionales: r.tratamientos ?? [],
+      cronograma: r.cronograma ?? EMPTY_CRONOGRAMA,
+      tecnicaDefinicion: r.tecnica_definicion ?? '',
+      tecnicaDescripcion: '',
+      metodoSecado: '',
+      productosPonto: r.productos_recomendados ?? [],
+      cuidadoCasa: r.recomendaciones_casa ?? EMPTY_CUIDADO_CASA,
+      intervaloSugerido: '',
+      notasAdicionales: [],
+    };
+
   return {
     id: r.id,
     clientaId: r.clienta_id,
     fecha: r.fecha,
-    numeroConsulta: r.numero_consulta,
-    quimicos: r.quimicos,
-    ultimoQuimico: r.ultimo_quimico ?? undefined,
-    usoCalor: r.uso_calor,
+    // numero_consulta no se almacena — se reconstruye contando en UI.
+    numeroConsulta: 1,
+    // Historial (los no almacenados vuelven con defaults)
+    quimicos: r.historial_quimicos ?? [],
+    ultimoQuimico: undefined,
+    usoCalor: [],
     frecuenciaCalor: r.frecuencia_calor ?? '',
-    usaProtectorTermico: r.usa_protector_termico,
+    usaProtectorTermico: false,
     frecuenciaLavado: r.frecuencia_lavado ?? '',
-    metodoLavado: r.metodo_lavado ?? '',
-    productosActuales: r.productos_actuales ?? {},
-    problemas: r.problemas,
-    otroProblema: r.otro_problema ?? undefined,
-    tipoRizoPrincipal: r.tipo_rizo_principal ?? '',
-    tiposSecundarios: r.tipos_secundarios ?? undefined,
-    zonasCambio: r.zonas_cambio ?? undefined,
+    metodoLavado: '',
+    productosActuales: EMPTY_PRODUCTOS_ACTUALES,
+    problemas: r.problemas ?? [],
+    otroProblema: undefined,
+    // Técnico
+    tipoRizoPrincipal: r.tipo_cabello ?? '',
+    tiposSecundarios: undefined,
+    zonasCambio: r.estado_transicion ?? undefined,
     porosidad: r.porosidad ?? undefined,
-    porosidadObs: r.porosidad_obs ?? undefined,
+    porosidadObs: undefined,
     densidad: r.densidad ?? undefined,
-    grosor: r.grosor ?? undefined,
+    grosor: r.grosor_hebra ?? undefined,
     elasticidad: r.elasticidad ?? undefined,
     balanceHP: r.balance_hp ?? undefined,
-    estadoCueroCabelludo: r.estado_cuero_cabelludo,
-    obsCueroCabelludo: r.obs_cuero_cabelludo ?? undefined,
+    estadoCueroCabelludo: r.estado_cuero_cabelludo ?? [],
+    obsCueroCabelludo: undefined,
     estadoPuntas: r.estado_puntas ?? undefined,
-    tipoDano: r.tipo_dano,
-    lineaDemarcacion: r.linea_demarcacion ?? undefined,
+    tipoDano: r.nivel_dano ? [r.nivel_dano] : [],
+    lineaDemarcacion: undefined,
     // Salud: no vive en consultas. Se lee de clientas cuando haga falta.
     alergias: undefined,
     condicionesMedicas: undefined,
     medicamentos: undefined,
     embarazo: false,
     nivelEstres: '',
-    resultado: r.resultado,
-    satisfaccion: r.satisfaccion ?? undefined,
-    satisfaccionEstrellas:
-      r.satisfaccion_estrellas != null
-        ? (r.satisfaccion_estrellas as 1 | 2 | 3 | 4 | 5)
-        : undefined,
-    notasEstilista: r.notas_estilista ?? undefined,
+    resultado,
+    satisfaccion: r.satisfaccion_clienta ?? undefined,
+    // satisfaccion_estrellas no existe — no se persiste.
+    satisfaccionEstrellas: undefined,
+    notasEstilista: r.observaciones_estilista ?? undefined,
     proximaCita: r.proxima_cita ?? undefined,
     fotoAntes: r.foto_antes ?? undefined,
     fotoDespues: r.foto_despues ?? undefined,
@@ -173,39 +200,39 @@ function consultaToRow(c: Consulta): Omit<ConsultaRow, 'user_id'> {
     id: c.id,
     clienta_id: c.clientaId,
     fecha: c.fecha,
-    numero_consulta: c.numeroConsulta,
-    quimicos: c.quimicos,
-    ultimo_quimico: c.ultimoQuimico ?? null,
-    uso_calor: c.usoCalor,
-    frecuencia_calor: c.frecuenciaCalor || null,
-    usa_protector_termico: c.usaProtectorTermico,
-    frecuencia_lavado: c.frecuenciaLavado || null,
-    metodo_lavado: c.metodoLavado || null,
-    productos_actuales: c.productosActuales,
-    problemas: c.problemas,
-    otro_problema: c.otroProblema ?? null,
-    tipo_rizo_principal: c.tipoRizoPrincipal || null,
-    tipos_secundarios: c.tiposSecundarios ?? null,
-    zonas_cambio: c.zonasCambio ?? null,
-    // Campos con CHECK constraint en Supabase — strings vacíos deben ir como null.
+    // Técnico (campos con CHECK usan `|| null` para normalizar '' → null).
+    tipo_cabello: c.tipoRizoPrincipal || null,
     porosidad: c.porosidad || null,
-    porosidad_obs: c.porosidadObs ?? null,
     densidad: c.densidad || null,
-    grosor: c.grosor || null,
+    grosor_hebra: c.grosor || null,
     elasticidad: c.elasticidad || null,
     balance_hp: c.balanceHP || null,
-    estado_cuero_cabelludo: c.estadoCueroCabelludo,
-    obs_cuero_cabelludo: c.obsCueroCabelludo ?? null,
     estado_puntas: c.estadoPuntas ?? null,
-    tipo_dano: c.tipoDano,
-    linea_demarcacion: c.lineaDemarcacion ?? null,
-    // Salud: NO se envía a consultas. Esos campos viven en clientas.
-    resultado: c.resultado,
-    // satisfaccion tiene CHECK — strings vacíos deben ir como null.
-    satisfaccion: c.satisfaccion || null,
-    satisfaccion_estrellas: c.satisfaccionEstrellas ?? null,
-    notas_estilista: c.notasEstilista ?? null,
+    // nivel_dano es single-value — tomamos el primer tipoDano si existe.
+    nivel_dano: c.tipoDano?.[0] ?? null,
+    estado_transicion: c.zonasCambio ?? null,
+    estado_cuero_cabelludo: c.estadoCueroCabelludo,
+    // Historial
+    historial_quimicos: c.quimicos,
+    problemas: c.problemas,
+    frecuencia_calor: c.frecuenciaCalor || null,
+    frecuencia_lavado: c.frecuenciaLavado || null,
+    // Motor: columnas derivadas para queries + resultado_ia como catch-all.
+    necesidad_principal: c.resultado?.tratamientoPrincipal || null,
+    tecnica_definicion: c.resultado?.tecnicaDefinicion || null,
+    productos_recomendados: c.resultado?.productosPonto ?? null,
+    recomendaciones_casa: c.resultado?.cuidadoCasa ?? null,
+    resultado_esperado: null,
+    tratamientos: c.resultado?.tratamientosAdicionales ?? null,
+    cronograma: c.resultado?.cronograma ?? null,
+    resultado_ia: c.resultado ?? null,
+    ia_confirmada: false,
+    // Post-consulta
+    observaciones_estilista: c.notasEstilista ?? null,
+    // satisfaccion_clienta tiene CHECK — '' → null.
+    satisfaccion_clienta: c.satisfaccion || null,
     proxima_cita: c.proximaCita ?? null,
+    // Fotos y captura
     foto_antes: c.fotoAntes ?? null,
     foto_despues: c.fotoDespues ?? null,
     foto_analisis: c.fotoAnalisis ?? null,
@@ -403,12 +430,14 @@ export async function getStatsThisMonth(): Promise<number> {
 
 export async function getMostFrequentTratamiento(): Promise<string> {
   const supabase = createClient();
-  const { data, error } = await supabase.from('consultas').select('resultado');
+  const { data, error } = await supabase
+    .from('consultas')
+    .select('necesidad_principal');
   if (error) throw error;
   if (!data || data.length === 0) return 'Sin datos';
   const counts: Record<string, number> = {};
-  for (const row of data as { resultado: ResultadoConsulta }[]) {
-    const t = row.resultado?.tratamientoPrincipal || 'Desconocido';
+  for (const row of data as { necesidad_principal: string | null }[]) {
+    const t = row.necesidad_principal || 'Desconocido';
     counts[t] = (counts[t] || 0) + 1;
   }
   return (
@@ -530,11 +559,13 @@ export async function getRizoDistribution(): Promise<Record<string, number>> {
 
 export async function getTratamientosDistribution(): Promise<Record<string, number>> {
   const supabase = createClient();
-  const { data, error } = await supabase.from('consultas').select('resultado');
+  const { data, error } = await supabase
+    .from('consultas')
+    .select('necesidad_principal');
   if (error) throw error;
   const result: Record<string, number> = {};
   for (const row of data ?? []) {
-    const t = (row.resultado as ResultadoConsulta | null)?.tratamientoPrincipal;
+    const t = (row.necesidad_principal as string | null);
     if (t) result[t] = (result[t] || 0) + 1;
   }
   return result;
@@ -579,6 +610,14 @@ export async function getConsultasBorrador(): Promise<
   return pairsWithClienta((data ?? []).map(rowToConsulta));
 }
 
+// Mapeo de satisfaccion_clienta (enum) → estrellas para promediar.
+const SATISFACCION_SCORE: Record<NonNullable<Consulta['satisfaccion']>, number> = {
+  muy_satisfecha: 5,
+  satisfecha: 4,
+  parcial: 3,
+  necesita_ajustes: 2,
+};
+
 export async function getSatisfaccionPromedio(
   yearMonth?: string
 ): Promise<number | null> {
@@ -586,16 +625,17 @@ export async function getSatisfaccionPromedio(
   const supabase = createClient();
   const { data, error } = await supabase
     .from('consultas')
-    .select('satisfaccion_estrellas, fecha')
-    .not('satisfaccion_estrellas', 'is', null)
+    .select('satisfaccion_clienta, fecha')
+    .not('satisfaccion_clienta', 'is', null)
     .like('fecha', `${ym}%`);
   if (error) throw error;
   if (!data || data.length === 0) return null;
-  const sum = data.reduce(
-    (s, c) => s + ((c.satisfaccion_estrellas as number | null) ?? 0),
-    0
-  );
-  return Math.round((sum / data.length) * 10) / 10;
+  const scores = (data as { satisfaccion_clienta: keyof typeof SATISFACCION_SCORE | null }[])
+    .map((r) => (r.satisfaccion_clienta ? SATISFACCION_SCORE[r.satisfaccion_clienta] : 0))
+    .filter((n) => n > 0);
+  if (scores.length === 0) return null;
+  const sum = scores.reduce((s, n) => s + n, 0);
+  return Math.round((sum / scores.length) * 10) / 10;
 }
 
 export async function getLastTratamientosMap(
@@ -605,12 +645,12 @@ export async function getLastTratamientosMap(
   const supabase = createClient();
   const { data, error } = await supabase
     .from('consultas')
-    .select('clienta_id, fecha, resultado')
+    .select('clienta_id, fecha, necesidad_principal')
     .in('clienta_id', clientaIds);
   if (error) throw error;
   const latest: Record<string, { fecha: string; tratamiento: string }> = {};
   for (const row of data ?? []) {
-    const t = (row.resultado as ResultadoConsulta | null)?.tratamientoPrincipal;
+    const t = row.necesidad_principal as string | null;
     if (!t) continue;
     const cid = row.clienta_id as string;
     const f = row.fecha as string;
