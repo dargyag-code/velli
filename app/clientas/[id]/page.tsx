@@ -17,6 +17,7 @@ import { getClientaById, getConsultasByClienta, deleteClienta, updateClienta } f
 import { Clienta, Consulta } from '@/lib/types';
 import { formatDate, getRizoLabel } from '@/lib/utils';
 import { showToast } from '@/lib/toast';
+import { resolveFotoUrl, resolveFotoUrls } from '@/lib/storage';
 
 type Tab = 'info' | 'historial' | 'galeria';
 
@@ -161,8 +162,23 @@ export default function ClientaPage() {
         getClientaById(id),
         getConsultasByClienta(id),
       ]);
+      const withSignedPhotos = await Promise.all(
+        cs.map(async (consulta) => {
+          const [fotoAntes, fotoDespues, fotoAnalisis] = await Promise.all([
+            resolveFotoUrl(consulta.fotoAntes),
+            resolveFotoUrl(consulta.fotoDespues),
+            resolveFotoUrls(consulta.fotoAnalisis),
+          ]);
+          return {
+            ...consulta,
+            fotoAntes,
+            fotoDespues,
+            fotoAnalisis: fotoAnalisis.length ? fotoAnalisis : undefined,
+          };
+        })
+      );
       setClienta(c || null);
-      setConsultas(cs);
+      setConsultas(withSignedPhotos);
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import { Clienta, Consulta } from './types';
 import { formatDate, getTratamientoBg, getTratamientoTextColor } from './utils';
+import { resolveFotoUrl } from './storage';
 
 const GREEN = '#2D5A27';
 const AMBER = '#C9956B';
@@ -56,7 +57,8 @@ async function addPhotoToDoc(
   maxH: number
 ): Promise<number> {
   try {
-    const dataUrl = await toDataUrl(source);
+    const resolved = (await resolveFotoUrl(source)) || source;
+    const dataUrl = await toDataUrl(resolved);
     const dims = await getImageDimensions(dataUrl);
     const { w, h } = scaleToBounds(dims.w, dims.h, maxW, maxH);
     const format = getImageFormat(dataUrl);
