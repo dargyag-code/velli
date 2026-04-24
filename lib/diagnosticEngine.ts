@@ -1,4 +1,7 @@
-import { WizardData, ResultadoConsulta, CronogramaResult, CuidadoCasaResult } from './types';
+import { WizardData, ResultadoConsulta, CronogramaResult, CuidadoCasaResult, RecomendacionProductos, RutinaPaso } from './types';
+
+const DISCLAIMER_PRODUCTOS =
+  'Estas recomendaciones son técnicas y aplican a productos de cualquier marca. Tu estilista puede sugerirte marcas específicas que cumplan con estas características según tu presupuesto y disponibilidad local.';
 
 export interface SaludClienta {
   embarazo?: boolean;
@@ -41,7 +44,7 @@ export function generateDiagnosis(data: WizardData, saludClienta?: SaludClienta)
 
   if (balanceHP === 'proteina' || elasticidad === 'baja') {
     tratamientoPrincipal = 'Reconstrucción';
-    notasAdicionales.push('Prioridad alta en proteína — usa mascarilla 3 en 1 como tratamiento reconstructor.');
+    notasAdicionales.push('Prioridad alta en proteína — usa mascarilla reconstructora con queratina hidrolizada.');
   } else if (balanceHP === 'hidratacion' && porosidad !== 'alta') {
     tratamientoPrincipal = 'Hidratación profunda';
   } else if (balanceHP === 'hidratacion' && porosidad === 'alta') {
@@ -203,38 +206,55 @@ export function generateDiagnosis(data: WizardData, saludClienta?: SaludClienta)
     gelRecomendado = 'Gel definidor';
   }
 
-  // ── Productos Ponto Hair ──
-  const productosPonto: string[] = ['Mascarilla 3 en 1 (base de todo tratamiento)'];
+  // ── Productos recomendados (resumen para vistas in-app) ──
+  const productosPonto: string[] = [];
+  const tratReconstructor = balanceHP === 'proteina' || elasticidad === 'baja' || danoQuimico || danoTermico;
+  productosPonto.push(
+    tratReconstructor
+      ? 'Mascarilla reconstructora con queratina hidrolizada (base del cronograma)'
+      : 'Mascarilla hidratante / nutritiva alternada según cronograma'
+  );
 
   if (['1A', '1B', '1C'].includes(rizo)) {
-    productosPonto.push('Leave-in liviano (aplicar en cabello húmedo de medios a puntas)');
+    productosPonto.push('Leave-in ligero (aplicar de medios a puntas, evitar raíz)');
     if (porosidad === 'alta') {
-      productosPonto.push('Aceite de sellado (aplicar sobre el leave-in para cerrar la cutícula)');
+      productosPonto.push('Aceite ligero (jojoba o almendras) en puntas para sellar');
     }
   } else if (['2A', '2B', '2C', '3A'].includes(rizo)) {
-    productosPonto.push('Crema de peinar (aplicar en cabello húmedo, sección por sección)');
-    productosPonto.push('Gel definidor (encima de la crema para fijar y reducir frizz)');
+    productosPonto.push('Crema de peinar de textura media (sin sulfatos ni parabenos)');
+    productosPonto.push('Gel definidor ligero con proteínas de trigo o seda (sin alcohol)');
     if (porosidad === 'alta') {
-      productosPonto.push('Aceite de sellado (aplicar sobre el gel para cerrar la cutícula)');
+      productosPonto.push('Aceite medio (argán o jojoba) como sellador final');
     }
   } else if (['3B', '3C'].includes(rizo)) {
-    productosPonto.push('Crema de peinar (aplicar generosamente, el tipo 3 necesita hidratación)');
-    productosPonto.push('Gel definidor (sobre la crema para definición y anti-frizz)');
+    productosPonto.push('Crema de peinar nutritiva e hidratante con humectantes (glicerina, aloe vera)');
+    productosPonto.push('Gel definidor con proteínas vegetales, sin alcohol secante');
     if (porosidad === 'alta') {
-      productosPonto.push('Aceite de sellado (siempre sellar en porosidad alta)');
+      productosPonto.push('Aceite sellador (argán, jojoba o coco según porosidad)');
     }
   } else {
     // 4A, 4B, 4C
-    productosPonto.push('Gel cremoso afro (base para definir el patrón del tipo 4)');
-    productosPonto.push('Crema de peinar (hidratación y suavidad)');
-    productosPonto.push('Aceite de sellado (obligatorio en tipos 4 para retener humedad)');
+    productosPonto.push('Gel cremoso denso para máxima definición (con humectantes y proteínas vegetales)');
+    productosPonto.push('Crema de peinar de alta densidad con mantecas (karité, cacao)');
+    productosPonto.push('Aceite sellador pesado (ricino, coco u oliva) — método LOC/LCO obligatorio');
   }
 
-  if (balanceHP === 'proteina') {
+  if (tratReconstructor) {
     notasAdicionales.push(
-      'Mascarilla 3 en 1: dejar actuar 20-30 min con calor (gorro térmico) para máxima reconstrucción.'
+      'Mascarilla reconstructora: dejar actuar 20-30 min con calor (gorro térmico) para máxima reconstrucción.'
     );
   }
+
+  // ── Recomendación estructurada de productos (PDF) ──
+  const recomendacionProductos = buildRecomendacionProductos({
+    rizo,
+    porosidad,
+    balanceHP,
+    tipoDano,
+    problemas,
+    estadoCueroCabelludo,
+    embarazo,
+  });
 
   // ── Cuidado en Casa ──
   const diaLavado: string[] = [
@@ -331,9 +351,197 @@ export function generateDiagnosis(data: WizardData, saludClienta?: SaludClienta)
     tecnicaDescripcion,
     metodoSecado,
     productosPonto,
+    recomendacionProductos,
     cuidadoCasa,
     intervaloSugerido,
     notasAdicionales,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Builder de recomendación estructurada (usada por el PDF)
+// ─────────────────────────────────────────────────────────────────────────────
+export interface BuildRecomendacionParams {
+  rizo: string;
+  porosidad?: string;
+  balanceHP?: string;
+  tipoDano?: string[];
+  problemas?: string[];
+  estadoCueroCabelludo?: string[];
+  embarazo?: boolean;
+}
+
+function frecuenciaLavadoBase(rizo: string): string {
+  if (['1A', '1B', '1C'].includes(rizo)) return '2-3 veces por semana';
+  if (['2A', '2B', '2C'].includes(rizo)) return '2 veces por semana';
+  if (['3A', '3B', '3C'].includes(rizo)) return '1-2 veces por semana';
+  return '1 vez por semana';
+}
+
+export function buildRecomendacionProductos(p: BuildRecomendacionParams): RecomendacionProductos {
+  const rizo = p.rizo || '';
+  const porosidad = p.porosidad || 'media';
+  const balanceHP = p.balanceHP || '';
+  const tipoDano = p.tipoDano || [];
+  const problemas = p.problemas || [];
+  const cuero = p.estadoCueroCabelludo || [];
+  const embarazo = !!p.embarazo;
+
+  const isLiso = ['1A', '1B', '1C'].includes(rizo);
+  const isOndulado = ['2A', '2B', '2C'].includes(rizo);
+  const isRizado = ['3A', '3B', '3C'].includes(rizo);
+  const isAfro = ['4A', '4B', '4C'].includes(rizo);
+
+  const buscar = new Set<string>();
+  const evitar = new Set<string>();
+
+  // Base universal
+  evitar.add('Sulfatos agresivos (SLS, SLES)');
+  evitar.add('Parabenos fuertes');
+  evitar.add('Alcoholes secantes (alcohol denat., isopropílico)');
+  evitar.add('Siliconas no solubles en agua');
+
+  // Por tipo de cabello
+  if (isLiso) {
+    buscar.add('Humectantes ligeros (glicerina, aloe vera, panthenol)');
+    buscar.add('Aceites ligeros (jojoba, almendras) en poca cantidad, solo puntas');
+    buscar.add('Mascarillas hidratantes ligeras');
+    evitar.add('Mantecas densas en raíz (apelmazan el cabello liso)');
+    evitar.add('Cremas de peinar muy pesadas');
+  }
+  if (isOndulado) {
+    buscar.add('Cremas de peinar de textura media');
+    buscar.add('Humectantes (glicerina, aloe vera, miel)');
+    buscar.add('Geles definidores ligeros (activan la onda sin cast pesado)');
+    evitar.add('Productos muy densos que aplasten la onda');
+  }
+  if (isRizado) {
+    buscar.add('Cremas de peinar nutritivas e hidratantes');
+    buscar.add('Geles definidores con proteínas de trigo o seda');
+    buscar.add('Aceites medios (argán, jojoba)');
+    buscar.add('Mantecas medias (cacao, mango)');
+  }
+  if (isAfro) {
+    buscar.add('Cremas de peinar densas y nutritivas');
+    buscar.add('Mantecas densas (karité, cacao, mango)');
+    buscar.add('Aceites pesados (ricino, coco, oliva) para sellado');
+    buscar.add('Geles cremosos para máxima definición');
+    buscar.add('Mascarillas con proteínas vegetales (trigo, soja)');
+    buscar.add('Método LOC o LCO (leave-in + aceite + crema)');
+  }
+
+  // Porosidad
+  if (porosidad === 'alta') {
+    buscar.add('Ingredientes selladores (mantecas y aceites pesados)');
+    buscar.add('Productos con pH ácido (ayudan a cerrar la cutícula)');
+    evitar.add('Humectantes puros en climas húmedos (provocan frizz)');
+    evitar.add('Calor directo sin protector térmico');
+  } else if (porosidad === 'baja') {
+    buscar.add('Productos ligeros a base de agua');
+    evitar.add('Proteínas en exceso (rigidez y quiebre)');
+    evitar.add('Aceites pesados (coco, ricino) — no penetran, se acumulan');
+  }
+
+  // Daño / quiebre
+  const hayDano = tipoDano.length > 0 || balanceHP === 'proteina';
+  if (hayDano) {
+    buscar.add('Proteínas hidrolizadas (queratina, seda, trigo)');
+    buscar.add('Tratamientos reconstructores con aminoácidos');
+  }
+
+  // Frizz
+  const tieneFrizz = problemas.some((x) => /frizz/i.test(x));
+  if (tieneFrizz) {
+    buscar.add('Combinación de humectantes + selladores (método LOC/LCO)');
+  }
+
+  // Cuero cabelludo
+  const cueroGraso = cuero.includes('Graso (exceso de sebo)') || cuero.includes('Build-up (acumulación de producto)');
+  const cueroSeco = cuero.some((x) => /seco|caspa/i.test(x));
+  if (cueroGraso) {
+    buscar.add('Champús con árbol de té, menta o salvia (equilibran el sebo)');
+  }
+  if (cueroSeco) {
+    buscar.add('Champús suaves sin sulfatos y masajes con aceites ligeros');
+  }
+
+  // Embarazo / lactancia
+  if (embarazo) {
+    evitar.add('Formol y derivados (alisados progresivos, keratina con formol)');
+    evitar.add('Fragancias sintéticas intensas');
+  }
+
+  // ── Rutina de 6 pasos ──
+  const frecLav = frecuenciaLavadoBase(rizo);
+
+  const champuCaract = cueroGraso
+    ? 'sin sulfatos agresivos, con árbol de té o menta'
+    : cueroSeco
+    ? 'suave sin sulfatos, hidratante'
+    : 'sin sulfatos agresivos, con tensoactivos suaves';
+
+  const acondCaract = isAfro || isRizado
+    ? 'nutritivo e hidratante con humectantes y mantecas'
+    : isOndulado
+    ? 'ligero con humectantes (glicerina, aloe vera)'
+    : 'muy ligero, sin siliconas pesadas';
+
+  const mascarillaCaract = hayDano
+    ? 'reconstructora con queratina hidrolizada y aminoácidos'
+    : balanceHP === 'hidratacion'
+    ? 'hidratante con humectantes (glicerina, aloe vera, miel)'
+    : balanceHP === 'nutricion'
+    ? 'nutritiva con mantecas y aceites vegetales'
+    : 'alternar hidratante y nutritiva según cronograma';
+
+  const leaveInCaract = isLiso
+    ? 'ligero en spray, aplicar solo en medios y puntas'
+    : isAfro
+    ? 'cremoso denso, aplicar de raíz a puntas'
+    : isRizado
+    ? 'cremoso de textura media'
+    : 'cremoso ligero';
+
+  const defProducto = isAfro
+    ? 'Gel cremoso afro'
+    : isRizado
+    ? 'Gel definidor'
+    : isOndulado
+    ? 'Gel definidor ligero'
+    : 'Definidor (opcional)';
+  const defCaract = isAfro
+    ? 'cremoso denso para máxima definición, con proteínas vegetales'
+    : isRizado
+    ? 'con proteínas de trigo o seda, sin alcohol secante'
+    : isOndulado
+    ? 'ligero, activa la onda sin cast pesado'
+    : 'muy ligero, solo si necesita control extra en puntas';
+
+  const aceiteTipo = porosidad === 'alta'
+    ? 'pesado (ricino, coco u oliva)'
+    : porosidad === 'baja'
+    ? 'ligero (jojoba o almendras)'
+    : 'medio (argán o jojoba)';
+  const aceiteFrec = isAfro || porosidad === 'alta'
+    ? 'cada lavado (obligatorio para sellar)'
+    : isLiso
+    ? '1-2 veces por semana, solo en puntas'
+    : '2-3 veces por semana';
+
+  const rutina: RutinaPaso[] = [
+    { producto: 'Champú', caracteristicas: champuCaract, frecuencia: frecLav },
+    { producto: 'Acondicionador', caracteristicas: acondCaract, frecuencia: 'cada lavado' },
+    { producto: 'Mascarilla', caracteristicas: mascarillaCaract, frecuencia: '1 vez por semana' },
+    { producto: 'Leave-in', caracteristicas: leaveInCaract, frecuencia: 'cada lavado' },
+    { producto: defProducto, caracteristicas: defCaract, frecuencia: 'cada lavado' },
+    { producto: 'Aceite sellador', caracteristicas: aceiteTipo, frecuencia: aceiteFrec },
+  ];
+
+  return {
+    ingredientesBuscar: Array.from(buscar),
+    ingredientesEvitar: Array.from(evitar),
+    rutina,
+    disclaimer: DISCLAIMER_PRODUCTOS,
   };
 }
 

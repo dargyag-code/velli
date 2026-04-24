@@ -309,7 +309,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
 
       {/* 6. Productos */}
       <div className="bg-white rounded-3xl p-4 border border-[#E5E5E5] shadow-sm">
-        <SectionTitle icon={<Star size={16} />} title="Productos Ponto Hair" />
+        <SectionTitle icon={<Star size={16} />} title="Productos recomendados" />
         <div className="flex flex-col gap-2">
           {resultado.productosPonto.map((p, i) => (
             <div key={i} className="flex items-start gap-3 p-2.5 bg-[#FBF4EC] rounded-xl">

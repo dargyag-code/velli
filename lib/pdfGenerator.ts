@@ -1,7 +1,8 @@
 import jsPDF from 'jspdf';
-import { Clienta, Consulta } from './types';
+import { Clienta, Consulta, RecomendacionProductos } from './types';
 import { formatDate, getTratamientoBg, getTratamientoTextColor } from './utils';
 import { resolveFotoUrl } from './storage';
+import { buildRecomendacionProductos } from './diagnosticEngine';
 
 const GREEN = '#2D5A27';
 const AMBER = '#C9956B';
@@ -386,11 +387,111 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
   routineBlock('Refresh Días 2-3', consulta.resultado.cuidadoCasa.refresh);
   routineBlock('Evitar', consulta.resultado.cuidadoCasa.evitar);
 
-  // ── Section 6: Products ────────────────────────────────────────────────────
-  checkNewPage(20);
-  sectionTitle('6. Productos Ponto Hair Recomendados');
-  consulta.resultado.productosPonto.forEach((p) => bulletItem(p));
+  // ── Section 6: Productos recomendados ──────────────────────────────────────
+  checkNewPage(60);
+  sectionTitle('6. Productos Recomendados Para Ti');
+
+  // Reconstruye la recomendación estructurada para consultas antiguas que no la tengan.
+  const reco: RecomendacionProductos =
+    consulta.resultado.recomendacionProductos ??
+    buildRecomendacionProductos({
+      rizo: consulta.tipoRizoPrincipal,
+      porosidad: consulta.porosidad,
+      balanceHP: consulta.balanceHP,
+      tipoDano: consulta.tipoDano,
+      problemas: consulta.problemas,
+      estadoCueroCabelludo: consulta.estadoCueroCabelludo,
+      embarazo: consulta.embarazo,
+    });
+
+  doc.setFontSize(9);
+  setTextColor(TEXT_DARK);
+  doc.setFont('helvetica', 'normal');
+  const introLines = doc.splitTextToSize(
+    `Tu cabello tipo ${consulta.tipoRizoPrincipal || '—'} necesita productos con estas características:`,
+    pageW - margin * 2 - 4
+  );
+  doc.text(introLines, margin + 2, y);
+  y += introLines.length * 5 + 3;
+
+  // Buscar
+  checkNewPage(10 + reco.ingredientesBuscar.length * 5);
+  doc.setFontSize(10);
+  setTextColor(GREEN);
+  doc.setFont('helvetica', 'bold');
+  doc.text('DEBES BUSCAR:', margin + 2, y);
+  y += 6;
+  reco.ingredientesBuscar.forEach((ing) => {
+    checkNewPage(8);
+    doc.setFontSize(9);
+    setTextColor(GREEN);
+    doc.setFont('helvetica', 'bold');
+    doc.text('✓', margin + 3, y);
+    setTextColor(TEXT_DARK);
+    doc.setFont('helvetica', 'normal');
+    const lines = doc.splitTextToSize(ing, pageW - margin * 2 - 10);
+    doc.text(lines, margin + 8, y);
+    y += lines.length * 5;
+  });
   y += 3;
+
+  // Evitar
+  checkNewPage(10 + reco.ingredientesEvitar.length * 5);
+  doc.setFontSize(10);
+  setTextColor('#8E2D2D');
+  doc.setFont('helvetica', 'bold');
+  doc.text('EVITA:', margin + 2, y);
+  y += 6;
+  reco.ingredientesEvitar.forEach((ing) => {
+    checkNewPage(8);
+    doc.setFontSize(9);
+    setTextColor('#8E2D2D');
+    doc.setFont('helvetica', 'bold');
+    doc.text('✗', margin + 3, y);
+    setTextColor(TEXT_DARK);
+    doc.setFont('helvetica', 'normal');
+    const lines = doc.splitTextToSize(ing, pageW - margin * 2 - 10);
+    doc.text(lines, margin + 8, y);
+    y += lines.length * 5;
+  });
+  y += 4;
+
+  // Rutina
+  checkNewPage(12 + reco.rutina.length * 8);
+  doc.setFontSize(10);
+  setTextColor(GREEN);
+  doc.setFont('helvetica', 'bold');
+  doc.text('RUTINA RECOMENDADA:', margin + 2, y);
+  y += 6;
+  reco.rutina.forEach((paso, i) => {
+    checkNewPage(10);
+    doc.setFontSize(9);
+    setTextColor(AMBER);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${i + 1}.`, margin + 3, y);
+    setTextColor(TEXT_DARK);
+    doc.setFont('helvetica', 'bold');
+    doc.text(paso.producto, margin + 9, y);
+    doc.setFont('helvetica', 'normal');
+    setTextColor(TEXT_GRAY);
+    const cuerpo = ` — ${paso.caracteristicas} · ${paso.frecuencia}`;
+    const wrapped = doc.splitTextToSize(cuerpo, pageW - margin * 2 - 35);
+    doc.text(wrapped, margin + 9 + doc.getTextWidth(paso.producto), y);
+    y += Math.max(5, wrapped.length * 5);
+  });
+  y += 3;
+
+  // Disclaimer
+  checkNewPage(16);
+  setFill('#FBF4EC');
+  const discLines = doc.splitTextToSize(reco.disclaimer, pageW - margin * 2 - 6);
+  const discBoxH = discLines.length * 4.2 + 6;
+  doc.roundedRect(margin, y, pageW - margin * 2, discBoxH, 2, 2, 'F');
+  doc.setFontSize(8);
+  setTextColor(TEXT_GRAY);
+  doc.setFont('helvetica', 'italic');
+  doc.text(discLines, margin + 3, y + 5);
+  y += discBoxH + 4;
 
   // ── Section 7: Notes ───────────────────────────────────────────────────────
   if (consulta.resultado.notasAdicionales.length) {

@@ -39,6 +39,19 @@ export interface CuidadoCasaResult {
   evitar: string[];
 }
 
+export interface RutinaPaso {
+  producto: string;          // ej: "Champú", "Leave-in", "Aceite sellador"
+  caracteristicas: string;   // ej: "sin sulfatos agresivos, con árbol de té"
+  frecuencia: string;        // ej: "2-3 veces por semana"
+}
+
+export interface RecomendacionProductos {
+  ingredientesBuscar: string[];
+  ingredientesEvitar: string[];
+  rutina: RutinaPaso[];
+  disclaimer: string;
+}
+
 export interface ResultadoConsulta {
   tratamientoPrincipal: string;
   tratamientosAdicionales: string[];
@@ -47,6 +60,7 @@ export interface ResultadoConsulta {
   tecnicaDescripcion: string;
   metodoSecado: string;
   productosPonto: string[];
+  recomendacionProductos?: RecomendacionProductos;
   cuidadoCasa: CuidadoCasaResult;
   intervaloSugerido: string;
   notasAdicionales: string[];
