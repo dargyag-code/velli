@@ -111,10 +111,10 @@ CREATE TABLE IF NOT EXISTS public.consultas (
   necesidad_principal TEXT,
   tecnica_definicion TEXT,
   productos_recomendados TEXT[],
-  recomendaciones_casa JSONB,
+  recomendaciones_casa TEXT[],
   resultado_esperado TEXT,
   tratamientos TEXT[],
-  cronograma JSONB,
+  cronograma TEXT[],
   resultado_ia JSONB,
   ia_confirmada BOOLEAN NOT NULL DEFAULT FALSE,
 

@@ -56,14 +56,17 @@ type ConsultaRow = {
   problemas: string[];
   frecuencia_calor: string | null;
   frecuencia_lavado: string | null;
-  // Motor (columnas derivadas + catch-all JSONB)
+  // Motor (columnas derivadas + catch-all JSONB).
+  // recomendaciones_casa y cronograma son TEXT[] en la DB — se aplanan
+  // desde el objeto estructurado al escribir. La estructura original
+  // completa se preserva en resultado_ia (JSONB).
   necesidad_principal: string | null;
   tecnica_definicion: string | null;
   productos_recomendados: string[] | null;
-  recomendaciones_casa: CuidadoCasaResult | null;
+  recomendaciones_casa: string[] | null;
   resultado_esperado: string | null;
   tratamientos: string[] | null;
-  cronograma: CronogramaResult | null;
+  cronograma: string[] | null;
   resultado_ia: ResultadoConsulta | null;
   ia_confirmada: boolean;
   // Post-consulta
@@ -125,20 +128,43 @@ const EMPTY_CUIDADO_CASA: CuidadoCasaResult = {
 };
 const EMPTY_PRODUCTOS_ACTUALES: ProductosActuales = {};
 
+// Aplana CuidadoCasaResult → array de strings con prefijo de categoría.
+function flattenCuidadoCasa(c: CuidadoCasaResult | null | undefined): string[] | null {
+  if (!c) return null;
+  const out: string[] = [];
+  for (const s of c.diaLavado ?? []) out.push(`Día de lavado: ${s}`);
+  for (const s of c.nocturno ?? []) out.push(`Nocturno: ${s}`);
+  for (const s of c.refresh ?? []) out.push(`Refresh: ${s}`);
+  for (const s of c.evitar ?? []) out.push(`Evitar: ${s}`);
+  return out.length ? out : null;
+}
+
+// Aplana CronogramaResult → array de strings por semana.
+function flattenCronograma(c: CronogramaResult | null | undefined): string[] | null {
+  if (!c) return null;
+  const out: string[] = [];
+  if (c.semana1) out.push(`Semana 1: ${c.semana1}`);
+  if (c.semana2) out.push(`Semana 2: ${c.semana2}`);
+  if (c.semana3) out.push(`Semana 3: ${c.semana3}`);
+  if (c.semana4) out.push(`Semana 4: ${c.semana4}`);
+  return out.length ? out : null;
+}
+
 function rowToConsulta(r: ConsultaRow): Consulta {
-  // Preferir resultado_ia (catch-all JSONB). Si no está, reconstruir desde
-  // las columnas split. Algunos subcampos del tipo Consulta no se almacenan
-  // en la tabla y se completan con defaults — se regeneran al editar.
+  // Preferir resultado_ia (catch-all JSONB con la estructura original).
+  // Si no está, reconstruir desde columnas split — pero cronograma y
+  // cuidadoCasa se almacenan aplanados como TEXT[] y no son reconstruibles
+  // a la estructura original: se usan defaults vacíos.
   const resultado: ResultadoConsulta =
     (r.resultado_ia as ResultadoConsulta | null) ?? {
       tratamientoPrincipal: r.necesidad_principal ?? '',
       tratamientosAdicionales: r.tratamientos ?? [],
-      cronograma: r.cronograma ?? EMPTY_CRONOGRAMA,
+      cronograma: EMPTY_CRONOGRAMA,
       tecnicaDefinicion: r.tecnica_definicion ?? '',
       tecnicaDescripcion: '',
       metodoSecado: '',
       productosPonto: r.productos_recomendados ?? [],
-      cuidadoCasa: r.recomendaciones_casa ?? EMPTY_CUIDADO_CASA,
+      cuidadoCasa: EMPTY_CUIDADO_CASA,
       intervaloSugerido: '',
       notasAdicionales: [],
     };
@@ -221,10 +247,10 @@ function consultaToRow(c: Consulta): Omit<ConsultaRow, 'user_id'> {
     necesidad_principal: c.resultado?.tratamientoPrincipal || null,
     tecnica_definicion: c.resultado?.tecnicaDefinicion || null,
     productos_recomendados: c.resultado?.productosPonto ?? null,
-    recomendaciones_casa: c.resultado?.cuidadoCasa ?? null,
+    recomendaciones_casa: flattenCuidadoCasa(c.resultado?.cuidadoCasa),
     resultado_esperado: null,
     tratamientos: c.resultado?.tratamientosAdicionales ?? null,
-    cronograma: c.resultado?.cronograma ?? null,
+    cronograma: flattenCronograma(c.resultado?.cronograma),
     resultado_ia: c.resultado ?? null,
     ia_confirmada: false,
     // Post-consulta
