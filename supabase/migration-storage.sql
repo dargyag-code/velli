@@ -63,6 +63,6 @@ SELECT
 FROM storage.buckets
 WHERE id = 'fotos';
 
-SELECT polname, cmd
-FROM pg_policy
-WHERE polname LIKE 'fotos_%';
+SELECT policyname
+FROM pg_policies
+WHERE schemaname = 'storage' AND tablename = 'objects';
