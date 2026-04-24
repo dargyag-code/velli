@@ -26,7 +26,7 @@ export default function RecuperarPage() {
     const supabase = createClient();
     const redirectTo =
       typeof window !== 'undefined'
-        ? `${window.location.origin}/auth/login`
+        ? `${window.location.origin}/auth/reset-password`
         : undefined;
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo,

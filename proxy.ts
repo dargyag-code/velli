@@ -29,6 +29,10 @@ export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isAuthRoute = path.startsWith('/auth');
   const isPublicRoute = isAuthRoute || path.startsWith('/legal');
+  // /auth/reset-password necesita una sesión de recuperación activa: no debe
+  // redirigirse a / aunque el usuario ya esté "autenticado" por el token de
+  // recuperación.
+  const isPasswordRecoveryRoute = path === '/auth/reset-password';
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
@@ -36,7 +40,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && isAuthRoute) {
+  if (user && isAuthRoute && !isPasswordRecoveryRoute) {
     const url = request.nextUrl.clone();
     url.pathname = '/';
     return NextResponse.redirect(url);

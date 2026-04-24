@@ -377,10 +377,10 @@ export default function ConfiguracionPage() {
           {showSignOutConfirm ? (
             <div className="p-4">
               <p className="text-sm text-[#2D2D2D] mb-1 font-semibold text-center" style={serif}>
-                ¿Cerrar tu sesión?
+                ¿Cerrar sesión?
               </p>
               <p className="text-xs text-[#666666] text-center mb-4">
-                Tendrás que volver a iniciar sesión para acceder a tus clientas.
+                Tendrás que iniciar sesión de nuevo para acceder a tus clientas.
               </p>
               <div className="flex gap-2">
                 <button
