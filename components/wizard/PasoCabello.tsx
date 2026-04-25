@@ -225,8 +225,6 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
     analysisResult: HairAnalysisResult,
     fotoUrls: string[]
   ) => {
-    console.log('[PasoCabello] Datos recibidos de cámara:', { tipoRizoPrincipal, tiposSecundarios, captureMetadata, analysisResult });
-
     const camposIA = new Set<string>(['tipoRizoPrincipal']);
     const patch: Partial<WizardData> = {
       tipoRizoPrincipal,

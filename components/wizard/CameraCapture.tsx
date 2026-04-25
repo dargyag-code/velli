@@ -123,12 +123,6 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
         ? 'La cámara solo funciona en localhost o HTTPS. Accediste por IP sin SSL — usa la opción de subir foto desde galería.'
         : 'Tu navegador no soporta acceso a la cámara. Usa la opción de subir foto desde galería.';
 
-      console.log('[CameraCapture] mediaDevices no disponible:', {
-        mediaDevices: typeof navigator !== 'undefined' ? !!navigator.mediaDevices : 'navigator undefined',
-        protocol: typeof window !== 'undefined' ? window.location.protocol : 'unknown',
-        hostname: typeof window !== 'undefined' ? window.location.hostname : 'unknown',
-      });
-
       setError(msg);
       setFlowStep('error');
       return;
@@ -145,7 +139,6 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
         await videoRef.current.play();
       }
     } catch (err) {
-      console.log('[CameraCapture] getUserMedia error:', err);
       const e = err as Error;
       let msg = 'No se pudo acceder a la cámara.';
       if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
@@ -192,8 +185,8 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
       }
-    } catch (err) {
-      console.log('[CameraCapture] switchCamera error:', err);
+    } catch {
+      // Silenciar — el botón quedará disponible para reintentar.
     }
   }, []);
 
@@ -331,8 +324,6 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
     // scoreResult es null en el flujo de galería — solo se requiere analysisResult y estadoCabello
     if (!analysisResult || !estadoCabello) return;
 
-    console.log('[Confirmar] Resultado IA:', analysisResult);
-
     const dispositivo = obtenerMetadataDispositivo();
     const ubicacion = await obtenerUbicacionAproximada();
     const track = streamRef.current?.getVideoTracks()[0];
@@ -368,44 +359,29 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
   // Paso 2: desde 'gallery' el usuario toca "Analizar" → handleAnalyzeUploaded
 
   const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('[CameraCapture] onChange disparado');
-    console.log('[CameraCapture] e.target.files:', e.target.files);
-    console.log('[CameraCapture] cantidad:', e.target.files?.length);
-
     const files = Array.from(e.target.files || []).slice(0, 3);
-
-    console.log('[CameraCapture] Files capturados:', files.length, files.map(f => `${f.name} (${f.size}B tipo:${f.type})`));
-
-    if (!files.length) {
-      console.log('[CameraCapture] Sin archivos, saliendo');
-      return;
-    }
+    if (!files.length) return;
 
     setError(null);
 
-    // Leer todos los archivos con FileReader
     let completed = 0;
     const results: string[] = new Array(files.length);
 
     files.forEach((file, i) => {
-      console.log(`[CameraCapture] Iniciando FileReader[${i}] para: ${file.name}`);
       const reader = new FileReader();
 
       reader.onload = (ev) => {
         const dataUrl = ev.target?.result as string;
-        console.log(`[CameraCapture] FileReader[${i}] onload OK — ${file.name} — ${dataUrl?.slice(0, 60)}...`);
         results[i] = dataUrl;
         completed += 1;
 
         if (completed === files.length) {
-          console.log('[CameraCapture] Todos los FileReaders terminaron:', results.length, 'fotos');
           setUploadedPhotos([...results]);
           setFlowStep('gallery');
         }
       };
 
-      reader.onerror = (ev) => {
-        console.log(`[CameraCapture] FileReader[${i}] onerror:`, ev, reader.error);
+      reader.onerror = () => {
         setError(`No se pudo leer ${file.name}: ${reader.error?.message || 'error desconocido'}`);
         setFlowStep('error');
       };
@@ -416,21 +392,16 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
 
   // Paso 2: analizar las fotos subidas con la IA
   const handleAnalyzeUploaded = useCallback(async (photos: string[]) => {
-    console.log('[CameraCapture] Iniciando análisis IA con', photos.length, 'foto(s)');
     setError(null);
     setFlowStep('analyzing');
 
     try {
       const angulos: AnguloCaptura[] = (['frontal', 'lateral', 'corona'] as AnguloCaptura[]).slice(0, photos.length);
       const estado: EstadoCabelloFoto = estadoCabello || 'seco_natural';
-
-      console.log('[CameraCapture] Llamando analizarCabello — estado:', estado, 'ángulos:', angulos);
       const result = await analizarCabello(photos, estado, angulos);
-      console.log('[CameraCapture] Resultado IA:', result);
       setAnalysisResult(result);
       setFlowStep('result');
     } catch (err) {
-      console.log('[CameraCapture] Error análisis IA:', err);
       const msg = err instanceof Error ? err.message : 'Error al analizar las fotos';
       setError(msg);
       setFlowStep('error');

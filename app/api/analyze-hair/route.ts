@@ -78,31 +78,20 @@ export async function POST(request: Request) {
   const openaiData = await openaiRes.json();
   const rawText: string = openaiData?.choices?.[0]?.message?.content ?? '';
 
-  console.log('[analyze-hair] Respuesta raw de OpenAI:', rawText);
-
-  // Limpiar posibles backticks markdown que GPT-4o a veces añade
   const cleanText = rawText
     .replace(/```json\s*/gi, '')
     .replace(/```\s*/g, '')
     .trim();
 
-  console.log('[analyze-hair] Texto limpio para parsear:', cleanText);
-
-  // Extraer el objeto JSON de la respuesta
   const match = cleanText.match(/\{[\s\S]*\}/);
   if (!match) {
-    console.log('[analyze-hair] No se encontró JSON en la respuesta. Raw:', rawText);
-    return Response.json({ error: 'La IA no devolvió un JSON válido', raw: rawText }, { status: 502 });
+    return Response.json({ error: 'La IA no devolvió un JSON válido' }, { status: 502 });
   }
 
-  let parsed: unknown;
   try {
-    parsed = JSON.parse(match[0]);
-    console.log('[analyze-hair] JSON parseado OK:', parsed);
-  } catch (parseErr) {
-    console.log('[analyze-hair] Error de parse:', parseErr, '— texto intentado:', match[0]);
-    return Response.json({ error: 'No se pudo parsear la respuesta de la IA', raw: rawText }, { status: 502 });
+    const parsed = JSON.parse(match[0]);
+    return Response.json(parsed);
+  } catch {
+    return Response.json({ error: 'No se pudo parsear la respuesta de la IA' }, { status: 502 });
   }
-
-  return Response.json(parsed);
 }

@@ -277,21 +277,7 @@ function WizardContent() {
       showToast(esBorrador ? 'Borrador guardado' : 'Diagnóstico guardado', 'success');
       return clientaObj?.id || data.clientaId || '';
     } catch (e) {
-      // TEMP DEBUG — mostrar código+mensaje real de Supabase en el toast.
-      // Revertir a 'No se pudo guardar el diagnóstico' cuando no haya más mismatches.
-      const err = e as { code?: string; message?: string; details?: string; hint?: string };
-      console.error('[diagnostico.save] full error', {
-        code: err?.code,
-        message: err?.message,
-        details: err?.details,
-        hint: err?.hint,
-        raw: e,
-      });
-      const rawMsg = err?.message || (typeof e === 'string' ? e : JSON.stringify(e));
-      const debugMsg = err?.code
-        ? `[${err.code}] ${rawMsg}${err?.details ? ` — ${err.details}` : ''}`
-        : rawMsg;
-      showToast(debugMsg, 'error');
+      showToast('No se pudo guardar el diagnóstico. Intenta de nuevo.', 'error');
       throw e;
     } finally {
       setSaving(false);
