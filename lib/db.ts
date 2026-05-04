@@ -69,6 +69,8 @@ type ConsultaRow = {
   cronograma: string[] | null;
   resultado_ia: ResultadoConsulta | null;
   ia_confirmada: boolean;
+  ia_tipo_sugerido: string | null;
+  ia_correccion: string | null;
   // Post-consulta
   observaciones_estilista: string | null;
   satisfaccion_clienta: Consulta['satisfaccion'] | null;
@@ -190,6 +192,8 @@ function rowToConsulta(r: ConsultaRow): Consulta {
     tipoRizoPrincipal: r.tipo_cabello ?? '',
     tiposSecundarios: undefined,
     zonasCambio: r.estado_transicion ?? undefined,
+    iaTipoSugerido: r.ia_tipo_sugerido ?? undefined,
+    iaCorreccion: r.ia_correccion ?? undefined,
     porosidad: r.porosidad ?? undefined,
     porosidadObs: undefined,
     densidad: r.densidad ?? undefined,
@@ -253,6 +257,8 @@ function consultaToRow(c: Consulta): Omit<ConsultaRow, 'user_id'> {
     cronograma: flattenCronograma(c.resultado?.cronograma),
     resultado_ia: c.resultado ?? null,
     ia_confirmada: false,
+    ia_tipo_sugerido: c.iaTipoSugerido ?? null,
+    ia_correccion: c.iaCorreccion ?? null,
     // Post-consulta
     observaciones_estilista: c.notasEstilista ?? null,
     // satisfaccion_clienta tiene CHECK — '' → null.

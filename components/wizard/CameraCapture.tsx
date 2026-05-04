@@ -40,6 +40,12 @@ interface Props {
     analysisResult: HairAnalysisResult,
     fotoUrls: string[]
   ) => void;
+  onCorrectAI: (
+    iaTipoSugerido: string,
+    captureMetadata: CaptureMetadata,
+    analysisResult: HairAnalysisResult,
+    fotoUrls: string[]
+  ) => void;
   onCancel: () => void;
 }
 
@@ -84,7 +90,7 @@ function AnguloIcon({ icono, size = 16 }: { icono: string; size?: number }) {
 
 // ── Componente principal ───────────────────────────────────────────────────
 
-export default function CameraCapture({ onComplete, onCancel }: Props) {
+export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Props) {
   const [flowStep, setFlowStep] = useState<FlowStep>('estado');
   const [estadoCabello, setEstadoCabello] = useState<EstadoCabelloFoto | null>(null);
   const [anguloIndex, setAnguloIndex] = useState(0);
@@ -318,19 +324,15 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
     }
   }, [fotos, estadoCabello]);
 
-  // ── Confirmar resultado ───────────────────────────────────────────────
+  // ── Construir CaptureMetadata (compartido entre confirmar y corregir) ─
 
-  const handleConfirmar = useCallback(async () => {
-    // scoreResult es null en el flujo de galería — solo se requiere analysisResult y estadoCabello
-    if (!analysisResult || !estadoCabello) return;
-
+  const buildMetadata = useCallback(async (): Promise<CaptureMetadata | null> => {
+    if (!estadoCabello) return null;
     const dispositivo = obtenerMetadataDispositivo();
     const ubicacion = await obtenerUbicacionAproximada();
     const track = streamRef.current?.getVideoTracks()[0];
-
-    const metadata: CaptureMetadata = {
+    return {
       estadoCabello,
-      // scoreResult solo existe en el flujo de cámara; para galería usamos 0
       qualityScore: scoreResult?.total ?? 0,
       qualityDesglose: scoreResult?.desglose ?? { luz: 0, distancia: 0, enfoque: 0, angulos: 0 },
       fotos: fotos.map((f) => ({
@@ -347,12 +349,28 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
       dispositivo,
       ubicacion,
     };
+  }, [estadoCabello, scoreResult, fotos]);
 
-    const fotoUrls = fotos.length > 0
-      ? fotos.map((f) => f.dataUrl)
-      : uploadedPhotos;
+  // ── Corregir manualmente: cierra cámara, abre grid manual ─────────────
+
+  const handleCorregirManual = useCallback(async () => {
+    if (!analysisResult || !estadoCabello) return;
+    const metadata = await buildMetadata();
+    if (!metadata) return;
+    const fotoUrls = fotos.length > 0 ? fotos.map((f) => f.dataUrl) : uploadedPhotos;
+    onCorrectAI(analysisResult.tipoRizoPrincipal, metadata, analysisResult, fotoUrls);
+  }, [analysisResult, estadoCabello, buildMetadata, fotos, uploadedPhotos, onCorrectAI]);
+
+  // ── Confirmar resultado ───────────────────────────────────────────────
+
+  const handleConfirmar = useCallback(async () => {
+    // scoreResult es null en el flujo de galería — solo se requiere analysisResult y estadoCabello
+    if (!analysisResult || !estadoCabello) return;
+    const metadata = await buildMetadata();
+    if (!metadata) return;
+    const fotoUrls = fotos.length > 0 ? fotos.map((f) => f.dataUrl) : uploadedPhotos;
     onComplete(analysisResult.tipoRizoPrincipal, analysisResult.tiposSecundarios ?? [], metadata, analysisResult, fotoUrls);
-  }, [analysisResult, estadoCabello, scoreResult, fotos, uploadedPhotos, onComplete]);
+  }, [analysisResult, estadoCabello, buildMetadata, fotos, uploadedPhotos, onComplete]);
 
   // ── Subir fotos desde galería ──────────────────────────────────────────
   // Paso 1: leer archivos → mostrar preview en 'gallery'
@@ -830,7 +848,7 @@ export default function CameraCapture({ onComplete, onCancel }: Props) {
               Confirmar tipo {analysisResult.tipoRizoPrincipal}
             </button>
             <button
-              onClick={handleRetomar}
+              onClick={handleCorregirManual}
               className="w-full py-4 rounded-2xl font-bold text-[#2D5A27] bg-white border-2 border-[#2D5A27]"
               style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
             >

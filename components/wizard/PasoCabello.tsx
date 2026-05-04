@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Camera, Pencil, Sparkles, ChevronDown, ChevronUp, X, Check, Bot } from 'lucide-react';
+import { Camera, Pencil, Sparkles, ChevronDown, ChevronUp, X, Check, Bot, AlertTriangle, ArrowRight } from 'lucide-react';
 import { WizardData, CaptureMetadata } from '@/lib/types';
 import { HairAnalysisResult } from '@/lib/hairAnalysis';
 import { rizoTypes, RizoPattern } from './RizoPatterns';
@@ -217,6 +217,54 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
 
   const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 
+  // ── Corrección de IA: la estilista no acepta el diagnóstico ─────────────
+  const handleCorrectAI = (
+    iaTipoSugerido: string,
+    captureMetadata: CaptureMetadata,
+    analysisResult: HairAnalysisResult,
+    fotoUrls: string[]
+  ) => {
+    // Pre-llenamos lo mismo que en handleCameraComplete EXCEPTO tipoRizoPrincipal
+    // (la estilista debe escogerlo). Guardamos el sugerido por la IA aparte.
+    const camposIA = new Set<string>();
+    const patch: Partial<WizardData> = {
+      tipoRizoPrincipal: '',
+      tiposSecundarios: [],
+      captureMetadata,
+      fotoAnalisis: fotoUrls,
+      iaTipoSugerido,
+      iaCorreccion: '',
+    };
+
+    if (analysisResult.porosidad) {
+      patch.porosidad = analysisResult.porosidad;
+      camposIA.add('porosidad');
+    }
+    if (analysisResult.densidad) {
+      patch.densidad = analysisResult.densidad;
+      camposIA.add('densidad');
+    }
+    if (analysisResult.danoVisible && analysisResult.danoVisible !== 'ninguno') {
+      const mapDano: Record<string, string> = {
+        leve: 'Daño mecánico (peinado brusco, ligas, etc.)',
+        moderado: 'Daño térmico (textura alterada por calor)',
+        severo: 'Daño químico (decoloración, alisado)',
+      };
+      const danoVal = mapDano[analysisResult.danoVisible];
+      if (danoVal) {
+        patch.tipoDano = [danoVal];
+        camposIA.add('tipoDano');
+      }
+    } else if (analysisResult.danoVisible === 'ninguno') {
+      patch.tipoDano = ['Sin daño visible'];
+    }
+
+    onChange(patch);
+    setIaCampos(camposIA);
+    setExpressReady(false);
+    setMode('form');
+  };
+
   // ── Camera complete ─────────────────────────────────────────────────────
   const handleCameraComplete = (
     tipoRizoPrincipal: string,
@@ -343,6 +391,7 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
     return (
       <CameraCapture
         onComplete={handleCameraComplete}
+        onCorrectAI={handleCorrectAI}
         onCancel={() => setMode('choose')}
       />
     );
@@ -392,12 +441,32 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
         )}
 
         {/* IA badge info */}
-        {iaCampos.size > 0 && !expressReady && (
+        {iaCampos.size > 0 && !expressReady && !data.iaTipoSugerido && (
           <div className="flex items-center gap-2 px-3 py-2 bg-[#EEF5ED] rounded-xl border border-[#90B98A]">
             <Bot size={14} className="text-[#2D5A27]" />
             <p className="text-xs text-[#2D5A27]">
               Campos pre-llenados por IA. Revisa y ajusta si es necesario.
             </p>
+          </div>
+        )}
+
+        {/* Banner: corrección de IA en curso */}
+        {data.iaTipoSugerido && !data.tipoRizoPrincipal && (
+          <div className="flex items-start gap-2 px-3 py-2.5 bg-[#FEF3C7] rounded-xl border border-[#F59E0B]">
+            <AlertTriangle size={16} className="text-[#B45309] mt-0.5 shrink-0" />
+            <p className="text-xs text-[#78350F]">
+              <span className="font-bold">🔄 Corrigiendo diagnóstico de la IA</span> — La IA sugirió{' '}
+              <strong>{data.iaTipoSugerido}</strong>. Selecciona el tipo correcto.
+            </p>
+          </div>
+        )}
+
+        {/* Indicador post-corrección: IA: X → Corregido a: Y */}
+        {data.iaTipoSugerido && data.tipoRizoPrincipal && data.tipoRizoPrincipal !== data.iaTipoSugerido && (
+          <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FEF3C7] rounded-xl border border-[#F59E0B]">
+            <span className="text-xs font-bold text-[#78350F]">IA: {data.iaTipoSugerido}</span>
+            <ArrowRight size={12} className="text-[#B45309]" />
+            <span className="text-xs font-bold text-[#2D5A27]">Corregido a: {data.tipoRizoPrincipal}</span>
           </div>
         )}
 
@@ -420,6 +489,7 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
             {rizoTypes.flatMap((g) =>
               g.types.map(({ id }) => {
                 const isPrimary = data.tipoRizoPrincipal === id;
+                const isIASuggestion = data.iaTipoSugerido === id && !isPrimary;
                 return (
                   <button
                     key={id}
@@ -428,12 +498,19 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
                     className={`relative flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all duration-150 active:scale-95 ${
                       isPrimary
                         ? 'border-[#2D5A27] bg-[#EEF5ED] shadow-sm'
+                        : isIASuggestion
+                        ? 'border-[#F59E0B] bg-white border-dashed'
                         : 'border-[#E5E5E5] bg-white hover:border-[#90B98A]'
                     }`}
                   >
                     {isPrimary && (
                       <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#2D5A27] rounded-full flex items-center justify-center">
                         <Check size={9} className="text-white" strokeWidth={3} />
+                      </div>
+                    )}
+                    {isIASuggestion && (
+                      <div className="absolute -top-1 -right-1 px-1 h-4 bg-[#F59E0B] rounded-full flex items-center justify-center">
+                        <span className="text-[8px] font-bold text-white">IA</span>
                       </div>
                     )}
                     <div className="scale-75 -my-1">
@@ -446,6 +523,23 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
             )}
           </div>
         </div>
+
+        {/* Nota opcional: ¿por qué la IA se equivocó? */}
+        {data.iaTipoSugerido && data.tipoRizoPrincipal && data.tipoRizoPrincipal !== data.iaTipoSugerido && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-[#444]" style={serif}>
+              ¿Por qué la IA se equivocó? <span className="text-[#AAAAAA] font-normal">(opcional)</span>
+            </label>
+            <textarea
+              value={data.iaCorreccion ?? ''}
+              onChange={(e) => onChange({ iaCorreccion: e.target.value })}
+              placeholder="Ej: este no es un cabello 3A, es 2C porque las ondas son más abiertas"
+              rows={3}
+              className="w-full px-3 py-2 rounded-xl border-2 border-[#E5E5E5] focus:border-[#F59E0B] outline-none text-sm bg-white resize-none"
+            />
+            <p className="text-[10px] text-[#999]">Esto nos ayuda a mejorar la IA con el tiempo</p>
+          </div>
+        )}
 
         {/* Separador */}
         <div className="h-px bg-[#F0F0F0]" />

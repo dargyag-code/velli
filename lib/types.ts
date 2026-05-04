@@ -88,6 +88,8 @@ export interface Consulta {
   tipoRizoPrincipal: string;
   tiposSecundarios?: string[];
   zonasCambio?: string;
+  iaTipoSugerido?: string;
+  iaCorreccion?: string;
 
   // Paso 3: Diagnóstico técnico (opcionales en modo express)
   porosidad?: 'baja' | 'media' | 'alta';
@@ -198,6 +200,8 @@ export interface WizardData {
   tiposSecundarios: string[];
   zonasCambio: string;
   captureMetadata?: CaptureMetadata;
+  iaTipoSugerido?: string;
+  iaCorreccion?: string;
 
   // Paso 3
   porosidad: string;

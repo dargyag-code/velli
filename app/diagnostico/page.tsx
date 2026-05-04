@@ -166,6 +166,8 @@ function WizardContent() {
         tipoRizoPrincipal: wizardData.tipoRizoPrincipal,
         tiposSecundarios: wizardData.tiposSecundarios,
         zonasCambio: wizardData.zonasCambio,
+        iaTipoSugerido: wizardData.iaTipoSugerido,
+        iaCorreccion: wizardData.iaCorreccion,
         porosidad: wizardData.porosidad as 'baja' | 'media' | 'alta' | undefined,
         densidad: wizardData.densidad as 'baja' | 'media' | 'alta' | undefined,
         grosor: wizardData.grosor as 'fino' | 'medio' | 'grueso' | undefined,

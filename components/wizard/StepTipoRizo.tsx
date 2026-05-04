@@ -50,6 +50,10 @@ export default function StepTipoRizo({ data, onChange, errors }: Props) {
     {showCamera && (
       <CameraCapture
         onComplete={handleCameraComplete}
+        onCorrectAI={(iaTipoSugerido, captureMetadata) => {
+          setShowCamera(false);
+          onChange({ captureMetadata, iaTipoSugerido, tipoRizoPrincipal: '' });
+        }}
         onCancel={() => setShowCamera(false)}
       />
     )}
