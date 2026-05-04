@@ -68,7 +68,7 @@ async function analyzeWithClaude(
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-7',
+      model: 'claude-sonnet-4-6',
       max_tokens: 1500,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content }],
