@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Camera, Pencil, Sparkles, ChevronDown, ChevronUp, X, Check, Bot, AlertTriangle, ArrowRight } from 'lucide-react';
 import { WizardData, CaptureMetadata } from '@/lib/types';
 import { HairAnalysisResult } from '@/lib/hairAnalysis';
@@ -217,6 +217,16 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
 
   const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 
+  // Si la IA sugirió un tipo y la estilista aún no ha confirmado uno
+  // (corrección manual en curso), siempre debemos estar en el formulario
+  // — nunca volver a abrir la cámara. Garantía defensiva contra remounts
+  // o desincronizaciones de setMode tras onChange.
+  useEffect(() => {
+    if (data.iaTipoSugerido && !data.tipoRizoPrincipal && mode !== 'form') {
+      setMode('form');
+    }
+  }, [data.iaTipoSugerido, data.tipoRizoPrincipal, mode]);
+
   // ── Corrección de IA: la estilista no acepta el diagnóstico ─────────────
   const handleCorrectAI = (
     iaTipoSugerido: string,
@@ -259,10 +269,12 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
       patch.tipoDano = ['Sin daño visible'];
     }
 
-    onChange(patch);
+    // setMode primero: garantiza que aún si onChange causa un re-render
+    // anómalo, el formulario aparece y la cámara se desmonta.
+    setMode('form');
     setIaCampos(camposIA);
     setExpressReady(false);
-    setMode('form');
+    onChange(patch);
   };
 
   // ── Camera complete ─────────────────────────────────────────────────────
