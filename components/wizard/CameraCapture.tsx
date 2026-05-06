@@ -371,11 +371,25 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
   }, [estadoCabello, scoreResult, fotos]);
 
   const handleCorregirManual = useCallback(async () => {
-    if (!analysisResult || !estadoCabello) return;
+    // BUG-1 LOG · cada paso de la función
+    console.log('[BUG-1] handleCorregirManual: ENTRÓ');
+    console.log('[BUG-1] handleCorregirManual: analysisResult?', !!analysisResult, 'estadoCabello?', !!estadoCabello);
+    if (!analysisResult || !estadoCabello) {
+      console.log('[BUG-1] handleCorregirManual: SALIDA temprana (falta analysisResult o estadoCabello)');
+      return;
+    }
+    console.log('[BUG-1] handleCorregirManual: llamando buildMetadata...');
     const metadata = await buildMetadata();
-    if (!metadata) return;
+    console.log('[BUG-1] handleCorregirManual: buildMetadata devolvió', !!metadata);
+    if (!metadata) {
+      console.log('[BUG-1] handleCorregirManual: SALIDA por metadata null');
+      return;
+    }
     const fotoUrls = fotos.length > 0 ? fotos.map((f) => f.dataUrl) : uploadedPhotos;
+    console.log('[BUG-1] handleCorregirManual: fotoUrls.length =', fotoUrls.length, '· iaTipoSugerido =', analysisResult.tipoRizoPrincipal);
+    console.log('[BUG-1] handleCorregirManual: llamando onCorrectAI(...)');
     onCorrectAI(analysisResult.tipoRizoPrincipal, metadata, analysisResult, fotoUrls);
+    console.log('[BUG-1] handleCorregirManual: onCorrectAI retornó');
   }, [analysisResult, estadoCabello, buildMetadata, fotos, uploadedPhotos, onCorrectAI]);
 
   const handleConfirmar = useCallback(async () => {
@@ -1452,7 +1466,10 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
               variant="outline"
               size="lg"
               fullWidth
-              onClick={handleCorregirManual}
+              onClick={() => {
+                console.log('[BUG-1] Click corregir');
+                handleCorregirManual();
+              }}
             >
               Corregir manualmente
             </Btn>

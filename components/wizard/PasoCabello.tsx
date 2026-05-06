@@ -239,12 +239,37 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
   const [expressReady, setExpressReady] = useState(false);
   const [showDetalle, setShowDetalle] = useState(false);
 
+  // ── BUG-1: lock anti-cámara durante corrección de IA ──────────────────
+  // Una vez que correctingMode = true, la cámara NUNCA se vuelve a abrir
+  // (ni autoCamera, ni mode==='camera', ni nada lo despierta).
+  const [correctingMode, setCorrectingMode] = useState(false);
+
+  // Render de cámara: bloqueado si correctingMode está activo.
+  const showCamera = !correctingMode && mode === 'camera';
+
+  // BUG-1 LOG · render
+  console.log(
+    '[BUG-1] render PasoCabello mode:', mode,
+    'correctingMode:', correctingMode,
+    'showCamera:', showCamera,
+    'iaTipoSugerido:', data.iaTipoSugerido,
+    'tipoRizoPrincipal:', data.tipoRizoPrincipal
+  );
+
   // Garantía defensiva: si IA sugirió y no hay tipo confirmado, fuerza form
   useEffect(() => {
+    // BUG-1 LOG · useEffect defensivo
+    console.log(
+      '[BUG-1] useEffect mode:', mode,
+      'iaTipoSugerido:', data.iaTipoSugerido,
+      'tipoRizoPrincipal:', data.tipoRizoPrincipal,
+      'correctingMode:', correctingMode
+    );
     if (data.iaTipoSugerido && !data.tipoRizoPrincipal && mode !== 'form') {
+      console.log('[BUG-1] useEffect → forzando setMode(form)');
       setMode('form');
     }
-  }, [data.iaTipoSugerido, data.tipoRizoPrincipal, mode]);
+  }, [data.iaTipoSugerido, data.tipoRizoPrincipal, mode, correctingMode]);
 
   // ── Corrección de IA ──────────────────────────────────────────────────
   const handleCorrectAI = (
@@ -253,6 +278,15 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
     analysisResult: HairAnalysisResult,
     fotoUrls: string[]
   ) => {
+    // BUG-1 LOG · entrada
+    console.log('[BUG-1] handleCorrectAI mode antes:', mode, 'correctingMode antes:', correctingMode);
+
+    // BUG-1 FIX · BLOQUEAR CÁMARA *ANTES* DE CUALQUIER OTRA COSA
+    // Esto garantiza que aunque hayan re-renders, remounts, o desincronizaciones,
+    // la cámara no puede volver a aparecer en este flujo.
+    setCorrectingMode(true);
+    console.log('[BUG-1] setCorrectingMode(true) llamado');
+
     const camposIA = new Set<string>();
     const patch: Partial<WizardData> = {
       tipoRizoPrincipal: '',
@@ -287,6 +321,9 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
     }
 
     setMode('form');
+    // BUG-1 LOG · NOTA: este log mostrará el `mode` *stale* del closure (React state es asíncrono).
+    // La verdad sobre el valor real está en el siguiente log de render.
+    console.log('[BUG-1] mode después de setMode(form) (stale closure):', mode);
     setIaCampos(camposIA);
     setExpressReady(false);
     onChange(patch);
@@ -511,7 +548,10 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
   }
 
   // ═══ RENDER · MODO CAMERA ═════════════════════════════════════════════
-  if (mode === 'camera') {
+  // BUG-1 FIX: usamos showCamera (= !correctingMode && mode === 'camera').
+  // Si correctingMode está activo, NUNCA renderizamos la cámara aunque mode
+  // accidentalmente vuelva a 'camera' (e.g. autoCamera reseteo, remount, etc).
+  if (showCamera) {
     return (
       <CameraCapture
         onComplete={handleCameraComplete}
