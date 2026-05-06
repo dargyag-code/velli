@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import { Btn } from '@/components/v2';
 import { createClient } from '@/lib/supabase/client';
-import { friendlyAuthError } from '@/lib/errors';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,15 +24,33 @@ export default function LoginPage() {
 
     setLoading(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
+    const normalizedEmail = email.trim().toLowerCase();
+    // ── DIAGNÓSTICO TEMPORAL ──────────────────────────────────────────────
+    console.log('[AUTH] Intento de login con email:', normalizedEmail, '· longitud password:', password.length);
+    console.log('[AUTH] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
       password,
     });
+    console.log('[AUTH] Response data:', data);
+    console.error('[AUTH] Response error:', error);
+    if (error) {
+      console.error(
+        '[AUTH] Error code:', (error as { code?: string }).code,
+        '· status:', (error as { status?: number }).status,
+        '· name:', error.name,
+        '· message:', error.message
+      );
+    }
+    // ──────────────────────────────────────────────────────────────────────
     setLoading(false);
 
     if (error) {
       console.error('[auth.login]', error);
-      setError(friendlyAuthError(error.message));
+      // DIAGNÓSTICO TEMPORAL: mostrar el código real para distinguir
+      // invalid_credentials / email_not_confirmed / rate_limited / etc.
+      const code = (error as { code?: string }).code ?? error.name ?? 'unknown';
+      setError(`Error: ${code} — ${error.message}`);
       return;
     }
 

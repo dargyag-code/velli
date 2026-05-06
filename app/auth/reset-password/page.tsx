@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Lock, Check } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { friendlyAuthError } from '@/lib/errors';
 
 const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 
@@ -47,14 +46,38 @@ export default function ResetPasswordPage() {
 
     setLoading(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({ password });
+    // ── DIAGNÓSTICO TEMPORAL ──────────────────────────────────────────────
+    const sessionBefore = await supabase.auth.getSession();
+    console.log('[AUTH-RESET] Sesión antes de updateUser:', {
+      hasSession: !!sessionBefore.data.session,
+      userEmail: sessionBefore.data.session?.user.email,
+      userId: sessionBefore.data.session?.user.id,
+    });
+    const { data, error } = await supabase.auth.updateUser({ password });
+    console.log('[AUTH-RESET] updateUser response data:', data);
+    console.error('[AUTH-RESET] updateUser response error:', error);
+    if (error) {
+      console.error(
+        '[AUTH-RESET] Error code:', (error as { code?: string }).code,
+        '· status:', (error as { status?: number }).status,
+        '· name:', error.name,
+        '· message:', error.message
+      );
+    }
+    // ──────────────────────────────────────────────────────────────────────
     setLoading(false);
 
     if (error) {
       console.error('[auth.updatePassword]', error);
-      setError(friendlyAuthError(error.message));
+      const code = (error as { code?: string }).code ?? error.name ?? 'unknown';
+      setError(`Error: ${code} — ${error.message}`);
       return;
     }
+    // Cierra la sesión de recovery para forzar login con la NUEVA contraseña.
+    // Sin esto, el usuario queda autenticado en /auth/login y la proxy lo
+    // redirige a / sin que verifique que la nueva contraseña funciona.
+    await supabase.auth.signOut();
+    console.log('[AUTH-RESET] signOut completado, redirigiendo a /auth/login');
     setDone(true);
     setTimeout(() => {
       router.push('/auth/login');
