@@ -13,6 +13,7 @@ import {
   capturarFrame, detectarFormato, calcularScoreCaptura,
   CaptureQualityScore, LightResult, FocusResult, DistanceResult,
   obtenerMetadataDispositivo, obtenerUbicacionAproximada, detectarFlash,
+  validarFotosSonDeCabello, type HairPhotoValidationResult,
 } from '@/lib/captureQuality';
 import { analizarCabello, HairAnalysisResult } from '@/lib/hairAnalysis';
 import { Btn, Chip } from '@/components/v2';
@@ -137,6 +138,9 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
   const [lightResult, setLightResult] = useState<LightResult | null>(null);
   const [focusResult, setFocusResult] = useState<FocusResult | null>(null);
   const [distanceResult, setDistanceResult] = useState<DistanceResult | null>(null);
+  // BUG-2: resultado de validación GPT-4o "es realmente cabello".
+  // Sólo se llena si score < 80 y se ejecutó la 2ª capa.
+  const [hairValidation, setHairValidation] = useState<HairPhotoValidationResult | null>(null);
 
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const facingModeRef = useRef<'environment' | 'user'>('environment');
@@ -294,11 +298,13 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
     if (anguloIndex < SECUENCIA_ANGULOS.length - 1) {
       setAnguloIndex(anguloIndex + 1);
     } else {
+      // BUG-2: rango estricto 0.35-0.65 y faceRatio === -1 (no se midió)
+      // ya NO se considera ok automáticamente.
       const scoreInput = nuevasFotos.map((f) => ({
         angulo: f.angulo,
         luminancia: f.luminancia,
         sharpnessScore: f.sharpnessScore,
-        distanciaOk: f.faceRatio === -1 || (f.faceRatio >= 0.25 && f.faceRatio <= 0.55),
+        distanciaOk: f.faceRatio >= 0.35 && f.faceRatio <= 0.65,
       }));
       const score = calcularScoreCaptura(scoreInput);
       setScoreResult(score);
@@ -331,8 +337,27 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
     setError(null);
 
     try {
+      // BUG-2: 2ª capa de validación GPT-4o sólo cuando score < 80
+      const fotoUrls = fotos.map((f) => f.dataUrl);
+      const score = scoreResult?.total ?? 0;
+      if (score < 80) {
+        console.log('[BUG-2] score', score, '< 80 — ejecutando validación GPT-4o de cabello');
+        const validation = await validarFotosSonDeCabello(fotoUrls);
+        console.log('[BUG-2] validación GPT-4o:', validation);
+        setHairValidation(validation);
+
+        if (validation.blocked) {
+          // Las 3 fotos NO muestran cabello → bloquear y volver al score con mensaje
+          setError(validation.message);
+          setFlowStep('score');
+          vibracionError();
+          return;
+        }
+        // warning (1-2 fotos NO) o todas válidas → continuamos
+      }
+
       const result = await analizarCabello(
-        fotos.map((f) => f.dataUrl),
+        fotoUrls,
         estadoCabello,
         fotos.map((f) => f.angulo)
       );
@@ -343,7 +368,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
       setError(msg);
       setFlowStep('score');
     }
-  }, [fotos, estadoCabello]);
+  }, [fotos, estadoCabello, scoreResult]);
 
   const buildMetadata = useCallback(async (): Promise<CaptureMetadata | null> => {
     if (!estadoCabello) return null;
@@ -367,8 +392,10 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
       })),
       dispositivo,
       ubicacion,
+      // BUG-2: incluye el resultado de la validación GPT-4o si se ejecutó
+      hairPhotoValidation: hairValidation ?? undefined,
     };
-  }, [estadoCabello, scoreResult, fotos]);
+  }, [estadoCabello, scoreResult, fotos, hairValidation]);
 
   const handleCorregirManual = useCallback(async () => {
     // BUG-1 LOG · cada paso de la función
@@ -437,6 +464,20 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
     setFlowStep('analyzing');
 
     try {
+      // BUG-2: para fotos subidas (sin score nativo), SIEMPRE validamos con GPT-4o
+      // — no tenemos métricas de calidad que justifiquen saltarse la validación.
+      console.log('[BUG-2] fotos subidas — validando con GPT-4o (no hay score nativo)');
+      const validation = await validarFotosSonDeCabello(photos);
+      console.log('[BUG-2] validación GPT-4o (gallery):', validation);
+      setHairValidation(validation);
+
+      if (validation.blocked) {
+        setError(validation.message);
+        setFlowStep('gallery');
+        vibracionError();
+        return;
+      }
+
       const angulos: AnguloCaptura[] = (['frontal', 'lateral', 'corona'] as AnguloCaptura[]).slice(0, photos.length);
       const estado: EstadoCabelloFoto = estadoCabello || 'seco_natural';
       const result = await analizarCabello(photos, estado, angulos);
@@ -1392,6 +1433,41 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
               </div>
             )}
           </div>
+
+          {/* BUG-2: warning si la validación GPT-4o detectó fotos no-cabello */}
+          {hairValidation?.warning && (
+            <div
+              style={{
+                margin: '0 20px 14px',
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'var(--treat-recon-bg)',
+                border: '1px solid rgba(212, 130, 10, 0.25)',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 8,
+              }}
+            >
+              <AlertCircle size={14} style={{ color: 'var(--treat-recon-color)', flexShrink: 0, marginTop: 2 }} />
+              <div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: 'var(--treat-recon-color)',
+                    fontFamily: 'var(--font-mono)',
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Validación · advertencia
+                </div>
+                <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--treat-recon-color)', lineHeight: 1.4 }}>
+                  {hairValidation.message}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Observaciones */}
           <div
