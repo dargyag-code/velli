@@ -52,8 +52,12 @@ export default function ReportesPage() {
   const [satisfaccionProm, setSatisfaccionProm] = useState<number | null>(null);
 
   const load = useCallback(async () => {
+    // allSettled: si una query falla (ej. SQL error), las otras se preservan
+    // y la pantalla muestra "sin datos" en esa métrica en vez de quedar todo
+    // en blanco. CRÍTICO: el catch evita que la rejection se propague como
+    // unhandled rejection (causa del spam de cientos de errores en consola).
     try {
-      const [all, month, months, rizo, trat, sat] = await Promise.all([
+      const [all, month, months, rizo, trat, sat] = await Promise.allSettled([
         getAllClientas(),
         getStatsThisMonth(),
         getConsultasByMonth(),
@@ -61,12 +65,23 @@ export default function ReportesPage() {
         getTratamientosDistribution(),
         getSatisfaccionPromedio(),
       ]);
-      setTotalClientas(all.length);
-      setThisMonth(month);
-      setByMonth(months);
-      setRizoDistrib(rizo);
-      setTratDistrib(trat);
-      setSatisfaccionProm(sat);
+      if (all.status === 'fulfilled') setTotalClientas(all.value.length);
+      else console.error('[reportes.getAllClientas]', all.reason);
+      if (month.status === 'fulfilled') setThisMonth(month.value);
+      else console.error('[reportes.getStatsThisMonth]', month.reason);
+      if (months.status === 'fulfilled') setByMonth(months.value);
+      else console.error('[reportes.getConsultasByMonth]', months.reason);
+      if (rizo.status === 'fulfilled') setRizoDistrib(rizo.value);
+      else console.error('[reportes.getRizoDistribution]', rizo.reason);
+      if (trat.status === 'fulfilled') setTratDistrib(trat.value);
+      else console.error('[reportes.getTratamientosDistribution]', trat.reason);
+      if (sat.status === 'fulfilled') setSatisfaccionProm(sat.value);
+      else console.error('[reportes.getSatisfaccionPromedio]', sat.reason);
+    } catch (e) {
+      // No reintentar — si load() falla por un motivo no capturado por
+      // allSettled, dejar los estados con sus valores iniciales y que la UI
+      // muestre el empty state. El usuario tendrá que recargar manualmente.
+      console.error('[reportes.load] error inesperado, no se reintenta:', e);
     } finally {
       setLoading(false);
     }

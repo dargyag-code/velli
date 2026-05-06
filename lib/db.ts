@@ -675,13 +675,19 @@ const SATISFACCION_SCORE: Record<NonNullable<Consulta['satisfaccion']>, number> 
 export async function getSatisfaccionPromedio(
   yearMonth?: string
 ): Promise<number | null> {
+  // fecha es timestamp with time zone — Postgres NO permite LIKE sobre
+  // timestamps. Filtramos por rango [inicio_mes, inicio_mes_siguiente).
   const ym = yearMonth || new Date().toISOString().substring(0, 7);
+  const [y, m] = ym.split('-').map(Number);
+  const inicio = new Date(Date.UTC(y, m - 1, 1)).toISOString();
+  const fin = new Date(Date.UTC(y, m, 1)).toISOString();
   const supabase = createClient();
   const { data, error } = await supabase
     .from('consultas')
     .select('satisfaccion_clienta, fecha')
     .not('satisfaccion_clienta', 'is', null)
-    .like('fecha', `${ym}%`);
+    .gte('fecha', inicio)
+    .lt('fecha', fin);
   if (error) throw error;
   if (!data || data.length === 0) return null;
   const scores = (data as { satisfaccion_clienta: keyof typeof SATISFACCION_SCORE | null }[])
