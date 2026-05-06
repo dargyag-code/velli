@@ -1,10 +1,9 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
   User, Download, Upload, Trash2,
-  ChevronRight, Check, AlertCircle, LogOut,
+  ChevronRight, Check, AlertCircle, LogOut, FileText, Shield,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
@@ -295,48 +294,8 @@ export default function ConfiguracionPage() {
           )}
         </Section>
 
-        {/* ── Datos ── */}
-        <Section title="Datos">
-          <ActionRow
-            icon={<Download size={16} />}
-            label="Exportar backup"
-            sublabel="Descarga todas las clientas y consultas como JSON"
-            onClick={handleExport}
-            rightEl={exportLoading ? (
-              <div className="w-4 h-4 border-2 border-[#2D5A27] border-t-transparent rounded-full animate-spin" />
-            ) : undefined}
-          />
-          <ActionRow
-            icon={<Upload size={16} />}
-            label="Importar backup"
-            sublabel="Restaura un backup JSON anterior (no borra datos existentes)"
-            onClick={handleImport}
-          />
-        </Section>
-
-        {importMsg && (
-          <div className={`flex items-start gap-2 p-3 rounded-xl mb-4 border ${
-            importMsg.type === 'ok'
-              ? 'bg-green-50 border-green-200 text-green-800'
-              : 'bg-red-50 border-red-200 text-red-800'
-          }`}>
-            {importMsg.type === 'ok'
-              ? <Check size={14} className="mt-0.5 shrink-0" />
-              : <AlertCircle size={14} className="mt-0.5 shrink-0" />
-            }
-            <p className="text-xs">{importMsg.text}</p>
-          </div>
-        )}
-
-        {clearDone && (
-          <div className="flex items-center gap-2 p-3 rounded-xl mb-4 bg-green-50 border border-green-200">
-            <Check size={14} className="text-green-700 shrink-0" />
-            <p className="text-xs text-green-800">Todos los datos fueron eliminados.</p>
-          </div>
-        )}
-
-        {/* ── Zona de peligro ── */}
-        <Section title="Zona de peligro">
+        {/* ── Backup y datos ── */}
+        <Section title="Backup y datos">
           {showClearConfirm ? (
             <div className="p-4">
               <p className="text-sm text-red-700 mb-3 font-semibold text-center">
@@ -362,14 +321,100 @@ export default function ConfiguracionPage() {
               </div>
             </div>
           ) : (
-            <ActionRow
-              icon={<Trash2 size={16} />}
-              label="Borrar todos los datos"
-              sublabel="Elimina tus clientas y consultas de la nube"
-              onClick={() => setShowClearConfirm(true)}
-              danger
-            />
+            <>
+              <ActionRow
+                icon={<Download size={16} />}
+                label="Exportar backup"
+                sublabel="Descarga todas las clientas y consultas como JSON"
+                onClick={handleExport}
+                rightEl={exportLoading ? (
+                  <div className="w-4 h-4 border-2 border-[#2D5A27] border-t-transparent rounded-full animate-spin" />
+                ) : undefined}
+              />
+              <ActionRow
+                icon={<Upload size={16} />}
+                label="Importar backup"
+                sublabel="Restaura un backup JSON anterior (no borra datos existentes)"
+                onClick={handleImport}
+              />
+              <ActionRow
+                icon={<Trash2 size={16} />}
+                label="Borrar todos los datos"
+                sublabel="Elimina tus clientas y consultas de la nube"
+                onClick={() => setShowClearConfirm(true)}
+                danger
+              />
+            </>
           )}
+        </Section>
+
+        {importMsg && (
+          <div className={`flex items-start gap-2 p-3 rounded-xl mb-4 border ${
+            importMsg.type === 'ok'
+              ? 'bg-green-50 border-green-200 text-green-800'
+              : 'bg-red-50 border-red-200 text-red-800'
+          }`}>
+            {importMsg.type === 'ok'
+              ? <Check size={14} className="mt-0.5 shrink-0" />
+              : <AlertCircle size={14} className="mt-0.5 shrink-0" />
+            }
+            <p className="text-xs">{importMsg.text}</p>
+          </div>
+        )}
+
+        {clearDone && (
+          <div className="flex items-center gap-2 p-3 rounded-xl mb-4 bg-green-50 border border-green-200">
+            <Check size={14} className="text-green-700 shrink-0" />
+            <p className="text-xs text-green-800">Todos los datos fueron eliminados.</p>
+          </div>
+        )}
+
+        {/* ── Acerca de Velli ── */}
+        <Section title="Acerca de Velli">
+          <div className="px-4 py-6 flex flex-col items-center text-center">
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
+              style={{
+                background: 'linear-gradient(135deg, #1A2E1A 0%, #2D5A27 100%)',
+                boxShadow: '0 4px 16px rgba(45,90,39,0.28)',
+              }}
+            >
+              <span className="text-white text-3xl leading-none" style={serif}>V</span>
+            </div>
+            <p className="text-base font-bold text-[#2D5A27]" style={serif}>
+              Velli Pro <span className="text-[#999999] font-normal text-sm">v1.0</span>
+            </p>
+            <p className="text-xs text-[#C9956B] mt-0.5 mb-3" style={serif}>
+              Inteligencia capilar a tu alcance
+            </p>
+            <p className="text-xs text-[#666666] leading-relaxed max-w-xs">
+              Velli Pro es una herramienta profesional para estilistas que combina inteligencia
+              artificial con conocimiento tricológico para ofrecer diagnósticos precisos y planes
+              de tratamiento personalizados.
+            </p>
+            <a
+              href="mailto:soporte@velli.app?subject=Soporte%20Velli%20Pro"
+              className="text-[11px] text-[#999999] mt-5 hover:text-[#2D5A27] hover:underline"
+            >
+              soporte@velli.app
+            </a>
+          </div>
+        </Section>
+
+        {/* ── Legal ── */}
+        <Section title="Legal">
+          <ActionRow
+            icon={<FileText size={16} />}
+            label="Términos de uso"
+            sublabel="Condiciones del servicio"
+            onClick={() => router.push('/legal/terminos')}
+          />
+          <ActionRow
+            icon={<Shield size={16} />}
+            label="Política de privacidad"
+            sublabel="Cómo tratamos tus datos y los de tus clientas"
+            onClick={() => router.push('/legal/privacidad')}
+          />
         </Section>
 
         {/* ── Sesión ── */}
@@ -413,48 +458,6 @@ export default function ConfiguracionPage() {
               danger
             />
           )}
-        </Section>
-
-        {/* ── Acerca de ── */}
-        <Section title="Acerca de">
-          <div className="px-4 py-6 flex flex-col items-center text-center">
-            <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
-              style={{
-                background: 'linear-gradient(135deg, #1A2E1A 0%, #2D5A27 100%)',
-                boxShadow: '0 4px 16px rgba(45,90,39,0.28)',
-              }}
-            >
-              <span className="text-white text-3xl leading-none" style={serif}>V</span>
-            </div>
-            <p className="text-base font-bold text-[#2D5A27]" style={serif}>
-              Velli Pro <span className="text-[#999999] font-normal text-sm">v1.0</span>
-            </p>
-            <p className="text-xs text-[#C9956B] mt-0.5 mb-3" style={serif}>
-              Inteligencia capilar a tu alcance
-            </p>
-            <p className="text-xs text-[#666666] leading-relaxed max-w-xs">
-              Velli Pro es una herramienta profesional para estilistas que combina inteligencia
-              artificial con conocimiento tricológico para ofrecer diagnósticos precisos y planes
-              de tratamiento personalizados.
-            </p>
-            <div className="flex gap-4 mt-5 text-[11px] text-[#999999]">
-              <Link href="/legal/terminos" className="hover:text-[#2D5A27] hover:underline">
-                Términos de uso
-              </Link>
-              <span className="text-[#E5E5E5]">·</span>
-              <Link href="/legal/privacidad" className="hover:text-[#2D5A27] hover:underline">
-                Privacidad
-              </Link>
-              <span className="text-[#E5E5E5]">·</span>
-              <a
-                href="mailto:soporte@velli.app?subject=Soporte%20Velli%20Pro"
-                className="hover:text-[#2D5A27] hover:underline"
-              >
-                Soporte
-              </a>
-            </div>
-          </div>
         </Section>
 
       </main>
