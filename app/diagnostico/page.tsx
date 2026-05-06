@@ -2,11 +2,10 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import ProgressBar from '@/components/layout/ProgressBar';
+import { StepBarV2, Btn } from '@/components/v2';
 import PasoClienta from '@/components/wizard/PasoClienta';
 import PasoCabello from '@/components/wizard/PasoCabello';
 import PasoPlan from '@/components/wizard/PasoPlan';
-import Button from '@/components/ui/Button';
 import { WizardData, WIZARD_INITIAL_DATA, Consulta, Clienta } from '@/lib/types';
 import { generateDiagnosis, SaludClienta } from '@/lib/diagnosticEngine';
 import { createConsulta, createClienta, getClientaById, getConsultasByClienta, getConsultaById } from '@/lib/db';
@@ -302,16 +301,16 @@ function WizardContent() {
   const esPasoResultado = paso === 2;
 
   return (
-    <div className="min-h-screen bg-[#F5F0E8] flex flex-col">
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
       {/* Progress */}
-      <ProgressBar
+      <StepBarV2
         currentStep={paso}
         totalSteps={TOTAL_PASOS - 1}
         stepLabels={STEP_LABELS}
       />
 
       {/* Content */}
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-5">
+      <main style={{ flex: 1, width: '100%', maxWidth: 768, margin: '0 auto', padding: '20px 16px' }}>
         {paso === 0 && (
           <PasoClienta data={data} onChange={update} errors={errors} />
         )}
@@ -337,54 +336,72 @@ function WizardContent() {
 
       {/* Navegación — solo pasos 0 y 1 */}
       {paso < 2 && (
-        <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-[#E5E5E5] px-4 py-3 pb-safe">
-          <div className="max-w-2xl mx-auto flex gap-3">
+        <div
+          className="pb-safe"
+          style={{
+            position: 'sticky',
+            bottom: 0,
+            background: 'rgba(255, 254, 251, 0.95)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            borderTop: '1px solid var(--border-soft)',
+            padding: '12px 16px',
+          }}
+        >
+          <div style={{ maxWidth: 768, margin: '0 auto', display: 'flex', gap: 8 }}>
             {paso > 0 ? (
-              <Button
+              <Btn
                 variant="ghost"
                 size="lg"
                 onClick={prev}
-                icon={<ArrowLeft size={18} />}
-                className="flex-shrink-0"
+                icon={<ArrowLeft size={14} />}
+                style={{ flex: 0.4 }}
               >
                 Atrás
-              </Button>
+              </Btn>
             ) : (
-              <Button
+              <Btn
                 variant="ghost"
                 size="lg"
                 onClick={() => router.back()}
-                icon={<ArrowLeft size={18} />}
-                className="flex-shrink-0"
+                icon={<ArrowLeft size={14} />}
+                style={{ flex: 0.4 }}
               >
                 Cancelar
-              </Button>
+              </Btn>
             )}
-            <Button
+            <Btn
               variant="primary"
               size="lg"
               fullWidth
               onClick={next}
-              icon={<ArrowRight size={18} />}
+              iconRight={<ArrowRight size={14} />}
+              style={{ flex: 1 }}
             >
-              {paso === 1 ? 'Generar plan' : 'Siguiente'}
-            </Button>
+              {paso === 1 ? 'Generar plan' : 'Continuar'}
+            </Btn>
           </div>
         </div>
       )}
 
       {/* Después de guardar — volver al inicio */}
       {paso === 2 && (
-        <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-[#E5E5E5] px-4 py-3 pb-safe">
-          <div className="max-w-2xl mx-auto">
-            <Button
-              variant="ghost"
-              size="md"
-              fullWidth
-              onClick={() => router.push('/')}
-            >
+        <div
+          className="pb-safe"
+          style={{
+            position: 'sticky',
+            bottom: 0,
+            background: 'rgba(255, 254, 251, 0.95)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            borderTop: '1px solid var(--border-soft)',
+            padding: '12px 16px',
+          }}
+        >
+          <div style={{ maxWidth: 768, margin: '0 auto' }}>
+            <Btn variant="ghost" size="md" fullWidth onClick={() => router.push('/')}>
               Volver al inicio
-            </Button>
+            </Btn>
           </div>
         </div>
       )}
@@ -395,10 +412,21 @@ function WizardContent() {
 export default function DiagnosticoPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-[#F5F0E8]">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-[#2D5A27] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-[#666666]">Cargando...</p>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              border: '3px solid var(--primary)',
+              borderTopColor: 'transparent',
+              borderRadius: '50%',
+              margin: '0 auto 12px',
+              animation: 'pulse-soft 1.4s linear infinite',
+            }}
+            className="loading-pulse"
+          />
+          <p className="v-caps">Cargando…</p>
         </div>
       </div>
     }>

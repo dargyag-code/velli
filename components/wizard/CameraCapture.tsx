@@ -1,8 +1,8 @@
 'use client';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  X, Camera, RotateCcw, Check, Zap, Sun, Eye, EyeOff,
-  User, ArrowRight, ChevronDown, Loader2, AlertCircle, SwitchCamera,
+  X, Camera, RotateCcw, Check, Sparkles, EyeOff,
+  User, ArrowRight, ChevronDown, Loader2, AlertCircle, SwitchCamera, Image as ImageIcon,
 } from 'lucide-react';
 import {
   EstadoCabelloFoto, AnguloCaptura, CaptureMetadata,
@@ -15,10 +15,10 @@ import {
   obtenerMetadataDispositivo, obtenerUbicacionAproximada, detectarFlash,
 } from '@/lib/captureQuality';
 import { analizarCabello, HairAnalysisResult } from '@/lib/hairAnalysis';
+import { Btn, Chip } from '@/components/v2';
 import { vibracionSutil, vibracionConfirmacion, vibracionError, sonidoCaptura, sonidoScoreAlto } from '@/lib/haptics';
 
 // ── Tipos internos ─────────────────────────────────────────────────────────
-
 type FlowStep = 'estado' | 'camera' | 'score' | 'gallery' | 'analyzing' | 'result' | 'error';
 
 interface CapturedPhoto {
@@ -50,37 +50,32 @@ interface Props {
 }
 
 // ── Color del indicador de distancia ──────────────────────────────────────
-
 function colorDistancia(status: DistanceResult['status'] | null): string {
-  if (!status) return '#E5E5E5';
-  if (status === 'perfect') return '#22C55E';
+  if (!status) return 'rgba(232, 194, 144, 0.4)';
+  if (status === 'perfect') return '#E8C290';
   if (status === 'too_close' || status === 'too_far') return '#EF4444';
-  return '#F59E0B'; // no_face → amarillo
+  return '#F59E0B';
 }
 
 // ── Guía de ángulo (SVG overlay) ──────────────────────────────────────────
-
 function AnguloGuide({ angulo }: { angulo: AnguloCaptura }) {
   return (
     <svg
       viewBox="0 0 200 280"
-      className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ opacity: 0.35 }}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', opacity: 0.35 }}
     >
       {angulo === 'frontal' && (
-        <ellipse cx="100" cy="140" rx="60" ry="95" fill="none" stroke="white" strokeWidth="2" strokeDasharray="8 4" />
+        <ellipse cx="100" cy="140" rx="60" ry="95" fill="none" stroke="#E8C290" strokeWidth="2" strokeDasharray="8 4" />
       )}
       {angulo === 'lateral' && (
-        <ellipse cx="100" cy="140" rx="40" ry="95" fill="none" stroke="white" strokeWidth="2" strokeDasharray="8 4" />
+        <ellipse cx="100" cy="140" rx="40" ry="95" fill="none" stroke="#E8C290" strokeWidth="2" strokeDasharray="8 4" />
       )}
       {angulo === 'corona' && (
-        <circle cx="100" cy="140" r="70" fill="none" stroke="white" strokeWidth="2" strokeDasharray="8 4" />
+        <circle cx="100" cy="140" r="70" fill="none" stroke="#E8C290" strokeWidth="2" strokeDasharray="8 4" />
       )}
     </svg>
   );
 }
-
-// ── Ícono de ángulo ────────────────────────────────────────────────────────
 
 function AnguloIcon({ icono, size = 16 }: { icono: string; size?: number }) {
   if (icono === 'user') return <User size={size} />;
@@ -88,8 +83,47 @@ function AnguloIcon({ icono, size = 16 }: { icono: string; size?: number }) {
   return <ChevronDown size={size} />;
 }
 
-// ── Componente principal ───────────────────────────────────────────────────
+// ── Targeting frame corners (estilo CameraV2 del diseño) ──────────────────
+function TargetingCorners() {
+  const corners: Array<{
+    top?: number;
+    bottom?: number;
+    left?: number;
+    right?: number;
+    borders: ('top' | 'bottom' | 'left' | 'right')[];
+  }> = [
+    { top: 0, left: 0, borders: ['top', 'left'] },
+    { top: 0, right: 0, borders: ['top', 'right'] },
+    { bottom: 0, left: 0, borders: ['bottom', 'left'] },
+    { bottom: 0, right: 0, borders: ['bottom', 'right'] },
+  ];
+  return (
+    <>
+      {corners.map((c, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            width: 24,
+            height: 24,
+            top: c.top,
+            bottom: c.bottom,
+            left: c.left,
+            right: c.right,
+            borderTop: c.borders.includes('top') ? '2px solid #E8C290' : 'none',
+            borderBottom: c.borders.includes('bottom') ? '2px solid #E8C290' : 'none',
+            borderLeft: c.borders.includes('left') ? '2px solid #E8C290' : 'none',
+            borderRight: c.borders.includes('right') ? '2px solid #E8C290' : 'none',
+          }}
+        />
+      ))}
+    </>
+  );
+}
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Componente principal
+// ═══════════════════════════════════════════════════════════════════════════
 export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Props) {
   const [flowStep, setFlowStep] = useState<FlowStep>('estado');
   const [estadoCabello, setEstadoCabello] = useState<EstadoCabelloFoto | null>(null);
@@ -100,7 +134,6 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
   const [error, setError] = useState<string | null>(null);
   const [capturando, setCapturando] = useState(false);
 
-  // Indicadores en tiempo real
   const [lightResult, setLightResult] = useState<LightResult | null>(null);
   const [focusResult, setFocusResult] = useState<FocusResult | null>(null);
   const [distanceResult, setDistanceResult] = useState<DistanceResult | null>(null);
@@ -116,9 +149,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
 
   // ── Cámara ────────────────────────────────────────────────────────────
-
   const startCamera = useCallback(async () => {
-    // Verificar que mediaDevices esté disponible (requiere HTTPS o localhost)
     if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       const isLocalhost = typeof window !== 'undefined' &&
         ['localhost', '127.0.0.1'].includes(window.location.hostname);
@@ -173,7 +204,6 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
   }, []);
 
   const switchCamera = useCallback(async () => {
-    // Detener solo los tracks (el intervalo de calidad sigue activo)
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
@@ -205,8 +235,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
     return () => { stopCamera(); };
   }, [flowStep, startCamera, stopCamera]);
 
-  // ── Loop de calidad (asíncrono, ~500ms) ───────────────────────────────
-
+  // ── Loop de calidad ───────────────────────────────────────────────────
   useEffect(() => {
     if (flowStep !== 'camera') return;
 
@@ -232,7 +261,6 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
   }, [flowStep]);
 
   // ── Capturar foto ─────────────────────────────────────────────────────
-
   const handleCapture = useCallback(async () => {
     const video = videoRef.current;
     if (!video || capturando) return;
@@ -242,11 +270,9 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
     const dataUrl = capturarFrame(video);
     const formato = detectarFormato(dataUrl);
 
-    // Medir calidad en el frame capturado
     const light = evaluarIluminacion(video);
     const focus = evaluarEnfoque(video);
     const distance = await evaluarDistancia(video);
-    const track = streamRef.current?.getVideoTracks()[0];
 
     const foto: CapturedPhoto = {
       dataUrl,
@@ -268,7 +294,6 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
     if (anguloIndex < SECUENCIA_ANGULOS.length - 1) {
       setAnguloIndex(anguloIndex + 1);
     } else {
-      // Todas las fotos capturadas → calcular score
       const scoreInput = nuevasFotos.map((f) => ({
         angulo: f.angulo,
         luminancia: f.luminancia,
@@ -292,8 +317,6 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
     setCapturando(false);
   }, [anguloIndex, fotos, capturando, stopCamera]);
 
-  // ── Retomar fotos ─────────────────────────────────────────────────────
-
   const handleRetomar = useCallback(() => {
     setFotos([]);
     setAnguloIndex(0);
@@ -301,8 +324,6 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
     setError(null);
     setFlowStep('camera');
   }, []);
-
-  // ── Enviar a IA ───────────────────────────────────────────────────────
 
   const handleAnalizar = useCallback(async () => {
     if (!estadoCabello) return;
@@ -323,8 +344,6 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
       setFlowStep('score');
     }
   }, [fotos, estadoCabello]);
-
-  // ── Construir CaptureMetadata (compartido entre confirmar y corregir) ─
 
   const buildMetadata = useCallback(async (): Promise<CaptureMetadata | null> => {
     if (!estadoCabello) return null;
@@ -351,8 +370,6 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
     };
   }, [estadoCabello, scoreResult, fotos]);
 
-  // ── Corregir manualmente: cierra cámara, abre grid manual ─────────────
-
   const handleCorregirManual = useCallback(async () => {
     if (!analysisResult || !estadoCabello) return;
     const metadata = await buildMetadata();
@@ -361,20 +378,13 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
     onCorrectAI(analysisResult.tipoRizoPrincipal, metadata, analysisResult, fotoUrls);
   }, [analysisResult, estadoCabello, buildMetadata, fotos, uploadedPhotos, onCorrectAI]);
 
-  // ── Confirmar resultado ───────────────────────────────────────────────
-
   const handleConfirmar = useCallback(async () => {
-    // scoreResult es null en el flujo de galería — solo se requiere analysisResult y estadoCabello
     if (!analysisResult || !estadoCabello) return;
     const metadata = await buildMetadata();
     if (!metadata) return;
     const fotoUrls = fotos.length > 0 ? fotos.map((f) => f.dataUrl) : uploadedPhotos;
     onComplete(analysisResult.tipoRizoPrincipal, analysisResult.tiposSecundarios ?? [], metadata, analysisResult, fotoUrls);
   }, [analysisResult, estadoCabello, buildMetadata, fotos, uploadedPhotos, onComplete]);
-
-  // ── Subir fotos desde galería ──────────────────────────────────────────
-  // Paso 1: leer archivos → mostrar preview en 'gallery'
-  // Paso 2: desde 'gallery' el usuario toca "Analizar" → handleAnalyzeUploaded
 
   const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []).slice(0, 3);
@@ -408,7 +418,6 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
     });
   }, []);
 
-  // Paso 2: analizar las fotos subidas con la IA
   const handleAnalyzeUploaded = useCallback(async (photos: string[]) => {
     setError(null);
     setFlowStep('analyzing');
@@ -426,33 +435,80 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
     }
   }, [estadoCabello]);
 
-  // ─────────────────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════
   // Render
-  // ─────────────────────────────────────────────────────────────────────
-
+  // ═══════════════════════════════════════════════════════════════════════
   return (
-    <div className="fixed inset-0 z-50 bg-black flex flex-col">
-      {/* Botón cerrar */}
-      <button
-        onClick={onCancel}
-        className="absolute top-4 right-4 z-10 w-9 h-9 bg-black/50 rounded-full flex items-center justify-center text-white"
-      >
-        <X size={18} />
-      </button>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        background: flowStep === 'camera' ? '#0A100D' : 'var(--bg)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* ─── Cerrar global (sólo en pantallas no-cámara) ─────────────────── */}
+      {flowStep !== 'camera' && (
+        <button
+          onClick={onCancel}
+          aria-label="Cerrar"
+          style={{
+            position: 'absolute',
+            top: 50,
+            right: 16,
+            zIndex: 10,
+            width: 36,
+            height: 36,
+            borderRadius: '50%',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            color: 'var(--text-main)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            boxShadow: 'var(--shadow-xs)',
+          }}
+        >
+          <X size={16} />
+        </button>
+      )}
 
-      {/* ── PANTALLA 1: Seleccionar estado del cabello ── */}
+      {/* ═══ ESTADO ════════════════════════════════════════════════════════ */}
       {flowStep === 'estado' && (
-        <div className="flex-1 overflow-y-auto bg-[#F5F0E8] flex flex-col">
-          <div className="px-5 pt-14 pb-4">
-            <h2 className="text-xl font-bold text-[#2D2D2D]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-              ¿En qué estado está el cabello?
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            maxWidth: 768,
+            margin: '0 auto',
+            width: '100%',
+          }}
+        >
+          <div style={{ padding: '60px 20px 14px' }}>
+            <div className="v-caps">Capítulo · Cámara IA</div>
+            <h2
+              style={{
+                margin: '4px 0 6px',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 26,
+                letterSpacing: '-0.02em',
+                lineHeight: 1.05,
+                color: 'var(--text-main)',
+              }}
+            >
+              ¿En qué <em style={{ color: 'var(--secondary-deep)' }}>estado</em> está el cabello?
             </h2>
-            <p className="text-sm text-[#666666] mt-1">
-              La IA ajustará su análisis según el estado actual
+            <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+              La IA ajustará su análisis según el estado actual.
             </p>
           </div>
 
-          <div className="flex-1 px-5 pb-6 grid grid-cols-1 gap-3">
+          <div style={{ flex: 1, padding: '0 20px 6px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             {ESTADOS_CABELLO.map(({ valor, titulo, descripcion, impactoIA }) => {
               const selected = estadoCabello === valor;
               const esIdeal = valor === 'seco_natural';
@@ -461,280 +517,685 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
                   key={valor}
                   type="button"
                   onClick={() => setEstadoCabello(valor)}
-                  className={`relative w-full text-left p-4 rounded-2xl border-2 transition-all duration-200 ${
-                    selected
-                      ? 'border-[#2D5A27] bg-[#EEF5ED]'
-                      : 'border-[#E5E5E5] bg-white hover:border-[#90B98A]'
-                  }`}
+                  className="active:scale-[0.98] transition-transform"
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: 14,
+                    borderRadius: 16,
+                    border: selected
+                      ? '1px solid var(--primary)'
+                      : '1px solid var(--border-soft)',
+                    background: selected ? 'var(--primary-pale)' : 'var(--bg-card)',
+                    cursor: 'pointer',
+                    boxShadow: selected ? 'var(--shadow-sm)' : 'var(--shadow-xs)',
+                  }}
                 >
                   {selected && (
-                    <div className="absolute top-3 right-3 w-5 h-5 bg-[#2D5A27] rounded-full flex items-center justify-center">
-                      <Check size={11} className="text-white" strokeWidth={3} />
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 12,
+                        right: 12,
+                        width: 22,
+                        height: 22,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(180deg, #3D7A35, #2D5A27)',
+                        color: '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Check size={11} strokeWidth={3} />
                     </div>
                   )}
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-bold text-[#2D2D2D] text-sm" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: 16,
+                        color: selected ? 'var(--primary-deep)' : 'var(--text-main)',
+                        letterSpacing: '-0.005em',
+                      }}
+                    >
                       {titulo}
                     </span>
-                    {esIdeal && (
-                      <span className="text-[10px] font-bold bg-[#22C55E] text-white px-2 py-0.5 rounded-full">
-                        IDEAL
-                      </span>
-                    )}
+                    {esIdeal && <Chip tone="green" dot>Ideal</Chip>}
                   </div>
-                  <p className="text-xs text-[#666666]">{descripcion}</p>
-                  <p className="text-[10px] text-[#7A9B76] mt-1.5 italic">{impactoIA}</p>
+                  <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                    {descripcion}
+                  </p>
+                  <p
+                    style={{
+                      margin: '6px 0 0',
+                      fontFamily: 'var(--font-serif)',
+                      fontStyle: 'italic',
+                      fontSize: 11.5,
+                      color: 'var(--secondary-deep)',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {impactoIA}
+                  </p>
                 </button>
               );
             })}
           </div>
 
-          <div className="px-5 pb-6 flex flex-col gap-3">
-            <button
+          <div style={{ padding: '20px 20px 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <Btn
+              variant="primary"
+              size="lg"
+              fullWidth
               disabled={!estadoCabello}
+              icon={<Camera size={14} />}
               onClick={() => setFlowStep('camera')}
-              className={`w-full py-4 rounded-2xl font-bold text-white transition-all duration-200 ${
-                estadoCabello
-                  ? 'bg-[#2D5A27] active:scale-95'
-                  : 'bg-[#CCCCCC] cursor-not-allowed'
-              }`}
-              style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
             >
               Abrir cámara
-            </button>
+            </Btn>
 
-            {/* Alternativa: subir desde galería */}
             <label
-              className={`w-full py-3 rounded-2xl font-bold text-center border-2 transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                estadoCabello
-                  ? 'border-[#2D5A27] text-[#2D5A27] bg-white active:scale-95'
-                  : 'border-[#CCCCCC] text-[#AAAAAA] cursor-not-allowed'
-              }`}
-              style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+              className="active:scale-[0.98] transition-transform"
+              style={{
+                width: '100%',
+                padding: '13px 20px',
+                borderRadius: 999,
+                border: '1px solid var(--border-strong)',
+                background: 'transparent',
+                color: estadoCabello ? 'var(--text-main)' : 'var(--text-tertiary)',
+                fontWeight: 600,
+                fontSize: 13,
+                fontFamily: 'var(--font-sans)',
+                textAlign: 'center',
+                cursor: estadoCabello ? 'pointer' : 'not-allowed',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                opacity: estadoCabello ? 1 : 0.5,
+              }}
             >
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 multiple
-                className="hidden"
+                style={{ display: 'none' }}
                 disabled={!estadoCabello}
                 onChange={handleFileUpload}
               />
-              📁 Subir foto desde galería
+              <ImageIcon size={14} /> Subir foto desde galería
             </label>
-            <p className="text-center text-xs text-[#999999]">
-              Sube 1-3 fotos del cabello · la IA las analizará igual
+            <p style={{ margin: 0, textAlign: 'center', fontSize: 10.5, color: 'var(--text-tertiary)' }}>
+              Sube 1–3 fotos del cabello · la IA las analizará igual.
             </p>
           </div>
         </div>
       )}
 
-      {/* ── PANTALLA 2: Cámara con indicadores ── */}
+      {/* ═══ CAMERA · viewfinder editorial ════════════════════════════════ */}
       {flowStep === 'camera' && error && (
-        <div className="flex-1 flex flex-col items-center justify-center bg-[#F5F0E8] px-8 gap-4">
-          <AlertCircle size={36} className="text-red-500" />
-          <p className="text-sm text-center text-[#444]">{error}</p>
-          <button onClick={() => setFlowStep('error')} className="px-6 py-3 rounded-2xl bg-[#2D5A27] text-white font-bold text-sm">
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0 28px',
+            gap: 14,
+            color: 'var(--text-main)',
+          }}
+        >
+          <AlertCircle size={36} style={{ color: 'var(--danger)' }} />
+          <p style={{ margin: 0, fontSize: 13, textAlign: 'center', color: 'var(--text-secondary)' }}>{error}</p>
+          <Btn variant="primary" size="md" onClick={() => setFlowStep('error')}>
             Ver opciones alternativas
-          </button>
+          </Btn>
         </div>
       )}
+
       {flowStep === 'camera' && !error && (
-        <div className="flex-1 flex flex-col bg-black">
-          {/* Barra de progreso de ángulos */}
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+        <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#0A100D' }}>
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+
+          {/* Distance border indicator (overlay) */}
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute',
+              inset: 0,
+              border: `4px solid ${colorDistancia(distanceResult?.status ?? null)}`,
+              transition: 'border-color 300ms ease',
+              pointerEvents: 'none',
+              zIndex: 4,
+            }}
+          />
+
+          {/* Top bar */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              padding: '54px 16px 14px',
+              background: 'linear-gradient(180deg, rgba(10,16,13,0.85) 0%, transparent 100%)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              zIndex: 10,
+              color: '#F5EDDC',
+            }}
+          >
+            <button
+              type="button"
+              onClick={onCancel}
+              aria-label="Cerrar"
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.12)',
+                border: '1px solid rgba(245, 237, 220, 0.2)',
+                color: '#F5EDDC',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <X size={16} />
+            </button>
+            <div style={{ textAlign: 'center' }}>
+              <div className="v-num" style={{ color: 'rgba(232, 194, 144, 0.9)', fontSize: 9 }}>
+                EN VIVO · IA
+              </div>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: '#fff' }}>
+                Cámara capilar
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={switchCamera}
+              aria-label={facingMode === 'environment' ? 'Cámara frontal' : 'Cámara trasera'}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.12)',
+                border: '1px solid rgba(245, 237, 220, 0.2)',
+                color: '#F5EDDC',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <SwitchCamera size={15} />
+            </button>
+          </div>
+
+          {/* Progress dots de ángulos */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 110,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 8,
+              display: 'flex',
+              gap: 8,
+            }}
+          >
             {SECUENCIA_ANGULOS.map((_, i) => (
               <div
                 key={i}
-                className={`h-2 w-8 rounded-full transition-all duration-300 ${
-                  i < anguloIndex ? 'bg-[#22C55E]' : i === anguloIndex ? 'bg-white' : 'bg-white/30'
-                }`}
+                style={{
+                  height: 3,
+                  width: 28,
+                  borderRadius: 999,
+                  background: i < anguloIndex ? '#E8C290' : i === anguloIndex ? '#fff' : 'rgba(255,255,255,0.25)',
+                  transition: 'background 0.3s ease',
+                }}
               />
             ))}
           </div>
 
-          {/* Video + overlays */}
+          {/* Targeting frame center */}
           <div
-            className="flex-1 relative overflow-hidden"
             style={{
-              borderWidth: 4,
-              borderStyle: 'solid',
-              borderColor: colorDistancia(distanceResult?.status ?? null),
-              transition: 'border-color 300ms ease',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 240,
+              height: 240,
+              borderRadius: 8,
+              zIndex: 6,
+              pointerEvents: 'none',
             }}
           >
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-            />
-
-            {/* Guía de ángulo */}
-            <AnguloGuide angulo={SECUENCIA_ANGULOS[anguloIndex].angulo} />
-
-            {/* Botón alternar cámara frontal/trasera */}
-            <button
-              type="button"
-              onClick={switchCamera}
-              className="absolute bg-black/50 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform"
-              style={{ top: 16, left: 16, width: 44, height: 44, zIndex: 50 }}
-              aria-label={facingMode === 'environment' ? 'Cambiar a cámara frontal' : 'Cambiar a cámara trasera'}
-            >
-              <SwitchCamera size={20} />
-            </button>
-
-            {/* Indicador de luz */}
-            <div className="absolute top-12 left-4 flex items-center gap-1.5">
-              <div className={`w-2 h-2 rounded-full ${
-                !lightResult ? 'bg-white/40'
-                : lightResult.status === 'perfect' ? 'bg-green-400'
-                : 'bg-yellow-400 animate-pulse'
-              }`} />
-              <span className="text-white text-[10px] font-medium drop-shadow">
-                {lightResult?.status === 'too_dark' ? lightResult.message
-                : lightResult?.status === 'too_bright' ? lightResult.message
-                : null}
-              </span>
-            </div>
-
-            {/* Indicador de enfoque (solo si borrosa) */}
-            {focusResult?.status === 'blurry' && (
-              <div className="absolute top-12 right-4 flex items-center gap-1.5 bg-black/50 px-2 py-1 rounded-lg">
-                <EyeOff size={12} className="text-red-400" />
-                <span className="text-white text-[10px]">Firme el celular</span>
-              </div>
-            )}
-
-            {/* Mensaje de distancia */}
-            {distanceResult && distanceResult.status !== 'perfect' && (
-              <div className="absolute left-1/2 -translate-x-1/2 bg-black/60 px-4 py-2 rounded-xl" style={{ bottom: 168 }}>
-                <p className="text-white text-xs text-center">{distanceResult.message}</p>
-              </div>
-            )}
-
-            {/* Instrucción del ángulo — superpuesta dentro del viewfinder */}
+            <TargetingCorners />
+            {/* Scan shimmer */}
             <div
-              className="absolute left-0 right-0 px-5 py-2 bg-black/50"
-              style={{ bottom: 106 }}
-            >
-              <div className="flex items-center gap-2 mb-0.5">
-                <AnguloIcon icono={SECUENCIA_ANGULOS[anguloIndex].icono} size={14} />
-                <span className="text-white font-bold text-sm" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                  {SECUENCIA_ANGULOS[anguloIndex].titulo}
-                </span>
-              </div>
-              <p className="text-white/70 text-xs">{SECUENCIA_ANGULOS[anguloIndex].instruccion}</p>
-            </div>
-
-            {/* Botón deshacer — dentro del viewfinder, izquierda */}
-            {fotos.length > 0 && (
-              <button
-                onClick={() => {
-                  setFotos((prev) => prev.slice(0, -1));
-                  setAnguloIndex((i) => Math.max(0, i - 1));
-                }}
-                className="absolute w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-white"
-                style={{ bottom: 24 + 70 / 2 - 22, left: 'calc(50% - 80px)', zIndex: 50 }}
-              >
-                <RotateCcw size={18} />
-              </button>
-            )}
-
-            {/* Botón captura — superpuesto dentro del viewfinder */}
-            <button
-              onClick={handleCapture}
-              disabled={capturando}
-              className="absolute flex items-center justify-center active:scale-90 transition-transform disabled:opacity-50"
+              className="v-shimmer"
               style={{
-                bottom: 24,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: 70,
-                height: 70,
-                borderRadius: '50%',
-                background: 'white',
-                border: '4px solid #2D5A27',
-                zIndex: 50,
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 2,
+                background: 'rgba(232, 194, 144, 0.5)',
+              }}
+            />
+            {/* Ángulo guide dentro del frame */}
+            <div style={{ position: 'absolute', inset: 0 }}>
+              <AnguloGuide angulo={SECUENCIA_ANGULOS[anguloIndex].angulo} />
+            </div>
+          </div>
+
+          {/* Live readout dual */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 150,
+              left: 16,
+              right: 16,
+              zIndex: 6,
+              display: 'flex',
+              gap: 10,
+            }}
+          >
+            <div
+              style={{
+                background: 'rgba(10,16,13,0.7)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(232, 194, 144, 0.18)',
+                borderRadius: 10,
+                padding: '8px 10px',
+                flex: 1,
               }}
             >
-              <Camera size={28} className="text-[#2D5A27]" />
-            </button>
+              <div className="v-num" style={{ color: 'rgba(232, 194, 144, 0.85)', fontSize: 8.5 }}>
+                ÁNGULO
+              </div>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: '#fff', marginTop: 2, textTransform: 'capitalize' }}>
+                {SECUENCIA_ANGULOS[anguloIndex].titulo}
+              </div>
+              <div style={{ fontSize: 10, color: 'rgba(245, 237, 220, 0.7)', marginTop: 1 }}>
+                {SECUENCIA_ANGULOS[anguloIndex].instruccion}
+              </div>
+            </div>
+            <div
+              style={{
+                background: 'rgba(10,16,13,0.7)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(232, 194, 144, 0.18)',
+                borderRadius: 10,
+                padding: '8px 10px',
+                flex: 1,
+              }}
+            >
+              <div className="v-num" style={{ color: 'rgba(232, 194, 144, 0.85)', fontSize: 8.5 }}>
+                CALIDAD
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                <span
+                  aria-hidden
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: !lightResult
+                      ? 'rgba(255,255,255,0.4)'
+                      : lightResult.status === 'perfect'
+                        ? '#22C55E'
+                        : '#F59E0B',
+                    animation: lightResult && lightResult.status !== 'perfect' ? 'pulse-soft 1.4s ease-in-out infinite' : undefined,
+                  }}
+                />
+                <span style={{ fontSize: 11, color: '#fff', fontWeight: 600, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>
+                  {lightResult?.status === 'too_dark'
+                    ? 'OSCURO'
+                    : lightResult?.status === 'too_bright'
+                      ? 'BRILLO'
+                      : lightResult?.status === 'perfect'
+                        ? 'OK'
+                        : 'MIDIENDO'}
+                </span>
+              </div>
+              {focusResult?.status === 'blurry' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                  <EyeOff size={11} style={{ color: '#EF4444' }} />
+                  <span style={{ fontSize: 10, color: '#FFCFCF' }}>Firme el celular</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Mensaje de distancia (centro inferior) */}
+          {distanceResult && distanceResult.status !== 'perfect' && (
+            <div
+              style={{
+                position: 'absolute',
+                left: '50%',
+                bottom: 200,
+                transform: 'translateX(-50%)',
+                background: 'rgba(10,16,13,0.7)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(232, 194, 144, 0.18)',
+                borderRadius: 999,
+                padding: '6px 14px',
+                zIndex: 6,
+              }}
+            >
+              <p style={{ margin: 0, color: '#fff', fontSize: 11, textAlign: 'center', fontFamily: 'var(--font-sans)' }}>
+                {distanceResult.message}
+              </p>
+            </div>
+          )}
+
+          {/* Bottom dock con shutter dorado */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              padding: '24px 18px 30px',
+              background: 'linear-gradient(180deg, transparent 0%, rgba(10,16,13,0.92) 50%)',
+              zIndex: 10,
+              color: '#F5EDDC',
+            }}
+          >
+            <div
+              className="v-rule"
+              style={{ marginBottom: 18, background: 'linear-gradient(to right, rgba(232, 194, 144, 0.5), transparent)' }}
+            />
+
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              {/* Deshacer */}
+              <button
+                type="button"
+                onClick={
+                  fotos.length > 0
+                    ? () => {
+                        setFotos((prev) => prev.slice(0, -1));
+                        setAnguloIndex((i) => Math.max(0, i - 1));
+                      }
+                    : undefined
+                }
+                aria-label="Deshacer última foto"
+                disabled={fotos.length === 0}
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 10,
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(245, 237, 220, 0.18)',
+                  color: '#F5EDDC',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: fotos.length === 0 ? 'not-allowed' : 'pointer',
+                  opacity: fotos.length === 0 ? 0.4 : 1,
+                }}
+              >
+                <RotateCcw size={16} />
+              </button>
+
+              {/* Shutter dorado */}
+              <button
+                type="button"
+                onClick={handleCapture}
+                disabled={capturando}
+                aria-label="Capturar"
+                className="active:scale-90 transition-transform"
+                style={{
+                  width: 76,
+                  height: 76,
+                  borderRadius: '50%',
+                  background: '#fff',
+                  border: '4px solid rgba(245, 237, 220, 0.3)',
+                  position: 'relative',
+                  boxShadow: '0 0 0 2px #E8C290',
+                  cursor: capturando ? 'not-allowed' : 'pointer',
+                  opacity: capturando ? 0.7 : 1,
+                }}
+              >
+                <span
+                  aria-hidden
+                  style={{
+                    position: 'absolute',
+                    inset: 6,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #E8C290, #B47E4D)',
+                  }}
+                />
+              </button>
+
+              {/* Switch cam (placeholder · ya está arriba) */}
+              <button
+                type="button"
+                onClick={switchCamera}
+                aria-label="Cambiar cámara"
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 10,
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(245, 237, 220, 0.18)',
+                  color: '#F5EDDC',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                <Camera size={16} />
+              </button>
+            </div>
+
+            <div
+              style={{
+                marginTop: 14,
+                textAlign: 'center',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 9.5,
+                color: 'rgba(232, 194, 144, 0.7)',
+                letterSpacing: '0.15em',
+              }}
+            >
+              ENFOCA EL CABELLO · {anguloIndex + 1} / {SECUENCIA_ANGULOS.length}
+            </div>
           </div>
         </div>
       )}
 
-      {/* ── PANTALLA 3: Score de calidad ── */}
+      {/* ═══ SCORE ════════════════════════════════════════════════════════ */}
       {flowStep === 'score' && scoreResult && (
-        <div className="flex-1 overflow-y-auto bg-[#F5F0E8] flex flex-col">
-          <div className="px-5 pt-14 pb-4">
-            <h2 className="text-xl font-bold text-[#2D2D2D]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-              Calidad de captura
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            maxWidth: 768,
+            margin: '0 auto',
+            width: '100%',
+          }}
+        >
+          <div style={{ padding: '60px 20px 8px' }}>
+            <div className="v-caps">Cámara IA · resultado</div>
+            <h2
+              style={{
+                margin: '4px 0 0',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 26,
+                letterSpacing: '-0.02em',
+                lineHeight: 1.05,
+                color: 'var(--text-main)',
+              }}
+            >
+              Calidad <em style={{ color: 'var(--secondary-deep)' }}>de captura</em>
             </h2>
           </div>
 
           {/* Score circular */}
-          <div className="flex flex-col items-center py-6">
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 0' }}>
             <div
-              className="w-32 h-32 rounded-full border-8 flex items-center justify-center"
               style={{
-                borderColor:
-                  scoreResult.nivel === 'excelente' ? '#22C55E'
-                  : scoreResult.nivel === 'aceptable' ? '#F59E0B'
-                  : '#EF4444',
+                width: 132,
+                height: 132,
+                borderRadius: '50%',
+                border: `8px solid ${
+                  scoreResult.nivel === 'excelente'
+                    ? 'var(--success)'
+                    : scoreResult.nivel === 'aceptable'
+                      ? 'var(--warning)'
+                      : 'var(--danger)'
+                }`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--bg-card)',
+                boxShadow: 'var(--shadow-md)',
               }}
             >
               <span
-                className="text-4xl font-extrabold"
                 style={{
-                  fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif",
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 44,
+                  letterSpacing: '-0.025em',
                   color:
-                    scoreResult.nivel === 'excelente' ? '#22C55E'
-                    : scoreResult.nivel === 'aceptable' ? '#F59E0B'
-                    : '#EF4444',
+                    scoreResult.nivel === 'excelente'
+                      ? 'var(--success)'
+                      : scoreResult.nivel === 'aceptable'
+                        ? 'var(--warning)'
+                        : 'var(--danger)',
                 }}
               >
                 {scoreResult.total}
               </span>
             </div>
-            <p className="text-sm text-[#666666] mt-4 text-center px-8">{scoreResult.mensaje}</p>
+            <p
+              style={{
+                margin: '14px 24px 0',
+                fontSize: 13,
+                color: 'var(--text-secondary)',
+                textAlign: 'center',
+                lineHeight: 1.4,
+              }}
+            >
+              {scoreResult.mensaje}
+            </p>
           </div>
 
           {/* Desglose */}
-          <div className="px-5 pb-4 grid grid-cols-2 gap-3">
+          <div style={{ padding: '0 20px 14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {[
               { label: 'Iluminación', valor: scoreResult.desglose.luz, max: 25 },
               { label: 'Distancia', valor: scoreResult.desglose.distancia, max: 25 },
               { label: 'Enfoque', valor: scoreResult.desglose.enfoque, max: 25 },
               { label: 'Ángulos', valor: scoreResult.desglose.angulos, max: 25 },
-            ].map(({ label, valor, max }) => (
-              <div key={label} className="bg-white rounded-xl p-3 border border-[#E5E5E5]">
-                <p className="text-xs text-[#666666] mb-1">{label}</p>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-2 bg-[#F0F0F0] rounded-full overflow-hidden">
+            ].map(({ label, valor, max }) => {
+              const ratio = valor / max;
+              const color = ratio >= 0.8 ? 'var(--success)' : ratio >= 0.5 ? 'var(--warning)' : 'var(--danger)';
+              return (
+                <div
+                  key={label}
+                  className="v-card"
+                  style={{ padding: 12 }}
+                >
+                  <div className="v-caps" style={{ marginBottom: 6 }}>{label}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div
-                      className="h-full rounded-full transition-all duration-500"
                       style={{
-                        width: `${(valor / max) * 100}%`,
-                        backgroundColor: valor >= max * 0.8 ? '#22C55E' : valor >= max * 0.5 ? '#F59E0B' : '#EF4444',
+                        flex: 1,
+                        height: 5,
+                        background: 'var(--bg)',
+                        borderRadius: 999,
+                        overflow: 'hidden',
                       }}
-                    />
+                    >
+                      <div
+                        style={{
+                          width: `${(valor / max) * 100}%`,
+                          height: '100%',
+                          background: color,
+                          borderRadius: 999,
+                          transition: 'width 0.5s ease',
+                        }}
+                      />
+                    </div>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: 'var(--text-main)',
+                      }}
+                    >
+                      {valor}/{max}
+                    </span>
                   </div>
-                  <span className="text-xs font-bold text-[#2D2D2D]">{valor}/{max}</span>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          {/* Miniaturas de fotos */}
-          <div className="px-5 pb-4">
-            <div className="flex gap-2">
+          {/* Miniaturas */}
+          <div style={{ padding: '0 20px 14px' }}>
+            <div className="v-caps" style={{ marginBottom: 8 }}>Tus capturas · {fotos.length}</div>
+            <div style={{ display: 'flex', gap: 8 }}>
               {fotos.map((f, i) => (
-                <div key={i} className="flex-1 aspect-square rounded-xl overflow-hidden relative">
-                  <img src={f.dataUrl} alt={f.angulo} className="w-full h-full object-cover" />
-                  <div className="absolute bottom-1 left-1 bg-black/60 px-1.5 py-0.5 rounded text-[9px] text-white capitalize">
+                <div
+                  key={i}
+                  style={{
+                    flex: 1,
+                    aspectRatio: '1',
+                    borderRadius: 12,
+                    overflow: 'hidden',
+                    position: 'relative',
+                    border: '1px solid var(--border-soft)',
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={f.dataUrl} alt={f.angulo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: 4,
+                      left: 4,
+                      background: 'rgba(20, 36, 26, 0.7)',
+                      backdropFilter: 'blur(4px)',
+                      borderRadius: 4,
+                      padding: '2px 6px',
+                      fontSize: 9,
+                      color: '#fff',
+                      textTransform: 'capitalize',
+                      fontFamily: 'var(--font-mono)',
+                      letterSpacing: '0.04em',
+                    }}
+                  >
                     {f.angulo}
                   </div>
                 </div>
@@ -743,247 +1204,529 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
           </div>
 
           {error && (
-            <div className="mx-5 mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-              <AlertCircle size={14} className="text-red-500 mt-0.5 shrink-0" />
-              <p className="text-xs text-red-700">{error}</p>
+            <div
+              style={{
+                margin: '0 20px 14px',
+                padding: '10px 12px',
+                borderRadius: 10,
+                background: 'rgba(142, 45, 45, 0.08)',
+                border: '1px solid rgba(142, 45, 45, 0.2)',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 8,
+              }}
+            >
+              <AlertCircle size={14} style={{ color: 'var(--danger)', flexShrink: 0, marginTop: 2 }} />
+              <p style={{ margin: 0, fontSize: 11.5, color: 'var(--danger)', lineHeight: 1.4 }}>{error}</p>
             </div>
           )}
 
-          {/* Acciones */}
-          <div className="px-5 pb-8 flex flex-col gap-3">
-            {scoreResult.aceptarCaptura ? (
-              <button
+          <div style={{ padding: '4px 20px 28px', display: 'flex', flexDirection: 'column', gap: 10, marginTop: 'auto' }}>
+            {scoreResult.aceptarCaptura && (
+              <Btn
+                variant="primary"
+                size="lg"
+                fullWidth
                 onClick={handleAnalizar}
-                className="w-full py-4 rounded-2xl font-bold text-white bg-[#2D5A27] active:scale-95 transition-transform flex items-center justify-center gap-2"
-                style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+                icon={<Sparkles size={14} />}
               >
-                <Zap size={18} />
                 Analizar con IA
-              </button>
-            ) : null}
-            <button
+              </Btn>
+            )}
+            <Btn
+              variant={scoreResult.aceptarCaptura ? 'outline' : 'primary'}
+              size="lg"
+              fullWidth
               onClick={handleRetomar}
-              className={`w-full py-4 rounded-2xl font-bold transition-all ${
-                scoreResult.aceptarCaptura
-                  ? 'bg-white text-[#2D5A27] border-2 border-[#2D5A27]'
-                  : 'bg-[#2D5A27] text-white'
-              }`}
-              style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+              icon={<RotateCcw size={14} />}
             >
               Retomar fotos
-            </button>
+            </Btn>
           </div>
         </div>
       )}
 
-      {/* ── PANTALLA 4: Analizando ── */}
+      {/* ═══ ANALYZING ════════════════════════════════════════════════════ */}
       {flowStep === 'analyzing' && (
-        <div className="flex-1 flex flex-col items-center justify-center bg-[#F5F0E8] px-8">
-          <div className="w-20 h-20 rounded-full bg-[#EEF5ED] flex items-center justify-center mb-6">
-            <Loader2 size={36} className="text-[#2D5A27] animate-spin" />
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0 32px',
+            textAlign: 'center',
+          }}
+        >
+          <div
+            style={{
+              width: 84,
+              height: 84,
+              borderRadius: 24,
+              background: 'linear-gradient(135deg, var(--primary-pale), var(--secondary-pale))',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 22,
+              boxShadow: 'var(--shadow-md)',
+            }}
+          >
+            <Loader2 size={36} style={{ color: 'var(--primary)' }} className="animate-spin" />
           </div>
-          <h3 className="text-xl font-bold text-[#2D2D2D] text-center mb-2" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-            Analizando el cabello...
+          <div className="v-caps" style={{ marginBottom: 6 }}>Inteligencia capilar</div>
+          <h3
+            style={{
+              margin: 0,
+              fontFamily: 'var(--font-serif)',
+              fontSize: 24,
+              letterSpacing: '-0.02em',
+              color: 'var(--text-main)',
+            }}
+          >
+            Analizando <em style={{ color: 'var(--secondary-deep)' }}>el cabello…</em>
           </h3>
-          <p className="text-sm text-[#666666] text-center">
-            La IA está estudiando las 3 fotos para determinar el tipo de cabello
+          <p
+            style={{
+              marginTop: 10,
+              maxWidth: 320,
+              fontSize: 13,
+              color: 'var(--text-secondary)',
+              lineHeight: 1.5,
+            }}
+          >
+            La IA está estudiando las {fotos.length || uploadedPhotos.length} fotos para determinar el tipo de cabello.
           </p>
         </div>
       )}
 
-      {/* ── PANTALLA 5: Resultado de la IA ── */}
+      {/* ═══ RESULT ═══════════════════════════════════════════════════════ */}
       {flowStep === 'result' && analysisResult && (
-        <div className="flex-1 overflow-y-auto bg-[#F5F0E8] flex flex-col">
-          <div className="px-5 pt-14 pb-4">
-            <h2 className="text-xl font-bold text-[#2D2D2D]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-              Resultado del análisis
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            maxWidth: 768,
+            margin: '0 auto',
+            width: '100%',
+          }}
+        >
+          <div style={{ padding: '60px 20px 8px' }}>
+            <div className="v-caps">Resultado de la cámara IA</div>
+            <h2
+              style={{
+                margin: '4px 0 0',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 26,
+                letterSpacing: '-0.02em',
+                lineHeight: 1.05,
+                color: 'var(--text-main)',
+              }}
+            >
+              Análisis <em style={{ color: 'var(--secondary-deep)' }}>completado</em>
             </h2>
           </div>
 
-          {/* Tipo de rizo detectado */}
-          <div className="mx-5 mb-4 bg-white rounded-2xl border border-[#E5E5E5] p-5 text-center">
-            <p className="text-sm text-[#666666] mb-2">Tipo de cabello principal</p>
+          {/* Tipo de rizo grande */}
+          <div
+            style={{
+              margin: '20px 20px 14px',
+              borderRadius: 20,
+              overflow: 'hidden',
+              background: 'linear-gradient(135deg, var(--primary-deep) 0%, var(--primary) 100%)',
+              color: '#F5EDDC',
+              padding: '24px 20px',
+              textAlign: 'center',
+              boxShadow: 'var(--shadow-md)',
+            }}
+            className="v-grain"
+          >
+            <div className="v-num" style={{ color: 'rgba(232, 194, 144, 0.95)', fontSize: 9.5 }}>
+              TIPO DE CABELLO PRINCIPAL
+            </div>
             <span
-              className="text-6xl font-extrabold text-[#2D5A27]"
-              style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+              style={{
+                display: 'block',
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontSize: 80,
+                letterSpacing: '-0.04em',
+                color: '#E8C290',
+                lineHeight: 1,
+                marginTop: 8,
+              }}
             >
               {analysisResult.tipoRizoPrincipal}
             </span>
             {analysisResult.tiposSecundarios?.length > 0 && (
-              <p className="text-sm text-[#666666] mt-2">
-                Secundarios: <strong>{analysisResult.tiposSecundarios.join(', ')}</strong>
-              </p>
+              <div style={{ marginTop: 14, display: 'flex', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
+                {analysisResult.tiposSecundarios.map((s) => (
+                  <Chip
+                    key={s}
+                    tone="ghost"
+                    style={{
+                      background: 'rgba(255,255,255,0.12)',
+                      color: '#F5EDDC',
+                      borderColor: 'rgba(232, 194, 144, 0.3)',
+                    }}
+                  >
+                    {s}
+                  </Chip>
+                ))}
+              </div>
             )}
           </div>
 
           {/* Observaciones */}
-          <div className="mx-5 mb-4 bg-[#EEF5ED] rounded-2xl p-4">
-            <p className="text-xs font-bold text-[#2D5A27] mb-1">Observaciones de la IA</p>
-            <p className="text-sm text-[#2D2D2D]">{analysisResult.observaciones}</p>
+          <div
+            style={{
+              margin: '0 20px 14px',
+              padding: '16px 18px',
+              borderLeft: '3px solid var(--secondary)',
+              background: 'var(--secondary-pale)',
+              borderRadius: '0 14px 14px 0',
+            }}
+          >
+            <div className="v-caps" style={{ color: 'var(--secondary-deep)' }}>
+              Observaciones de la IA
+            </div>
+            <p
+              style={{
+                margin: '6px 0 0',
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontSize: 14,
+                lineHeight: 1.45,
+                color: 'var(--primary-deep)',
+              }}
+            >
+              «{analysisResult.observaciones}»
+            </p>
           </div>
 
           {/* Confianza */}
-          <div className="mx-5 mb-4 flex items-center gap-2">
-            <div
-              className={`w-2.5 h-2.5 rounded-full ${
-                analysisResult.confianza === 'alta' ? 'bg-green-500'
-                : analysisResult.confianza === 'media' ? 'bg-yellow-500'
-                : 'bg-red-500'
-              }`}
+          <div style={{ margin: '0 20px 22px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span
+              aria-hidden
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                background:
+                  analysisResult.confianza === 'alta'
+                    ? 'var(--success)'
+                    : analysisResult.confianza === 'media'
+                      ? 'var(--warning)'
+                      : 'var(--danger)',
+              }}
             />
-            <p className="text-xs text-[#666666]">
-              Confianza: <strong className="text-[#2D2D2D] capitalize">{analysisResult.confianza}</strong>
+            <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
+              Confianza:{' '}
+              <strong
+                style={{
+                  color: 'var(--text-main)',
+                  textTransform: 'capitalize',
+                  fontFamily: 'var(--font-mono)',
+                  letterSpacing: '0.04em',
+                }}
+              >
+                {analysisResult.confianza}
+              </strong>
               {analysisResult.confianza === 'baja' && ' — considera revisar manualmente'}
             </p>
           </div>
 
-          {/* Acciones */}
-          <div className="px-5 pb-8 flex flex-col gap-3 mt-auto">
-            <button
+          <div style={{ padding: '0 20px 28px', display: 'flex', flexDirection: 'column', gap: 10, marginTop: 'auto' }}>
+            <Btn
+              variant="primary"
+              size="lg"
+              fullWidth
               onClick={handleConfirmar}
-              className="w-full py-4 rounded-2xl font-bold text-white bg-[#2D5A27] active:scale-95 transition-transform flex items-center justify-center gap-2"
-              style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+              icon={<Check size={14} />}
             >
-              <Check size={18} />
               Confirmar tipo {analysisResult.tipoRizoPrincipal}
-            </button>
-            <button
+            </Btn>
+            <Btn
+              variant="outline"
+              size="lg"
+              fullWidth
               onClick={handleCorregirManual}
-              className="w-full py-4 rounded-2xl font-bold text-[#2D5A27] bg-white border-2 border-[#2D5A27]"
-              style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
             >
               Corregir manualmente
-            </button>
+            </Btn>
           </div>
         </div>
       )}
 
-      {/* ── PANTALLA GALERÍA: preview de fotos subidas ── */}
+      {/* ═══ GALLERY UPLOAD PREVIEW ═══════════════════════════════════════ */}
       {flowStep === 'gallery' && (
-        <div className="flex-1 overflow-y-auto bg-[#F5F0E8] flex flex-col px-5 pt-14 pb-8 gap-5">
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            maxWidth: 768,
+            margin: '0 auto',
+            width: '100%',
+            padding: '60px 20px 28px',
+            gap: 18,
+          }}
+        >
           <div>
-            <h2 className="text-xl font-bold text-[#2D2D2D] mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-              {uploadedPhotos.length} foto{uploadedPhotos.length !== 1 ? 's' : ''} seleccionada{uploadedPhotos.length !== 1 ? 's' : ''}
+            <div className="v-caps">Cámara IA · galería</div>
+            <h2
+              style={{
+                margin: '4px 0 0',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 24,
+                letterSpacing: '-0.02em',
+                lineHeight: 1.05,
+                color: 'var(--text-main)',
+              }}
+            >
+              {uploadedPhotos.length} foto{uploadedPhotos.length !== 1 ? 's' : ''}{' '}
+              <em style={{ color: 'var(--secondary-deep)' }}>seleccionada{uploadedPhotos.length !== 1 ? 's' : ''}</em>
             </h2>
-            <p className="text-sm text-[#666666]">Revisa que el cabello se vea claramente antes de analizar</p>
+            <p style={{ margin: '6px 0 0', fontSize: 12.5, color: 'var(--text-secondary)' }}>
+              Revisa que el cabello se vea claramente antes de analizar.
+            </p>
           </div>
 
-          {/* Miniaturas */}
-          <div className={`grid gap-2 ${uploadedPhotos.length === 1 ? 'grid-cols-1' : uploadedPhotos.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns:
+                uploadedPhotos.length === 1
+                  ? '1fr'
+                  : uploadedPhotos.length === 2
+                    ? '1fr 1fr'
+                    : 'repeat(3, 1fr)',
+              gap: 8,
+            }}
+          >
             {uploadedPhotos.map((url, i) => (
-              <div key={i} className="aspect-square rounded-2xl overflow-hidden border-2 border-[#E5E5E5] bg-black">
-                <img src={url} alt={`Foto ${i + 1}`} className="w-full h-full object-cover" />
+              <div
+                key={i}
+                style={{
+                  aspectRatio: '1',
+                  borderRadius: 16,
+                  overflow: 'hidden',
+                  border: '1px solid var(--border-soft)',
+                  background: '#000',
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt={`Foto ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
             ))}
           </div>
 
-          {/* Acciones */}
-          <div className="flex flex-col gap-3 mt-auto">
-            <button
-              type="button"
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 'auto' }}>
+            <Btn
+              variant="primary"
+              size="lg"
+              fullWidth
               onClick={() => handleAnalyzeUploaded(uploadedPhotos)}
-              className="w-full py-4 rounded-2xl font-bold text-white bg-[#2D5A27] active:scale-95 transition-transform flex items-center justify-center gap-2"
-              style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+              icon={<Sparkles size={14} />}
             >
-              <Zap size={18} />
               Analizar con IA
-            </button>
-
+            </Btn>
             <label
-              className="w-full py-3.5 rounded-2xl font-bold text-center border-2 border-[#2D5A27] text-[#2D5A27] bg-white cursor-pointer flex items-center justify-center gap-2 active:scale-95 transition-transform"
-              style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+              className="active:scale-[0.98] transition-transform"
+              style={{
+                width: '100%',
+                padding: '13px 20px',
+                borderRadius: 999,
+                border: '1px solid var(--border-strong)',
+                background: 'transparent',
+                color: 'var(--text-main)',
+                fontWeight: 600,
+                fontSize: 13,
+                fontFamily: 'var(--font-sans)',
+                textAlign: 'center',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+              }}
             >
               <input
                 type="file"
                 accept="image/*"
                 multiple
-                className="hidden"
+                style={{ display: 'none' }}
                 onChange={handleFileUpload}
               />
-              Cambiar fotos
+              <RotateCcw size={13} /> Cambiar fotos
             </label>
           </div>
         </div>
       )}
 
-      {/* ── PANTALLA DE ERROR / FALLBACK ── */}
+      {/* ═══ ERROR / FALLBACK ═════════════════════════════════════════════ */}
       {flowStep === 'error' && (
-        <div className="flex-1 overflow-y-auto bg-[#F5F0E8] flex flex-col px-5 pt-14 pb-8 gap-5">
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            maxWidth: 768,
+            margin: '0 auto',
+            width: '100%',
+            padding: '60px 20px 28px',
+            gap: 18,
+          }}
+        >
           <div>
-            <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mb-4">
-              <AlertCircle size={28} className="text-red-500" />
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 16,
+                background: 'rgba(142, 45, 45, 0.08)',
+                border: '1px solid rgba(142, 45, 45, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 14,
+              }}
+            >
+              <AlertCircle size={26} style={{ color: 'var(--danger)' }} />
             </div>
-            <h2 className="text-xl font-bold text-[#2D2D2D] mb-2" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-              Cámara no disponible
+            <div className="v-caps">Cámara · sin acceso</div>
+            <h2
+              style={{
+                margin: '4px 0 6px',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 24,
+                letterSpacing: '-0.02em',
+                lineHeight: 1.05,
+                color: 'var(--text-main)',
+              }}
+            >
+              Cámara <em style={{ color: 'var(--secondary-deep)' }}>no disponible</em>
             </h2>
-            <p className="text-sm text-[#666666] leading-relaxed">
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               {error || 'No se pudo acceder a la cámara.'}
             </p>
           </div>
 
-          {/* Opción: subir desde galería */}
-          <div className="bg-white rounded-2xl border-2 border-[#2D5A27] p-5 flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">📁</span>
+          {/* Subir desde galería */}
+          <section
+            className="v-card"
+            style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 12,
+                  background: 'var(--primary-pale)',
+                  color: 'var(--primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <ImageIcon size={18} strokeWidth={1.7} />
+              </div>
               <div>
-                <p className="font-bold text-[#2D2D2D] text-sm" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+                <p style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--text-main)' }}>
                   Subir foto desde galería
                 </p>
-                <p className="text-xs text-[#666666]">La IA analizará las fotos igual de bien</p>
+                <p style={{ margin: '2px 0 0', fontSize: 11.5, color: 'var(--text-tertiary)' }}>
+                  La IA analizará las fotos igual de bien
+                </p>
               </div>
             </div>
 
-            {/* Selector de estado si no se seleccionó antes */}
             {!estadoCabello && (
-              <div className="flex flex-col gap-1.5">
-                <p className="text-xs font-semibold text-[#444]">Estado del cabello en las fotos:</p>
-                {(['seco_natural', 'humedo', 'con_producto', 'recien_lavado'] as EstadoCabelloFoto[]).map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => setEstadoCabello(v)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold border-2 text-left transition-all ${
-                      estadoCabello === v
-                        ? 'border-[#2D5A27] bg-[#EEF5ED] text-[#2D5A27]'
-                        : 'border-[#E5E5E5] bg-white text-[#666]'
-                    }`}
-                  >
-                    {v === 'seco_natural' ? 'Seco y sin producto (ideal)' :
-                     v === 'humedo' ? 'Húmedo' :
-                     v === 'con_producto' ? 'Con producto aplicado' :
-                     'Recién lavado sin producto'}
-                  </button>
-                ))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <span className="v-caps">Estado del cabello en las fotos</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {(['seco_natural', 'humedo', 'con_producto', 'recien_lavado'] as EstadoCabelloFoto[]).map((v) => {
+                    const active = estadoCabello === v;
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => setEstadoCabello(v)}
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: 12,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          fontFamily: 'var(--font-sans)',
+                          textAlign: 'left',
+                          background: active ? 'var(--primary-pale)' : 'var(--bg)',
+                          color: active ? 'var(--primary)' : 'var(--text-secondary)',
+                          border: `1px solid ${active ? 'rgba(45, 90, 39, 0.3)' : 'var(--border-soft)'}`,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {v === 'seco_natural'
+                          ? 'Seco y sin producto · ideal'
+                          : v === 'humedo'
+                            ? 'Húmedo'
+                            : v === 'con_producto'
+                              ? 'Con producto aplicado'
+                              : 'Recién lavado sin producto'}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
             <label
-              className="w-full py-4 rounded-2xl font-bold text-white bg-[#2D5A27] text-center cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-              style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+              className="active:scale-[0.98] transition-transform"
+              style={{
+                width: '100%',
+                padding: '14px 22px',
+                borderRadius: 999,
+                background: 'linear-gradient(180deg, #3D7A35, #2D5A27)',
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: 14,
+                fontFamily: 'var(--font-sans)',
+                textAlign: 'center',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(45, 90, 39, 0.32)',
+              }}
             >
               <input
                 type="file"
                 accept="image/*"
                 multiple
-                className="hidden"
+                style={{ display: 'none' }}
                 onChange={handleFileUpload}
               />
-              Seleccionar fotos (1-3)
+              Seleccionar fotos · 1–3
             </label>
-            <p className="text-[10px] text-center text-[#999]">
+            <p style={{ margin: 0, textAlign: 'center', fontSize: 10.5, color: 'var(--text-tertiary)' }}>
               Sube fotos del cabello desde distintos ángulos para mejor resultado
             </p>
-          </div>
+          </section>
 
-          {/* Opción: llenar manualmente */}
-          <button
-            type="button"
+          <Btn
+            variant="ghost"
+            size="md"
+            fullWidth
             onClick={onCancel}
-            className="w-full py-3 rounded-2xl border-2 border-[#E5E5E5] font-bold text-[#666] bg-white text-sm"
-            style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
           >
             Llenar manualmente sin cámara
-          </button>
+          </Btn>
         </div>
       )}
     </div>

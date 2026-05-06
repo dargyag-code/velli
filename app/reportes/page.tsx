@@ -1,39 +1,25 @@
 'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { BarChart2, Users, CalendarDays, TrendingUp, Sparkles } from 'lucide-react';
-import Header from '@/components/layout/Header';
-import BottomNav from '@/components/layout/BottomNav';
+import { BarChart2, Download, Sparkles } from 'lucide-react';
+import {
+  Btn, Chip, BottomNavV2, SectionLabel, StatTile, type StatAccent,
+} from '@/components/v2';
 import {
   getAllClientas, getStatsThisMonth, getConsultasByMonth,
   getRizoDistribution, getTratamientosDistribution, getSatisfaccionPromedio,
 } from '@/lib/db';
 import { getTratamientoBg, getTratamientoTextColor } from '@/lib/utils';
 
-// ── Mini barra de porcentaje ───────────────────────────────────────────────
-function Bar({ pct, color }: { pct: number; color: string }) {
-  return (
-    <div className="flex-1 h-2.5 bg-[#F0F0F0] rounded-full overflow-hidden">
-      <div
-        className="h-full rounded-full transition-all duration-700"
-        style={{ width: `${pct}%`, backgroundColor: color }}
-      />
-    </div>
-  );
-}
-
-// ── Colores de tipo de rizo ────────────────────────────────────────────────
-const RIZO_COLORS: Record<string, string> = {
-  '1A': '#94A3B8', '1B': '#64748B', '1C': '#475569',
-  '2A': '#60A5FA', '2B': '#3B82F6', '2C': '#1D4ED8',
-  '3A': '#C084FC', '3B': '#A855F7', '3C': '#7C3AED',
-  '4A': '#FCD34D', '4B': '#F59E0B', '4C': '#D97706',
-};
-const RIZO_GROUP_COLOR: Record<string, string> = {
-  '1': '#64748B', '2': '#3B82F6', '3': '#7C3AED', '4': '#F59E0B',
+// ── Group-level colors for distribution bar ─────────────────────────────
+const RIZO_GROUP_META: Record<string, { label: string; color: string; tone: StatAccent }> = {
+  '1': { label: 'Liso',     color: '#6B6560', tone: 'gold' },
+  '2': { label: 'Ondulado', color: '#1A5276', tone: 'blue' },
+  '3': { label: 'Rizado',   color: '#2D5A27', tone: 'green' },
+  '4': { label: 'Coily',    color: '#8A5A2E', tone: 'gold' },
 };
 
-// ── Últimos 6 meses ────────────────────────────────────────────────────────
+// ── Últimos 6 meses ─────────────────────────────────────────────────────
 function getLast6Months(): string[] {
   const result: string[] = [];
   const now = new Date();
@@ -47,7 +33,13 @@ function getLast6Months(): string[] {
 function monthLabel(ym: string): string {
   const [y, m] = ym.split('-');
   const d = new Date(Number(y), Number(m) - 1, 1);
-  return d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '');
+  return d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '').toUpperCase();
+}
+
+function monthCapitalLabel(): string {
+  const d = new Date();
+  const m = d.toLocaleDateString('es-ES', { month: 'long' });
+  return `${m.charAt(0).toUpperCase()}${m.slice(1)} · ${d.getFullYear()}`;
 }
 
 export default function ReportesPage() {
@@ -82,229 +74,577 @@ export default function ReportesPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const last6 = getLast6Months();
+  const last6 = useMemo(() => getLast6Months(), []);
   const maxMonthVal = Math.max(...last6.map((m) => byMonth[m] ?? 0), 1);
   const totalConsultas = Object.values(byMonth).reduce((s, v) => s + v, 0);
   const promMensual = last6.length
     ? Math.round(last6.reduce((s, m) => s + (byMonth[m] ?? 0), 0) / last6.length * 10) / 10
     : 0;
 
-  // Ordenar rizo por cantidad
-  const rizoEntries = Object.entries(rizoDistrib).sort((a, b) => b[1] - a[1]);
-  const maxRizo = Math.max(...rizoEntries.map((e) => e[1]), 1);
+  // Distribución por grupo (1/2/3/4) sumada
+  const groupTotals = useMemo(() => {
+    const totals: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0 };
+    for (const [tipo, count] of Object.entries(rizoDistrib)) {
+      const g = tipo[0];
+      if (totals[g] !== undefined) totals[g] += count;
+    }
+    return totals;
+  }, [rizoDistrib]);
 
-  // Ordenar tratamientos por cantidad
+  const totalRizoCount = Object.values(groupTotals).reduce((s, v) => s + v, 0);
+  const distribution = (['3', '2', '4', '1'] as const)
+    .map((g) => {
+      const meta = RIZO_GROUP_META[g];
+      const v = totalRizoCount > 0 ? Math.round((groupTotals[g] / totalRizoCount) * 100) : 0;
+      return { l: `Tipo ${g} · ${meta.label}`, v, color: meta.color, count: groupTotals[g] };
+    })
+    .filter((d) => d.count > 0);
+
   const tratEntries = Object.entries(tratDistrib).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const maxTrat = Math.max(...tratEntries.map((e) => e[1]), 1);
 
   const isEmpty = !loading && totalClientas === 0 && totalConsultas === 0;
 
+  // Hero KPI: estimado de "ingreso del mes" no existe, mostramos consultas/mes vs meta=consultas+30%
+  const meta = Math.max(Math.round(promMensual * 1.3), 1);
+  const pctMeta = Math.min(Math.round((thisMonth / meta) * 100), 100);
+
+  // ═══ EMPTY STATE ════════════════════════════════════════════════════════
   if (isEmpty) {
     return (
-      <div className="min-h-screen bg-[#F5F0E8]">
-        <Header title="Reportes" />
-        <main className="max-w-2xl mx-auto px-4 py-14 pb-nav text-center">
-          <div
-            className="w-24 h-24 rounded-3xl mx-auto mb-5 flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #EEF5ED 0%, #FBF4EC 100%)' }}
-          >
-            <BarChart2 size={40} className="text-[#2D5A27]" />
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', position: 'relative' }}>
+        <header
+          style={{
+            padding: '54px 16px 16px',
+            background: 'var(--bg-card)',
+            borderBottom: '1px solid var(--border-soft)',
+          }}
+        >
+          <div style={{ maxWidth: 768, margin: '0 auto' }}>
+            <div className="v-caps">{monthCapitalLabel()}</div>
+            <h1
+              style={{
+                margin: '2px 0 0',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 26,
+                letterSpacing: '-0.02em',
+              }}
+            >
+              Tu salón <em style={{ color: 'var(--secondary-deep)' }}>en cifras</em>
+            </h1>
           </div>
-          <h2 className="text-xl text-[#2D5A27] mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-            Tus reportes todavía están vacíos
-          </h2>
-          <p className="text-sm text-[#666666] mb-6 max-w-sm mx-auto leading-relaxed">
-            Cuando empieces a registrar diagnósticos aparecerán aquí tus tendencias: tipos de
-            cabello, tratamientos más frecuentes y crecimiento mes a mes.
-          </p>
-          <Link
-            href="/diagnostico"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-white text-sm font-bold"
+        </header>
+
+        <main
+          style={{
+            maxWidth: 768,
+            margin: '0 auto',
+            padding: '48px 16px 120px',
+            textAlign: 'center',
+          }}
+        >
+          <div
             style={{
-              background: 'linear-gradient(135deg, #2D5A27, #4A8C42)',
-              boxShadow: '0 6px 20px rgba(45,90,39,0.28)',
-              fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif",
+              width: 80,
+              height: 80,
+              borderRadius: 24,
+              background: 'linear-gradient(135deg, var(--primary-pale), var(--secondary-pale))',
+              margin: '0 auto 18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            <Sparkles size={16} /> Empezar primer diagnóstico
+            <BarChart2 size={32} style={{ color: 'var(--primary)' }} />
+          </div>
+          <h2
+            style={{
+              margin: 0,
+              fontFamily: 'var(--font-serif)',
+              fontSize: 22,
+              color: 'var(--primary-deep)',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Reportes <em style={{ color: 'var(--secondary-deep)' }}>en blanco</em>
+          </h2>
+          <p
+            style={{
+              margin: '8px auto 18px',
+              maxWidth: 360,
+              fontSize: 13,
+              color: 'var(--text-secondary)',
+              lineHeight: 1.5,
+            }}
+          >
+            Cuando empieces a registrar diagnósticos aparecerán aquí tus tendencias: tipos
+            de cabello, tratamientos más frecuentes y crecimiento mes a mes.
+          </p>
+          <Link href="/diagnostico">
+            <Btn variant="primary" size="md" icon={<Sparkles size={14} />}>
+              Empezar primer diagnóstico
+            </Btn>
           </Link>
         </main>
-        <BottomNav />
+        <BottomNavV2 />
       </div>
     );
   }
 
+  // ═══ MAIN ════════════════════════════════════════════════════════════════
   return (
-    <div className="min-h-screen bg-[#F5F0E8]">
-      <Header title="Reportes" />
-
-      <main className="max-w-2xl mx-auto px-4 py-5 pb-nav">
-
-        {/* Métricas clave */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          {[
-            { label: 'Clientas', value: totalClientas, icon: <Users size={16} />, color: '#2D5A27' },
-            { label: 'Consultas total', value: totalConsultas, icon: <CalendarDays size={16} />, color: '#C9956B' },
-            { label: 'Este mes', value: thisMonth, icon: <TrendingUp size={16} />, color: '#22C55E' },
-          ].map(({ label, value, icon, color }) => (
-            <div key={label} className="bg-white rounded-2xl border border-[#E5E5E5] p-3 text-center">
-              <div className="flex justify-center mb-1" style={{ color }}>{icon}</div>
-              <p className="text-2xl font-extrabold text-[#2D2D2D]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                {loading ? '—' : value}
-              </p>
-              <p className="text-[10px] text-[#999999]">{label}</p>
-            </div>
-          ))}
-          {/* Satisfacción promedio */}
-          <div className="bg-white rounded-2xl border border-[#E5E5E5] p-3 text-center">
-            <div className="flex justify-center mb-1 text-[#C9956B]">
-              <BarChart2 size={16} />
-            </div>
-            <p className="text-2xl font-extrabold text-[#2D2D2D]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-              {loading ? '—' : satisfaccionProm !== null ? `${satisfaccionProm}★` : '—'}
-            </p>
-            <p className="text-[10px] text-[#999999]">Satisfacción / 5</p>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', position: 'relative' }}>
+      {/* Sticky header */}
+      <header
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 40,
+          padding: '54px 16px 16px',
+          background: 'rgba(255, 254, 251, 0.92)',
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
+          borderBottom: '1px solid var(--border-soft)',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 768,
+            margin: '0 auto',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-end',
+            gap: 12,
+          }}
+        >
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div className="v-caps">{monthCapitalLabel()} · cierre parcial</div>
+            <h1
+              style={{
+                margin: '2px 0 0',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 26,
+                letterSpacing: '-0.02em',
+                lineHeight: 1.05,
+                color: 'var(--text-main)',
+              }}
+            >
+              Tu salón <em style={{ color: 'var(--secondary-deep)' }}>en cifras</em>
+            </h1>
           </div>
+          <Btn size="sm" variant="outline" icon={<Download size={12} />} disabled>
+            PDF
+          </Btn>
         </div>
+      </header>
 
-        {/* ── Consultas por mes ── */}
-        <div className="bg-white rounded-2xl border border-[#E5E5E5] p-4 mb-4">
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart2 size={16} className="text-[#2D5A27]" />
-            <h2 className="text-sm font-bold text-[#2D2D2D]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-              Consultas — últimos 6 meses
-            </h2>
-            <span className="ml-auto text-xs text-[#999999]">~{promMensual}/mes</span>
+      <main style={{ maxWidth: 768, margin: '0 auto', padding: '20px 16px 120px' }}>
+        {/* ── Headline KPI ─────────────────────────────────────────────── */}
+        <section className="v-card-hi" style={{ overflow: 'hidden', marginBottom: 18 }}>
+          <div
+            style={{
+              padding: '18px 18px 12px',
+              background: 'linear-gradient(135deg, #FBF4EC 0%, #F5EDDC 100%)',
+            }}
+          >
+            <div className="v-caps" style={{ color: 'var(--secondary-deep)' }}>
+              Consultas · este mes
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, marginTop: 4 }}>
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 44,
+                  lineHeight: 1,
+                  letterSpacing: '-0.025em',
+                  color: 'var(--primary-deep)',
+                }}
+              >
+                {loading ? '—' : thisMonth}
+              </span>
+              <span style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 6 }}>
+                / {meta} meta
+              </span>
+              {!loading && promMensual > 0 && (
+                <span
+                  style={{
+                    marginLeft: 'auto',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 11,
+                    color: thisMonth >= promMensual ? 'var(--success)' : 'var(--text-tertiary)',
+                    fontWeight: 700,
+                  }}
+                >
+                  {thisMonth >= promMensual ? '↑' : '↓'} ~{promMensual}/mes
+                </span>
+              )}
+            </div>
+            <div style={{ marginTop: 4, fontSize: 11, color: 'var(--text-tertiary)' }}>
+              Promedio últimos 6 meses · {totalConsultas} consultas en total
+            </div>
           </div>
+          {/* Progress bar */}
+          <div style={{ padding: '12px 18px 16px' }}>
+            <div
+              style={{
+                height: 6,
+                background: 'var(--border-soft)',
+                borderRadius: 999,
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  width: `${pctMeta}%`,
+                  height: '100%',
+                  background: 'linear-gradient(90deg, var(--primary), var(--secondary))',
+                  borderRadius: 999,
+                  transition: 'width 0.7s ease',
+                }}
+              />
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: 6,
+                fontFamily: 'var(--font-mono)',
+                fontSize: 9.5,
+                color: 'var(--text-tertiary)',
+                letterSpacing: '0.04em',
+              }}
+            >
+              <span>0</span>
+              <span>{loading ? '—' : `${pctMeta}% META`}</span>
+              <span>{meta}</span>
+            </div>
+          </div>
+        </section>
 
+        {/* ── Bar chart consultas/mes ─────────────────────────────────── */}
+        <SectionLabel
+          num="01"
+          eyebrow="6 meses"
+          title="Consultas por mes"
+        />
+        <section className="v-card" style={{ padding: 16, marginBottom: 22 }}>
           {loading ? (
-            <div className="h-28 loading-pulse bg-[#F0F0F0] rounded-xl" />
+            <div className="skeleton-shimmer" style={{ height: 140 }} />
           ) : (
-            <div className="flex items-end gap-1.5 h-28">
-              {last6.map((ym) => {
-                const val = byMonth[ym] ?? 0;
-                const heightPct = maxMonthVal > 0 ? (val / maxMonthVal) * 100 : 0;
-                const isCurrentMonth = ym === last6[last6.length - 1];
-                return (
-                  <div key={ym} className="flex-1 flex flex-col items-center gap-1">
-                    <span className="text-[10px] font-bold text-[#2D5A27]">{val > 0 ? val : ''}</span>
-                    <div className="w-full flex-1 flex items-end">
-                      <div
-                        className="w-full rounded-t-lg transition-all duration-700"
+            <>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  gap: 6,
+                  height: 140,
+                  paddingBottom: 6,
+                  borderBottom: '1px solid var(--border-soft)',
+                }}
+              >
+                {last6.map((ym, idx) => {
+                  const val = byMonth[ym] ?? 0;
+                  const heightPx = Math.round((val / maxMonthVal) * 110);
+                  const cur = idx === last6.length - 1;
+                  return (
+                    <div
+                      key={ym}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 4,
+                        height: '100%',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      <span
                         style={{
-                          height: `${Math.max(heightPct, val > 0 ? 8 : 2)}%`,
-                          backgroundColor: isCurrentMonth ? '#2D5A27' : '#90B98A',
-                          minHeight: val > 0 ? 8 : 2,
+                          fontSize: 10,
+                          fontFamily: 'var(--font-mono)',
+                          color: cur ? 'var(--primary)' : 'var(--text-tertiary)',
+                          fontWeight: 700,
+                          minHeight: 12,
+                        }}
+                      >
+                        {val > 0 ? val : ''}
+                      </span>
+                      <div
+                        style={{
+                          width: '100%',
+                          borderRadius: '6px 6px 0 0',
+                          background: cur
+                            ? 'linear-gradient(180deg, var(--primary), var(--primary-deep))'
+                            : 'var(--primary-pale)',
+                          border: cur ? 'none' : '1px solid var(--primary-line)',
+                          height: Math.max(heightPx, val > 0 ? 8 : 2),
+                          transition: 'height 0.7s ease',
                         }}
                       />
-                    </div>
-                    <span
-                      className="text-[10px] text-[#999999] capitalize"
-                      style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
-                    >
-                      {monthLabel(ym)}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* ── Distribución por tipo de rizo ── */}
-        <div className="bg-white rounded-2xl border border-[#E5E5E5] p-4 mb-4">
-          <h2 className="text-sm font-bold text-[#2D2D2D] mb-4" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-            Tipos de cabello
-          </h2>
-
-          {loading ? (
-            <div className="space-y-2">
-              {[1, 2, 3].map((i) => <div key={i} className="h-6 loading-pulse bg-[#F0F0F0] rounded" />)}
-            </div>
-          ) : rizoEntries.length === 0 ? (
-            <p className="text-sm text-[#999999] text-center py-4">Sin datos aún</p>
-          ) : (
-            <div className="flex flex-col gap-2.5">
-              {rizoEntries.map(([tipo, count]) => (
-                <div key={tipo} className="flex items-center gap-3">
-                  <span
-                    className="text-xs font-bold w-7 shrink-0"
-                    style={{ color: RIZO_COLORS[tipo] ?? '#999999', fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
-                  >
-                    {tipo}
-                  </span>
-                  <Bar pct={(count / maxRizo) * 100} color={RIZO_COLORS[tipo] ?? '#999999'} />
-                  <span className="text-xs text-[#666666] w-6 text-right shrink-0">{count}</span>
-                </div>
-              ))}
-
-              {/* Resumen por grupo */}
-              <div className="flex gap-3 mt-2 pt-3 border-t border-[#F0F0F0]">
-                {['1', '2', '3', '4'].map((g) => {
-                  const total = rizoEntries.filter(([t]) => t.startsWith(g)).reduce((s, [, c]) => s + c, 0);
-                  const label = g === '1' ? 'Liso' : g === '2' ? 'Ondulado' : g === '3' ? 'Rizado' : 'Afro';
-                  return (
-                    <div key={g} className="flex-1 text-center">
-                      <p className="text-lg font-extrabold" style={{ color: RIZO_GROUP_COLOR[g], fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                        {total}
-                      </p>
-                      <p className="text-[10px] text-[#999999]">{label}</p>
                     </div>
                   );
                 })}
               </div>
-            </div>
+              <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                {last6.map((ym) => (
+                  <div
+                    key={ym}
+                    style={{
+                      flex: 1,
+                      textAlign: 'center',
+                      fontSize: 9.5,
+                      color: 'var(--text-tertiary)',
+                      letterSpacing: '0.1em',
+                      fontWeight: 600,
+                      fontFamily: 'var(--font-mono)',
+                    }}
+                  >
+                    {monthLabel(ym)}
+                  </div>
+                ))}
+              </div>
+            </>
           )}
-        </div>
+        </section>
 
-        {/* ── Top tratamientos ── */}
-        <div className="bg-white rounded-2xl border border-[#E5E5E5] p-4 mb-4">
-          <h2 className="text-sm font-bold text-[#2D2D2D] mb-4" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-            Tratamientos más frecuentes
-          </h2>
-
+        {/* ── Distribución tipos de cabello ────────────────────────────── */}
+        <SectionLabel
+          num="02"
+          eyebrow="Tipo de rizo"
+          title="Distribución de clientas"
+        />
+        <section className="v-card" style={{ padding: 16, marginBottom: 22 }}>
           {loading ? (
-            <div className="space-y-2">
-              {[1, 2, 3].map((i) => <div key={i} className="h-8 loading-pulse bg-[#F0F0F0] rounded" />)}
+            <div className="skeleton-shimmer" style={{ height: 100 }} />
+          ) : distribution.length === 0 ? (
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center', padding: '12px 0' }}>
+              Sin datos aún
+            </p>
+          ) : (
+            <>
+              {/* Stacked bar */}
+              <div
+                style={{
+                  display: 'flex',
+                  height: 14,
+                  borderRadius: 999,
+                  overflow: 'hidden',
+                  marginBottom: 14,
+                  background: 'var(--bg)',
+                }}
+              >
+                {distribution.map((d, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      width: `${d.v}%`,
+                      background: d.color,
+                      transition: 'width 0.7s ease',
+                    }}
+                  />
+                ))}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {distribution.map((d, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                    }}
+                  >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: 2,
+                        background: d.color,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span style={{ flex: 1, fontSize: 12.5, color: 'var(--text-main)' }}>
+                      {d.l}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 11,
+                        color: 'var(--text-secondary)',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {d.v}%
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 10.5,
+                        color: 'var(--text-tertiary)',
+                        minWidth: 26,
+                        textAlign: 'right',
+                      }}
+                    >
+                      · {d.count}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+
+        {/* ── Tratamientos top 5 ──────────────────────────────────────── */}
+        <SectionLabel
+          num="03"
+          eyebrow="Top 5"
+          title="Tratamientos más frecuentes"
+        />
+        <section className="v-card" style={{ padding: 16, marginBottom: 22 }}>
+          {loading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="skeleton-shimmer" style={{ height: 32 }} />
+              ))}
             </div>
           ) : tratEntries.length === 0 ? (
-            <p className="text-sm text-[#999999] text-center py-4">Sin datos aún</p>
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center', padding: '12px 0' }}>
+              Sin datos aún
+            </p>
           ) : (
-            <div className="flex flex-col gap-2">
+            <ol style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
               {tratEntries.map(([trat, count], idx) => {
                 const bg = getTratamientoBg(trat);
-                const textColor = getTratamientoTextColor(trat);
+                const color = getTratamientoTextColor(trat);
+                const pct = Math.round((count / maxTrat) * 100);
                 return (
-                  <div key={trat} className="flex items-center gap-3 p-2 rounded-xl" style={{ backgroundColor: bg }}>
+                  <li
+                    key={trat}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      padding: 10,
+                      background: bg,
+                      borderRadius: 10,
+                    }}
+                  >
                     <span
-                      className="text-base font-extrabold w-5 shrink-0"
-                      style={{ color: textColor, fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 10,
+                        color,
+                        opacity: 0.7,
+                        minWidth: 16,
+                      }}
                     >
-                      {idx + 1}
+                      0{idx + 1}
                     </span>
-                    <span className="flex-1 text-xs font-semibold truncate" style={{ color: textColor }}>
+                    <span
+                      style={{
+                        flex: 1,
+                        fontSize: 12.5,
+                        fontWeight: 600,
+                        color,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
                       {trat}
                     </span>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Bar pct={(count / maxTrat) * 100} color={textColor} />
-                      <span className="text-xs font-bold w-5 text-right" style={{ color: textColor }}>
-                        {count}
-                      </span>
+                    <div
+                      style={{
+                        width: 60,
+                        height: 5,
+                        borderRadius: 999,
+                        background: 'rgba(255,255,255,0.5)',
+                        overflow: 'hidden',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${pct}%`,
+                          height: '100%',
+                          background: color,
+                          transition: 'width 0.7s ease',
+                        }}
+                      />
                     </div>
-                  </div>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color,
+                        minWidth: 16,
+                        textAlign: 'right',
+                      }}
+                    >
+                      {count}
+                    </span>
+                  </li>
                 );
               })}
-            </div>
+            </ol>
           )}
+        </section>
+
+        {/* ── Mini grid KPIs ──────────────────────────────────────────── */}
+        <SectionLabel
+          num="04"
+          eyebrow="Otros indicadores"
+          title="Vista rápida"
+        />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 22 }}>
+          <StatTile
+            label="CLIENTAS · TOTAL"
+            value={loading ? '—' : totalClientas}
+            suffix="activas"
+            accent="green"
+            spark="0,15 14,11 28,13 42,7 56,9 70,5 85,8 100,2"
+          />
+          <StatTile
+            label="ESTE MES"
+            value={loading ? '—' : thisMonth}
+            suffix="consultas"
+            accent="gold"
+            spark="0,12 14,14 28,9 42,11 56,7 70,8 85,6 100,4"
+          />
+          <StatTile
+            label="PROMEDIO"
+            value={loading ? '—' : promMensual}
+            suffix="/mes"
+            accent="blue"
+            spark="0,8 14,12 28,10 42,9 56,11 70,7 85,9 100,6"
+          />
+          <StatTile
+            label="SATISFACCIÓN"
+            value={loading ? '—' : satisfaccionProm !== null ? satisfaccionProm.toFixed(1) : '—'}
+            suffix={satisfaccionProm !== null ? '/ 5 ★' : ''}
+            accent="gold"
+            spark="0,16 14,13 28,11 42,12 56,9 70,10 85,5 100,4"
+          />
         </div>
 
-        {/* Footer note */}
-        <p className="text-center text-xs text-[#CCCCCC] pb-2" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-          Solo tú ves estos datos · Velli Pro
-        </p>
+        {/* ── Footer note ──────────────────────────────────────────────── */}
+        <div
+          style={{
+            textAlign: 'center',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 9,
+            letterSpacing: '0.18em',
+            color: 'var(--text-tertiary)',
+            paddingTop: 18,
+          }}
+        >
+          VELLI · CONFIDENCIAL · SOLO TÚ VES ESTOS DATOS
+        </div>
       </main>
 
-      <BottomNav />
+      <BottomNavV2 />
     </div>
   );
 }

@@ -1,10 +1,14 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Camera, Pencil, Sparkles, ChevronDown, ChevronUp, X, Check, Bot, AlertTriangle, ArrowRight } from 'lucide-react';
+import {
+  Camera, Pencil, Sparkles, ChevronDown, ChevronUp, X, Check,
+  Bot, AlertTriangle, ArrowRight,
+} from 'lucide-react';
 import { WizardData, CaptureMetadata } from '@/lib/types';
 import { HairAnalysisResult } from '@/lib/hairAnalysis';
 import { rizoTypes, RizoPattern } from './RizoPatterns';
 import CameraCapture from './CameraCapture';
+import { Btn, Chip } from '@/components/v2';
 import { vibracionSutil, vibracionConfirmacion } from '@/lib/haptics';
 
 interface Props {
@@ -17,10 +21,9 @@ interface Props {
 
 type Mode = 'choose' | 'camera' | 'form';
 
-// Campos con IA pre-rellenos
 type IACampos = Set<string>;
 
-// ── Componente pill selector de 3 opciones ──────────────────────────────────
+// ── PillRow editorial ──────────────────────────────────────────────────────
 function PillRow({
   label,
   options,
@@ -34,39 +37,62 @@ function PillRow({
   onSelect: (v: string) => void;
   iaFilled?: boolean;
 }) {
-  const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
   return (
-    <div className="flex items-center gap-2">
-      <div className="w-24 shrink-0">
-        <span className="text-xs font-semibold text-[#444]" style={serif}>{label}</span>
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+        <span className="v-caps">{label}</span>
         {iaFilled && value && (
-          <div className="inline-flex items-center gap-0.5 ml-1 bg-[#EEF5ED] text-[#2D5A27] rounded-full px-1 py-0.5">
-            <Bot size={8} />
-            <span style={{ fontSize: '9px' }}>IA</span>
-          </div>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 3,
+              background: 'var(--primary-pale)',
+              color: 'var(--primary)',
+              borderRadius: 999,
+              padding: '1px 6px',
+              fontSize: 8.5,
+              fontWeight: 700,
+              letterSpacing: '0.06em',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            <Bot size={8} /> IA
+          </span>
         )}
       </div>
-      <div className="flex gap-1.5 flex-1">
-        {options.map(({ v, label: lbl }) => (
-          <button
-            key={v}
-            type="button"
-            onClick={() => { vibracionSutil(); onSelect(v); }}
-            className={`flex-1 py-2 rounded-full text-xs font-bold border-2 transition-all duration-200 active:scale-95 ${
-              value === v
-                ? 'bg-[#2D5A27] text-white border-[#2D5A27] scale-105'
-                : 'bg-white text-[#666] border-[#E5E5E5] hover:border-[#90B98A]'
-            }`}
-          >
-            {lbl}
-          </button>
-        ))}
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${options.length},1fr)`, gap: 6 }}>
+        {options.map(({ v, label: lbl }) => {
+          const sel = value === v;
+          return (
+            <button
+              key={v}
+              type="button"
+              onClick={() => { vibracionSutil(); onSelect(v); }}
+              className="active:scale-95 transition-transform"
+              style={{
+                padding: '10px 8px',
+                borderRadius: 12,
+                background: sel ? 'var(--primary)' : 'var(--bg-card)',
+                color: sel ? '#fff' : 'var(--text-main)',
+                border: sel ? 'none' : '1px solid var(--border-soft)',
+                fontSize: 12,
+                fontWeight: 600,
+                fontFamily: 'var(--font-sans)',
+                boxShadow: sel ? 'var(--shadow-sm)' : 'none',
+                cursor: 'pointer',
+              }}
+            >
+              {lbl}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-// ── Chip multiselect ─────────────────────────────────────────────────────────
+// ── ChipGroup editorial ────────────────────────────────────────────────────
 function ChipGroup({
   options,
   selected,
@@ -85,7 +111,7 @@ function ChipGroup({
     }
   };
   return (
-    <div className="flex flex-wrap gap-2">
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
       {options.map((opt) => {
         const on = selected.includes(opt);
         return (
@@ -93,11 +119,18 @@ function ChipGroup({
             key={opt}
             type="button"
             onClick={() => toggle(opt)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all duration-200 active:scale-95 ${
-              on
-                ? 'bg-[#EEF5ED] text-[#2D5A27] border-[#2D5A27]'
-                : 'bg-white text-[#666] border-[#E5E5E5] hover:border-[#90B98A]'
-            }`}
+            className="active:scale-95 transition-transform"
+            style={{
+              padding: '6px 12px',
+              borderRadius: 999,
+              fontSize: 11.5,
+              fontWeight: 600,
+              fontFamily: 'var(--font-sans)',
+              background: on ? 'var(--primary-pale)' : 'var(--bg-card)',
+              color: on ? 'var(--primary)' : 'var(--text-secondary)',
+              border: `1px solid ${on ? 'rgba(45, 90, 39, 0.3)' : 'var(--border-soft)'}`,
+              cursor: 'pointer',
+            }}
           >
             {opt}
           </button>
@@ -107,8 +140,7 @@ function ChipGroup({
   );
 }
 
-// ── Opciones del formulario ──────────────────────────────────────────────────
-
+// ── Opciones del formulario ────────────────────────────────────────────────
 const POROSIDAD = [
   { v: 'baja', label: 'Baja' },
   { v: 'media', label: 'Media' },
@@ -134,10 +166,10 @@ const ELASTICIDAD = [
 ];
 
 const BALANCE_HP = [
-  { v: 'hidratacion', label: '💧 Hid.' },
-  { v: 'nutricion', label: '🌿 Nutr.' },
-  { v: 'proteina', label: '⚡ Prot.' },
-  { v: 'equilibrado', label: '✨ Equil.' },
+  { v: 'hidratacion', label: 'Hid.' },
+  { v: 'nutricion', label: 'Nutr.' },
+  { v: 'proteina', label: 'Prot.' },
+  { v: 'equilibrado', label: 'Equil.' },
 ];
 
 const PROBLEMAS_RAPIDOS = [
@@ -150,8 +182,7 @@ const PROBLEMAS_RAPIDOS = [
   'Transición capilar',
 ];
 
-// ── Opciones del drawer de detalles ──────────────────────────────────────────
-
+// ── Drawer options ─────────────────────────────────────────────────────────
 const QUIMICOS = [
   'Tinte permanente',
   'Decoloración / mechas',
@@ -201,41 +232,27 @@ const FRECUENCIA_LAVADO = [
   { v: 'diario', label: 'Diario' },
 ];
 
-const ESTRES = [
-  { v: 'bajo', label: 'Bajo' },
-  { v: 'medio', label: 'Medio' },
-  { v: 'alto', label: 'Alto' },
-];
-
-// ── Componente principal ─────────────────────────────────────────────────────
-
+// ── Componente principal ───────────────────────────────────────────────────
 export default function PasoCabello({ data, onChange, errors, onExpressReady, autoCamera }: Props) {
   const [mode, setMode] = useState<Mode>(autoCamera ? 'camera' : 'choose');
   const [iaCampos, setIaCampos] = useState<IACampos>(new Set());
   const [expressReady, setExpressReady] = useState(false);
   const [showDetalle, setShowDetalle] = useState(false);
 
-  const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
-
-  // Si la IA sugirió un tipo y la estilista aún no ha confirmado uno
-  // (corrección manual en curso), siempre debemos estar en el formulario
-  // — nunca volver a abrir la cámara. Garantía defensiva contra remounts
-  // o desincronizaciones de setMode tras onChange.
+  // Garantía defensiva: si IA sugirió y no hay tipo confirmado, fuerza form
   useEffect(() => {
     if (data.iaTipoSugerido && !data.tipoRizoPrincipal && mode !== 'form') {
       setMode('form');
     }
   }, [data.iaTipoSugerido, data.tipoRizoPrincipal, mode]);
 
-  // ── Corrección de IA: la estilista no acepta el diagnóstico ─────────────
+  // ── Corrección de IA ──────────────────────────────────────────────────
   const handleCorrectAI = (
     iaTipoSugerido: string,
     captureMetadata: CaptureMetadata,
     analysisResult: HairAnalysisResult,
     fotoUrls: string[]
   ) => {
-    // Pre-llenamos lo mismo que en handleCameraComplete EXCEPTO tipoRizoPrincipal
-    // (la estilista debe escogerlo). Guardamos el sugerido por la IA aparte.
     const camposIA = new Set<string>();
     const patch: Partial<WizardData> = {
       tipoRizoPrincipal: '',
@@ -269,15 +286,13 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
       patch.tipoDano = ['Sin daño visible'];
     }
 
-    // setMode primero: garantiza que aún si onChange causa un re-render
-    // anómalo, el formulario aparece y la cámara se desmonta.
     setMode('form');
     setIaCampos(camposIA);
     setExpressReady(false);
     onChange(patch);
   };
 
-  // ── Camera complete ─────────────────────────────────────────────────────
+  // ── Camera complete ───────────────────────────────────────────────────
   const handleCameraComplete = (
     tipoRizoPrincipal: string,
     tiposSecundarios: string[],
@@ -293,7 +308,6 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
       fotoAnalisis: fotoUrls,
     };
 
-    // Pre-llenar campos desde IA
     if (analysisResult.porosidad) {
       patch.porosidad = analysisResult.porosidad;
       camposIA.add('porosidad');
@@ -320,7 +334,6 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
     onChange(patch);
     setIaCampos(camposIA);
 
-    // Modo express: confianza alta + porosidad + densidad detectados
     const isExpress =
       analysisResult.confianza === 'alta' &&
       !!analysisResult.porosidad &&
@@ -330,75 +343,174 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
     setMode('form');
   };
 
-  // ── Rizo principal ───────────────────────────────────────────────────────
+  // ── Rizo principal ────────────────────────────────────────────────────
   const selectRizo = (id: string) => {
     vibracionSutil();
-    onChange({ tipoRizoPrincipal: id, tiposSecundarios: data.tiposSecundarios.filter((s) => s !== id) });
+    onChange({
+      tipoRizoPrincipal: id,
+      tiposSecundarios: data.tiposSecundarios.filter((s) => s !== id),
+    });
   };
 
-  // ── Express confirm ──────────────────────────────────────────────────────
   const handleExpressConfirm = () => {
     vibracionConfirmacion();
     onExpressReady?.();
   };
 
-  // ── Render ───────────────────────────────────────────────────────────────
-
-  // Estado: elegir modo
+  // ═══ RENDER · MODO CHOOSE ═════════════════════════════════════════════
   if (mode === 'choose') {
     return (
-      <div className="flex flex-col gap-5 step-enter">
+      <div className="step-enter" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
         <div>
-          <h2 className="text-lg font-bold text-[#2D2D2D] mb-1" style={serif}>
-            El cabello
-          </h2>
-          <p className="text-xs text-[#999999]">¿Cómo quieres diagnosticar?</p>
+          <div className="v-caps">Capítulo 02 · La materia</div>
+          <h1
+            style={{
+              margin: '4px 0 6px',
+              fontFamily: 'var(--font-serif)',
+              fontSize: 28,
+              letterSpacing: '-0.02em',
+              lineHeight: 1.05,
+              color: 'var(--text-main)',
+            }}
+          >
+            Identifica <em style={{ color: 'var(--secondary-deep)' }}>el patrón</em>
+          </h1>
+          <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+            Toca una imagen, o usa la cámara IA para una clasificación automática
+            (1A–4C, escala Walker).
+          </p>
         </div>
 
-        {/* Botón principal: cámara */}
+        {/* Cámara IA — CTA principal */}
         <button
           type="button"
           onClick={() => setMode('camera')}
-          className="w-full flex flex-col items-center gap-3 px-5 py-6 rounded-3xl bg-[#2D5A27] active:scale-[0.98] transition-all shadow-lg shadow-green-900/20"
+          className="active:scale-[0.98] transition-transform"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            width: '100%',
+            padding: 14,
+            borderRadius: 16,
+            background: 'linear-gradient(135deg, var(--primary-deep), var(--primary))',
+            color: '#F5EDDC',
+            border: 'none',
+            cursor: 'pointer',
+            boxShadow: 'var(--shadow-md)',
+            textAlign: 'left',
+          }}
         >
-          <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
-            <Camera size={28} className="text-white" />
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: 'rgba(232, 194, 144, 0.18)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <Camera size={20} style={{ color: '#E8C290' }} />
           </div>
-          <div className="text-center">
-            <p className="text-base font-bold text-white" style={serif}>
-              Escanear con cámara IA
-            </p>
-            <p className="text-xs text-[#B8D4B5] mt-1">
-              Recomendado · 3 fotos · diagnóstico automático
-            </p>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: 'var(--font-serif)', fontSize: 15 }}>
+              Clasificación con IA
+            </div>
+            <div
+              style={{
+                fontSize: 10.5,
+                opacity: 0.7,
+                letterSpacing: '0.05em',
+                marginTop: 2,
+              }}
+            >
+              Cámara · 30 seg · resultado en pantalla
+            </div>
           </div>
-          <div className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
-            <Sparkles size={12} className="text-[#FFD700]" />
-            <span className="text-xs text-white font-semibold">Modo Express disponible</span>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              background: 'rgba(232, 194, 144, 0.22)',
+              borderRadius: 999,
+              padding: '4px 10px',
+              fontSize: 9.5,
+              fontWeight: 700,
+              color: '#E8C290',
+              letterSpacing: '0.08em',
+              flexShrink: 0,
+            }}
+          >
+            <Sparkles size={10} />
+            EXPRESS
           </div>
         </button>
 
-        {/* Botón secundario: manual */}
+        {/* Manual — secundario */}
         <button
           type="button"
           onClick={() => setMode('form')}
-          className="w-full flex items-center justify-center gap-3 px-5 py-4 rounded-3xl bg-white border-2 border-[#E5E5E5] active:scale-[0.98] transition-all hover:border-[#90B98A]"
+          className="active:scale-[0.98] transition-transform"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            width: '100%',
+            padding: 14,
+            borderRadius: 16,
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-soft)',
+            cursor: 'pointer',
+            textAlign: 'left',
+            boxShadow: 'var(--shadow-xs)',
+          }}
         >
-          <div className="w-10 h-10 rounded-xl bg-[#F5F5F5] flex items-center justify-center">
-            <Pencil size={18} className="text-[#666]" />
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: 'var(--primary-pale)',
+              color: 'var(--primary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <Pencil size={18} strokeWidth={1.7} />
           </div>
-          <div className="text-left">
-            <p className="text-sm font-semibold text-[#2D2D2D]" style={serif}>
-              Llenar manualmente
-            </p>
-            <p className="text-xs text-[#999]">Selección rápida paso a paso</p>
+          <div style={{ flex: 1 }}>
+            <div
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 15,
+                color: 'var(--text-main)',
+              }}
+            >
+              Selección manual
+            </div>
+            <div
+              style={{
+                fontSize: 10.5,
+                color: 'var(--text-tertiary)',
+                marginTop: 2,
+                letterSpacing: '0.04em',
+              }}
+            >
+              Patrón de rizo + atributos paso a paso
+            </div>
           </div>
         </button>
       </div>
     );
   }
 
-  // Estado: cámara
+  // ═══ RENDER · MODO CAMERA ═════════════════════════════════════════════
   if (mode === 'camera') {
     return (
       <CameraCapture
@@ -409,54 +521,97 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
     );
   }
 
-  // Estado: formulario (manual o revisión post-cámara)
+  // ═══ RENDER · MODO FORM ═══════════════════════════════════════════════
   return (
     <>
-      <div className="flex flex-col gap-4 step-enter">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[#2D2D2D]" style={serif}>
-            El cabello
-          </h2>
-          {mode === 'form' && !iaCampos.size && (
-            <button
-              type="button"
-              onClick={() => setMode('camera')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#EEF5ED] text-xs font-semibold text-[#2D5A27] border border-[#90B98A]"
+      <div className="step-enter" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 }}>
+          <div style={{ minWidth: 0 }}>
+            <div className="v-caps">Capítulo 02 · La materia</div>
+            <h1
+              style={{
+                margin: '4px 0 0',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 24,
+                letterSpacing: '-0.02em',
+                lineHeight: 1.05,
+                color: 'var(--text-main)',
+              }}
             >
-              <Camera size={12} />
-              Usar cámara
-            </button>
+              El <em style={{ color: 'var(--secondary-deep)' }}>cabello</em>
+            </h1>
+          </div>
+          {!iaCampos.size && (
+            <Btn variant="soft" size="sm" onClick={() => setMode('camera')} icon={<Camera size={12} />}>
+              Cámara
+            </Btn>
           )}
         </div>
 
         {/* Banner express */}
         {expressReady && (
-          <div className="flex flex-col gap-3 bg-gradient-to-r from-[#2D5A27] to-[#3D7A35] rounded-2xl p-4 text-white">
-            <div className="flex items-center gap-2">
-              <Bot size={18} className="text-[#FFD700]" />
-              <p className="text-sm font-bold" style={serif}>
-                La IA completó el diagnóstico automáticamente
-              </p>
+          <section
+            className="v-grain"
+            style={{
+              position: 'relative',
+              overflow: 'hidden',
+              padding: 16,
+              borderRadius: 16,
+              background: 'linear-gradient(135deg, var(--primary-deep) 0%, var(--primary) 100%)',
+              color: '#F5EDDC',
+              boxShadow: 'var(--shadow-md)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <Sparkles size={16} style={{ color: '#E8C290' }} />
+              <span
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 9.5,
+                  letterSpacing: '0.18em',
+                  color: 'rgba(232, 194, 144, 0.95)',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Modo express
+              </span>
             </div>
-            <p className="text-xs text-[#B8D4B5]">
-              Revisa los campos seleccionados y confirma si estás de acuerdo.
-            </p>
-            <button
-              type="button"
-              onClick={handleExpressConfirm}
-              className="w-full py-3 rounded-xl bg-white text-[#2D5A27] font-bold text-sm active:scale-[0.98] transition-all"
-              style={serif}
+            <p
+              style={{
+                margin: 0,
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontSize: 16,
+                lineHeight: 1.35,
+                color: '#fff',
+              }}
             >
-              Confirmar y generar plan
-            </button>
-          </div>
+              «La IA completó el diagnóstico automáticamente. Revisa los campos y confirma.»
+            </p>
+            <div style={{ marginTop: 14 }}>
+              <Btn variant="gold" size="md" fullWidth onClick={handleExpressConfirm}>
+                Confirmar y generar plan
+              </Btn>
+            </div>
+          </section>
         )}
 
         {/* IA badge info */}
         {iaCampos.size > 0 && !expressReady && !data.iaTipoSugerido && (
-          <div className="flex items-center gap-2 px-3 py-2 bg-[#EEF5ED] rounded-xl border border-[#90B98A]">
-            <Bot size={14} className="text-[#2D5A27]" />
-            <p className="text-xs text-[#2D5A27]">
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '10px 14px',
+              borderRadius: 12,
+              background: 'var(--primary-pale)',
+              border: '1px solid rgba(45, 90, 39, 0.18)',
+            }}
+          >
+            <Bot size={14} style={{ color: 'var(--primary)' }} />
+            <p style={{ margin: 0, fontSize: 11.5, color: 'var(--primary)' }}>
               Campos pre-llenados por IA. Revisa y ajusta si es necesario.
             </p>
           </div>
@@ -464,40 +619,90 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
 
         {/* Banner: corrección de IA en curso */}
         {data.iaTipoSugerido && !data.tipoRizoPrincipal && (
-          <div className="flex items-start gap-2 px-3 py-2.5 bg-[#FEF3C7] rounded-xl border border-[#F59E0B]">
-            <AlertTriangle size={16} className="text-[#B45309] mt-0.5 shrink-0" />
-            <p className="text-xs text-[#78350F]">
-              <span className="font-bold">🔄 Corrigiendo diagnóstico de la IA</span> — La IA sugirió{' '}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 8,
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'var(--treat-recon-bg)',
+              border: '1px solid rgba(212, 130, 10, 0.25)',
+            }}
+          >
+            <AlertTriangle size={16} style={{ color: 'var(--treat-recon-color)', flexShrink: 0, marginTop: 1 }} />
+            <p style={{ margin: 0, fontSize: 11.5, color: 'var(--treat-recon-color)', lineHeight: 1.4 }}>
+              <strong>Corrigiendo diagnóstico de la IA</strong> — La IA sugirió{' '}
               <strong>{data.iaTipoSugerido}</strong>. Selecciona el tipo correcto.
             </p>
           </div>
         )}
 
-        {/* Indicador post-corrección: IA: X → Corregido a: Y */}
+        {/* Indicador post-corrección */}
         {data.iaTipoSugerido && data.tipoRizoPrincipal && data.tipoRizoPrincipal !== data.iaTipoSugerido && (
-          <div className="flex items-center gap-2 px-3 py-2.5 bg-[#FEF3C7] rounded-xl border border-[#F59E0B]">
-            <span className="text-xs font-bold text-[#78350F]">IA: {data.iaTipoSugerido}</span>
-            <ArrowRight size={12} className="text-[#B45309]" />
-            <span className="text-xs font-bold text-[#2D5A27]">Corregido a: {data.tipoRizoPrincipal}</span>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '10px 14px',
+              borderRadius: 12,
+              background: 'var(--treat-recon-bg)',
+              border: '1px solid rgba(212, 130, 10, 0.25)',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              letterSpacing: '0.04em',
+            }}
+          >
+            <span style={{ fontWeight: 700, color: 'var(--treat-recon-color)' }}>
+              IA: {data.iaTipoSugerido}
+            </span>
+            <ArrowRight size={12} style={{ color: 'var(--treat-recon-color)' }} />
+            <span style={{ fontWeight: 700, color: 'var(--primary)' }}>
+              Corregido: {data.tipoRizoPrincipal}
+            </span>
           </div>
         )}
 
         {/* Error tipo rizo */}
         {errors.tipoRizoPrincipal && (
-          <p className="text-xs text-[#8E2D2D] -mb-1">{errors.tipoRizoPrincipal}</p>
+          <p
+            style={{
+              margin: 0,
+              fontSize: 11.5,
+              color: 'var(--danger)',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            {errors.tipoRizoPrincipal}
+          </p>
         )}
 
-        {/* Tipo de cabello — grid compacto */}
+        {/* Tipo de cabello — grid editorial 4×3 */}
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <p className="text-xs font-bold text-[#444]" style={serif}>Tipo de cabello</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+            <span className="v-caps">Patrón de rizo</span>
             {iaCampos.has('tipoRizoPrincipal') && data.tipoRizoPrincipal && (
-              <span className="inline-flex items-center gap-0.5 bg-[#EEF5ED] text-[#2D5A27] rounded-full px-1.5 py-0.5 text-[9px] font-bold">
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 3,
+                  background: 'var(--primary-pale)',
+                  color: 'var(--primary)',
+                  borderRadius: 999,
+                  padding: '1px 6px',
+                  fontSize: 8.5,
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  fontFamily: 'var(--font-mono)',
+                }}
+              >
                 <Bot size={8} /> IA
               </span>
             )}
           </div>
-          <div className="grid grid-cols-3 gap-1.5">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
             {rizoTypes.flatMap((g) =>
               g.types.map(({ id }) => {
                 const isPrimary = data.tipoRizoPrincipal === id;
@@ -507,28 +712,82 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
                     key={id}
                     type="button"
                     onClick={() => selectRizo(id)}
-                    className={`relative flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all duration-150 active:scale-95 ${
-                      isPrimary
-                        ? 'border-[#2D5A27] bg-[#EEF5ED] shadow-sm'
+                    className="active:scale-95 transition-transform"
+                    style={{
+                      position: 'relative',
+                      aspectRatio: '1 / 1.1',
+                      borderRadius: 14,
+                      padding: 8,
+                      background: isPrimary
+                        ? 'var(--primary-deep)'
                         : isIASuggestion
-                        ? 'border-[#F59E0B] bg-white border-dashed'
-                        : 'border-[#E5E5E5] bg-white hover:border-[#90B98A]'
-                    }`}
+                          ? 'var(--bg-card)'
+                          : 'var(--bg-card)',
+                      color: isPrimary ? '#F5EDDC' : 'var(--text-main)',
+                      border: isPrimary
+                        ? 'none'
+                        : isIASuggestion
+                          ? '1px dashed var(--treat-recon-color)'
+                          : '1px solid var(--border-soft)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      overflow: 'hidden',
+                      boxShadow: isPrimary ? 'var(--shadow-md)' : 'var(--shadow-xs)',
+                    }}
                   >
-                    {isPrimary && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#2D5A27] rounded-full flex items-center justify-center">
-                        <Check size={9} className="text-white" strokeWidth={3} />
-                      </div>
-                    )}
-                    {isIASuggestion && (
-                      <div className="absolute -top-1 -right-1 px-1 h-4 bg-[#F59E0B] rounded-full flex items-center justify-center">
-                        <span className="text-[8px] font-bold text-white">IA</span>
-                      </div>
-                    )}
-                    <div className="scale-75 -my-1">
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: 9,
+                          color: isPrimary ? 'rgba(232, 194, 144, 0.9)' : 'var(--text-tertiary)',
+                          letterSpacing: '0.1em',
+                        }}
+                      >
+                        {id}
+                      </span>
+                      {isPrimary && (
+                        <Check size={10} strokeWidth={3} style={{ color: '#E8C290' }} />
+                      )}
+                      {isIASuggestion && (
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: 8,
+                            fontWeight: 700,
+                            color: 'var(--treat-recon-color)',
+                            letterSpacing: '0.1em',
+                          }}
+                        >
+                          IA
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        transform: 'scale(0.8)',
+                        margin: '-4px 0',
+                        filter: isPrimary ? 'invert(1) hue-rotate(160deg) brightness(1.5)' : undefined,
+                        opacity: isPrimary ? 0.85 : 1,
+                      }}
+                    >
                       <RizoPattern tipo={id} />
                     </div>
-                    <span className="text-xs font-extrabold text-[#2D5A27]" style={serif}>{id}</span>
+                    <span
+                      style={{
+                        fontSize: 9.5,
+                        fontWeight: 600,
+                        color: isPrimary ? '#F5EDDC' : 'var(--text-secondary)',
+                        textAlign: 'center',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                      }}
+                    >
+                      {g.group}
+                    </span>
                   </button>
                 );
               })
@@ -536,86 +795,140 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
           </div>
         </div>
 
+        {/* Selected highlight card */}
+        {data.tipoRizoPrincipal && (
+          <section
+            className="v-card"
+            style={{
+              padding: 14,
+              background: 'var(--secondary-pale)',
+              border: '1px solid rgba(138, 90, 46, 0.18)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 32,
+                  color: 'var(--secondary-deep)',
+                  lineHeight: 1,
+                  flexShrink: 0,
+                }}
+              >
+                {data.tipoRizoPrincipal}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="v-caps" style={{ color: 'var(--secondary-deep)' }}>
+                  Has seleccionado
+                </div>
+                <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, marginTop: 1 }}>
+                  {rizoTypes
+                    .flatMap((g) => g.types)
+                    .find((t) => t.id === data.tipoRizoPrincipal)?.desc ?? ''}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Nota opcional: ¿por qué la IA se equivocó? */}
         {data.iaTipoSugerido && data.tipoRizoPrincipal && data.tipoRizoPrincipal !== data.iaTipoSugerido && (
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-[#444]" style={serif}>
-              ¿Por qué la IA se equivocó? <span className="text-[#AAAAAA] font-normal">(opcional)</span>
-            </label>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <span className="v-caps">
+              ¿Por qué la IA se equivocó? <span style={{ color: 'var(--text-muted)' }}>· opcional</span>
+            </span>
             <textarea
               value={data.iaCorreccion ?? ''}
               onChange={(e) => onChange({ iaCorreccion: e.target.value })}
               placeholder="Ej: este no es un cabello 3A, es 2C porque las ondas son más abiertas"
               rows={3}
-              className="w-full px-3 py-2 rounded-xl border-2 border-[#E5E5E5] focus:border-[#F59E0B] outline-none text-sm bg-white resize-none"
+              style={{
+                padding: 12,
+                borderRadius: 12,
+                border: '1px solid var(--border)',
+                outline: 'none',
+                fontSize: 13,
+                background: 'var(--bg-card)',
+                resize: 'none',
+                fontFamily: 'var(--font-sans)',
+                color: 'var(--text-main)',
+              }}
             />
-            <p className="text-[10px] text-[#999]">Esto nos ayuda a mejorar la IA con el tiempo</p>
-          </div>
+            <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>
+              Esto nos ayuda a mejorar la IA con el tiempo
+            </span>
+          </label>
         )}
 
-        {/* Separador */}
-        <div className="h-px bg-[#F0F0F0]" />
-
-        {/* Mediciones — pill rows */}
-        <div className="flex flex-col gap-2.5">
-          <p className="text-xs font-bold text-[#444]" style={serif}>Mediciones</p>
-          <PillRow
-            label="Porosidad"
-            options={POROSIDAD}
-            value={data.porosidad || ''}
-            onSelect={(v) => onChange({ porosidad: v as WizardData['porosidad'] })}
-            iaFilled={iaCampos.has('porosidad')}
-          />
-          <PillRow
-            label="Densidad"
-            options={DENSIDAD}
-            value={data.densidad || ''}
-            onSelect={(v) => onChange({ densidad: v as WizardData['densidad'] })}
-            iaFilled={iaCampos.has('densidad')}
-          />
-          <PillRow
-            label="Grosor"
-            options={GROSOR}
-            value={data.grosor || ''}
-            onSelect={(v) => onChange({ grosor: v as WizardData['grosor'] })}
-          />
-          <PillRow
-            label="Elasticidad"
-            options={ELASTICIDAD}
-            value={data.elasticidad || ''}
-            onSelect={(v) => onChange({ elasticidad: v as WizardData['elasticidad'] })}
-          />
+        {/* Mediciones */}
+        <div>
+          <div className="v-caps" style={{ marginBottom: 10 }}>Atributos del cabello</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <PillRow
+              label="Porosidad"
+              options={POROSIDAD}
+              value={data.porosidad || ''}
+              onSelect={(v) => onChange({ porosidad: v as WizardData['porosidad'] })}
+              iaFilled={iaCampos.has('porosidad')}
+            />
+            <PillRow
+              label="Densidad"
+              options={DENSIDAD}
+              value={data.densidad || ''}
+              onSelect={(v) => onChange({ densidad: v as WizardData['densidad'] })}
+              iaFilled={iaCampos.has('densidad')}
+            />
+            <PillRow
+              label="Grosor"
+              options={GROSOR}
+              value={data.grosor || ''}
+              onSelect={(v) => onChange({ grosor: v as WizardData['grosor'] })}
+            />
+            <PillRow
+              label="Elasticidad"
+              options={ELASTICIDAD}
+              value={data.elasticidad || ''}
+              onSelect={(v) => onChange({ elasticidad: v as WizardData['elasticidad'] })}
+            />
+          </div>
         </div>
 
         {/* Balance H/P */}
         <div>
-          <p className="text-xs font-bold text-[#444] mb-2" style={serif}>
-            Balance H/P
-            <span className="text-[#AAAAAA] font-normal ml-1">(opcional)</span>
-          </p>
-          <div className="flex gap-1.5">
-            {BALANCE_HP.map(({ v, label }) => (
-              <button
-                key={v}
-                type="button"
-                onClick={() => { vibracionSutil(); onChange({ balanceHP: v as WizardData['balanceHP'] }); }}
-                className={`flex-1 py-2 rounded-full text-[11px] font-bold border-2 transition-all duration-200 active:scale-95 ${
-                  data.balanceHP === v
-                    ? 'bg-[#EEF5ED] text-[#2D5A27] border-[#2D5A27]'
-                    : 'bg-white text-[#666] border-[#E5E5E5] hover:border-[#90B98A]'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+          <div className="v-caps" style={{ marginBottom: 8 }}>
+            Balance H/P <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>· opcional</span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+            {BALANCE_HP.map(({ v, label }) => {
+              const sel = data.balanceHP === v;
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => { vibracionSutil(); onChange({ balanceHP: v as WizardData['balanceHP'] }); }}
+                  className="active:scale-95 transition-transform"
+                  style={{
+                    padding: '8px 6px',
+                    borderRadius: 999,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    fontFamily: 'var(--font-sans)',
+                    background: sel ? 'var(--primary-pale)' : 'var(--bg-card)',
+                    color: sel ? 'var(--primary)' : 'var(--text-secondary)',
+                    border: `1px solid ${sel ? 'rgba(45, 90, 39, 0.3)' : 'var(--border-soft)'}`,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* Problemas */}
         <div>
-          <p className="text-xs font-bold text-[#444] mb-2" style={serif}>
-            Problemas principales
-          </p>
+          <div className="v-caps" style={{ marginBottom: 8 }}>Problemas principales</div>
           <ChipGroup
             options={PROBLEMAS_RAPIDOS}
             selected={data.problemas}
@@ -623,142 +936,237 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
           />
         </div>
 
-        {/* Botón + Más detalles */}
+        {/* + Más detalles */}
         <button
           type="button"
           onClick={() => { vibracionSutil(); setShowDetalle(true); }}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-dashed border-[#CCCCCC] text-xs font-semibold text-[#888] hover:border-[#90B98A] hover:text-[#2D5A27] transition-colors"
+          className="active:scale-[0.98] transition-transform"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            padding: '12px 16px',
+            borderRadius: 14,
+            border: '1px dashed var(--border-strong)',
+            background: 'transparent',
+            fontSize: 11.5,
+            fontWeight: 600,
+            color: 'var(--text-secondary)',
+            cursor: 'pointer',
+            fontFamily: 'var(--font-sans)',
+          }}
         >
           {showDetalle ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          + Más detalles (historial, cuero cabelludo)
+          Más detalles · historial · cuero · puntas · daño
         </button>
       </div>
 
-      {/* ── Drawer de detalles opcionales ── */}
+      {/* ═══ Drawer de detalles ═══════════════════════════════════════════ */}
       {showDetalle && (
         <div
-          className="fixed inset-0 z-50 flex flex-col justify-end bg-black/40"
           onClick={() => setShowDetalle(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 50,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-end',
+            background: 'rgba(20, 36, 26, 0.55)',
+            backdropFilter: 'blur(4px)',
+          }}
         >
           <div
-            className="bg-white rounded-t-3xl max-h-[82vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'var(--bg-card)',
+              borderTopLeftRadius: 28,
+              borderTopRightRadius: 28,
+              maxHeight: '85vh',
+              overflowY: 'auto',
+              boxShadow: 'var(--shadow-hi)',
+            }}
           >
-            {/* Handle */}
-            <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-[#F0F0F0]">
-              <div>
-                <div className="w-10 h-1 bg-[#DDDDDD] rounded-full mx-auto mb-2" />
-                <p className="text-sm font-bold text-[#2D2D2D]" style={serif}>
-                  Detalles opcionales
-                </p>
-                <p className="text-xs text-[#999]">Enriquecen el diagnóstico pero no son obligatorios</p>
+            {/* Handle + header */}
+            <div
+              style={{
+                position: 'sticky',
+                top: 0,
+                background: 'var(--bg-card)',
+                padding: '12px 18px 14px',
+                borderBottom: '1px solid var(--border-soft)',
+                zIndex: 2,
+              }}
+            >
+              <div
+                style={{
+                  width: 38,
+                  height: 4,
+                  borderRadius: 999,
+                  background: 'var(--border-strong)',
+                  margin: '0 auto 12px',
+                }}
+              />
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                <div style={{ minWidth: 0 }}>
+                  <div className="v-caps">Capítulo 02 · Detalles</div>
+                  <h2
+                    style={{
+                      margin: '2px 0 0',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 20,
+                      letterSpacing: '-0.01em',
+                    }}
+                  >
+                    Atributos opcionales
+                  </h2>
+                  <p style={{ margin: '2px 0 0', fontSize: 11.5, color: 'var(--text-tertiary)' }}>
+                    Enriquecen el diagnóstico pero no son obligatorios.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowDetalle(false)}
+                  aria-label="Cerrar"
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: 'var(--bg)',
+                    border: '1px solid var(--border)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <X size={14} style={{ color: 'var(--text-secondary)' }} />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowDetalle(false)}
-                className="w-8 h-8 rounded-full bg-[#F0F0F0] flex items-center justify-center"
-              >
-                <X size={14} className="text-[#666]" />
-              </button>
             </div>
 
-            <div className="px-5 py-4 flex flex-col gap-5 pb-10">
-              {/* Historial químico */}
-              <Section title="Tratamientos químicos previos" serif={serif}>
+            <div style={{ padding: '18px 18px 30px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <DrawerSection title="Tratamientos químicos previos">
                 <ChipGroup
                   options={QUIMICOS}
                   selected={data.quimicos}
                   onChange={(v) => onChange({ quimicos: v })}
                 />
-              </Section>
+              </DrawerSection>
 
-              {/* Frecuencia de calor */}
-              <Section title="Frecuencia de calor" serif={serif}>
-                <div className="flex gap-1.5 flex-wrap">
-                  {FRECUENCIA_CALOR.map(({ v, label }) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => { vibracionSutil(); onChange({ frecuenciaCalor: v }); }}
-                      className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all active:scale-95 ${
-                        data.frecuenciaCalor === v
-                          ? 'bg-[#2D5A27] text-white border-[#2D5A27]'
-                          : 'bg-white text-[#666] border-[#E5E5E5] hover:border-[#90B98A]'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
+              <DrawerSection title="Frecuencia de calor">
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {FRECUENCIA_CALOR.map(({ v, label }) => {
+                    const sel = data.frecuenciaCalor === v;
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => { vibracionSutil(); onChange({ frecuenciaCalor: v }); }}
+                        className="active:scale-95 transition-transform"
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: 999,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          background: sel ? 'var(--primary)' : 'var(--bg-card)',
+                          color: sel ? '#fff' : 'var(--text-secondary)',
+                          border: `1px solid ${sel ? 'var(--primary)' : 'var(--border-soft)'}`,
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-sans)',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
-              </Section>
+              </DrawerSection>
 
-              {/* Frecuencia de lavado */}
-              <Section title="Frecuencia de lavado" serif={serif}>
-                <div className="flex gap-1.5 flex-wrap">
-                  {FRECUENCIA_LAVADO.map(({ v, label }) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => { vibracionSutil(); onChange({ frecuenciaLavado: v }); }}
-                      className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all active:scale-95 ${
-                        data.frecuenciaLavado === v
-                          ? 'bg-[#2D5A27] text-white border-[#2D5A27]'
-                          : 'bg-white text-[#666] border-[#E5E5E5] hover:border-[#90B98A]'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
+              <DrawerSection title="Frecuencia de lavado">
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {FRECUENCIA_LAVADO.map(({ v, label }) => {
+                    const sel = data.frecuenciaLavado === v;
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => { vibracionSutil(); onChange({ frecuenciaLavado: v }); }}
+                        className="active:scale-95 transition-transform"
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: 999,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          background: sel ? 'var(--primary)' : 'var(--bg-card)',
+                          color: sel ? '#fff' : 'var(--text-secondary)',
+                          border: `1px solid ${sel ? 'var(--primary)' : 'var(--border-soft)'}`,
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-sans)',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
-              </Section>
+              </DrawerSection>
 
-              {/* Cuero cabelludo */}
-              <Section title="Estado del cuero cabelludo" serif={serif}>
+              <DrawerSection title="Estado del cuero cabelludo">
                 <ChipGroup
                   options={CUERO_OPTIONS}
                   selected={data.estadoCueroCabelludo}
                   onChange={(v) => onChange({ estadoCueroCabelludo: v })}
                 />
-              </Section>
+              </DrawerSection>
 
-              {/* Estado de puntas */}
-              <Section title="Estado de las puntas" serif={serif}>
-                <div className="flex gap-1.5 flex-wrap">
-                  {PUNTAS_OPTIONS.map(({ v, label }) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => { vibracionSutil(); onChange({ estadoPuntas: v }); }}
-                      className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all active:scale-95 ${
-                        data.estadoPuntas === v
-                          ? 'bg-[#2D5A27] text-white border-[#2D5A27]'
-                          : 'bg-white text-[#666] border-[#E5E5E5] hover:border-[#90B98A]'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
+              <DrawerSection title="Estado de las puntas">
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {PUNTAS_OPTIONS.map(({ v, label }) => {
+                    const sel = data.estadoPuntas === v;
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => { vibracionSutil(); onChange({ estadoPuntas: v }); }}
+                        className="active:scale-95 transition-transform"
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: 999,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          background: sel ? 'var(--primary)' : 'var(--bg-card)',
+                          color: sel ? '#fff' : 'var(--text-secondary)',
+                          border: `1px solid ${sel ? 'var(--primary)' : 'var(--border-soft)'}`,
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-sans)',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
-              </Section>
+              </DrawerSection>
 
-              {/* Tipo de daño */}
-              <Section title="Tipo de daño" serif={serif}>
+              <DrawerSection title="Tipo de daño">
                 <ChipGroup
                   options={DANO_OPTIONS}
                   selected={data.tipoDano}
                   onChange={(v) => onChange({ tipoDano: v })}
                 />
-              </Section>
+              </DrawerSection>
 
-              {/* Botón cerrar */}
-              <button
-                type="button"
+              <Btn
+                variant="primary"
+                size="lg"
+                fullWidth
                 onClick={() => { vibracionSutil(); setShowDetalle(false); }}
-                className="w-full py-3 rounded-2xl bg-[#2D5A27] text-white font-bold text-sm"
-                style={serif}
               >
-                Listo — cerrar detalles
-              </button>
+                Listo · cerrar detalles
+              </Btn>
             </div>
           </div>
         </div>
@@ -767,21 +1175,22 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
   );
 }
 
-// ── Sección del drawer ────────────────────────────────────────────────────────
-function Section({
-  title,
-  children,
-  serif,
-}: {
-  title: string;
-  children: React.ReactNode;
-  serif: React.CSSProperties;
-}) {
+// ── Drawer section helper ──────────────────────────────────────────────────
+function DrawerSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-xs font-bold text-[#2D5A27] pb-1 border-b border-[#EEEEEE]" style={serif}>
-        {title}
-      </p>
+    <div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          paddingBottom: 6,
+          borderBottom: '1px solid var(--border-soft)',
+          marginBottom: 10,
+        }}
+      >
+        <span className="v-caps" style={{ color: 'var(--primary)' }}>{title}</span>
+      </div>
       {children}
     </div>
   );

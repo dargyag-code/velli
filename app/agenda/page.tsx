@@ -1,10 +1,12 @@
 'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { CalendarDays, Plus, Clock, ChevronRight, CalendarX } from 'lucide-react';
-import Header from '@/components/layout/Header';
-import BottomNav from '@/components/layout/BottomNav';
-import Avatar from '@/components/ui/Avatar';
+import {
+  Plus, ChevronRight, ChevronLeft, CalendarX, Sparkles,
+} from 'lucide-react';
+import {
+  Btn, Chip, AvatarV2, toneFromTipoRizo, BottomNavV2, SectionLabel,
+} from '@/components/v2';
 import { getUpcomingCitas, getPastCitas } from '@/lib/db';
 import { Clienta, Consulta } from '@/lib/types';
 import { formatDate, getRizoLabel } from '@/lib/utils';
@@ -14,72 +16,166 @@ interface CitaPair {
   clienta: Clienta;
 }
 
-// Días hasta la fecha
+const DAYS_SHORT = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+const MONTHS_LONG = [
+  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+];
+
+function startOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
 function diasRestantes(dateStr: string): number {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const target = new Date(dateStr);
+  const today = startOfDay(new Date());
+  const target = startOfDay(new Date(dateStr));
   return Math.round((target.getTime() - today.getTime()) / 86400000);
 }
 
-function BadgeDias({ fecha }: { fecha: string }) {
-  const dias = diasRestantes(fecha);
-  if (dias === 0) return (
-    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#2D5A27] text-white">Hoy</span>
-  );
-  if (dias === 1) return (
-    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#C9956B] text-white">Mañana</span>
-  );
-  if (dias <= 7) return (
-    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">En {dias} días</span>
-  );
-  return (
-    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F0F0F0] text-[#666666]">En {dias} días</span>
-  );
+function sameDay(aISO: string, b: Date): boolean {
+  const a = new Date(aISO);
+  return a.getFullYear() === b.getFullYear()
+    && a.getMonth() === b.getMonth()
+    && a.getDate() === b.getDate();
 }
 
-function CitaCard({ pair, isPast = false }: { pair: CitaPair; isPast?: boolean }) {
-  const { consulta, clienta } = pair;
-  return (
-    <Link href={`/clientas/${clienta.id}`}>
-      <div className={`bg-white rounded-2xl border p-4 flex items-center gap-3 transition-all active:scale-[0.98] ${
-        isPast ? 'border-[#E5E5E5] opacity-60' : 'border-[#E5E5E5] hover:border-[#90B98A] hover:shadow-sm'
-      }`}>
-        <Avatar nombre={clienta.nombre} tipoRizo={clienta.tipoRizoPrincipal} size="md" />
-        <div className="flex-1 min-w-0">
-          <p className="font-bold text-sm text-[#2D2D2D] truncate" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-            {clienta.nombre}
-          </p>
-          <p className="text-xs text-[#666666] truncate">
-            {clienta.tipoRizoPrincipal ? getRizoLabel(clienta.tipoRizoPrincipal) : 'Sin tipo de cabello'}
-            {consulta.resultado?.tratamientoPrincipal && ` · ${consulta.resultado.tratamientoPrincipal.split(' ').slice(0, 2).join(' ')}`}
-          </p>
-          <div className="flex items-center gap-1 mt-1">
-            <Clock size={11} className="text-[#999999]" />
-            <span className="text-[11px] text-[#999999]">{formatDate(consulta.proximaCita!)}</span>
-          </div>
-        </div>
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
-          {!isPast && <BadgeDias fecha={consulta.proximaCita!} />}
-          {isPast && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F0F0F0] text-[#999999]">Pasada</span>}
-          <ChevronRight size={14} className="text-[#CCCCCC]" />
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-// Agrupar por semana/mes para section headers
 function getMesLabel(dateStr: string): string {
   const d = new Date(dateStr);
   return d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
 }
 
+// ── Day chip helpers ──────────────────────────────────────────────────────
+function DayChip({ fecha }: { fecha: string }) {
+  const dias = diasRestantes(fecha);
+  if (dias === 0) return <Chip tone="green" dot>Hoy</Chip>;
+  if (dias === 1) return <Chip tone="gold">Mañana</Chip>;
+  if (dias <= 7) return <Chip tone="blue">En {dias} días</Chip>;
+  return <Chip tone="ghost">En {dias} días</Chip>;
+}
+
+// ── Cita card ─────────────────────────────────────────────────────────────
+function CitaCard({ pair, isPast = false }: { pair: CitaPair; isPast?: boolean }) {
+  const { consulta, clienta } = pair;
+  const tone = toneFromTipoRizo(clienta.tipoRizoPrincipal);
+  const tratamiento = consulta.resultado?.tratamientoPrincipal;
+  const dias = diasRestantes(consulta.proximaCita!);
+  const isHoy = dias === 0 && !isPast;
+  const fecha = new Date(consulta.proximaCita!);
+
+  return (
+    <Link
+      href={`/clientas/${clienta.id}`}
+      style={{ textDecoration: 'none', display: 'block' }}
+    >
+      <article
+        className="stagger-item"
+        style={{
+          display: 'flex',
+          gap: 12,
+          alignItems: 'center',
+          padding: 14,
+          background: 'var(--bg-card)',
+          borderRadius: 14,
+          border: '1px solid var(--border-soft)',
+          boxShadow: 'var(--shadow-xs)',
+          borderLeft: isHoy ? '3px solid var(--primary)' : '1px solid var(--border-soft)',
+          opacity: isPast ? 0.7 : 1,
+        }}
+      >
+        {/* Time spine: día + número */}
+        <div
+          style={{
+            width: 42,
+            flexShrink: 0,
+            textAlign: 'center',
+            fontFamily: 'var(--font-mono)',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 9.5,
+              color: isHoy ? 'var(--primary)' : 'var(--text-tertiary)',
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+            }}
+          >
+            {DAYS_SHORT[fecha.getDay()]}
+          </div>
+          <div
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 22,
+              color: isHoy ? 'var(--primary)' : 'var(--text-main)',
+              lineHeight: 1,
+              letterSpacing: '-0.02em',
+              marginTop: 2,
+            }}
+          >
+            {fecha.getDate()}
+          </div>
+        </div>
+
+        <AvatarV2 nombre={clienta.nombre} tone={tone} size="md" />
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
+            <h3
+              style={{
+                margin: 0,
+                fontFamily: 'var(--font-serif)',
+                fontSize: 15,
+                lineHeight: 1.2,
+                color: 'var(--text-main)',
+                letterSpacing: '-0.005em',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {clienta.nombre}
+            </h3>
+            {isPast ? (
+              <Chip tone="ghost">Pasada</Chip>
+            ) : (
+              <DayChip fecha={consulta.proximaCita!} />
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 4, marginTop: 5, alignItems: 'center', flexWrap: 'wrap' }}>
+            {clienta.tipoRizoPrincipal && (
+              <Chip tone="ghost" style={{ padding: '2px 7px', fontSize: 9.5 }}>
+                {getRizoLabel(clienta.tipoRizoPrincipal)}
+              </Chip>
+            )}
+            {tratamiento && (
+              <Chip
+                tone={
+                  tratamiento.toLowerCase().includes('hidrat') ? 'blue'
+                    : tratamiento.toLowerCase().includes('reconstr') || tratamiento.toLowerCase().includes('proteína') ? 'amber'
+                      : tratamiento.toLowerCase().includes('repolariz') ? 'purple'
+                        : 'green'
+                }
+              >
+                {tratamiento.split(' ')[0]}
+              </Chip>
+            )}
+          </div>
+        </div>
+        <ChevronRight size={14} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
+      </article>
+    </Link>
+  );
+}
+
+// ═══ MAIN COMPONENT ═══════════════════════════════════════════════════════
 export default function AgendaPage() {
   const [upcoming, setUpcoming] = useState<CitaPair[]>([]);
   const [past, setPast] = useState<CitaPair[]>([]);
   const [loading, setLoading] = useState(true);
   const [showPast, setShowPast] = useState(false);
+  const [weekOffset, setWeekOffset] = useState(0);
 
   const load = useCallback(async () => {
     try {
@@ -93,7 +189,24 @@ export default function AgendaPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Agrupar próximas citas por mes
+  // Week strip: 7 days starting today + offset weeks
+  const weekDays = useMemo(() => {
+    const today = startOfDay(new Date());
+    today.setDate(today.getDate() + weekOffset * 7);
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(d.getDate() + i);
+      const count = upcoming.filter((p) => sameDay(p.consulta.proximaCita!, d)).length;
+      const isToday = i === 0 && weekOffset === 0;
+      return { date: d, count, isToday };
+    });
+  }, [upcoming, weekOffset]);
+
+  const monthLabel = useMemo(() => {
+    const first = weekDays[0]?.date ?? new Date();
+    return `${MONTHS_LONG[first.getMonth()]} · ${first.getFullYear()}`;
+  }, [weekDays]);
+
   const upcomingByMonth: Record<string, CitaPair[]> = {};
   for (const pair of upcoming) {
     const key = getMesLabel(pair.consulta.proximaCita!);
@@ -101,92 +214,360 @@ export default function AgendaPage() {
     upcomingByMonth[key].push(pair);
   }
 
+  const estaSemanaCount = upcoming.filter((p) => {
+    const d = diasRestantes(p.consulta.proximaCita!);
+    return d >= 0 && d <= 7;
+  }).length;
+
   return (
-    <div className="min-h-screen bg-[#F5F0E8]">
-      <Header title="Agenda" />
-
-      <main className="max-w-2xl mx-auto px-4 py-5 pb-nav">
-
-        {/* Stat chips */}
-        {!loading && (
-          <div className="flex gap-2 mb-5">
-            <div className="flex-1 bg-[#EEF5ED] rounded-2xl p-3 text-center">
-              <p className="text-2xl font-extrabold text-[#2D5A27]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                {upcoming.length}
-              </p>
-              <p className="text-xs text-[#7A9B76]">Próximas citas</p>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', position: 'relative' }}>
+      {/* ── Sticky header with week strip ───────────────────────────────── */}
+      <header
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 40,
+          padding: '54px 16px 16px',
+          background: 'rgba(255, 254, 251, 0.92)',
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
+          borderBottom: '1px solid var(--border-soft)',
+        }}
+      >
+        <div style={{ maxWidth: 768, margin: '0 auto' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              marginBottom: 14,
+              gap: 12,
+            }}
+          >
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div
+                className="v-caps"
+                style={{ textTransform: 'capitalize' }}
+              >
+                {monthLabel}
+              </div>
+              <h1
+                style={{
+                  margin: '2px 0 0',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 26,
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.05,
+                  color: 'var(--text-main)',
+                }}
+              >
+                {weekOffset === 0 ? (
+                  <>Esta <em style={{ color: 'var(--secondary-deep)' }}>semana</em></>
+                ) : (
+                  <>Semana <em style={{ color: 'var(--secondary-deep)' }}>{weekOffset > 0 ? `+${weekOffset}` : weekOffset}</em></>
+                )}
+              </h1>
             </div>
-            <div className="flex-1 bg-[#FBF4EC] rounded-2xl p-3 text-center">
-              <p className="text-2xl font-extrabold text-[#C9956B]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                {upcoming.filter((p) => diasRestantes(p.consulta.proximaCita!) <= 7).length}
-              </p>
-              <p className="text-xs text-[#B89040]">Esta semana</p>
+            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+              <button
+                type="button"
+                onClick={() => setWeekOffset((w) => w - 1)}
+                aria-label="Semana anterior"
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: 'var(--bg)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-main)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setWeekOffset((w) => w + 1)}
+                aria-label="Semana siguiente"
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: 'var(--bg)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-main)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* Week strip */}
+          <div style={{ display: 'flex', gap: 6 }}>
+            {weekDays.map((d, i) => {
+              const isSelected = d.isToday;
+              return (
+                <div
+                  key={i}
+                  style={{
+                    flex: 1,
+                    padding: '10px 0 8px',
+                    borderRadius: 12,
+                    background: isSelected ? 'var(--primary-deep)' : 'transparent',
+                    color: isSelected ? '#F5EDDC' : 'var(--text-main)',
+                    border: isSelected ? 'none' : '1px solid var(--border-soft)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 4,
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 9.5,
+                      opacity: 0.7,
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                      fontWeight: 600,
+                      fontFamily: 'var(--font-mono)',
+                    }}
+                  >
+                    {DAYS_SHORT[d.date.getDay()]}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 18,
+                      lineHeight: 1,
+                      letterSpacing: '-0.02em',
+                    }}
+                  >
+                    {d.date.getDate()}
+                  </span>
+                  {d.count > 0 ? (
+                    <span
+                      style={{
+                        width: 5,
+                        height: 5,
+                        borderRadius: '50%',
+                        background: isSelected ? '#E8C290' : 'var(--secondary)',
+                      }}
+                    />
+                  ) : (
+                    <span style={{ width: 5, height: 5 }} aria-hidden />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </header>
+
+      <main style={{ maxWidth: 768, margin: '0 auto', padding: '20px 16px 120px' }}>
+        {/* KPI strip */}
+        {!loading && (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 10,
+              marginBottom: 20,
+            }}
+          >
+            <div
+              style={{
+                padding: '14px 16px',
+                background: 'var(--primary-pale)',
+                borderRadius: 14,
+                border: '1px solid rgba(45, 90, 39, 0.15)',
+              }}
+            >
+              <div className="v-num" style={{ fontSize: 9, color: 'var(--primary)' }}>
+                PRÓXIMAS · TOTAL
+              </div>
+              <div
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 32,
+                  lineHeight: 1,
+                  color: 'var(--primary-deep)',
+                  letterSpacing: '-0.025em',
+                  marginTop: 4,
+                }}
+              >
+                {upcoming.length}
+              </div>
+              <div style={{ fontSize: 10.5, color: 'var(--primary)', marginTop: 2 }}>
+                {upcoming.length === 1 ? 'cita agendada' : 'citas agendadas'}
+              </div>
+            </div>
+            <div
+              style={{
+                padding: '14px 16px',
+                background: 'var(--secondary-pale)',
+                borderRadius: 14,
+                border: '1px solid rgba(138, 90, 46, 0.18)',
+              }}
+            >
+              <div className="v-num" style={{ fontSize: 9, color: 'var(--secondary-deep)' }}>
+                ESTA SEMANA
+              </div>
+              <div
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 32,
+                  lineHeight: 1,
+                  color: 'var(--primary-deep)',
+                  letterSpacing: '-0.025em',
+                  marginTop: 4,
+                }}
+              >
+                {estaSemanaCount}
+              </div>
+              <div style={{ fontSize: 10.5, color: 'var(--secondary-deep)', marginTop: 2 }}>
+                · próximos 7 días
+              </div>
             </div>
           </div>
         )}
 
         {/* CTA nueva consulta */}
-        <Link href="/diagnostico">
-          <div className="flex items-center gap-3 bg-white border-2 border-dashed border-[#90B98A] rounded-2xl p-4 mb-5 hover:bg-[#F0F5EF] transition-colors">
-            <div className="w-9 h-9 rounded-xl bg-[#2D5A27] flex items-center justify-center shrink-0">
-              <Plus size={18} className="text-white" />
+        <Link href="/diagnostico" style={{ textDecoration: 'none', display: 'block', marginBottom: 22 }}>
+          <article
+            className="active:scale-[0.98] transition-transform"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: 14,
+              borderRadius: 16,
+              background: 'var(--bg-card)',
+              border: '1px dashed var(--border-strong)',
+              cursor: 'pointer',
+            }}
+          >
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, var(--primary-deep), var(--primary))',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <Plus size={18} strokeWidth={1.7} />
             </div>
-            <div>
-              <p className="text-sm font-bold text-[#2D5A27]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 15,
+                  color: 'var(--text-main)',
+                  letterSpacing: '-0.005em',
+                }}
+              >
                 Agendar nueva consulta
-              </p>
-              <p className="text-xs text-[#7A9B76]">La fecha se asigna al finalizar el diagnóstico</p>
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: 'var(--text-tertiary)',
+                  marginTop: 2,
+                }}
+              >
+                La fecha se asigna al finalizar el diagnóstico
+              </div>
             </div>
-          </div>
+          </article>
         </Link>
 
+        {/* Upcoming list */}
         {loading ? (
-          <div className="flex flex-col gap-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-2xl h-20 loading-pulse border border-[#E5E5E5]" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="skeleton-shimmer" style={{ height: 80 }} />
             ))}
           </div>
         ) : upcoming.length === 0 ? (
-          <div className="text-center py-14">
+          <div
+            style={{
+              textAlign: 'center',
+              padding: '48px 20px',
+              background: 'var(--bg-card)',
+              borderRadius: 18,
+              border: '1px solid var(--border-soft)',
+              boxShadow: 'var(--shadow-xs)',
+            }}
+          >
             <div
-              className="w-24 h-24 rounded-3xl mx-auto mb-4 flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #EEF5ED 0%, #FBF4EC 100%)' }}
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: 24,
+                background: 'linear-gradient(135deg, var(--primary-pale), var(--secondary-pale))',
+                margin: '0 auto 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
-              <CalendarX size={40} className="text-[#2D5A27]" />
+              <CalendarX size={32} style={{ color: 'var(--primary)' }} />
             </div>
-            <p className="text-lg font-bold text-[#2D5A27] mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-              Agenda en calma
-            </p>
-            <p className="text-sm text-[#666666] mb-5 max-w-xs mx-auto leading-relaxed">
+            <h3
+              style={{
+                margin: 0,
+                fontFamily: 'var(--font-serif)',
+                fontSize: 22,
+                color: 'var(--primary-deep)',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              Agenda <em style={{ color: 'var(--secondary-deep)' }}>en calma</em>
+            </h3>
+            <p
+              style={{
+                margin: '8px auto 18px',
+                maxWidth: 320,
+                fontSize: 13,
+                color: 'var(--text-secondary)',
+                lineHeight: 1.5,
+              }}
+            >
               Aquí aparecerán tus próximas citas. Se agendan al finalizar cada diagnóstico.
             </p>
             <Link href="/diagnostico">
-              <button
-                className="px-6 py-3 rounded-2xl text-white text-sm font-bold flex items-center gap-2 mx-auto"
-                style={{
-                  background: 'linear-gradient(135deg, #2D5A27, #4A8C42)',
-                  boxShadow: '0 6px 20px rgba(45,90,39,0.28)',
-                  fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif",
-                }}
-              >
-                <Plus size={16} />
+              <Btn variant="primary" size="md" icon={<Sparkles size={14} />}>
                 Nueva consulta
-              </button>
+              </Btn>
             </Link>
           </div>
         ) : (
-          <div className="flex flex-col gap-5">
-            {Object.entries(upcomingByMonth).map(([mes, pairs]) => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+            {Object.entries(upcomingByMonth).map(([mes, pairs], idx) => (
               <div key={mes}>
-                <div className="flex items-center gap-2 mb-3">
-                  <CalendarDays size={14} className="text-[#2D5A27]" />
-                  <h2 className="text-xs font-bold text-[#2D5A27] uppercase tracking-widest capitalize" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                    {mes}
-                  </h2>
-                </div>
-                <div className="flex flex-col gap-2">
+                <SectionLabel
+                  num={String(idx + 1).padStart(2, '0')}
+                  eyebrow={`${pairs.length} ${pairs.length === 1 ? 'cita' : 'citas'}`}
+                  title={
+                    <span style={{ textTransform: 'capitalize', fontSize: 18 }}>{mes}</span>
+                  }
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {pairs.map((pair) => (
-                    <CitaCard key={`${pair.consulta.id}`} pair={pair} />
+                    <CitaCard key={pair.consulta.id} pair={pair} />
                   ))}
                 </div>
               </div>
@@ -194,32 +575,47 @@ export default function AgendaPage() {
           </div>
         )}
 
-        {/* Citas pasadas (colapsable) */}
+        {/* Past collapsible */}
         {past.length > 0 && (
-          <div className="mt-6">
+          <section style={{ marginTop: 28 }}>
             <button
+              type="button"
               onClick={() => setShowPast((v) => !v)}
-              className="flex items-center gap-2 text-xs text-[#999999] font-semibold mb-3 hover:text-[#666666]"
-              style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-tertiary)',
+                cursor: 'pointer',
+                padding: 0,
+                marginBottom: 14,
+              }}
             >
               <ChevronRight
                 size={14}
-                className={`transition-transform duration-200 ${showPast ? 'rotate-90' : ''}`}
+                style={{
+                  transform: showPast ? 'rotate(90deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s ease',
+                }}
               />
-              Historial de citas anteriores ({past.length})
+              <span className="v-caps">
+                Historial · {past.length} {past.length === 1 ? 'cita pasada' : 'citas pasadas'}
+              </span>
             </button>
             {showPast && (
-              <div className="flex flex-col gap-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {past.map((pair) => (
                   <CitaCard key={pair.consulta.id} pair={pair} isPast />
                 ))}
               </div>
             )}
-          </div>
+          </section>
         )}
       </main>
 
-      <BottomNav />
+      <BottomNavV2 />
     </div>
   );
 }

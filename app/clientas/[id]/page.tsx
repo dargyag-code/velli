@@ -4,12 +4,10 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Phone, MessageCircle, Trash2, Plus, Calendar, Hash,
-  Pencil, Check, X, RotateCcw, Image as ImageIcon,
+  Pencil, Check, X, RotateCcw, Image as ImageIcon, ArrowLeft,
+  MoreHorizontal, Heart, ChevronRight,
 } from 'lucide-react';
-import Header from '@/components/layout/Header';
-import Avatar from '@/components/ui/Avatar';
-import Badge from '@/components/ui/Badge';
-import Button from '@/components/ui/Button';
+import { Btn, Chip, type ChipTone } from '@/components/v2';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import HistorialTimeline from '@/components/clienta/HistorialTimeline';
@@ -22,61 +20,143 @@ import { resolveFotoUrl, resolveFotoUrls } from '@/lib/storage';
 type Tab = 'info' | 'historial' | 'galeria';
 
 // ── Galería de fotos por visita ────────────────────────────────────────────
-
 function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
-  const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
   const [lightbox, setLightbox] = useState<string | null>(null);
 
   const visitasConFotos = [...consultas].reverse().filter((c) =>
     (c.fotoAnalisis && c.fotoAnalisis.length > 0) || c.fotoAntes || c.fotoDespues
   );
 
-  // Comparativa primera vs última visita
   const primera = visitasConFotos.length >= 2 ? visitasConFotos[visitasConFotos.length - 1] : null;
-  const ultima  = visitasConFotos.length >= 2 ? visitasConFotos[0] : null;
+  const ultima = visitasConFotos.length >= 2 ? visitasConFotos[0] : null;
   const fotoP = primera?.fotoAntes || primera?.fotoDespues || primera?.fotoAnalisis?.[0];
   const fotoU = ultima?.fotoDespues || ultima?.fotoAntes || ultima?.fotoAnalisis?.[0];
 
   if (visitasConFotos.length === 0) {
     return (
-      <div className="text-center py-12 bg-white rounded-2xl border border-[#E5E5E5]">
-        <ImageIcon size={32} className="text-[#CCCCCC] mx-auto mb-3" />
-        <p className="text-sm text-[#999999]">Aún no hay fotos</p>
-        <p className="text-xs text-[#AAAAAA] mt-1">Las fotos del diagnóstico IA y antes/después aparecerán aquí</p>
+      <div
+        className="v-card"
+        style={{ textAlign: 'center', padding: '48px 20px' }}
+      >
+        <div
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            background: 'var(--bg)',
+            margin: '0 auto 14px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <ImageIcon size={24} style={{ color: 'var(--text-tertiary)' }} />
+        </div>
+        <p
+          style={{
+            margin: 0,
+            fontFamily: 'var(--font-serif)',
+            fontSize: 16,
+            color: 'var(--text-main)',
+          }}
+        >
+          Aún no hay fotos
+        </p>
+        <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-tertiary)' }}>
+          Las fotos del diagnóstico IA y antes/después aparecerán aquí
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* ── Comparativa evolución ── */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {/* Comparativa evolución */}
       {fotoP && fotoU && (
-        <div
-          className="rounded-2xl p-4 border border-[#E5E5E5] overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #1A2E1A 0%, #2D5A27 100%)' }}
+        <section
+          className="v-grain"
+          style={{
+            position: 'relative',
+            overflow: 'hidden',
+            borderRadius: 18,
+            padding: 16,
+            background: 'linear-gradient(135deg, var(--primary-deep) 0%, var(--primary) 100%)',
+            color: '#F5EDDC',
+            boxShadow: 'var(--shadow-md)',
+          }}
         >
-          <p className="text-xs font-bold text-[#A8D0A3] uppercase tracking-wide mb-3" style={serif}>
-            ✨ Evolución — Primera vs Última visita
-          </p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="v-caps" style={{ color: 'rgba(232, 194, 144, 0.95)', marginBottom: 10 }}>
+            Evolución · primera vs última visita
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {[
-              { foto: fotoP, label: 'Primera visita', sub: formatDate(primera!.fecha) },
-              { foto: fotoU, label: 'Última visita',  sub: formatDate(ultima!.fecha)  },
+              { foto: fotoP, label: 'Primera', sub: formatDate(primera!.fecha) },
+              { foto: fotoU, label: 'Última', sub: formatDate(ultima!.fecha) },
             ].map(({ foto, label, sub }) => (
-              <button key={label} type="button" onClick={() => setLightbox(foto)} className="relative active:scale-95 transition-transform">
+              <button
+                key={label}
+                type="button"
+                onClick={() => setLightbox(foto!)}
+                className="active:scale-95 transition-transform"
+                style={{
+                  position: 'relative',
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer',
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={foto}
                   alt={label}
-                  className="w-full aspect-square object-cover rounded-xl border-2 border-white/20"
+                  style={{
+                    width: '100%',
+                    aspectRatio: '1',
+                    objectFit: 'cover',
+                    borderRadius: 12,
+                    border: '1px solid rgba(232, 194, 144, 0.3)',
+                  }}
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-black/60 rounded-b-xl py-1.5 px-2">
-                  <p className="text-[10px] text-white font-bold">{label}</p>
-                  <p className="text-[9px] text-white/70">{sub}</p>
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    background: 'rgba(20, 36, 26, 0.7)',
+                    backdropFilter: 'blur(6px)',
+                    borderRadius: '0 0 12px 12px',
+                    padding: '6px 8px',
+                    textAlign: 'left',
+                  }}
+                >
+                  <p
+                    style={{
+                      margin: 0,
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 12,
+                      color: '#fff',
+                    }}
+                  >
+                    {label}
+                  </p>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 9,
+                      color: 'rgba(232, 194, 144, 0.85)',
+                      letterSpacing: '0.06em',
+                    }}
+                  >
+                    {sub}
+                  </p>
                 </div>
               </button>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {visitasConFotos.map((c) => {
@@ -88,49 +168,126 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
         );
 
         return (
-          <div key={c.id} className="bg-white rounded-2xl border border-[#E5E5E5] p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <p className="text-xs font-bold text-[#2D2D2D]" style={serif}>
-                Visita #{c.numeroConsulta}
-              </p>
-              <span className="text-[10px] text-[#999999]">{formatDate(c.fecha)}</span>
+          <article key={c.id} className="v-card" style={{ padding: 14 }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                marginBottom: 10,
+              }}
+            >
+              <span className="v-num">VISITA · {c.numeroConsulta}</span>
+              <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>
+                · {formatDate(c.fecha)}
+              </span>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
               {fotos.map(({ url, label }, i) => (
-                <button key={i} type="button" onClick={() => setLightbox(url)} className="relative group">
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setLightbox(url)}
+                  style={{
+                    position: 'relative',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={url}
                     alt={label}
-                    className="w-full aspect-square object-cover rounded-xl border border-[#E5E5E5]"
+                    style={{
+                      width: '100%',
+                      aspectRatio: '1',
+                      objectFit: 'cover',
+                      borderRadius: 10,
+                      border: '1px solid var(--border-soft)',
+                    }}
                   />
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 rounded-b-xl py-0.5">
-                    <p className="text-[9px] text-white text-center font-semibold">{label}</p>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      background: 'rgba(20, 36, 26, 0.6)',
+                      borderRadius: '0 0 10px 10px',
+                      padding: '2px 0',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: 9,
+                        color: '#fff',
+                        fontWeight: 600,
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      {label}
+                    </p>
                   </div>
                 </button>
               ))}
             </div>
-          </div>
+          </article>
         );
       })}
 
       {/* Lightbox */}
       {lightbox && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
           onClick={() => setLightbox(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 60,
+            background: 'rgba(20, 36, 26, 0.95)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+          }}
         >
           <button
             type="button"
             onClick={() => setLightbox(null)}
-            className="absolute top-4 right-4 w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-white"
+            aria-label="Cerrar"
+            style={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.12)',
+              border: '1px solid rgba(232, 194, 144, 0.3)',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+            }}
           >
             <X size={18} />
           </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={lightbox}
             alt="Foto completa"
-            className="max-w-full max-h-full rounded-2xl object-contain"
             onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '100%',
+              maxHeight: '100%',
+              objectFit: 'contain',
+              borderRadius: 16,
+            }}
           />
         </div>
       )}
@@ -138,6 +295,17 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
   );
 }
 
+// ── Helpers ────────────────────────────────────────────────────────────────
+function rizoChipTone(tipo?: string): ChipTone {
+  if (!tipo) return 'ghost';
+  if (['1A', '1B', '1C'].includes(tipo)) return 'ghost';
+  if (['2A', '2B', '2C'].includes(tipo)) return 'blue';
+  if (['3A', '3B', '3C'].includes(tipo)) return 'green';
+  if (['4A', '4B', '4C'].includes(tipo)) return 'gold';
+  return 'ghost';
+}
+
+// ═══ MAIN COMPONENT ═══════════════════════════════════════════════════════
 export default function ClientaPage() {
   const params = useParams();
   const router = useRouter();
@@ -260,20 +428,33 @@ export default function ClientaPage() {
     window.open(`https://wa.me/${tel}`, '_blank');
   };
 
-  const rizoVariant = clienta?.tipoRizoPrincipal
-    ? ['2A', '2B', '2C'].includes(clienta.tipoRizoPrincipal) ? 'blue'
-    : ['3A', '3B', '3C'].includes(clienta.tipoRizoPrincipal) ? 'purple'
-    : 'gold'
-    : 'gray';
-
+  // ═══ LOADING ════════════════════════════════════════════════════════════
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F5F0E8]">
-        <Header showBack title="Cargando..." />
-        <main className="max-w-2xl mx-auto px-4 py-5">
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-2xl h-20 loading-pulse border border-[#E5E5E5]" />
+      <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+        <div style={{ height: 280, background: 'var(--bg-deep)', position: 'relative' }} className="loading-pulse">
+          <div
+            style={{
+              position: 'absolute',
+              top: 50,
+              left: 16,
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              background: 'var(--bg-card)',
+              boxShadow: 'var(--shadow-sm)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <ArrowLeft size={16} style={{ color: 'var(--text-main)' }} />
+          </div>
+        </div>
+        <main style={{ maxWidth: 768, margin: '0 auto', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="skeleton-shimmer" style={{ height: 80 }} />
             ))}
           </div>
         </main>
@@ -281,13 +462,52 @@ export default function ClientaPage() {
     );
   }
 
+  // ═══ NOT FOUND ══════════════════════════════════════════════════════════
   if (!clienta) {
     return (
-      <div className="min-h-screen bg-[#F5F0E8]">
-        <Header showBack title="Clienta no encontrada" />
-        <main className="max-w-2xl mx-auto px-4 py-5 text-center">
-          <p className="text-[#666666]">Esta clienta no existe.</p>
-          <Link href="/clientas" className="text-[#2D5A27] text-sm font-semibold underline mt-2 block">
+      <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+        <header
+          style={{
+            padding: '54px 16px 14px',
+            background: 'var(--bg-card)',
+            borderBottom: '1px solid var(--border-soft)',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => router.back()}
+            aria-label="Volver"
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              background: 'var(--bg)',
+              border: '1px solid var(--border)',
+              color: 'var(--text-main)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            <ArrowLeft size={16} />
+          </button>
+        </header>
+        <main style={{ maxWidth: 768, margin: '0 auto', padding: '40px 16px', textAlign: 'center' }}>
+          <p style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: 'var(--text-main)' }}>
+            Clienta no encontrada
+          </p>
+          <Link
+            href="/clientas"
+            style={{
+              display: 'inline-block',
+              marginTop: 14,
+              color: 'var(--primary)',
+              fontWeight: 600,
+              fontSize: 13,
+              textDecoration: 'underline',
+            }}
+          >
             Volver a clientas
           </Link>
         </main>
@@ -295,140 +515,286 @@ export default function ClientaPage() {
     );
   }
 
+  // ═══ MAIN RENDER ════════════════════════════════════════════════════════
+  const ultimaConsulta = consultas.at(-1);
+
   return (
-    <div className="min-h-screen bg-[#F5F0E8]">
-      <Header
-        showBack
-        title={editing ? 'Editar clienta' : clienta.nombre}
-        rightAction={
-          editing ? (
-            <button
-              onClick={cancelEditing}
-              className="p-2 rounded-xl hover:bg-[#EEF5ED] text-[#666666]"
-            >
-              <X size={18} />
-            </button>
-          ) : (
-            <div className="flex gap-1">
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', position: 'relative' }}>
+      {/* ── Hero portrait ────────────────────────────────────────────────── */}
+      <section style={{ position: 'relative', height: 280, overflow: 'hidden' }}>
+        <div
+          className="v-photo v-photo-curly v-grain"
+          style={{ position: 'absolute', inset: 0, borderRadius: 0 }}
+        />
+        {/* Top action bar (back + actions) */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 50,
+            left: 16,
+            right: 16,
+            display: 'flex',
+            justifyContent: 'space-between',
+            zIndex: 5,
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => router.back()}
+            aria-label="Volver"
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.95)',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: 'var(--shadow-sm)',
+              cursor: 'pointer',
+            }}
+          >
+            <ArrowLeft size={16} style={{ color: 'var(--text-main)' }} />
+          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {editing ? (
               <button
-                onClick={startEditing}
-                className="p-2 rounded-xl hover:bg-[#EEF5ED] text-[#2D5A27]"
+                type="button"
+                onClick={cancelEditing}
+                aria-label="Cancelar edición"
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.95)',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: 'var(--shadow-sm)',
+                  cursor: 'pointer',
+                }}
               >
-                <Pencil size={18} />
+                <X size={16} style={{ color: 'var(--text-main)' }} />
               </button>
-              <button
-                onClick={() => setShowDelete(true)}
-                className="p-2 rounded-xl hover:bg-red-50 text-[#CCCCCC] hover:text-[#8E2D2D]"
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
-          )
-        }
-      />
-
-      <main className="max-w-2xl mx-auto pb-safe">
-        {/* Profile header */}
-        <div className="bg-gradient-to-br from-[#2D5A27] to-[#3D7A35] px-4 pt-5 pb-8">
-          <div className="flex items-start gap-4">
-            <Avatar nombre={clienta.nombre} tipoRizo={clienta.tipoRizoPrincipal} size="xl" />
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-bold text-white mb-1 leading-tight" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                {clienta.nombre}
-              </h1>
-              {clienta.tipoRizoPrincipal && (
-                <Badge variant={rizoVariant as 'blue' | 'purple' | 'gold'} className="mb-2">
-                  {getRizoLabel(clienta.tipoRizoPrincipal)}
-                </Badge>
-              )}
-              <div className="flex flex-wrap gap-2 mt-2">
-                {clienta.edad > 0 && (
-                  <span className="text-xs text-[#A8C8A3]">{clienta.edad} años</span>
-                )}
-                <span className="text-xs text-[#A8C8A3]">
-                  {clienta.totalVisitas} {clienta.totalVisitas === 1 ? 'visita' : 'visitas'}
-                </span>
-                {clienta.ultimaVisita && (
-                  <span className="text-xs text-[#A8C8A3]">
-                    Última: {formatDate(clienta.ultimaVisita)}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Contact buttons */}
-          {!editing && (
-            <div className="flex gap-2 mt-4">
-              {clienta.telefono && (
-                <>
-                  <a
-                    href={`tel:${clienta.telefono}`}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-white/20 rounded-xl text-white text-xs font-semibold hover:bg-white/30"
-                    style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
-                  >
-                    <Phone size={14} />
-                    Llamar
-                  </a>
-                  <button
-                    onClick={handleWhatsApp}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-green-500 rounded-xl text-white text-xs font-semibold hover:bg-green-600"
-                    style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
-                  >
-                    <MessageCircle size={14} />
-                    WhatsApp
-                  </button>
-                </>
-              )}
-              <div className="ml-auto flex gap-2">
-                {consultas.length > 0 && (
-                  <Link
-                    href={`/diagnostico?clientaId=${clienta.id}&repeatFrom=${consultas.at(-1)?.id}`}
-                    className="flex items-center gap-1 px-2.5 py-2 bg-white/20 rounded-xl text-white text-xs font-semibold hover:bg-white/30"
-                    style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
-                  >
-                    <RotateCcw size={13} />
-                    Repetir
-                  </Link>
-                )}
-                <Link
-                  href={`/diagnostico?clientaId=${clienta.id}`}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-[#C9956B] rounded-xl text-white text-xs font-semibold hover:bg-[#D4A882]"
-                  style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={startEditing}
+                  aria-label="Editar"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.95)',
+                    border: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: 'var(--shadow-sm)',
+                    cursor: 'pointer',
+                  }}
                 >
-                  <Plus size={14} />
-                  Nueva consulta
-                </Link>
-              </div>
-            </div>
-          )}
+                  <Pencil size={15} style={{ color: 'var(--primary)' }} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowDelete(true)}
+                  aria-label="Eliminar"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.95)',
+                    border: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: 'var(--shadow-sm)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <MoreHorizontal size={16} style={{ color: 'var(--text-main)' }} />
+                </button>
+              </>
+            )}
+          </div>
         </div>
+        {/* Bottom gradient */}
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(180deg, transparent 40%, rgba(20, 36, 26, 0.85) 100%)',
+          }}
+        />
+        {/* Title */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 18,
+            left: 18,
+            right: 18,
+            color: '#F5EDDC',
+            zIndex: 5,
+          }}
+        >
+          <div
+            className="v-num"
+            style={{ color: 'rgba(232, 194, 144, 0.95)', fontSize: 9.5 }}
+          >
+            FOLIO · {clienta.id.slice(0, 8).toUpperCase()} · DESDE {new Date(clienta.fechaRegistro).getFullYear()}
+          </div>
+          <h1
+            style={{
+              margin: '4px 0 6px',
+              fontFamily: 'var(--font-serif)',
+              fontSize: 32,
+              letterSpacing: '-0.02em',
+              lineHeight: 1,
+              color: '#fff',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {clienta.nombre}
+          </h1>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {clienta.tipoRizoPrincipal && (
+              <Chip
+                tone="gold"
+                style={{
+                  background: 'rgba(232, 194, 144, 0.92)',
+                  color: '#14241A',
+                  borderColor: 'transparent',
+                }}
+              >
+                {getRizoLabel(clienta.tipoRizoPrincipal)}
+              </Chip>
+            )}
+            <Chip
+              tone="green"
+              dot
+              style={{
+                background: 'rgba(45, 90, 39, 0.85)',
+                color: '#fff',
+                borderColor: 'transparent',
+              }}
+            >
+              {clienta.totalVisitas > 0 ? 'Activa' : 'Nueva'}
+            </Chip>
+            <Chip
+              tone="ghost"
+              style={{
+                background: 'rgba(255,255,255,0.18)',
+                color: '#fff',
+                borderColor: 'transparent',
+              }}
+            >
+              {clienta.totalVisitas} {clienta.totalVisitas === 1 ? 'visita' : 'visitas'}
+            </Chip>
+          </div>
+        </div>
+      </section>
 
-        {/* Stats strip */}
-        <div className="grid grid-cols-3 bg-white border-b border-[#E5E5E5] -mt-4 mx-4 rounded-2xl shadow-md overflow-hidden">
+      <main style={{ maxWidth: 768, margin: '0 auto', padding: '18px 16px 100px' }}>
+        {/* Quick stats strip */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            background: 'var(--bg-card)',
+            borderRadius: 16,
+            border: '1px solid var(--border-soft)',
+            boxShadow: 'var(--shadow-xs)',
+            overflow: 'hidden',
+            marginBottom: 18,
+          }}
+        >
           {[
-            { icon: <Hash size={14} />, label: 'Consultas', value: clienta.totalVisitas },
-            { icon: <Calendar size={14} />, label: 'Registro', value: formatDate(clienta.fechaRegistro) },
-            { icon: <Calendar size={14} />, label: 'Última visita', value: clienta.ultimaVisita ? formatDate(clienta.ultimaVisita) : '—' },
-          ].map(({ icon, label, value }, i) => (
-            <div key={i} className={`p-3 text-center ${i < 2 ? 'border-r border-[#E5E5E5]' : ''}`}>
-              <div className="flex items-center justify-center text-[#C9956B] mb-1">{icon}</div>
-              <p className="text-xs font-bold text-[#2D2D2D]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>{value}</p>
-              <p className="text-[10px] text-[#999999]">{label}</p>
+            { l: 'CONSULTAS', v: clienta.totalVisitas, s: clienta.totalVisitas === 1 ? '· total' : '· totales' },
+            { l: 'REGISTRO', v: formatDate(clienta.fechaRegistro).split(' ').slice(0, 2).join(' '), s: '· fecha' },
+            {
+              l: 'ÚLTIMA VISITA',
+              v: clienta.ultimaVisita ? formatDate(clienta.ultimaVisita).split(' ').slice(0, 2).join(' ') : '—',
+              s: clienta.ultimaVisita ? '· en el salón' : '· sin visitas',
+            },
+          ].map((s, i) => (
+            <div
+              key={i}
+              style={{
+                padding: '14px 10px',
+                textAlign: 'center',
+                borderRight: i < 2 ? '1px solid var(--border-soft)' : 'none',
+              }}
+            >
+              <div className="v-num" style={{ fontSize: 9 }}>{s.l}</div>
+              <div
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 16,
+                  color: 'var(--text-main)',
+                  marginTop: 2,
+                  letterSpacing: '-0.01em',
+                  lineHeight: 1.1,
+                }}
+              >
+                {s.v}
+              </div>
+              <div style={{ fontSize: 9.5, color: 'var(--text-tertiary)' }}>{s.s}</div>
             </div>
           ))}
         </div>
 
-        {/* ── MODO EDITAR ── */}
+        {/* Quick actions */}
+        {!editing && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 22 }}>
+            {clienta.telefono && (
+              <>
+                <a href={`tel:${clienta.telefono}`} style={{ flex: 1, minWidth: 0, textDecoration: 'none' }}>
+                  <Btn variant="outline" size="md" fullWidth icon={<Phone size={14} />}>
+                    Llamar
+                  </Btn>
+                </a>
+                <button type="button" onClick={handleWhatsApp} style={{ flex: 1, background: 'transparent', border: 'none', padding: 0 }}>
+                  <Btn variant="soft" size="md" fullWidth icon={<MessageCircle size={14} />}>
+                    WhatsApp
+                  </Btn>
+                </button>
+              </>
+            )}
+            <Link href={`/diagnostico?clientaId=${clienta.id}`} style={{ flex: clienta.telefono ? '1 1 100%' : 1, textDecoration: 'none' }}>
+              <Btn variant="primary" size="md" fullWidth icon={<Plus size={14} />}>
+                Nueva consulta
+              </Btn>
+            </Link>
+            {consultas.length > 0 && (
+              <Link
+                href={`/diagnostico?clientaId=${clienta.id}&repeatFrom=${consultas.at(-1)?.id}`}
+                style={{ textDecoration: 'none', flex: '1 1 100%' }}
+              >
+                <Btn variant="ghost" size="md" fullWidth icon={<RotateCcw size={13} />}>
+                  Repetir último diagnóstico
+                </Btn>
+              </Link>
+            )}
+          </div>
+        )}
+
+        {/* ── MODO EDITAR ───────────────────────────────────────────────── */}
         {editing ? (
-          <div className="px-4 pt-5 pb-8 flex flex-col gap-4 fade-in">
+          <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <Input
               label="Nombre completo *"
               value={String(editData.nombre ?? '')}
               onChange={(e) => setEditData((p) => ({ ...p, nombre: e.target.value }))}
               placeholder="Nombre de la clienta"
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <Input
                 label="Edad"
                 type="number"
@@ -441,7 +807,7 @@ export default function ClientaPage() {
                 type="tel"
                 value={String(editData.telefono ?? '')}
                 onChange={(e) => setEditData((p) => ({ ...p, telefono: e.target.value }))}
-                placeholder="+58 412..."
+                placeholder="+58 412…"
               />
             </div>
             <Input
@@ -453,218 +819,407 @@ export default function ClientaPage() {
             />
 
             <div>
-              <p className="text-xs font-bold text-[#666666] mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+              <p
+                className="v-caps"
+                style={{ marginBottom: 8 }}
+              >
                 Nivel de estrés
               </p>
-              <div className="flex gap-2">
-                {(['bajo', 'medio', 'alto'] as const).map((nivel) => (
-                  <button
-                    key={nivel}
-                    type="button"
-                    onClick={() => setEditData((p) => ({ ...p, nivelEstres: nivel }))}
-                    className={`flex-1 py-2 rounded-xl text-xs font-semibold capitalize border-2 transition-all ${
-                      editData.nivelEstres === nivel
-                        ? 'border-[#2D5A27] bg-[#EEF5ED] text-[#2D5A27]'
-                        : 'border-[#E5E5E5] text-[#666666]'
-                    }`}
-                  >
-                    {nivel}
-                  </button>
-                ))}
+              <div style={{ display: 'flex', gap: 6 }}>
+                {(['bajo', 'medio', 'alto'] as const).map((nivel) => {
+                  const active = editData.nivelEstres === nivel;
+                  return (
+                    <button
+                      key={nivel}
+                      type="button"
+                      onClick={() => setEditData((p) => ({ ...p, nivelEstres: nivel }))}
+                      style={{
+                        flex: 1,
+                        padding: '10px 8px',
+                        borderRadius: 12,
+                        textTransform: 'capitalize',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        fontFamily: 'var(--font-sans)',
+                        background: active ? 'var(--primary-pale)' : 'var(--bg-card)',
+                        color: active ? 'var(--primary)' : 'var(--text-secondary)',
+                        border: `1px solid ${active ? 'rgba(45, 90, 39, 0.3)' : 'var(--border-soft)'}`,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {nivel}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            <div className="border-t border-[#E5E5E5] pt-4 flex flex-col gap-4">
-              <p className="text-xs font-bold text-[#999999] uppercase tracking-wide" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                Datos de salud
-              </p>
+            <div
+              style={{
+                borderTop: '1px solid var(--border)',
+                paddingTop: 14,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 14,
+              }}
+            >
+              <p className="v-caps">Datos de salud</p>
 
-              {/* Embarazo / Lactancia — Sí/No */}
               <div>
-                <p className="text-xs font-semibold text-[#444] mb-2" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                  ¿Embarazo o lactancia?
-                </p>
-                <div className="flex gap-2">
-                  {([{ v: true, label: 'Sí' }, { v: false, label: 'No' }]).map(({ v, label }) => (
-                    <button
-                      key={String(v)}
-                      type="button"
-                      onClick={() => setEditData((p) => ({ ...p, embarazo: v }))}
-                      className={`flex-1 py-2 rounded-xl text-xs font-semibold border-2 transition-all ${
-                        (editData.embarazo ?? false) === v
-                          ? 'border-[#2D5A27] bg-[#EEF5ED] text-[#2D5A27]'
-                          : 'border-[#E5E5E5] text-[#666666]'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
+                <p className="v-caps" style={{ marginBottom: 8 }}>¿Embarazo o lactancia?</p>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {[{ v: true, label: 'Sí' }, { v: false, label: 'No' }].map(({ v, label }) => {
+                    const active = (editData.embarazo ?? false) === v;
+                    return (
+                      <button
+                        key={String(v)}
+                        type="button"
+                        onClick={() => setEditData((p) => ({ ...p, embarazo: v }))}
+                        style={{
+                          flex: 1,
+                          padding: '10px 8px',
+                          borderRadius: 12,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          fontFamily: 'var(--font-sans)',
+                          background: active ? 'var(--primary-pale)' : 'var(--bg-card)',
+                          color: active ? 'var(--primary)' : 'var(--text-secondary)',
+                          border: `1px solid ${active ? 'rgba(45, 90, 39, 0.3)' : 'var(--border-soft)'}`,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3">
-                <Input
-                  label="Alergias a productos capilares"
-                  value={String(editData.alergias ?? '')}
-                  onChange={(e) => setEditData((p) => ({ ...p, alergias: e.target.value }))}
-                  placeholder="Opcional — ej: sulfatos, siliconas..."
-                />
-                <Input
-                  label="Condiciones médicas relevantes"
-                  value={String(editData.condicionesMedicas ?? '')}
-                  onChange={(e) => setEditData((p) => ({ ...p, condicionesMedicas: e.target.value }))}
-                  placeholder="tiroides, anemia, SOP, etc."
-                />
-                <Input
-                  label="Medicamentos que afectan el cabello"
-                  value={String(editData.medicamentos ?? '')}
-                  onChange={(e) => setEditData((p) => ({ ...p, medicamentos: e.target.value }))}
-                  placeholder="Opcional"
-                />
-              </div>
+              <Input
+                label="Alergias a productos capilares"
+                value={String(editData.alergias ?? '')}
+                onChange={(e) => setEditData((p) => ({ ...p, alergias: e.target.value }))}
+                placeholder="Opcional — ej: sulfatos, siliconas…"
+              />
+              <Input
+                label="Condiciones médicas relevantes"
+                value={String(editData.condicionesMedicas ?? '')}
+                onChange={(e) => setEditData((p) => ({ ...p, condicionesMedicas: e.target.value }))}
+                placeholder="Tiroides, anemia, SOP, etc."
+              />
+              <Input
+                label="Medicamentos que afectan el cabello"
+                value={String(editData.medicamentos ?? '')}
+                onChange={(e) => setEditData((p) => ({ ...p, medicamentos: e.target.value }))}
+                placeholder="Opcional"
+              />
             </div>
 
-            <Button
+            <Btn
               variant="primary"
               size="lg"
               fullWidth
               onClick={saveEditing}
-              loading={saving}
-              icon={saveOk ? <Check size={18} /> : undefined}
+              disabled={saving}
+              icon={
+                saveOk ? (
+                  <Check size={16} />
+                ) : saving ? (
+                  <span
+                    style={{
+                      width: 16,
+                      height: 16,
+                      border: '2px solid rgba(255,255,255,0.3)',
+                      borderTopColor: '#fff',
+                      borderRadius: '50%',
+                      animation: 'pulse-soft 1s linear infinite',
+                    }}
+                    className="loading-pulse"
+                  />
+                ) : undefined
+              }
             >
               {saveOk ? '¡Guardado!' : 'Guardar cambios'}
-            </Button>
+            </Btn>
           </div>
         ) : (
           <>
-            {/* Tabs */}
-            <div className="flex gap-1 px-4 mt-4 mb-1">
+            {/* ── Tabs ───────────────────────────────────────────────────── */}
+            <div
+              style={{
+                display: 'flex',
+                gap: 0,
+                borderBottom: '1px solid var(--border)',
+                marginBottom: 14,
+              }}
+            >
               {[
-                { key: 'info', label: 'Información' },
-                { key: 'historial', label: `Historial (${consultas.length})` },
-                { key: 'galeria', label: 'Galería' },
-              ].map(({ key, label }) => (
-                <button
-                  key={key}
-                  onClick={() => setTab(key as Tab)}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    tab === key
-                      ? 'bg-[#2D5A27] text-white shadow-sm'
-                      : 'bg-white text-[#666666] border border-[#E5E5E5] hover:bg-[#EEF5ED]'
-                  }`}
-                  style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
-                >
-                  {label}
-                </button>
-              ))}
+                { key: 'info' as const, label: 'Información' },
+                { key: 'historial' as const, label: `Historial · ${consultas.length}` },
+                { key: 'galeria' as const, label: 'Galería' },
+              ].map(({ key, label }) => {
+                const active = tab === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setTab(key)}
+                    style={{
+                      padding: '10px 14px',
+                      background: 'transparent',
+                      border: 'none',
+                      fontSize: 11.5,
+                      fontWeight: 700,
+                      letterSpacing: '0.06em',
+                      textTransform: 'uppercase',
+                      color: active ? 'var(--primary)' : 'var(--text-tertiary)',
+                      borderBottom: active
+                        ? '2px solid var(--primary)'
+                        : '2px solid transparent',
+                      fontFamily: 'var(--font-sans)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="px-4 pt-3 pb-6">
-              {tab === 'info' && (
-                <div className="flex flex-col gap-4">
-                  {/* Notas de la última visita — destacado */}
-                  {consultas.at(-1)?.notasEstilista && (
-                    <div className="bg-[#EEF5ED] rounded-2xl border border-[#90B98A] p-4">
-                      <h3 className="text-xs font-bold text-[#2D5A27] mb-2 uppercase tracking-wide" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                        Notas de la última visita
-                      </h3>
-                      <p className="text-sm text-[#2D2D2D] leading-relaxed">{consultas.at(-1)!.notasEstilista}</p>
-                      <p className="text-[10px] text-[#7A9B76] mt-2">{formatDate(consultas.at(-1)!.fecha)}</p>
+            {/* ── Tab content ────────────────────────────────────────────── */}
+            {tab === 'info' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {/* Notas última visita */}
+                {ultimaConsulta?.notasEstilista && (
+                  <article
+                    style={{
+                      padding: '16px 18px',
+                      borderLeft: '3px solid var(--secondary)',
+                      background: 'var(--secondary-pale)',
+                      borderRadius: '0 14px 14px 0',
+                    }}
+                  >
+                    <div className="v-caps" style={{ color: 'var(--secondary-deep)' }}>
+                      Notas de la última visita
                     </div>
-                  )}
+                    <p
+                      style={{
+                        margin: '6px 0 0',
+                        fontFamily: 'var(--font-serif)',
+                        fontStyle: 'italic',
+                        fontSize: 14,
+                        lineHeight: 1.45,
+                        color: 'var(--primary-deep)',
+                      }}
+                    >
+                      «{ultimaConsulta.notasEstilista}»
+                    </p>
+                    <div
+                      style={{
+                        marginTop: 10,
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 9.5,
+                        color: 'var(--secondary-deep)',
+                        letterSpacing: '0.1em',
+                      }}
+                    >
+                      — {formatDate(ultimaConsulta.fecha).toUpperCase()}
+                    </div>
+                  </article>
+                )}
 
-                  <div className="bg-white rounded-2xl border border-[#E5E5E5] p-4">
-                    <h3 className="text-xs font-bold text-[#999999] mb-3 uppercase tracking-wide" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                      Datos personales
-                    </h3>
-                    <div className="flex flex-col gap-2.5">
-                      {[
-                        { label: 'Teléfono', value: clienta.telefono || '—' },
-                        { label: 'Email', value: clienta.email || '—' },
-                        { label: 'Edad', value: clienta.edad ? `${clienta.edad} años` : '—' },
-                        { label: 'Nivel de estrés', value: clienta.nivelEstres || '—' },
-                        { label: 'Registro', value: formatDate(clienta.fechaRegistro) },
-                      ].map(({ label, value }) => (
-                        <div key={label} className="flex justify-between items-center">
-                          <span className="text-xs text-[#999999]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>{label}</span>
-                          <span className="text-sm font-medium text-[#2D2D2D]">{value}</span>
-                        </div>
-                      ))}
-                    </div>
+                {/* Datos personales */}
+                <article className="v-card" style={{ padding: 14 }}>
+                  <div className="v-caps" style={{ marginBottom: 10 }}>Datos personales</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {[
+                      { label: 'Teléfono', value: clienta.telefono || '—', mono: !!clienta.telefono },
+                      { label: 'Email', value: clienta.email || '—' },
+                      { label: 'Edad', value: clienta.edad ? `${clienta.edad} años` : '—' },
+                      { label: 'Nivel de estrés', value: clienta.nivelEstres || '—', cap: !!clienta.nivelEstres },
+                      { label: 'Registro', value: formatDate(clienta.fechaRegistro), mono: true },
+                    ].map(({ label, value, mono, cap }) => (
+                      <div
+                        key={label}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'baseline',
+                          gap: 12,
+                          paddingBottom: 6,
+                          borderBottom: '1px solid var(--border-soft)',
+                        }}
+                      >
+                        <span style={{ fontSize: 11.5, color: 'var(--text-tertiary)' }}>{label}</span>
+                        <span
+                          style={{
+                            fontSize: 13,
+                            color: 'var(--text-main)',
+                            fontFamily: mono ? 'var(--font-mono)' : 'var(--font-sans)',
+                            textTransform: cap ? 'capitalize' : 'none',
+                            fontWeight: 500,
+                            textAlign: 'right',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {value}
+                        </span>
+                      </div>
+                    ))}
                   </div>
+                </article>
 
-                  {(clienta.alergias || clienta.condicionesMedicas || clienta.medicamentos || clienta.embarazo) && (
-                    <div className="bg-amber-50 rounded-2xl border border-amber-200 p-4">
-                      <h3 className="text-xs font-bold text-amber-700 mb-3 uppercase tracking-wide" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
-                        Salud capilar
-                      </h3>
+                {/* Salud capilar */}
+                {(clienta.alergias || clienta.condicionesMedicas || clienta.medicamentos || clienta.embarazo) && (
+                  <article
+                    style={{
+                      padding: 14,
+                      borderRadius: 16,
+                      background: 'var(--treat-recon-bg)',
+                      border: '1px solid rgba(212, 130, 10, 0.22)',
+                    }}
+                  >
+                    <div className="v-caps" style={{ color: 'var(--treat-recon-color)', marginBottom: 10 }}>
+                      Salud capilar
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {clienta.alergias && (
-                        <div className="mb-2">
-                          <p className="text-xs text-[#999999] mb-0.5">Alergias:</p>
-                          <p className="text-sm text-[#2D2D2D]">{clienta.alergias}</p>
+                        <div>
+                          <p style={{ margin: 0, fontSize: 10.5, color: 'var(--treat-recon-color)', letterSpacing: '0.04em', fontWeight: 600 }}>
+                            Alergias
+                          </p>
+                          <p style={{ margin: '2px 0 0', fontSize: 13, color: 'var(--text-main)' }}>
+                            {clienta.alergias}
+                          </p>
                         </div>
                       )}
                       {clienta.condicionesMedicas && (
-                        <div className="mb-2">
-                          <p className="text-xs text-[#999999] mb-0.5">Condiciones médicas:</p>
-                          <p className="text-sm text-[#2D2D2D]">{clienta.condicionesMedicas}</p>
+                        <div>
+                          <p style={{ margin: 0, fontSize: 10.5, color: 'var(--treat-recon-color)', letterSpacing: '0.04em', fontWeight: 600 }}>
+                            Condiciones médicas
+                          </p>
+                          <p style={{ margin: '2px 0 0', fontSize: 13, color: 'var(--text-main)' }}>
+                            {clienta.condicionesMedicas}
+                          </p>
                         </div>
                       )}
                       {clienta.medicamentos && (
                         <div>
-                          <p className="text-xs text-[#999999] mb-0.5">Medicamentos:</p>
-                          <p className="text-sm text-[#2D2D2D]">{clienta.medicamentos}</p>
+                          <p style={{ margin: 0, fontSize: 10.5, color: 'var(--treat-recon-color)', letterSpacing: '0.04em', fontWeight: 600 }}>
+                            Medicamentos
+                          </p>
+                          <p style={{ margin: '2px 0 0', fontSize: 13, color: 'var(--text-main)' }}>
+                            {clienta.medicamentos}
+                          </p>
                         </div>
                       )}
                       {clienta.embarazo && (
-                        <div className="mt-2 pt-2 border-t border-amber-200">
-                          <p className="text-xs font-bold text-amber-700">Embarazo o lactancia</p>
+                        <div
+                          style={{
+                            marginTop: 4,
+                            paddingTop: 8,
+                            borderTop: '1px solid rgba(212, 130, 10, 0.22)',
+                          }}
+                        >
+                          <Chip tone="amber" dot>Embarazo o lactancia</Chip>
                         </div>
                       )}
                     </div>
-                  )}
+                  </article>
+                )}
 
-                  {consultas.length === 0 && (
-                    <div className="text-center py-6 bg-white rounded-2xl border border-[#E5E5E5]">
-                      <p className="text-sm text-[#999999] mb-3">Sin consultas aún</p>
-                      <Link href={`/diagnostico?clientaId=${clienta.id}`}>
-                        <Button variant="primary" size="sm" icon={<Plus size={14} />}>
-                          Primera consulta
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              )}
+                {/* Sin consultas */}
+                {consultas.length === 0 && (
+                  <article
+                    style={{
+                      textAlign: 'center',
+                      padding: '32px 20px',
+                      background: 'var(--bg-card)',
+                      borderRadius: 16,
+                      border: '1px solid var(--border-soft)',
+                    }}
+                  >
+                    <p style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--text-main)' }}>
+                      Sin consultas aún
+                    </p>
+                    <p style={{ margin: '4px 0 14px', fontSize: 12, color: 'var(--text-tertiary)' }}>
+                      Comienza la primera consulta para esta clienta
+                    </p>
+                    <Link href={`/diagnostico?clientaId=${clienta.id}`}>
+                      <Btn variant="primary" size="md" icon={<Plus size={14} />}>
+                        Primera consulta
+                      </Btn>
+                    </Link>
+                  </article>
+                )}
+              </div>
+            )}
 
-              {tab === 'historial' && (
-                <HistorialTimeline consultas={consultas} clienta={clienta} />
-              )}
+            {tab === 'historial' && (
+              <HistorialTimeline consultas={consultas} clienta={clienta} />
+            )}
 
-              {tab === 'galeria' && (
-                <GaleriaTab consultas={consultas} />
-              )}
-            </div>
+            {tab === 'galeria' && <GaleriaTab consultas={consultas} />}
           </>
         )}
       </main>
 
       {/* Delete modal */}
       <Modal open={showDelete} onClose={() => setShowDelete(false)} title="Eliminar clienta">
-        <p className="text-sm text-[#2D2D2D] mb-2">
+        <p style={{ margin: 0, fontSize: 14, color: 'var(--text-main)', lineHeight: 1.5 }}>
           Esto borrará toda la información de <strong>{clienta.nombre}</strong> y su historial
           ({consultas.length} {consultas.length === 1 ? 'consulta' : 'consultas'}).
         </p>
-        <p className="text-sm text-[#666666] mb-4">
+        <p style={{ margin: '10px 0 18px', fontSize: 13, color: 'var(--text-secondary)' }}>
           La acción no se puede deshacer. ¿Estás segura?
         </p>
-        <div className="flex gap-3">
-          <Button variant="ghost" size="md" fullWidth onClick={() => setShowDelete(false)}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Btn variant="ghost" size="md" fullWidth onClick={() => setShowDelete(false)}>
             Cancelar
-          </Button>
-          <Button variant="danger" size="md" fullWidth onClick={handleDelete} loading={deleting} icon={<Trash2 size={16} />}>
+          </Btn>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="active:scale-95 transition-transform"
+            style={{
+              flex: 1,
+              padding: '10px 18px',
+              fontSize: 13,
+              fontWeight: 600,
+              fontFamily: 'var(--font-sans)',
+              borderRadius: 999,
+              background: 'linear-gradient(180deg, #A03333, #8E2D2D)',
+              color: '#fff',
+              border: 'none',
+              boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(142, 45, 45, 0.32)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              cursor: deleting ? 'not-allowed' : 'pointer',
+              opacity: deleting ? 0.6 : 1,
+            }}
+          >
+            {deleting ? (
+              <span
+                style={{
+                  width: 14,
+                  height: 14,
+                  border: '2px solid rgba(255,255,255,0.3)',
+                  borderTopColor: '#fff',
+                  borderRadius: '50%',
+                  animation: 'pulse-soft 1s linear infinite',
+                }}
+                className="loading-pulse"
+              />
+            ) : (
+              <Trash2 size={14} />
+            )}
             Eliminar
-          </Button>
+          </button>
         </div>
       </Modal>
     </div>

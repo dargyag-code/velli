@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { DM_Serif_Display, DM_Sans } from 'next/font/google';
+import { DM_Serif_Display, DM_Sans, JetBrains_Mono } from 'next/font/google';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
 import ToastHost from '@/components/ui/ToastHost';
 import './globals.css';
@@ -16,6 +16,13 @@ const dmSans = DM_Sans({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-dm-sans',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-jetbrains',
   display: 'swap',
 });
 
@@ -65,7 +72,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#2D5A27',
+  themeColor: '#14241A',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -73,7 +80,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${dmSerifDisplay.variable} ${dmSans.variable}`}>
+    <html lang="es" className={`${dmSerifDisplay.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}>
       <head>
         <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
@@ -83,8 +90,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         className="velli-grain"
         style={{
-          fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
-          backgroundColor: '#F5F0E8',
+          fontFamily: 'var(--font-sans)',
+          backgroundColor: 'var(--bg)',
           minHeight: '100vh',
         }}
       >

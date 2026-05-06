@@ -1,37 +1,71 @@
 @import "tailwindcss";
 
 :root {
+  /* ── Base palette (v2 premium · alineado al diseño Velli.html) ─────── */
   --primary: #2D5A27;
-  --primary-dark: #1A2E1A;
+  --primary-deep: #14241A;
+  --primary-mid: #1F3D24;
+  --primary-dark: #1A2E1A; /* legacy alias — uso en componentes antiguos */
   --primary-light: #EEF5ED;
+  --primary-pale: #F4F8F2;
   --primary-hover: #3D7A35;
+  --primary-line: #B8CDB4;
+
   --secondary: #C9956B;
+  --secondary-deep: #8A5A2E;
   --secondary-light: #FBF4EC;
-  --secondary-hover: #D4A882;
-  --bg: #F5F0E8;
+  --secondary-pale: #FAF5EE;
+  --secondary-hover: #D4A882; /* legacy */
+
+  --gold: #E8C290;            /* acento dorado editorial */
+  --gold-deep: #B47E4D;
+
+  --bg: #F2EBDD;              /* crema cálida · era #F5F0E8 */
+  --bg-deep: #E8DFCB;
   --bg-card: #FFFFFF;
-  --text-main: #2D2D2D;
-  --text-secondary: #666666;
-  --text-tertiary: #999999;
-  --border: #E5E5E5;
+  --bg-elev: #FFFEFB;
+
+  --text-main: #1A1814;        /* era #2D2D2D */
+  --text-secondary: #5C544A;   /* era #666666 */
+  --text-tertiary: #8C8378;    /* era #999999 */
+  --text-muted: #B5AB9D;
+  --border: #E5DFD2;           /* era #E5E5E5 */
+  --border-soft: #EFE9DB;
+  --border-strong: #C9C0AE;
+
   --success: #2D8E5B;
   --warning: #C97A4C;
   --danger: #8E2D2D;
 
   /* Treatment colors */
-  --treat-hidrat-bg: #E8F4FD;
-  --treat-hidrat-color: #1A5276;
-  --treat-nutri-bg: #EEF5ED;
-  --treat-nutri-color: #2D5A27;
-  --treat-recon-bg: #FFF3E0;
-  --treat-recon-color: #D4820A;
-  --treat-repol-bg: #F3EDF9;
-  --treat-repol-color: #6B3FA0;
-  --treat-mant-bg: #F5F5F5;
-  --treat-mant-color: #6B6560;
+  --treat-hidrat-bg: #E8F4FD;     --treat-hidrat-color: #1A5276;
+  --treat-nutri-bg: #EEF5ED;      --treat-nutri-color: #2D5A27;
+  --treat-recon-bg: #FFF3E0;      --treat-recon-color: #D4820A;
+  --treat-repol-bg: #F3EDF9;      --treat-repol-color: #6B3FA0;
+  --treat-mant-bg: #F5F5F5;       --treat-mant-color: #6B6560;
+
+  /* ── Sistema de elevación premium ────────────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(20, 36, 26, 0.04), 0 1px 1px rgba(20, 36, 26, 0.02);
+  --shadow-sm: 0 1px 2px rgba(20, 36, 26, 0.04), 0 2px 6px rgba(20, 36, 26, 0.04);
+  --shadow-md: 0 1px 3px rgba(20, 36, 26, 0.05), 0 8px 20px rgba(20, 36, 26, 0.06);
+  --shadow-lg: 0 2px 4px rgba(20, 36, 26, 0.06), 0 18px 40px rgba(20, 36, 26, 0.10);
+  --shadow-hi: 0 8px 32px rgba(20, 36, 26, 0.18), 0 24px 64px rgba(20, 36, 26, 0.16);
+  --shadow-inner: inset 0 1px 2px rgba(20, 36, 26, 0.04);
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+
+  /* ── Tipografía ──────────────────────────────────────────────────── */
+  --font-serif: var(--font-dm-serif), 'DM Serif Display', 'Playfair Display', Georgia, serif;
+  --font-sans: var(--font-dm-sans), 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-jetbrains), 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body {
   margin: 0;
@@ -39,24 +73,126 @@ html, body {
   background-color: var(--bg);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-dm-serif), 'DM Serif Display', serif;
+  font-family: var(--font-serif);
   font-weight: 400;
 }
 
-.font-brand {
-  font-family: var(--font-dm-serif), 'DM Serif Display', serif;
+.font-brand { font-family: var(--font-serif); }
+
+/* Tipografía utilitaria editorial */
+.v-serif { font-family: var(--font-serif); }
+.v-sans  { font-family: var(--font-sans); }
+.v-mono  { font-family: var(--font-mono); }
+
+.v-caps {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
 }
+
+.v-eyebrow {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--secondary-deep);
+  letter-spacing: 0.01em;
+}
+
+.v-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+}
+
+.v-rule {
+  height: 1px;
+  background: linear-gradient(to right, var(--border-strong), transparent);
+}
+
+.v-ticks { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+.v-ticks::before { content: ''; display: inline-block; width: 10px; height: 1px; background: var(--text-main); }
+.v-ticks::after  { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* Cards */
+.v-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-sm);
+}
+.v-card-hi {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+.v-card-flat {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+/* Editorial gradient (hero dark) */
+.v-gradient-hero {
+  background:
+    radial-gradient(ellipse 120% 80% at 100% 0%, rgba(201, 149, 107, 0.28), transparent 60%),
+    radial-gradient(ellipse 120% 80% at 0% 100%, rgba(45, 90, 39, 0.18), transparent 60%),
+    linear-gradient(180deg, #14241A 0%, #1F3D24 60%, #2D5A27 100%);
+}
+
+/* Grain overlay (refinado v2) */
+.v-grain { position: relative; }
+.v-grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+  mix-blend-mode: multiply;
+  z-index: 30;
+}
+
+/* iOS / mobile safe zones */
+.v-safe-top    { padding-top: 54px; }
+.v-safe-bottom { padding-bottom: 100px; }
+
+/* Photo placeholders editoriales */
+.v-photo {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: radial-gradient(ellipse 70% 60% at 50% 30%, #6b4a32 0%, #3d2a1c 55%, #1f1510 100%);
+}
+.v-photo::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(0,0,0,0.5), transparent 65%),
+    repeating-linear-gradient(14deg, transparent 0 4px, rgba(0,0,0,0.18) 4px 6px);
+}
+.v-photo-blonde { background: radial-gradient(ellipse 70% 60% at 50% 30%, #d4b18a 0%, #8b6a44 60%, #4a3827 100%); }
+.v-photo-curly  { background: radial-gradient(ellipse 60% 65% at 50% 35%, #4a2f1e 0%, #2a1a10 100%); }
+.v-photo-dark   { background: radial-gradient(ellipse 70% 60% at 50% 30%, #3a2a20 0%, #1a110b 100%); }
+.v-photo-red    { background: radial-gradient(ellipse 70% 60% at 50% 30%, #8c4a2e 0%, #4a2014 100%); }
+
+/* Scrollbar utility */
+.v-noscroll::-webkit-scrollbar { display: none; }
+.v-noscroll { scrollbar-width: none; }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #f1f1f1; }
-::-webkit-scrollbar-thumb { background: #c4b5d4; border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--secondary); border-radius: 2px; }
 
-* { -webkit-tap-highlight-color: transparent; }
-
-/* ── Card hover ─────────────────────────────────────────────────────────── */
+/* ── Card hover (legacy) ────────────────────────────────────────────── */
 .card-hover {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -75,8 +211,7 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.15);
 }
 
-/* ── Animations ─────────────────────────────────────────────────────────── */
-
+/* ── Animations ─────────────────────────────────────────────────────── */
 @keyframes slideIn {
   from { opacity: 0; transform: translateX(30px); }
   to   { opacity: 1; transform: translateX(0); }
@@ -96,7 +231,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 .fade-in { animation: fadeIn 0.25s ease forwards; }
 
-/* Stagger fade-up — aplica a listas de cards */
+@keyframes vFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.v-fade { animation: vFadeIn 0.5s ease forwards; }
+
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -114,7 +251,6 @@ h1, h2, h3, h4, h5, h6 {
 .stagger-item:nth-child(7) { animation-delay: 480ms; }
 .stagger-item:nth-child(8) { animation-delay: 560ms; }
 
-/* Pulse ring — paso actual en ProgressBar */
 @keyframes pulse-ring {
   0%   { box-shadow: 0 0 0 0 rgba(45, 90, 39, 0.45); }
   70%  { box-shadow: 0 0 0 8px rgba(45, 90, 39, 0); }
@@ -122,14 +258,19 @@ h1, h2, h3, h4, h5, h6 {
 }
 .pulse-ring { animation: pulse-ring 1.8s ease-in-out infinite; }
 
-/* Subtle icon pulse — botones hero */
+@keyframes vPulseRing {
+  0%   { box-shadow: 0 0 0 0 rgba(45, 90, 39, 0.4); }
+  70%  { box-shadow: 0 0 0 10px rgba(45, 90, 39, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(45, 90, 39, 0); }
+}
+.v-pulse { animation: vPulseRing 2s ease-in-out infinite; }
+
 @keyframes icon-pulse {
   0%, 100% { transform: scale(1); }
-  50%       { transform: scale(1.12); }
+  50%      { transform: scale(1.12); }
 }
 .icon-pulse { animation: icon-pulse 2.2s ease-in-out infinite; }
 
-/* Shimmer skeleton */
 @keyframes shimmer {
   0%   { background-position: -200% center; }
   100% { background-position: 200% center; }
@@ -141,16 +282,22 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 16px;
 }
 
-/* Loading pulse (fallback) */
-.loading-pulse {
-  animation: pulse 1.5s ease-in-out infinite;
+@keyframes vShimmer {
+  0%   { background-position: -180% 0; }
+  100% { background-position: 180% 0; }
 }
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.45; }
+.v-shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(255, 255, 255, 0.6) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: vShimmer 2.4s linear infinite;
 }
 
-/* Toast enter animation */
+.loading-pulse { animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
+
 @keyframes velliToastEnter {
   from { opacity: 0; transform: translateY(14px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0)     scale(1);    }
@@ -159,7 +306,6 @@ h1, h2, h3, h4, h5, h6 {
   animation: velliToastEnter 220ms cubic-bezier(0.2, 0.9, 0.3, 1.1) forwards;
 }
 
-/* fadeInUp — cards entering viewport */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -169,16 +315,14 @@ h1, h2, h3, h4, h5, h6 {
   opacity: 0;
 }
 
-/* pulse-soft — gentle hero pulse */
 @keyframes pulse-soft {
   0%, 100% { transform: scale(1); }
-  50%       { transform: scale(1.05); }
+  50%      { transform: scale(1.05); }
 }
 .animate-pulse-soft {
   animation: pulse-soft 2s ease-in-out infinite;
 }
 
-/* Save success overlay animations */
 @keyframes draw-circle {
   from { stroke-dashoffset: 200; }
   to   { stroke-dashoffset: 0; }
@@ -187,36 +331,26 @@ h1, h2, h3, h4, h5, h6 {
   from { stroke-dashoffset: 60; opacity: 0; }
   to   { stroke-dashoffset: 0;  opacity: 1; }
 }
-.animate-draw-circle {
-  animation: draw-circle 0.55s cubic-bezier(.4,0,.2,1) forwards;
-}
-.animate-draw-check {
-  animation: draw-check 0.35s ease-out 0.45s forwards;
-  opacity: 0;
-}
+.animate-draw-circle { animation: draw-circle 0.55s cubic-bezier(.4,0,.2,1) forwards; }
+.animate-draw-check  { animation: draw-check 0.35s ease-out 0.45s forwards; opacity: 0; }
 
-/* ── Focus ─────────────────────────────────────────────────────────────── */
+/* ── Focus ──────────────────────────────────────────────────────────── */
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--primary) !important;
   box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.1);
 }
 
-/* ── Safe area padding ─────────────────────────────────────────────────── */
-.pb-safe {
-  padding-bottom: max(20px, env(safe-area-inset-bottom));
-}
+/* ── Safe area padding ──────────────────────────────────────────────── */
+.pb-safe { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+.pb-nav  { padding-bottom: max(88px, calc(72px + env(safe-area-inset-bottom))); }
 
-.pb-nav {
-  padding-bottom: max(88px, calc(72px + env(safe-area-inset-bottom)));
-}
-
-/* ── Grain texture overlay ──────────────────────────────────────────────── */
+/* ── Grain texture overlay (legacy global) ──────────────────────────── */
 .velli-grain::after {
   content: '';
   position: fixed;
   top: 0; left: 0; width: 100%; height: 100%;
-  opacity: 0.03;
+  opacity: 0.025;
   pointer-events: none;
   z-index: 9999;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
