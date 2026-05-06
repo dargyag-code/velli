@@ -380,6 +380,28 @@ export async function getConsultaById(id: string): Promise<Consulta | undefined>
   return data ? rowToConsulta(data) : undefined;
 }
 
+export async function updateConsulta(consulta: Consulta): Promise<void> {
+  // Sobreescribe la consulta existente sin alterar created_at ni la clienta
+  // (no recalcula total_visitas ni ultima_visita — esto es una edición, no
+  // una visita nueva). Las fotos http(s) ya almacenadas pasan tal cual; las
+  // que llegan como data URLs se re-suben en el wizard antes de llamar aquí.
+  const supabase = createClient();
+  const { error } = await supabase
+    .from('consultas')
+    .update(consultaToRow(consulta))
+    .eq('id', consulta.id);
+  if (error) {
+    console.error('[db.updateConsulta] update failed', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      consultaId: consulta.id,
+    });
+    throw error;
+  }
+}
+
 export async function createConsulta(consulta: Consulta): Promise<void> {
   const supabase = createClient();
   const userId = await currentUserId();

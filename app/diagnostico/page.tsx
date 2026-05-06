@@ -8,10 +8,10 @@ import PasoCabello from '@/components/wizard/PasoCabello';
 import PasoPlan from '@/components/wizard/PasoPlan';
 import { WizardData, WIZARD_INITIAL_DATA, Consulta, Clienta } from '@/lib/types';
 import { generateDiagnosis, SaludClienta } from '@/lib/diagnosticEngine';
-import { createConsulta, createClienta, getClientaById, getConsultasByClienta, getConsultaById } from '@/lib/db';
+import { createConsulta, createClienta, getClientaById, getConsultasByClienta, getConsultaById, updateConsulta } from '@/lib/db';
 import { generateId, todayISO } from '@/lib/utils';
 import { generateConsultaPDF } from '@/lib/pdfGenerator';
-import { uploadFoto, uploadFotos } from '@/lib/storage';
+import { uploadFoto, uploadFotos, resolveFotoUrl, resolveFotoUrls } from '@/lib/storage';
 import { showToast } from '@/lib/toast';
 
 const TOTAL_PASOS = 3;
@@ -24,6 +24,7 @@ function WizardContent() {
   const router = useRouter();
   const clientaIdParam = searchParams.get('clientaId');
   const repeatFromParam = searchParams.get('repeatFrom');
+  const editParam = searchParams.get('edit');
   const modeParam = searchParams.get('mode');
 
   const [paso, setPaso] = useState(0);
@@ -36,14 +37,88 @@ function WizardContent() {
   const [consulta, setConsulta] = useState<Consulta | null>(null);
   const [clienta, setClienta] = useState<Clienta | null>(null);
 
-  // Cargar borrador guardado (solo si no hay repeatFrom)
+  // Cargar borrador guardado (solo si no hay repeatFrom ni edit)
   useEffect(() => {
-    if (repeatFromParam) return;
+    if (repeatFromParam || editParam) return;
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) setData(JSON.parse(saved));
     } catch {}
-  }, [repeatFromParam]);
+  }, [repeatFromParam, editParam]);
+
+  // Modo edición: precargar TODOS los datos de la consulta existente
+  // (incluido fotos, notas, satisfacción, próxima cita) y saltar al paso del plan.
+  useEffect(() => {
+    if (!editParam) return;
+    (async () => {
+      const existing = await getConsultaById(editParam);
+      if (!existing) return;
+
+      const cl = existing.clientaId
+        ? await getClientaById(existing.clientaId)
+        : null;
+      if (cl) setClienta(cl);
+
+      // Resolver paths/URLs antiguas a signed URLs para que las imágenes se
+      // vean en el wizard. uploadFoto luego las pasa tal cual si siguen
+      // siendo http(s) — sólo re-sube si la estilista las reemplaza.
+      const [fotoAntesUrl, fotoDespuesUrl, fotoAnalisisUrls] = await Promise.all([
+        resolveFotoUrl(existing.fotoAntes),
+        resolveFotoUrl(existing.fotoDespues),
+        resolveFotoUrls(existing.fotoAnalisis),
+      ]);
+
+      setData((prev) => ({
+        ...prev,
+        clientaId: existing.clientaId,
+        nombre: cl?.nombre || '',
+        edad: String(cl?.edad ?? ''),
+        telefono: cl?.telefono || '',
+        email: cl?.email || '',
+        quimicos: existing.quimicos,
+        ultimoQuimico: existing.ultimoQuimico || '',
+        usoCalor: existing.usoCalor,
+        frecuenciaCalor: existing.frecuenciaCalor,
+        usaProtectorTermico: existing.usaProtectorTermico,
+        frecuenciaLavado: existing.frecuenciaLavado,
+        metodoLavado: existing.metodoLavado,
+        productosActuales: existing.productosActuales,
+        problemas: existing.problemas,
+        otroProblema: existing.otroProblema || '',
+        tipoRizoPrincipal: existing.tipoRizoPrincipal,
+        tiposSecundarios: existing.tiposSecundarios || [],
+        zonasCambio: existing.zonasCambio || '',
+        iaTipoSugerido: existing.iaTipoSugerido,
+        iaCorreccion: existing.iaCorreccion,
+        porosidad: existing.porosidad || '',
+        densidad: existing.densidad || '',
+        grosor: existing.grosor || '',
+        elasticidad: existing.elasticidad || '',
+        balanceHP: existing.balanceHP || '',
+        estadoCueroCabelludo: existing.estadoCueroCabelludo,
+        estadoPuntas: existing.estadoPuntas || '',
+        tipoDano: existing.tipoDano,
+        lineaDemarcacion: existing.lineaDemarcacion || '',
+        captureMetadata: existing.captureMetadata,
+        fotoAnalisis: fotoAnalisisUrls.length ? fotoAnalisisUrls : undefined,
+        fotoAntes: fotoAntesUrl,
+        fotoDespues: fotoDespuesUrl,
+      }));
+
+      // El estado de consulta arranca con el resultado existente para que
+      // PasoPlan lo muestre sin re-generar. Si la estilista vuelve al paso 1
+      // y avanza, buildConsulta regenera el resultado con los datos editados.
+      setConsulta({
+        ...existing,
+        fotoAntes: fotoAntesUrl,
+        fotoDespues: fotoDespuesUrl,
+        fotoAnalisis: fotoAnalisisUrls.length ? fotoAnalisisUrls : undefined,
+      });
+
+      setPaso(2);
+      window.scrollTo({ top: 0 });
+    })();
+  }, [editParam]);
 
   // Repetir último diagnóstico: pre-llenar con datos de consulta anterior
   useEffect(() => {
@@ -98,14 +173,16 @@ function WizardContent() {
     }
   }, [clientaIdParam]);
 
-  // Autoguardado del borrador
+  // Autoguardado del borrador (no aplica en modo edición — no debe
+  // contaminar el borrador del próximo diagnóstico nuevo).
   useEffect(() => {
+    if (editParam) return;
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       } catch {}
     }
-  }, [data]);
+  }, [data, editParam]);
 
   const update = useCallback((patch: Partial<WizardData>) => {
     setData((prev) => ({ ...prev, ...patch }));
@@ -225,7 +302,7 @@ function WizardContent() {
     try {
       let clientaObj = clienta;
 
-      if (!data.clientaId) {
+      if (!editParam && !data.clientaId) {
         const newClienta: Clienta = {
           id: generateId(),
           nombre: data.nombre.trim(),
@@ -240,13 +317,17 @@ function WizardContent() {
         clientaObj = newClienta;
         setClienta(newClienta);
       } else if (!clienta) {
-        clientaObj = (await getClientaById(data.clientaId)) || null;
+        clientaObj = (await getClientaById(data.clientaId || consulta.clientaId)) || null;
       }
 
-      const existingConsultas = await getConsultasByClienta(clientaObj?.id || data.clientaId || '');
-      const numeroConsulta = existingConsultas.length + 1;
+      // En edición: conserva el numeroConsulta original (no se incrementa).
+      const numeroConsulta = editParam
+        ? consulta.numeroConsulta
+        : (await getConsultasByClienta(clientaObj?.id || data.clientaId || '')).length + 1;
 
-      // Subir fotos a Supabase Storage: base64 → URL pública
+      // Subir fotos a Supabase Storage. uploadFoto pasa http(s) tal cual,
+      // así que las fotos preexistentes (cargadas como signed URLs en el
+      // useEffect de edit) NO se vuelven a subir; sólo las nuevas en data URL.
       const basePath = `diagnosticos/${consulta.id}`;
       const [uploadedAnalisis, uploadedAntes, uploadedDespues] = await Promise.all([
         consulta.fotoAnalisis && consulta.fotoAnalisis.length > 0
@@ -258,7 +339,7 @@ function WizardContent() {
 
       const finalConsulta: Consulta = {
         ...consulta,
-        clientaId: clientaObj?.id || data.clientaId || '',
+        clientaId: clientaObj?.id || data.clientaId || consulta.clientaId,
         numeroConsulta,
         proximaCita,
         notasEstilista: notas,
@@ -269,16 +350,32 @@ function WizardContent() {
         satisfaccionEstrellas: estrellas as (1|2|3|4|5) | undefined,
       };
 
-      await createConsulta(finalConsulta);
+      if (editParam) {
+        await updateConsulta(finalConsulta);
+      } else {
+        await createConsulta(finalConsulta);
+      }
       setConsulta(finalConsulta);
 
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && !editParam) {
         localStorage.removeItem(STORAGE_KEY);
       }
-      showToast(esBorrador ? 'Borrador guardado' : 'Diagnóstico guardado', 'success');
-      return clientaObj?.id || data.clientaId || '';
+      showToast(
+        editParam
+          ? 'Consulta actualizada'
+          : esBorrador
+            ? 'Borrador guardado'
+            : 'Diagnóstico guardado',
+        'success'
+      );
+      return clientaObj?.id || data.clientaId || consulta.clientaId || '';
     } catch (e) {
-      showToast('No se pudo guardar el diagnóstico. Intenta de nuevo.', 'error');
+      showToast(
+        editParam
+          ? 'No se pudo actualizar la consulta. Intenta de nuevo.'
+          : 'No se pudo guardar el diagnóstico. Intenta de nuevo.',
+        'error'
+      );
       throw e;
     } finally {
       setSaving(false);
@@ -330,6 +427,7 @@ function WizardContent() {
             wizardData={data}
             onSave={handleSave}
             saving={saving}
+            editMode={!!editParam}
           />
         )}
       </main>

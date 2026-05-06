@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Calendar, Star, FileText, Download, MessageCircle } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronDown, ChevronUp, Calendar, Star, FileText, Download, MessageCircle, Pencil } from 'lucide-react';
 import { Clienta, Consulta } from '@/lib/types';
 import { formatDate, getTratamientoBg, getTratamientoTextColor, getTratamientoBorderColor, getRizoLabel } from '@/lib/utils';
 import { generateConsultaPDF } from '@/lib/pdfGenerator';
@@ -194,6 +195,14 @@ function ConsultaItem({ consulta, clienta, index }: { consulta: Consulta; client
 
             {/* Acciones */}
             <div className="flex gap-2 flex-wrap">
+              <Link
+                href={`/diagnostico?edit=${consulta.id}`}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5E5E5] bg-white text-xs font-semibold text-[#666666] hover:border-[#2D5A27] hover:text-[#2D5A27] active:scale-95 transition-all"
+              >
+                <Pencil size={12} />
+                Editar
+              </Link>
+
               <button
                 type="button"
                 onClick={handleDownloadPDF}

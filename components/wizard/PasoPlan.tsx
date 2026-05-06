@@ -28,6 +28,7 @@ interface Props {
     estrellas?: number
   ) => Promise<string>;
   saving: boolean;
+  editMode?: boolean;
 }
 
 const TratamientoIcon = ({ t, size = 14 }: { t: string; size?: number }) => {
@@ -109,7 +110,7 @@ function hasDetallesCompletos(data: WizardData): boolean {
   );
 }
 
-export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving }: Props) {
+export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving, editMode = false }: Props) {
   const router = useRouter();
   const { resultado } = consulta;
   const [proximaCita, setProximaCita] = useState(
@@ -847,7 +848,11 @@ export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving
               letterSpacing: '-0.01em',
             }}
           >
-            {savedOverlay.tipo === 'express' ? 'Borrador guardado' : 'Diagnóstico guardado'}
+            {editMode
+              ? 'Consulta actualizada'
+              : savedOverlay.tipo === 'express'
+                ? 'Borrador guardado'
+                : 'Diagnóstico guardado'}
           </p>
           <p
             style={{
