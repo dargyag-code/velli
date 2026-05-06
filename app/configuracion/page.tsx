@@ -18,6 +18,7 @@ import { getProfile, updateProfile, signOut } from '@/lib/profile';
 import type { Profile } from '@/lib/profile';
 import { showToast } from '@/lib/toast';
 import { friendlyError } from '@/lib/errors';
+import { createClient } from '@/lib/supabase/client';
 
 const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 
@@ -459,6 +460,52 @@ export default function ConfiguracionPage() {
             />
           )}
         </Section>
+
+        {/* ═════════════════════════════════════════════════════════════════
+            BLOQUE DEBUG · agregado para forzar visibilidad de Legal y
+            Cerrar sesión sin depender de los componentes v2. NO bonito a
+            propósito — si esto no aparece en producción, el problema es
+            caché de PWA o deploy de Vercel, no el código.
+            ═════════════════════════════════════════════════════════════════ */}
+        <div style={{ marginTop: '48px', padding: '24px', borderTop: '1px solid #ccc' }}>
+          <h3 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '16px', color: '#666' }}>
+            LEGAL
+          </h3>
+          <a href='/legal/terminos' style={{ display: 'block', padding: '12px 0', color: '#2D5A27' }}>
+            Términos de uso →
+          </a>
+          <a href='/legal/privacidad' style={{ display: 'block', padding: '12px 0', color: '#2D5A27' }}>
+            Política de privacidad →
+          </a>
+        </div>
+
+        <div style={{ marginTop: '32px', padding: '24px' }}>
+          <h3 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '16px', color: '#666' }}>
+            SESIÓN
+          </h3>
+          <button
+            onClick={async () => {
+              if (confirm('¿Cerrar sesión? Tendrás que iniciar sesión de nuevo.')) {
+                const supabase = createClient();
+                await supabase.auth.signOut();
+                window.location.href = '/auth/login';
+              }
+            }}
+            style={{
+              width: '100%',
+              padding: '16px',
+              backgroundColor: '#C0392B',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+            }}
+          >
+            Cerrar sesión
+          </button>
+        </div>
 
       </main>
 
