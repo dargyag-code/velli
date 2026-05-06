@@ -343,7 +343,10 @@ input:focus, select:focus, textarea:focus {
 
 /* ── Safe area padding ──────────────────────────────────────────────── */
 .pb-safe { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
-.pb-nav  { padding-bottom: max(88px, calc(72px + env(safe-area-inset-bottom))); }
+/* BottomNav: 64px + safe-area + FAB de 56px que sobresale 20px por encima.
+   Reservar 118px en iPhone (safe-area ~34px) para que la última Section
+   nunca quede tapada por el FAB — antes era 106px y faltaban ~12px. */
+.pb-nav  { padding-bottom: max(112px, calc(96px + env(safe-area-inset-bottom))); }
 
 /* ── Grain texture overlay (legacy global) ──────────────────────────── */
 .velli-grain::after {
