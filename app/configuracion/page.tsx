@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  User, Download, Upload, Trash2,
-  ChevronRight, Check, AlertCircle, LogOut, FileText, Shield,
+  ArrowLeft, Edit3, Calendar, Database, Download, Upload, Trash2,
+  Heart, FileText, Shield, Phone, ChevronRight, Check,
+  AlertCircle, LogOut,
 } from 'lucide-react';
-import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import {
   getAllClientas,
@@ -18,50 +18,11 @@ import { getProfile, updateProfile, signOut } from '@/lib/profile';
 import type { Profile } from '@/lib/profile';
 import { showToast } from '@/lib/toast';
 import { friendlyError } from '@/lib/errors';
+import { getInitials } from '@/lib/utils';
 
-const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="mb-5">
-      <h2 className="text-[10px] font-bold text-[#999999] uppercase tracking-widest px-1 mb-2" style={serif}>
-        {title}
-      </h2>
-      <div className="bg-white rounded-2xl border border-[#E5E5E5] overflow-hidden">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function ActionRow({
-  icon, label, sublabel, onClick, danger = false, rightEl,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  sublabel?: string;
-  onClick?: () => void;
-  danger?: boolean;
-  rightEl?: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full flex items-center gap-3 px-4 py-3.5 border-b border-[#F5F5F5] last:border-b-0 hover:bg-[#F5F0E8] active:bg-[#F5F5F5] transition-colors text-left"
-    >
-      <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${danger ? 'bg-red-100' : 'bg-[#EEF5ED]'}`}>
-        <span className={danger ? 'text-red-500' : 'text-[#2D5A27]'}>{icon}</span>
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className={`text-sm font-semibold truncate ${danger ? 'text-red-600' : 'text-[#2D2D2D]'}`}>
-          {label}
-        </p>
-        {sublabel && <p className="text-xs text-[#999999] truncate">{sublabel}</p>}
-      </div>
-      {rightEl ?? <ChevronRight size={14} className="text-[#CCCCCC] shrink-0" />}
-    </button>
-  );
-}
+// ─── Página de Configuración (Ajustes / Tu cuenta) ────────────────────────
+// Layout editorial alineado a Mejoras.html → SettingsScreen:
+// top bar serif + identity card + secciones numeradas + filas editoriales.
 
 export default function ConfiguracionPage() {
   const router = useRouter();
@@ -79,7 +40,6 @@ export default function ConfiguracionPage() {
   const [exportLoading, setExportLoading] = useState(false);
   const [importMsg, setImportMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const [clearDone, setClearDone] = useState(false);
 
   const [signingOut, setSigningOut] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
@@ -187,9 +147,7 @@ export default function ConfiguracionPage() {
     try {
       await clearAllData();
       setShowClearConfirm(false);
-      setClearDone(true);
       showToast('Datos eliminados', 'success');
-      setTimeout(() => setClearDone(false), 3000);
     } catch (e) {
       console.error('[data.clear]', e);
       setShowClearConfirm(false);
@@ -210,218 +168,369 @@ export default function ConfiguracionPage() {
     }
   };
 
+  const profileName = profile?.nombre || 'Tu nombre';
+  const profileSub = profile?.nombreNegocio || 'Velli — Inteligencia capilar a tu alcance';
+  const initials = profile?.nombre ? getInitials(profile.nombre) : '?';
+
   return (
-    // Estructura inline replicando app/page.tsx (Home) — evita riesgo de
-    // que Tailwind v4 no aplique clases custom como pb-nav o min-h-screen
-    // y deje el contenido inferior tapado por la BottomNav fixed.
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', position: 'relative' }}>
-      <Header title="Configuración" />
+    <div
+      className="v-grain"
+      style={{ minHeight: '100vh', background: 'var(--bg)', position: 'relative', paddingBottom: 140 }}
+    >
+      {/* ── Top bar editorial ─────────────────────────────────────────── */}
+      <div style={{ padding: '54px 22px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <button
+          type="button"
+          onClick={() => router.push('/')}
+          aria-label="Volver"
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: '50%',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-soft)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--text-main)',
+            cursor: 'pointer',
+            flexShrink: 0,
+          }}
+        >
+          <ArrowLeft size={16} />
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span className="v-caps">Ajustes</span>
+          <h1
+            style={{
+              margin: '2px 0 0',
+              fontFamily: 'var(--font-serif)',
+              fontSize: 26,
+              lineHeight: 1.05,
+              letterSpacing: '-0.02em',
+              color: 'var(--text-main)',
+            }}
+          >
+            Tu{' '}
+            <span style={{ fontStyle: 'italic', color: 'var(--secondary-deep)' }}>cuenta</span>
+          </h1>
+        </div>
+      </div>
 
-      <main style={{ maxWidth: 768, margin: '0 auto', padding: '20px 16px 140px' }}>
+      <main style={{ maxWidth: 768, margin: '0 auto', padding: '0 16px' }}>
 
-        {/* ── Perfil ── */}
-        <Section title="Perfil">
+        {/* ── Identity card ─────────────────────────────────────────── */}
+        <div style={{ padding: '8px 6px 18px' }}>
+          <div
+            className="v-card"
+            style={{ padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}
+          >
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: '50%',
+                background: '#FBF4EC',
+                color: '#8A5A2E',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 20,
+                flexShrink: 0,
+              }}
+            >
+              {initials}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 16,
+                  lineHeight: 1.1,
+                  color: 'var(--text-main)',
+                }}
+              >
+                {profileName}
+              </div>
+              <div
+                style={{
+                  fontSize: 11.5,
+                  color: 'var(--text-tertiary)',
+                  marginTop: 3,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {profileSub}
+              </div>
+            </div>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '4px 10px',
+                borderRadius: 999,
+                background: '#EEF5ED',
+                color: 'var(--primary)',
+                fontFamily: 'var(--font-sans)',
+                fontWeight: 600,
+                fontSize: 10.5,
+                letterSpacing: '0.04em',
+                flexShrink: 0,
+              }}
+            >
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  background: 'var(--primary)',
+                }}
+              />
+              activa
+            </span>
+          </div>
+        </div>
+
+        {/* ── 01 Cuenta ─────────────────────────────────────────────── */}
+        <SectionEditorial num="01" eyebrow="Cuenta">
           {profileLoading ? (
-            <div className="flex items-center gap-3 px-4 py-3.5">
-              <div className="w-8 h-8 rounded-xl skeleton-shimmer shrink-0" />
-              <div className="flex-1 flex flex-col gap-1.5">
-                <div className="h-3 w-32 skeleton-shimmer" />
-                <div className="h-2.5 w-48 skeleton-shimmer" />
+            <div style={{ padding: '14px 16px', display: 'flex', gap: 12, alignItems: 'center' }}>
+              <div className="skeleton-shimmer" style={{ width: 34, height: 34, borderRadius: 10 }} />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div className="skeleton-shimmer" style={{ height: 12, width: '40%' }} />
+                <div className="skeleton-shimmer" style={{ height: 10, width: '70%' }} />
               </div>
             </div>
           ) : editingProfile ? (
-            <div className="p-4 flex flex-col gap-3">
-              <div>
-                <label className="text-xs text-[#666666] block mb-1" style={serif}>Nombre</label>
-                <input
-                  className="w-full border-2 border-[#E5E5E5] rounded-xl px-3 py-2 text-sm text-[#2D2D2D] focus:border-[#2D5A27] outline-none"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  placeholder="Tu nombre"
-                />
+            <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <FieldEditorial label="Nombre" value={nombre} onChange={setNombre} placeholder="Tu nombre" />
+              <FieldEditorial label="Nombre del salón" value={nombreNegocio} onChange={setNombreNegocio} placeholder="Velli — Inteligencia capilar a tu alcance" />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <FieldEditorial label="Teléfono" value={telefono} onChange={setTelefono} placeholder="+57 ..." />
+                <FieldEditorial label="Ciudad" value={ciudad} onChange={setCiudad} placeholder="Bogotá" />
               </div>
-              <div>
-                <label className="text-xs text-[#666666] block mb-1" style={serif}>Nombre del salón</label>
-                <input
-                  className="w-full border-2 border-[#E5E5E5] rounded-xl px-3 py-2 text-sm text-[#2D2D2D] focus:border-[#2D5A27] outline-none"
-                  value={nombreNegocio}
-                  onChange={(e) => setNombreNegocio(e.target.value)}
-                  placeholder="Velli — Inteligencia capilar a tu alcance"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs text-[#666666] block mb-1" style={serif}>Teléfono</label>
-                  <input
-                    className="w-full border-2 border-[#E5E5E5] rounded-xl px-3 py-2 text-sm text-[#2D2D2D] focus:border-[#2D5A27] outline-none"
-                    value={telefono}
-                    onChange={(e) => setTelefono(e.target.value)}
-                    placeholder="+57 ..."
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-[#666666] block mb-1" style={serif}>Ciudad</label>
-                  <input
-                    className="w-full border-2 border-[#E5E5E5] rounded-xl px-3 py-2 text-sm text-[#2D2D2D] focus:border-[#2D5A27] outline-none"
-                    value={ciudad}
-                    onChange={(e) => setCiudad(e.target.value)}
-                    placeholder="Bogotá"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2">
+              <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
                 <button
+                  type="button"
                   onClick={() => setEditingProfile(false)}
                   disabled={saving}
-                  className="flex-1 py-2.5 rounded-xl border-2 border-[#E5E5E5] text-sm text-[#666666] font-semibold"
+                  style={{
+                    flex: 1,
+                    padding: '12px 0',
+                    borderRadius: 999,
+                    background: 'transparent',
+                    border: '1px solid var(--border-strong)',
+                    color: 'var(--text-secondary)',
+                    fontFamily: 'var(--font-sans)',
+                    fontWeight: 600,
+                    fontSize: 13,
+                    cursor: 'pointer',
+                  }}
                 >
                   Cancelar
                 </button>
                 <button
+                  type="button"
                   onClick={saveProfile}
                   disabled={saving}
-                  className="flex-1 py-2.5 rounded-xl bg-[#2D5A27] text-sm text-white font-bold flex items-center justify-center gap-2 disabled:opacity-60"
-                  style={serif}
+                  style={{
+                    flex: 1,
+                    padding: '12px 0',
+                    borderRadius: 999,
+                    background: 'var(--primary)',
+                    border: 'none',
+                    color: '#fff',
+                    fontFamily: 'var(--font-sans)',
+                    fontWeight: 700,
+                    fontSize: 13,
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    opacity: saving ? 0.6 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                  }}
                 >
-                  {saveOk ? <><Check size={16} /> Guardado</> : saving ? 'Guardando…' : 'Guardar'}
+                  {saveOk ? <><Check size={14} /> Guardado</> : saving ? 'Guardando…' : 'Guardar'}
                 </button>
               </div>
             </div>
           ) : (
-            <ActionRow
-              icon={<User size={16} />}
-              label={profile?.nombre || 'Tu nombre'}
-              sublabel={profile?.nombreNegocio || 'Velli — Inteligencia capilar a tu alcance'}
+            <RowEditorial
+              icon={<Edit3 size={16} />}
+              title="Perfil profesional"
+              sub="Salón, especialidades, contacto"
               onClick={() => setEditingProfile(true)}
             />
           )}
-        </Section>
+          <RowEditorial
+            icon={<Calendar size={16} />}
+            title="Horario y disponibilidad"
+            sub="Bloques de agenda"
+            onClick={() => router.push('/agenda')}
+          />
+        </SectionEditorial>
 
-        {/* ── Backup y datos ── */}
-        <Section title="Backup y datos">
-          {showClearConfirm ? (
-            <div className="p-4">
-              <p className="text-sm text-red-700 mb-3 font-semibold text-center">
-                ¿Eliminar TODOS tus datos permanentemente?
-              </p>
-              <p className="text-xs text-[#666666] text-center mb-4">
-                Se borrarán todas tus clientas y consultas. No se puede deshacer. Exporta un backup primero.
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowClearConfirm(false)}
-                  className="flex-1 py-2.5 rounded-xl border-2 border-[#E5E5E5] text-sm text-[#666666] font-semibold"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleClearAll}
-                  className="flex-1 py-2.5 rounded-xl bg-red-500 text-sm text-white font-bold"
-                  style={serif}
-                >
-                  Sí, borrar todo
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <ActionRow
-                icon={<Download size={16} />}
-                label="Exportar backup"
-                sublabel="Descarga todas las clientas y consultas como JSON"
-                onClick={handleExport}
-                rightEl={exportLoading ? (
-                  <div className="w-4 h-4 border-2 border-[#2D5A27] border-t-transparent rounded-full animate-spin" />
-                ) : undefined}
+        {/* ── 02 Backup y datos ─────────────────────────────────────── */}
+        <SectionEditorial num="02" eyebrow="Backup y datos">
+          <RowEditorial
+            icon={<Download size={16} />}
+            title="Exportar backup"
+            sub="Descarga clientas y consultas como JSON"
+            onClick={handleExport}
+            rightEl={exportLoading ? (
+              <span
+                style={{
+                  width: 14,
+                  height: 14,
+                  border: '2px solid var(--primary)',
+                  borderTopColor: 'transparent',
+                  borderRadius: '50%',
+                  animation: 'spin 700ms linear infinite',
+                }}
               />
-              <ActionRow
-                icon={<Upload size={16} />}
-                label="Importar backup"
-                sublabel="Restaura un backup JSON anterior (no borra datos existentes)"
-                onClick={handleImport}
-              />
-              <ActionRow
-                icon={<Trash2 size={16} />}
-                label="Borrar todos los datos"
-                sublabel="Elimina tus clientas y consultas de la nube"
-                onClick={() => setShowClearConfirm(true)}
-                danger
-              />
-            </>
-          )}
-        </Section>
+            ) : undefined}
+          />
+          <RowEditorial
+            icon={<Upload size={16} />}
+            title="Importar backup"
+            sub="Restaura un JSON anterior (no borra existentes)"
+            onClick={handleImport}
+          />
+          <RowEditorial
+            icon={<Trash2 size={16} />}
+            title="Borrar todos los datos"
+            sub="Elimina tus clientas y consultas"
+            onClick={() => setShowClearConfirm(true)}
+            danger
+          />
+        </SectionEditorial>
 
         {importMsg && (
-          <div className={`flex items-start gap-2 p-3 rounded-xl mb-4 border ${
-            importMsg.type === 'ok'
-              ? 'bg-green-50 border-green-200 text-green-800'
-              : 'bg-red-50 border-red-200 text-red-800'
-          }`}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 8,
+              padding: '10px 12px',
+              borderRadius: 12,
+              margin: '0 6px 14px',
+              background: importMsg.type === 'ok' ? '#EEF7EE' : '#FCEEEE',
+              border: `1px solid ${importMsg.type === 'ok' ? '#C8DDC4' : 'rgba(178,58,58,0.18)'}`,
+              color: importMsg.type === 'ok' ? '#2F6B30' : '#7A1F1F',
+            }}
+          >
             {importMsg.type === 'ok'
-              ? <Check size={14} className="mt-0.5 shrink-0" />
-              : <AlertCircle size={14} className="mt-0.5 shrink-0" />
+              ? <Check size={14} style={{ marginTop: 2, flexShrink: 0 }} />
+              : <AlertCircle size={14} style={{ marginTop: 2, flexShrink: 0 }} />
             }
-            <p className="text-xs">{importMsg.text}</p>
+            <p style={{ margin: 0, fontSize: 12, lineHeight: 1.4 }}>{importMsg.text}</p>
           </div>
         )}
 
-        {clearDone && (
-          <div className="flex items-center gap-2 p-3 rounded-xl mb-4 bg-green-50 border border-green-200">
-            <Check size={14} className="text-green-700 shrink-0" />
-            <p className="text-xs text-green-800">Todos los datos fueron eliminados.</p>
-          </div>
-        )}
-
-        {/* ── Acerca de Velli ── */}
-        <Section title="Acerca de Velli">
-          <div className="px-4 py-6 flex flex-col items-center text-center">
-            <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
-              style={{
-                background: 'linear-gradient(135deg, #1A2E1A 0%, #2D5A27 100%)',
-                boxShadow: '0 4px 16px rgba(45,90,39,0.28)',
-              }}
-            >
-              <span className="text-white text-3xl leading-none" style={serif}>V</span>
-            </div>
-            <p className="text-base font-bold text-[#2D5A27]" style={serif}>
-              Velli Pro <span className="text-[#999999] font-normal text-sm">v1.0</span>
-            </p>
-            <p className="text-xs text-[#C9956B] mt-0.5 mb-3" style={serif}>
-              Inteligencia capilar a tu alcance
-            </p>
-            <p className="text-xs text-[#666666] leading-relaxed max-w-xs">
-              Velli Pro es una herramienta profesional para estilistas que combina inteligencia
-              artificial con conocimiento tricológico para ofrecer diagnósticos precisos y planes
-              de tratamiento personalizados.
-            </p>
-            <a
-              href="mailto:soporte@velli.app?subject=Soporte%20Velli%20Pro"
-              className="text-[11px] text-[#999999] mt-5 hover:text-[#2D5A27] hover:underline"
-            >
-              soporte@velli.app
-            </a>
-          </div>
-        </Section>
-
-        {/* ── Legal ── */}
-        <Section title="Legal">
-          <ActionRow
-            icon={<FileText size={16} />}
-            label="Términos de uso"
-            sublabel="Condiciones del servicio"
-            onClick={() => router.push('/legal/terminos')}
-          />
-          <ActionRow
-            icon={<Shield size={16} />}
-            label="Política de privacidad"
-            sublabel="Cómo tratamos tus datos y los de tus clientas"
+        {/* ── 03 Privacidad ─────────────────────────────────────────── */}
+        <SectionEditorial num="03" eyebrow="Privacidad">
+          <RowEditorial
+            icon={<Heart size={16} />}
+            title="Política de privacidad"
+            sub="Cómo cuidamos los datos de tus clientas"
             onClick={() => router.push('/legal/privacidad')}
           />
-        </Section>
+          <RowEditorial
+            icon={<Shield size={16} />}
+            title="Tratamiento de datos"
+            sub="Consentimientos, retención, derechos ARCO"
+            onClick={() => router.push('/legal/privacidad')}
+          />
+          <RowEditorial
+            icon={<FileText size={16} />}
+            title="Términos y condiciones"
+            sub="Uso de la plataforma Velli Pro"
+            onClick={() => router.push('/legal/terminos')}
+          />
+        </SectionEditorial>
 
-        {/* ── Cerrar sesión ── prominente, al final ── */}
-        <div className="mt-2 mb-2">
+        {/* ── 04 Soporte ────────────────────────────────────────────── */}
+        <SectionEditorial num="04" eyebrow="Soporte">
+          <RowEditorial
+            icon={<Phone size={16} />}
+            title="Centro de ayuda"
+            sub="Tutoriales y contacto"
+            onClick={() => { window.location.href = 'mailto:soporte@velli.app?subject=Soporte%20Velli%20Pro'; }}
+          />
+          <RowEditorial
+            icon={<Database size={16} />}
+            title="Versión de la app"
+            sub="v1.0 · al día"
+          />
+        </SectionEditorial>
+
+        {/* ── Acerca de Velli (hero editorial) ──────────────────────── */}
+        <div style={{ padding: '14px 6px 4px' }}>
+          <div className="v-card" style={{ padding: '22px 18px', textAlign: 'center' }}>
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 13,
+                background: 'linear-gradient(160deg, #2D5A27 0%, #14241A 100%)',
+                margin: '0 auto 12px',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 8px 22px rgba(20,36,26,0.18)',
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontStyle: 'italic',
+                  fontSize: 38,
+                  color: '#E8C290',
+                  lineHeight: 1,
+                }}
+              >
+                V
+              </span>
+              <span
+                style={{
+                  position: 'absolute',
+                  bottom: 12,
+                  right: 14,
+                  width: 4,
+                  height: 4,
+                  borderRadius: '50%',
+                  background: '#E8C290',
+                }}
+              />
+            </div>
+            <div style={{ fontFamily: 'var(--font-serif)', fontSize: 17, color: 'var(--text-main)' }}>
+              Velli <span style={{ fontStyle: 'italic', color: 'var(--secondary-deep)' }}>Pro</span>
+              <span style={{ color: 'var(--text-tertiary)', fontFamily: 'var(--font-sans)', fontWeight: 400, fontSize: 12, marginLeft: 6 }}>
+                v1.0
+              </span>
+            </div>
+            <p
+              style={{
+                margin: '8px auto 0',
+                maxWidth: 320,
+                fontSize: 12,
+                color: 'var(--text-secondary)',
+                lineHeight: 1.5,
+              }}
+            >
+              Diagnóstico capilar profesional con IA y planes de tratamiento personalizados para todo tipo de cabello.
+            </p>
+          </div>
+        </div>
+
+        {/* ── Cerrar sesión ── prominente al final ─────────────────── */}
+        <div style={{ padding: '12px 6px 22px' }}>
           <div
             style={{
               height: 1,
@@ -430,6 +539,7 @@ export default function ConfiguracionPage() {
             }}
           />
           <button
+            type="button"
             onClick={() => setShowSignOutConfirm(true)}
             style={{
               width: '100%',
@@ -480,31 +590,228 @@ export default function ConfiguracionPage() {
       </main>
 
       {showSignOutConfirm && (
-        <LogoutConfirmSheet
+        <ConfirmSheet
+          tone="red"
+          icon={<LogOut size={22} />}
+          eyebrow="Confirmación,"
+          title={<>¿Cerrar <span style={{ fontStyle: 'italic', color: '#B23A3A' }}>sesión</span>?</>}
+          description="Volverás a la pantalla de inicio de sesión. Los diagnósticos sin guardar se perderán."
+          confirmLabel="Sí, cerrar sesión"
           loading={signingOut}
           onCancel={() => !signingOut && setShowSignOutConfirm(false)}
           onConfirm={handleSignOut}
         />
       )}
 
+      {showClearConfirm && (
+        <ConfirmSheet
+          tone="red"
+          icon={<Trash2 size={22} />}
+          eyebrow="Atención,"
+          title={<>¿Borrar <span style={{ fontStyle: 'italic', color: '#B23A3A' }}>todo</span>?</>}
+          description="Se eliminarán todas tus clientas y consultas. No se puede deshacer. Exporta un backup antes si quieres conservarlas."
+          confirmLabel="Sí, borrar todo"
+          onCancel={() => setShowClearConfirm(false)}
+          onConfirm={handleClearAll}
+        />
+      )}
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg) } }
+        @keyframes velliFadeIn { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes velliSlideUp { from { transform: translateY(40px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+      `}</style>
+
       <BottomNav />
     </div>
   );
 }
 
-// ─── Bottom-sheet "¿Cerrar sesión?" modal ─────────────────────────────────
-function LogoutConfirmSheet({
-  loading,
+// ─── Subcomponentes editoriales ───────────────────────────────────────────
+
+function SectionEditorial({
+  num,
+  eyebrow,
+  children,
+}: {
+  num: string;
+  eyebrow: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div style={{ padding: '14px 6px 4px' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
+        <span className="v-num">· {num}</span>
+        <span className="v-caps">{eyebrow}</span>
+      </div>
+      <div className="v-card" style={{ padding: 0, overflow: 'hidden' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function RowEditorial({
+  icon,
+  title,
+  sub,
+  rightEl,
+  onClick,
+  danger = false,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  sub?: string;
+  rightEl?: React.ReactNode;
+  onClick?: () => void;
+  danger?: boolean;
+}) {
+  const interactive = !!onClick;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!interactive}
+      style={{
+        width: '100%',
+        background: 'transparent',
+        border: 'none',
+        cursor: interactive ? 'pointer' : 'default',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '12px 14px',
+        borderBottom: '1px solid var(--border-soft)',
+        textAlign: 'left',
+        color: danger ? '#B23A3A' : 'var(--text-main)',
+        fontFamily: 'var(--font-sans)',
+      }}
+    >
+      <span
+        style={{
+          width: 34,
+          height: 34,
+          borderRadius: 10,
+          background: danger ? '#FCEEEE' : 'var(--primary-pale)',
+          color: danger ? '#B23A3A' : 'var(--primary)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        {icon}
+      </span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: 'block', fontSize: 14, fontWeight: 600, lineHeight: 1.15 }}>{title}</span>
+        {sub && (
+          <span
+            style={{
+              display: 'block',
+              fontSize: 11.5,
+              color: 'var(--text-tertiary)',
+              marginTop: 2,
+              fontWeight: 400,
+            }}
+          >
+            {sub}
+          </span>
+        )}
+      </span>
+      {rightEl ?? (interactive ? <ChevronRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} /> : null)}
+    </button>
+  );
+}
+
+function FieldEditorial({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <label style={{ display: 'block' }}>
+      <span
+        style={{
+          display: 'block',
+          fontSize: 11,
+          color: 'var(--text-tertiary)',
+          marginBottom: 4,
+          fontFamily: 'var(--font-serif)',
+          fontStyle: 'italic',
+        }}
+      >
+        {label}
+      </span>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        style={{
+          width: '100%',
+          background: 'var(--bg)',
+          border: '1px solid var(--border)',
+          borderRadius: 12,
+          padding: '10px 12px',
+          fontSize: 13,
+          color: 'var(--text-main)',
+          fontFamily: 'var(--font-sans)',
+          outline: 'none',
+        }}
+      />
+    </label>
+  );
+}
+
+// ─── Bottom-sheet de confirmación reutilizable ────────────────────────────
+function ConfirmSheet({
+  tone = 'red',
+  icon,
+  eyebrow,
+  title,
+  description,
+  confirmLabel,
+  loading = false,
   onCancel,
   onConfirm,
 }: {
-  loading: boolean;
+  tone?: 'red' | 'amber';
+  icon: React.ReactNode;
+  eyebrow: string;
+  title: React.ReactNode;
+  description: string;
+  confirmLabel: string;
+  loading?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const tones = {
+    red: {
+      fg: '#B23A3A',
+      bg: '#FCEEEE',
+      bd: 'rgba(178,58,58,0.18)',
+      shadow: 'rgba(178,58,58,0.32)',
+      gradient: 'linear-gradient(180deg, #B23A3A, #7A1F1F)',
+    },
+    amber: {
+      fg: '#B47900',
+      bg: '#FFF6E0',
+      bd: 'rgba(180,121,0,0.20)',
+      shadow: 'rgba(180,121,0,0.32)',
+      gradient: 'linear-gradient(180deg, #B47900, #5C3A00)',
+    },
+  } as const;
+  const t = tones[tone];
+
   return (
     <div
-      onClick={onCancel}
+      onClick={() => !loading && onCancel()}
       style={{
         position: 'fixed',
         inset: 0,
@@ -515,7 +822,7 @@ function LogoutConfirmSheet({
         display: 'flex',
         alignItems: 'flex-end',
         justifyContent: 'center',
-        animation: 'fadeIn 180ms ease',
+        animation: 'velliFadeIn 180ms ease',
       }}
     >
       <div
@@ -529,10 +836,9 @@ function LogoutConfirmSheet({
           borderTopRightRadius: 24,
           padding: '22px 22px calc(28px + env(safe-area-inset-bottom))',
           boxShadow: '0 -8px 30px rgba(20,15,10,0.18)',
-          animation: 'slideUp 220ms cubic-bezier(0.2,0.8,0.2,1)',
+          animation: 'velliSlideUp 220ms cubic-bezier(0.2,0.8,0.2,1)',
         }}
       >
-        {/* Drag handle */}
         <div
           style={{
             width: 42,
@@ -542,25 +848,24 @@ function LogoutConfirmSheet({
             margin: '0 auto 16px',
           }}
         />
-        {/* Icon */}
         <div
           style={{
             width: 56,
             height: 56,
             borderRadius: '50%',
-            background: '#FCEEEE',
-            border: '1px solid rgba(178,58,58,0.18)',
+            background: t.bg,
+            border: `1px solid ${t.bd}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 14px',
-            color: '#B23A3A',
+            color: t.fg,
           }}
         >
-          <LogOut size={22} />
+          {icon}
         </div>
         <div className="v-eyebrow" style={{ textAlign: 'center', display: 'block' }}>
-          Confirmación,
+          {eyebrow}
         </div>
         <h3
           style={{
@@ -573,7 +878,7 @@ function LogoutConfirmSheet({
             color: 'var(--text-main)',
           }}
         >
-          ¿Cerrar <span style={{ fontStyle: 'italic', color: '#B23A3A' }}>sesión</span>?
+          {title}
         </h3>
         <p
           style={{
@@ -585,11 +890,11 @@ function LogoutConfirmSheet({
             lineHeight: 1.45,
           }}
         >
-          Volverás a la pantalla de inicio de sesión. Los diagnósticos sin
-          guardar se perderán.
+          {description}
         </p>
         <div style={{ display: 'flex', gap: 10 }}>
           <button
+            type="button"
             onClick={onCancel}
             disabled={loading}
             style={{
@@ -609,21 +914,22 @@ function LogoutConfirmSheet({
             Cancelar
           </button>
           <button
+            type="button"
             onClick={onConfirm}
             disabled={loading}
             style={{
               flex: 1,
               padding: '14px 0',
               borderRadius: 999,
-              background: 'linear-gradient(180deg, #B23A3A, #7A1F1F)',
+              background: t.gradient,
               border: 'none',
-              color: '#FFFFFF',
+              color: '#fff',
               fontFamily: 'var(--font-sans)',
               fontWeight: 700,
               fontSize: 13.5,
               letterSpacing: '0.02em',
               cursor: loading ? 'not-allowed' : 'pointer',
-              boxShadow: '0 6px 18px rgba(178,58,58,0.32)',
+              boxShadow: `0 6px 18px ${t.shadow}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -636,23 +942,17 @@ function LogoutConfirmSheet({
                   width: 16,
                   height: 16,
                   border: '2px solid rgba(255,255,255,0.6)',
-                  borderTopColor: '#FFFFFF',
+                  borderTopColor: '#fff',
                   borderRadius: '50%',
                   animation: 'spin 700ms linear infinite',
                 }}
               />
             ) : (
-              'Sí, cerrar sesión'
+              confirmLabel
             )}
           </button>
         </div>
       </div>
-
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes slideUp { from { transform: translateY(40px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
-        @keyframes spin { to { transform: rotate(360deg) } }
-      `}</style>
     </div>
   );
 }
