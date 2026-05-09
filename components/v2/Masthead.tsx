@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import Link from 'next/link';
 import { Bell } from 'lucide-react';
 
 interface MastheadProps {
@@ -108,9 +109,9 @@ export default function Masthead({ name = '', subtitle, action, showEst = true }
           action
         ) : (
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-            <button
-              type="button"
-              aria-label="Notificaciones"
+            <Link
+              href="/reportes"
+              aria-label="Notificaciones y reportes"
               style={{
                 position: 'relative',
                 width: 38,
@@ -123,7 +124,13 @@ export default function Masthead({ name = '', subtitle, action, showEst = true }
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
+                textDecoration: 'none',
+                transition: 'transform 120ms ease',
+                outline: 'none',
               }}
+              onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.94)'; }}
+              onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
             >
               <Bell size={16} strokeWidth={1.7} />
               <span
@@ -137,9 +144,10 @@ export default function Masthead({ name = '', subtitle, action, showEst = true }
                   background: '#E8C290',
                 }}
               />
-            </button>
-            <div
-              aria-label="Avatar"
+            </Link>
+            <Link
+              href="/configuracion"
+              aria-label="Cuenta y configuración"
               style={{
                 width: 38,
                 height: 38,
@@ -152,10 +160,17 @@ export default function Masthead({ name = '', subtitle, action, showEst = true }
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                textDecoration: 'none',
+                cursor: 'pointer',
+                transition: 'transform 120ms ease, box-shadow 120ms ease',
+                outline: 'none',
               }}
+              onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.94)'; }}
+              onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
             >
               {initial}
-            </div>
+            </Link>
           </div>
         )}
       </div>
