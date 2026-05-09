@@ -420,52 +420,239 @@ export default function ConfiguracionPage() {
           />
         </Section>
 
-        {/* ── Sesión ── */}
-        <Section title="Sesión">
-          {showSignOutConfirm ? (
-            <div className="p-4">
-              <p className="text-sm text-[#2D2D2D] mb-1 font-semibold text-center" style={serif}>
-                ¿Cerrar sesión?
-              </p>
-              <p className="text-xs text-[#666666] text-center mb-4">
-                Tendrás que iniciar sesión de nuevo para acceder a tus clientas.
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowSignOutConfirm(false)}
-                  disabled={signingOut}
-                  className="flex-1 py-2.5 rounded-xl border-2 border-[#E5E5E5] text-sm text-[#666666] font-semibold disabled:opacity-60"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleSignOut}
-                  disabled={signingOut}
-                  className="flex-1 py-2.5 rounded-xl bg-red-500 text-sm text-white font-bold flex items-center justify-center gap-2 disabled:opacity-60"
-                  style={serif}
-                >
-                  {signingOut ? (
-                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    'Sí, cerrar sesión'
-                  )}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <ActionRow
-              icon={<LogOut size={16} />}
-              label="Cerrar sesión"
-              sublabel={profile ? `Sesión activa como ${profile.nombre}` : undefined}
-              onClick={() => setShowSignOutConfirm(true)}
-              danger
+        {/* ── Cerrar sesión ── prominente, al final ── */}
+        <div className="mt-2 mb-2">
+          <div
+            style={{
+              height: 1,
+              background: 'linear-gradient(to right, var(--border-strong), transparent)',
+              marginBottom: 18,
+            }}
+          />
+          <button
+            onClick={() => setShowSignOutConfirm(true)}
+            style={{
+              width: '100%',
+              background: '#FCEEEE',
+              border: '1px solid rgba(178,58,58,0.18)',
+              borderRadius: 16,
+              padding: '14px 18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+              color: '#B23A3A',
+              fontFamily: 'var(--font-sans)',
+              fontWeight: 700,
+              fontSize: 14,
+              letterSpacing: '0.01em',
+              cursor: 'pointer',
+              transition: 'transform 120ms ease',
+            }}
+            onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.98)'; }}
+            onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+          >
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                background: '#B23A3A',
+                boxShadow: '0 0 0 4px rgba(178,58,58,0.32)',
+              }}
             />
-          )}
-        </Section>
+            Cerrar sesión
+          </button>
+          <div
+            className="v-mono"
+            style={{
+              textAlign: 'center',
+              marginTop: 10,
+              fontSize: 11,
+              color: 'var(--text-muted)',
+            }}
+          >
+            · {profile ? `sesión activa como ${profile.nombre}` : 'sesión activa'} ·
+          </div>
+        </div>
 
       </main>
 
+      {showSignOutConfirm && (
+        <LogoutConfirmSheet
+          loading={signingOut}
+          onCancel={() => !signingOut && setShowSignOutConfirm(false)}
+          onConfirm={handleSignOut}
+        />
+      )}
+
       <BottomNav />
+    </div>
+  );
+}
+
+// ─── Bottom-sheet "¿Cerrar sesión?" modal ─────────────────────────────────
+function LogoutConfirmSheet({
+  loading,
+  onCancel,
+  onConfirm,
+}: {
+  loading: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div
+      onClick={onCancel}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 60,
+        background: 'rgba(20,15,10,0.55)',
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        animation: 'fadeIn 180ms ease',
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="v-grain"
+        style={{
+          width: '100%',
+          maxWidth: 460,
+          background: 'var(--bg-card)',
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          padding: '22px 22px calc(28px + env(safe-area-inset-bottom))',
+          boxShadow: '0 -8px 30px rgba(20,15,10,0.18)',
+          animation: 'slideUp 220ms cubic-bezier(0.2,0.8,0.2,1)',
+        }}
+      >
+        {/* Drag handle */}
+        <div
+          style={{
+            width: 42,
+            height: 4,
+            background: 'var(--border-strong)',
+            borderRadius: 4,
+            margin: '0 auto 16px',
+          }}
+        />
+        {/* Icon */}
+        <div
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            background: '#FCEEEE',
+            border: '1px solid rgba(178,58,58,0.18)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 14px',
+            color: '#B23A3A',
+          }}
+        >
+          <LogOut size={22} />
+        </div>
+        <div className="v-eyebrow" style={{ textAlign: 'center', display: 'block' }}>
+          Confirmación,
+        </div>
+        <h3
+          style={{
+            margin: '4px 0 6px',
+            textAlign: 'center',
+            fontFamily: 'var(--font-serif)',
+            fontSize: 26,
+            lineHeight: 1.1,
+            letterSpacing: '-0.02em',
+            color: 'var(--text-main)',
+          }}
+        >
+          ¿Cerrar <span style={{ fontStyle: 'italic', color: '#B23A3A' }}>sesión</span>?
+        </h3>
+        <p
+          style={{
+            textAlign: 'center',
+            margin: '0 auto 18px',
+            maxWidth: 320,
+            fontSize: 13,
+            color: 'var(--text-secondary)',
+            lineHeight: 1.45,
+          }}
+        >
+          Volverás a la pantalla de inicio de sesión. Los diagnósticos sin
+          guardar se perderán.
+        </p>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            onClick={onCancel}
+            disabled={loading}
+            style={{
+              flex: 1,
+              padding: '14px 0',
+              borderRadius: 999,
+              background: 'transparent',
+              border: '1px solid var(--border-strong)',
+              color: 'var(--text-main)',
+              fontFamily: 'var(--font-sans)',
+              fontWeight: 600,
+              fontSize: 13.5,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.6 : 1,
+            }}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            style={{
+              flex: 1,
+              padding: '14px 0',
+              borderRadius: 999,
+              background: 'linear-gradient(180deg, #B23A3A, #7A1F1F)',
+              border: 'none',
+              color: '#FFFFFF',
+              fontFamily: 'var(--font-sans)',
+              fontWeight: 700,
+              fontSize: 13.5,
+              letterSpacing: '0.02em',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              boxShadow: '0 6px 18px rgba(178,58,58,0.32)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}
+          >
+            {loading ? (
+              <span
+                style={{
+                  width: 16,
+                  height: 16,
+                  border: '2px solid rgba(255,255,255,0.6)',
+                  borderTopColor: '#FFFFFF',
+                  borderRadius: '50%',
+                  animation: 'spin 700ms linear infinite',
+                }}
+              />
+            ) : (
+              'Sí, cerrar sesión'
+            )}
+          </button>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes slideUp { from { transform: translateY(40px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+        @keyframes spin { to { transform: rotate(360deg) } }
+      `}</style>
     </div>
   );
 }

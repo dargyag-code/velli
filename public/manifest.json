@@ -4,12 +4,18 @@
   "description": "Inteligencia capilar a tu alcance",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F5F0E8",
-  "theme_color": "#2D5A27",
+  "background_color": "#F2EBDD",
+  "theme_color": "#14241A",
   "orientation": "portrait",
   "lang": "es",
   "categories": ["beauty", "lifestyle", "utilities"],
   "icons": [
+    {
+      "src": "/icons/icon-master.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",

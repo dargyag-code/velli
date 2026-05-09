@@ -4,11 +4,22 @@ import { formatDate, getTratamientoBg, getTratamientoTextColor } from './utils';
 import { resolveFotoUrl } from './storage';
 import { buildRecomendacionProductos } from './diagnosticEngine';
 
-const GREEN = '#2D5A27';
-const AMBER = '#C9956B';
-const LIGHT_GREEN = '#EEF5ED';
-const TEXT_DARK = '#2D2D2D';
-const TEXT_GRAY = '#666666';
+// ── Editorial palette (alineado a Mejoras.html · A4 · forest + gold) ──────
+const FOREST = '#2D5A27';
+const FOREST_DEEP = '#14241A';
+const GOLD = '#E8C290';
+const GOLD_DEEP = '#B47E4D';
+const CREAM = '#F5EDDC';
+const CREAM_PAPER = '#FAF5EE';
+const PAPER = '#FFFEFB';
+const TEXT_DARK = '#1A1814';
+const TEXT_GRAY = '#5C544A';
+const TEXT_MUTED = '#8C8378';
+const TEXT_FAINT = '#B5AB9D';
+const BORDER = '#E5DFD2';
+const BORDER_SOFT = '#EFE9DB';
+const ACCENT_PALE = '#F4F8F2';
+const DANGER = '#8E2D2D';
 
 // ── Image helpers ──────────────────────────────────────────────────────────
 
@@ -56,7 +67,7 @@ async function addPhotoToDoc(
   y: number,
   maxW: number,
   maxH: number
-): Promise<number> {
+): Promise<{ w: number; h: number }> {
   try {
     const resolved = (await resolveFotoUrl(source)) || source;
     const dataUrl = await toDataUrl(resolved);
@@ -64,334 +75,606 @@ async function addPhotoToDoc(
     const { w, h } = scaleToBounds(dims.w, dims.h, maxW, maxH);
     const format = getImageFormat(dataUrl);
     doc.addImage(dataUrl, format, x, y, w, h);
-    return h;
+    return { w, h };
   } catch (err) {
     console.warn('[pdf] no se pudo incrustar foto:', err);
-    return 0;
+    return { w: 0, h: 0 };
   }
 }
 
-// ── One-line summary ───────────────────────────────────────────────────────
+// ── Folio + meta helpers ───────────────────────────────────────────────────
 
-function buildOneLiner(consulta: Consulta): string {
-  const tipo = consulta.tipoRizoPrincipal || '—';
-  const por = consulta.porosidad ? `, porosidad ${consulta.porosidad}` : '';
-  const trat = consulta.resultado?.tratamientoPrincipal || '';
-  if (trat) return `Cabello ${tipo}${por} — requiere ${trat.toLowerCase()}`;
-  return `Cabello tipo ${tipo}${por}`;
+function buildFolio(consulta: Consulta): string {
+  const year = (consulta.fecha || new Date().toISOString()).slice(0, 4);
+  const seq = String(consulta.numeroConsulta || 1).padStart(4, '0');
+  return `VLI-${year}-${seq}`;
 }
+
+function tipoLabel(tipo?: string): string {
+  if (!tipo) return 'Tipo en estudio';
+  const t = tipo.toUpperCase();
+  if (t.startsWith('1')) return 'Cabello liso';
+  if (t.startsWith('2')) return 'Ondulado';
+  if (t.startsWith('3')) return 'Rizos definidos';
+  if (t.startsWith('4')) return 'Rizos compactos';
+  return 'Tipo único';
+}
+
+function cap(s: string | undefined): string {
+  if (!s) return '—';
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// ── Main export ────────────────────────────────────────────────────────────
 
 export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta): Promise<void> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const pageW = doc.internal.pageSize.getWidth();
-  const margin = 15;
-  let y = 0;
+  const pageW = doc.internal.pageSize.getWidth();   // 210
+  const pageH = doc.internal.pageSize.getHeight();  // 297
+  const margin = 18;
+  const contentW = pageW - margin * 2;
 
-  const addPage = () => {
-    doc.addPage();
-    y = 20;
-    addFooter();
-  };
+  const folio = buildFolio(consulta);
+  const today = formatDate(consulta.fecha);
 
-  const checkNewPage = (needed = 20) => {
-    if (y + needed > 270) addPage();
-  };
-
+  // ── color helpers ────────────────────────────────────────────────────────
   const hexToRgb = (hex: string) => {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     return { r, g, b };
   };
-
   const setFill = (hex: string) => {
     const { r, g, b } = hexToRgb(hex);
     doc.setFillColor(r, g, b);
   };
-
+  const setStroke = (hex: string) => {
+    const { r, g, b } = hexToRgb(hex);
+    doc.setDrawColor(r, g, b);
+  };
   const setTextColor = (hex: string) => {
     const { r, g, b } = hexToRgb(hex);
     doc.setTextColor(r, g, b);
   };
 
-  const addFooter = () => {
+  // ── footer (every page) ──────────────────────────────────────────────────
+  const drawFooter = (pageNo: number, totalHint?: number) => {
+    const fy = pageH - 22;
+    setFill(CREAM_PAPER);
+    doc.rect(0, pageH - 22, pageW, 22, 'F');
+    setStroke(BORDER);
+    doc.setLineWidth(0.2);
+    doc.line(margin, pageH - 22, pageW - margin, pageH - 22);
+
+    // QR placeholder (checker)
+    const qrSize = 12;
+    const qrX = margin;
+    const qrY = pageH - 18;
+    setFill(PAPER);
+    doc.rect(qrX, qrY, qrSize, qrSize, 'F');
+    setFill(FOREST);
+    const cell = qrSize / 6;
+    [0, 1, 2, 3, 4, 5].forEach((i) =>
+      [0, 1, 2, 3, 4, 5].forEach((j) => {
+        if ((i + j) % 2 === 0) doc.rect(qrX + i * cell, qrY + j * cell, cell, cell, 'F');
+      })
+    );
+
+    doc.setFontSize(7);
+    setTextColor(TEXT_MUTED);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ESCANEA PARA', qrX + qrSize + 3, qrY + 3.6);
+    doc.setFontSize(9);
+    setTextColor(TEXT_DARK);
+    doc.setFont('times', 'normal');
+    doc.text('ver tu plan en la app', qrX + qrSize + 3, qrY + 8);
+
+    doc.setFontSize(7);
+    setTextColor(TEXT_FAINT);
+    doc.setFont('courier', 'normal');
+    const right = `· velli.app · ${folio} · página ${pageNo}${totalHint ? ` de ${totalHint}` : ''} ·`;
+    doc.text(right, pageW - margin, fy + 0, { align: 'right', baseline: 'middle' });
+  };
+
+  // ── header (first page only) ─────────────────────────────────────────────
+  const drawHeader = () => {
+    // Forest gradient simulated with two solid bands
+    setFill(FOREST_DEEP);
+    doc.rect(0, 0, pageW, 56, 'F');
+    setFill(FOREST);
+    doc.rect(0, 0, pageW * 0.55, 56, 'F');
+    // Subtle inner highlight band
+    setFill(FOREST_DEEP);
+    doc.rect(0, 50, pageW, 6, 'F');
+
+    // Logo block
+    const logoBoxW = 14;
+    setFill(FOREST_DEEP);
+    doc.roundedRect(margin, 10, logoBoxW, logoBoxW, 2, 2, 'F');
+    setStroke(GOLD);
+    doc.setLineWidth(0.25);
+    doc.roundedRect(margin, 10, logoBoxW, logoBoxW, 2, 2, 'S');
+
+    doc.setFont('times', 'italic');
+    doc.setFontSize(20);
+    setTextColor(GOLD);
+    doc.text('V', margin + logoBoxW / 2, 20.5, { align: 'center' });
+    setFill(GOLD);
+    doc.circle(margin + logoBoxW - 3, 21, 0.6, 'F');
+
+    // Brand wordmark
+    doc.setFont('times', 'normal');
+    doc.setFontSize(15);
+    setTextColor(CREAM);
+    doc.text('Velli', margin + logoBoxW + 4, 17.2);
+    doc.setFont('times', 'italic');
+    setTextColor(GOLD);
+    doc.text(' · Pro', margin + logoBoxW + 4 + doc.getTextWidth('Velli'), 17.2);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    setTextColor('#D8C9A8');
+    doc.text('DIAGNÓSTICO CAPILAR', margin + logoBoxW + 4, 22, { charSpace: 0.6 });
+
+    // Folio (right)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    setTextColor('#C9B68F');
+    doc.text('FOLIO', pageW - margin, 13.5, { align: 'right', charSpace: 0.6 });
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(9);
+    setTextColor(GOLD);
+    doc.text(folio, pageW - margin, 17.5, { align: 'right' });
+    doc.setFontSize(7.5);
+    setTextColor('#C9B68F');
+    doc.text(today, pageW - margin, 21.2, { align: 'right' });
+
+    // Headline — cliente name (Para, Nombre Apellido)
+    doc.setFont('times', 'italic');
+    doc.setFontSize(10);
+    setTextColor(GOLD);
+    doc.text('Para,', margin, 33);
+
+    doc.setFont('times', 'normal');
+    doc.setFontSize(26);
+    setTextColor(CREAM);
+    const partes = clienta.nombre.split(' ');
+    const main = partes.slice(0, 2).join(' ');
+    const tail = partes.slice(2).join(' ');
+    doc.text(main, margin, 44);
+    if (tail) {
+      doc.setFont('times', 'italic');
+      setTextColor(GOLD);
+      const mainW = doc.getTextWidth(main + ' ');
+      doc.setFont('times', 'normal');
+      doc.setFontSize(26);
+      doc.setFont('times', 'italic');
+      doc.text(' ' + tail, margin + mainW - 1, 44);
+    }
+
+    // Hair type chip (right)
+    const tipo = consulta.tipoRizoPrincipal || '—';
+    const lbl = tipoLabel(consulta.tipoRizoPrincipal);
+    const chipText = `tipo ${tipo} · ${lbl}`;
+    doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
-    setTextColor('#999999');
-    doc.setFont('helvetica', 'italic');
-    doc.text('Velli Pro • Inteligencia capilar a tu alcance', pageW / 2, 287, { align: 'center' });
+    const chipW = doc.getTextWidth(chipText) + 12;
+    const chipX = pageW - margin - chipW;
+    const chipY = 39;
+    setStroke(GOLD);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(chipX, chipY, chipW, 7.5, 3.5, 3.5, 'S');
+    setFill(GOLD);
+    doc.circle(chipX + 4, chipY + 3.8, 0.9, 'F');
+    setTextColor(GOLD);
+    doc.text(chipText, chipX + 7, chipY + 5);
+
+    // ── meta strip ────────────────────────────────────────────────────────
+    setFill(CREAM);
+    doc.rect(0, 56, pageW, 9, 'F');
+    setStroke(BORDER);
+    doc.setLineWidth(0.2);
+    doc.line(0, 65, pageW, 65);
+
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(8);
+    setTextColor(TEXT_GRAY);
+
+    const stripItems: string[] = [];
+    if (clienta.telefono) stripItems.push(`· ${clienta.telefono}`);
+    if (clienta.edad) stripItems.push(`· ${clienta.edad} años`);
+    stripItems.push(`· consulta #${consulta.numeroConsulta}`);
+    stripItems.push(`· ${today}`);
+    const cellW = contentW / stripItems.length;
+    stripItems.forEach((s, i) => {
+      doc.text(s, margin + i * cellW, 61);
+    });
   };
 
-  // ── Header ──
-  setFill(GREEN);
-  doc.rect(0, 0, pageW, 35, 'F');
+  // ── pagination state ─────────────────────────────────────────────────────
+  let y = 0;
+  let pageNo = 1;
+  const pageBreakAt = pageH - 30;
 
-  doc.setFontSize(20);
-  setTextColor('#FFFFFF');
-  doc.setFont('helvetica', 'bold');
-  doc.text('Velli', margin, 15);
+  const addNewPage = () => {
+    drawFooter(pageNo);
+    doc.addPage();
+    pageNo += 1;
+    y = margin + 6;
+    drawFooter(pageNo);
+  };
 
-  doc.setFontSize(10);
-  setTextColor(AMBER);
-  doc.setFont('helvetica', 'bold');
-  doc.text('INTELIGENCIA CAPILAR', margin, 22);
+  const need = (h: number) => {
+    if (y + h > pageBreakAt) addNewPage();
+  };
 
-  doc.setFontSize(8);
-  setTextColor('#B8D4B5');
-  doc.setFont('helvetica', 'italic');
-  doc.text('Inteligencia capilar profesional', margin, 28);
-
-  // Date
-  doc.setFontSize(9);
-  setTextColor('#FFFFFF');
-  doc.setFont('helvetica', 'normal');
-  doc.text('Diagnóstico Capilar Profesional', pageW - margin, 15, { align: 'right' });
-  doc.text(formatDate(consulta.fecha), pageW - margin, 22, { align: 'right' });
-  doc.text(`Consulta #${consulta.numeroConsulta}`, pageW - margin, 28, { align: 'right' });
-
-  y = 42;
-
-  // ── Resumen ejecutivo ──────────────────────────────────────────────────────
-  // Client name
-  doc.setFontSize(18);
-  setTextColor(GREEN);
-  doc.setFont('helvetica', 'bold');
-  doc.text(clienta.nombre, margin, y);
-  y += 6;
-
-  doc.setFontSize(9);
-  setTextColor(TEXT_GRAY);
-  doc.setFont('helvetica', 'normal');
-  const infoLine = [
-    clienta.edad ? `${clienta.edad} años` : '',
-    clienta.telefono ? `Tel: ${clienta.telefono}` : '',
-  ].filter(Boolean).join('  |  ');
-  if (infoLine) { doc.text(infoLine, margin, y); y += 6; }
-
-  // One-liner summary box
-  const oneLiner = buildOneLiner(consulta);
-  setFill('#FBF4EC');
-  doc.roundedRect(margin, y, pageW - margin * 2, 10, 2, 2, 'F');
-  doc.setFontSize(9);
-  setTextColor(AMBER);
-  doc.setFont('helvetica', 'bold');
-  doc.text(oneLiner, margin + 3, y + 6.5);
-  y += 14;
-
-  // Hair type + key badges row
-  const summaryBadges = [
-    { label: 'Tipo', value: consulta.tipoRizoPrincipal || '—' },
-    { label: 'Tratamiento', value: consulta.resultado?.tratamientoPrincipal?.split(' ')[0] || '—' },
-    { label: 'Porosidad', value: consulta.porosidad || '—' },
-    { label: 'Fecha', value: formatDate(consulta.fecha) },
-  ];
-  const sbW = (pageW - margin * 2) / summaryBadges.length;
-  summaryBadges.forEach((b, i) => {
-    setFill(i === 0 ? LIGHT_GREEN : '#F9F9F9');
-    doc.roundedRect(margin + i * sbW, y, sbW - 1.5, 13, 2, 2, 'F');
+  // ── editorial section head ───────────────────────────────────────────────
+  const sectionHead = (num: string, eyebrow: string, title: string) => {
+    need(20);
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(8);
+    setTextColor(TEXT_MUTED);
+    doc.text(`· ${num}`, margin, y);
+    doc.setFont('helvetica', 'bold');
     doc.setFontSize(7);
-    setTextColor(TEXT_GRAY);
-    doc.setFont('helvetica', 'normal');
-    doc.text(b.label, margin + i * sbW + sbW / 2, y + 4, { align: 'center' });
-    doc.setFontSize(i === 0 ? 11 : 8);
-    setTextColor(i === 0 ? GREEN : TEXT_DARK);
-    doc.setFont('helvetica', 'bold');
-    doc.text(b.value.charAt(0).toUpperCase() + b.value.slice(1), margin + i * sbW + sbW / 2, y + 10, { align: 'center' });
-  });
-  y += 17;
+    setTextColor(FOREST);
+    doc.text(eyebrow.toUpperCase(), margin + 7, y, { charSpace: 0.7 });
 
-  // Divider
-  setFill(AMBER);
-  doc.rect(margin, y, pageW - margin * 2, 0.8, 'F');
-  y += 6;
-
-  // ── Section helpers ────────────────────────────────────────────────────────
-  const sectionTitle = (title: string) => {
-    checkNewPage(15);
-    setFill(LIGHT_GREEN);
-    doc.rect(margin, y - 4, pageW - margin * 2, 10, 'F');
-    doc.setFontSize(11);
-    setTextColor(GREEN);
-    doc.setFont('helvetica', 'bold');
-    doc.text(title, margin + 2, y + 2);
-    y += 10;
-  };
-
-  const bulletItem = (text: string, indent = 0) => {
-    checkNewPage(8);
-    doc.setFontSize(9);
+    doc.setFont('times', 'normal');
+    doc.setFontSize(15);
     setTextColor(TEXT_DARK);
-    doc.setFont('helvetica', 'normal');
-    const lines = doc.splitTextToSize(`• ${text}`, pageW - margin * 2 - indent - 5);
-    doc.text(lines, margin + indent + 2, y);
-    y += lines.length * 5;
+    doc.text(title, margin, y + 6);
+
+    // gradient line — fade forest → paper across the section width
+    const lineY = y + 8.2;
+    const segs = 14;
+    const seg = contentW / segs;
+    for (let i = 0; i < segs; i++) {
+      const t = i / segs;
+      const r = Math.round(45 + (255 - 45) * t);
+      const g = Math.round(90 + (255 - 90) * t);
+      const b = Math.round(39 + (255 - 39) * t);
+      doc.setFillColor(r, g, b);
+      doc.rect(margin + i * seg, lineY, seg + 0.3, 0.4, 'F');
+    }
+    y += 12;
   };
 
-  const labelValue = (label: string, value: string) => {
-    checkNewPage(7);
-    doc.setFontSize(9);
-    setTextColor(TEXT_GRAY);
+  // ── metric card (4-up grid) ──────────────────────────────────────────────
+  const metricCard = (
+    x: number,
+    yy: number,
+    w: number,
+    h: number,
+    label: string,
+    value: string,
+    sub: string
+  ) => {
+    setFill(PAPER);
+    setStroke(BORDER_SOFT);
+    doc.setLineWidth(0.25);
+    doc.roundedRect(x, yy, w, h, 1.5, 1.5, 'FD');
+    // accent strip
+    setFill(FOREST);
+    doc.rect(x, yy, 8, 0.6, 'F');
+
     doc.setFont('helvetica', 'bold');
-    doc.text(`${label}:`, margin + 2, y);
+    doc.setFontSize(6.2);
+    setTextColor(TEXT_MUTED);
+    doc.text(label.toUpperCase(), x + 3, yy + 4.5, { charSpace: 0.7 });
+
+    doc.setFont('times', 'normal');
+    doc.setFontSize(13);
     setTextColor(TEXT_DARK);
-    doc.setFont('helvetica', 'normal');
-    doc.text(value, margin + 35, y);
-    y += 6;
-  };
+    const vLines = doc.splitTextToSize(value, w - 6);
+    doc.text(vLines[0] || value, x + 3, yy + 10);
 
-  // ── Section 1: Diagnóstico ─────────────────────────────────────────────────
-  sectionTitle('1. Diagnóstico Capilar');
-
-  const badges = [
-    { label: 'Tipo de Rizo', value: consulta.tipoRizoPrincipal },
-    { label: 'Porosidad', value: consulta.porosidad || '—' },
-    { label: 'Densidad', value: consulta.densidad || '—' },
-    { label: 'Grosor', value: consulta.grosor || '—' },
-    { label: 'Elasticidad', value: consulta.elasticidad || '—' },
-  ];
-
-  const badgeW = (pageW - margin * 2) / badges.length;
-  badges.forEach((b, i) => {
-    setFill('#EEF5ED');
-    doc.roundedRect(margin + i * badgeW, y, badgeW - 2, 14, 2, 2, 'F');
+    doc.setFont('times', 'italic');
     doc.setFontSize(7);
-    setTextColor(TEXT_GRAY);
-    doc.setFont('helvetica', 'normal');
-    doc.text(b.label, margin + i * badgeW + badgeW / 2 - 1, y + 4, { align: 'center' });
-    doc.setFontSize(9);
-    setTextColor(GREEN);
-    doc.setFont('helvetica', 'bold');
-    doc.text(b.value.charAt(0).toUpperCase() + b.value.slice(1), margin + i * badgeW + badgeW / 2 - 1, y + 10, { align: 'center' });
-  });
-  y += 18;
-
-  const balanceLabels: Record<string, string> = {
-    hidratacion: 'Necesita HIDRATACIÓN',
-    nutricion: 'Necesita NUTRICIÓN',
-    proteina: 'Necesita PROTEÍNA',
-    equilibrado: 'EQUILIBRADO',
+    setTextColor(TEXT_MUTED);
+    const subLines = doc.splitTextToSize(sub, w - 6);
+    doc.text(subLines.slice(0, 2), x + 3, yy + 14);
   };
-  const balanceBg = consulta.balanceHP === 'proteina' ? '#FFEDD5'
-    : consulta.balanceHP === 'hidratacion' ? '#DBEAFE'
-    : consulta.balanceHP === 'nutricion' ? '#D1FAE5' : '#EDE9FE';
-  const balanceText = consulta.balanceHP === 'proteina' ? '#9A3412'
-    : consulta.balanceHP === 'hidratacion' ? '#1D4ED8'
-    : consulta.balanceHP === 'nutricion' ? '#065F46' : '#5B21B6';
 
-  setFill(balanceBg);
-  doc.roundedRect(margin, y, pageW - margin * 2, 10, 3, 3, 'F');
-  doc.setFontSize(10);
-  setTextColor(balanceText);
-  doc.setFont('helvetica', 'bold');
-  doc.text(`Balance: ${(consulta.balanceHP ? balanceLabels[consulta.balanceHP] : undefined) || consulta.balanceHP || '—'}`, pageW / 2, y + 7, { align: 'center' });
-  y += 15;
-
-  if (consulta.problemas.length) {
-    doc.setFontSize(9);
-    setTextColor(TEXT_GRAY);
+  // ── editorial chip (used for treatment names) ────────────────────────────
+  const editorialChip = (text: string, bg: string, color: string, accent: string) => {
+    need(11);
+    setFill(bg);
+    doc.roundedRect(margin, y, contentW, 9, 2, 2, 'F');
+    setFill(accent);
+    doc.rect(margin, y, 1.6, 9, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.text('Problemas detectados:', margin + 2, y);
-    y += 5;
-    consulta.problemas.forEach((p) => bulletItem(p));
+    doc.setFontSize(10);
+    setTextColor(color);
+    doc.text(text, margin + 5, y + 6);
+    y += 11;
+  };
+
+  // ── numbered card list (Routine / Plan items) ────────────────────────────
+  const numberedCard = (n: string, title: string, subtitle?: string) => {
+    const lines = subtitle ? doc.splitTextToSize(subtitle, contentW - 24) as string[] : [];
+    const cardH = Math.max(13, 9 + lines.length * 4);
+    need(cardH + 2);
+
+    setFill(PAPER);
+    setStroke(BORDER_SOFT);
+    doc.setLineWidth(0.25);
+    doc.roundedRect(margin, y, contentW, cardH, 2, 2, 'FD');
+
+    setFill(CREAM_PAPER);
+    doc.roundedRect(margin + 2, y + 2, 9, 9, 1.5, 1.5, 'F');
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(8.5);
+    setTextColor(GOLD_DEEP);
+    doc.text(n, margin + 6.5, y + 8, { align: 'center' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9.5);
+    setTextColor(TEXT_DARK);
+    doc.text(title, margin + 14, y + 6);
+
+    if (subtitle) {
+      doc.setFont('times', 'italic');
+      doc.setFontSize(8.5);
+      setTextColor(TEXT_GRAY);
+      doc.text(lines, margin + 14, y + 10);
+    }
+
+    y += cardH + 2;
+  };
+
+  // ── recommendations panel (numbered, dashed dividers) ────────────────────
+  const recommendationsPanel = (items: string[]) => {
+    if (!items.length) return;
+    need(14);
+    const wrapped = items.map((it) => doc.splitTextToSize(it, contentW - 18) as string[]);
+    const totalH = 6 + wrapped.reduce((acc, w) => acc + Math.max(5, w.length * 4) + 2, 0);
+    need(totalH + 2);
+
+    setFill(ACCENT_PALE);
+    setStroke('#C8DDC4');
+    doc.setLineWidth(0.25);
+    doc.roundedRect(margin, y, contentW, totalH, 2.5, 2.5, 'FD');
+
+    let yy = y + 5;
+    wrapped.forEach((lines, i) => {
+      doc.setFont('courier', 'bold');
+      doc.setFontSize(8);
+      setTextColor(FOREST);
+      doc.text(String(i + 1).padStart(2, '0'), margin + 4, yy);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      setTextColor(TEXT_DARK);
+      doc.text(lines, margin + 12, yy);
+      yy += Math.max(5, lines.length * 4);
+
+      if (i < wrapped.length - 1) {
+        setStroke('#9DBE9A');
+        doc.setLineDashPattern([0.6, 0.8], 0);
+        doc.setLineWidth(0.2);
+        doc.line(margin + 12, yy + 0.5, pageW - margin - 6, yy + 0.5);
+        doc.setLineDashPattern([], 0);
+        yy += 2;
+      }
+    });
+    y += totalH + 4;
+  };
+
+  // ── highlighted line (cuero cabelludo, etc) ──────────────────────────────
+  const highlightLine = (label: string, body: string) => {
+    const lines = doc.splitTextToSize(`${label} · ${body}`, contentW - 8) as string[];
+    const h = 4 + lines.length * 4;
+    need(h + 3);
+    setFill('#FAF5EE');
+    doc.roundedRect(margin, y, contentW, h, 1.5, 1.5, 'F');
+    setFill(FOREST);
+    doc.rect(margin, y, 1.2, h, 'F');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    setTextColor(TEXT_GRAY);
+    doc.text(lines, margin + 4, y + 5);
+    y += h + 3;
+  };
+
+  // ── start drawing ────────────────────────────────────────────────────────
+  drawHeader();
+  y = 72;
+  drawFooter(1);
+
+  // ── Section 01 · Análisis ────────────────────────────────────────────────
+  sectionHead('01', 'Análisis', 'Lo que vimos en tu cabello');
+
+  const tipo = consulta.tipoRizoPrincipal || '—';
+  const cards = [
+    { label: 'Tipo de rizo', value: tipo, sub: tipoLabel(consulta.tipoRizoPrincipal) },
+    { label: 'Porosidad', value: cap(consulta.porosidad), sub: 'absorción y retención' },
+    { label: 'Densidad', value: cap(consulta.densidad), sub: 'hebras por cm²' },
+    { label: 'Elasticidad', value: cap(consulta.elasticidad), sub: 'recuperación al estirar' },
+  ];
+  const gap = 3;
+  const cardW = (contentW - gap * 3) / 4;
+  const cardH = 18;
+  need(cardH + 4);
+  cards.forEach((c, i) => {
+    metricCard(margin + i * (cardW + gap), y, cardW, cardH, c.label, c.value, c.sub);
+  });
+  y += cardH + 6;
+
+  // Photo strip — only if any photos
+  const photos: { src: string; label: string }[] = [];
+  if (consulta.fotoAntes) photos.push({ src: consulta.fotoAntes, label: 'Antes' });
+  if (consulta.fotoDespues) photos.push({ src: consulta.fotoDespues, label: 'Después' });
+  if (consulta.fotoAnalisis && consulta.fotoAnalisis[0]) {
+    photos.push({ src: consulta.fotoAnalisis[0], label: 'Análisis IA' });
   }
-  y += 3;
+  if (photos.length > 0) {
+    need(38);
+    const slots = Math.min(photos.length, 3);
+    const photoGap = 3;
+    const slotW = (contentW - photoGap * (slots - 1)) / slots;
+    const slotH = 32;
+    for (let i = 0; i < slots; i++) {
+      const x = margin + i * (slotW + photoGap);
+      setFill('#3D2A1C');
+      doc.roundedRect(x, y, slotW, slotH, 2, 2, 'F');
+      await addPhotoToDoc(doc, photos[i].src, x, y, slotW, slotH);
+      // caption gradient
+      setFill('#1F1108');
+      doc.rect(x, y + slotH - 6, slotW, 6, 'F');
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(6.5);
+      setTextColor('#F0E6D0');
+      doc.text(`· ${photos[i].label.toUpperCase()}`, x + 2, y + slotH - 1.8, { charSpace: 0.6 });
+    }
+    y += slotH + 4;
+  }
 
-  // ── Section 2: Treatment ───────────────────────────────────────────────────
-  sectionTitle('2. Tratamiento Recomendado');
+  // Cuero cabelludo line
+  if (consulta.estadoCueroCabelludo?.length) {
+    highlightLine('Cuero cabelludo', consulta.estadoCueroCabelludo.join(', '));
+  }
+
+  // Balance HP / Problemas (preserved from original)
+  const balanceLabels: Record<string, string> = {
+    hidratacion: 'Necesita hidratación',
+    nutricion: 'Necesita nutrición',
+    proteina: 'Necesita proteína',
+    equilibrado: 'Equilibrado',
+  };
+  if (consulta.balanceHP) {
+    const bg =
+      consulta.balanceHP === 'proteina' ? '#FFEDD5'
+      : consulta.balanceHP === 'hidratacion' ? '#DBEAFE'
+      : consulta.balanceHP === 'nutricion' ? '#D1FAE5' : '#EDE9FE';
+    const tc =
+      consulta.balanceHP === 'proteina' ? '#9A3412'
+      : consulta.balanceHP === 'hidratacion' ? '#1D4ED8'
+      : consulta.balanceHP === 'nutricion' ? '#065F46' : '#5B21B6';
+    editorialChip(`Balance HP · ${balanceLabels[consulta.balanceHP]}`, bg, tc, tc);
+  }
+
+  if (consulta.problemas?.length) {
+    need(8 + consulta.problemas.length * 5);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    setTextColor(TEXT_GRAY);
+    doc.text('Problemas detectados', margin, y);
+    y += 4;
+    consulta.problemas.forEach((p) => {
+      need(5);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      setTextColor(TEXT_DARK);
+      const lines = doc.splitTextToSize(`· ${p}`, contentW - 4) as string[];
+      doc.text(lines, margin + 2, y);
+      y += lines.length * 4;
+    });
+    y += 3;
+  }
+  y += 4;
+
+  // ── Section 02 · Tratamiento ─────────────────────────────────────────────
+  sectionHead('02', 'Tratamiento', 'Tu plan principal');
 
   const tratBg = getTratamientoBg(consulta.resultado.tratamientoPrincipal);
   const tratColor = getTratamientoTextColor(consulta.resultado.tratamientoPrincipal);
-  setFill(tratBg);
-  doc.roundedRect(margin, y, pageW - margin * 2, 10, 3, 3, 'F');
-  doc.setFontSize(11);
-  setTextColor(tratColor);
-  doc.setFont('helvetica', 'bold');
-  doc.text(consulta.resultado.tratamientoPrincipal, pageW / 2, y + 7, { align: 'center' });
-  y += 15;
+  editorialChip(consulta.resultado.tratamientoPrincipal, tratBg, tratColor, tratColor);
 
-  if (consulta.resultado.tratamientosAdicionales.length) {
-    doc.setFontSize(9);
-    setTextColor(TEXT_GRAY);
+  if (consulta.resultado.tratamientosAdicionales?.length) {
+    need(8);
     doc.setFont('helvetica', 'bold');
-    doc.text('Tratamientos adicionales:', margin + 2, y);
-    y += 5;
-    consulta.resultado.tratamientosAdicionales.forEach((t) => bulletItem(t));
+    doc.setFontSize(8.5);
+    setTextColor(TEXT_GRAY);
+    doc.text('Tratamientos adicionales', margin, y);
+    y += 4;
+    consulta.resultado.tratamientosAdicionales.forEach((t, i) => {
+      numberedCard(String(i + 1).padStart(2, '0'), t);
+    });
   }
   y += 3;
 
-  // ── Section 3: Cronograma ──────────────────────────────────────────────────
-  sectionTitle('3. Cronograma Capilar — 4 Semanas');
-
+  // ── Section 03 · Cronograma ──────────────────────────────────────────────
+  sectionHead('03', 'Cronograma', '4 semanas, paso a paso');
   const semanas = [
     { label: 'Semana 1', value: consulta.resultado.cronograma.semana1 },
     { label: 'Semana 2', value: consulta.resultado.cronograma.semana2 },
     { label: 'Semana 3', value: consulta.resultado.cronograma.semana3 },
     { label: 'Semana 4', value: consulta.resultado.cronograma.semana4 },
   ];
-  const semW = (pageW - margin * 2) / 4;
+  const sgap = 3;
+  const sw = (contentW - sgap * 3) / 4;
+  const sh = 22;
+  need(sh + 4);
   semanas.forEach((s, i) => {
+    const x = margin + i * (sw + sgap);
     const bg = getTratamientoBg(s.value);
     const tc = getTratamientoTextColor(s.value);
     setFill(bg);
-    doc.roundedRect(margin + i * semW + 1, y, semW - 3, 18, 2, 2, 'F');
-    doc.setFontSize(7);
-    setTextColor(TEXT_GRAY);
-    doc.setFont('helvetica', 'normal');
-    doc.text(s.label, margin + i * semW + semW / 2 - 1, y + 5, { align: 'center' });
-    doc.setFontSize(8);
+    doc.roundedRect(x, y, sw, sh, 2, 2, 'F');
+    setFill(tc);
+    doc.rect(x, y, sw, 0.5, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    setTextColor(TEXT_MUTED);
+    doc.text(s.label.toUpperCase(), x + 3, y + 4.5, { charSpace: 0.6 });
+    doc.setFont('times', 'normal');
+    doc.setFontSize(9.5);
     setTextColor(tc);
-    doc.setFont('helvetica', 'bold');
-    const lines = doc.splitTextToSize(s.value, semW - 6);
-    doc.text(lines[0] || s.value, margin + i * semW + semW / 2 - 1, y + 12, { align: 'center' });
+    const lines = doc.splitTextToSize(s.value, sw - 6) as string[];
+    doc.text(lines.slice(0, 3), x + 3, y + 9);
   });
-  y += 24;
+  y += sh + 6;
 
-  // ── Section 4: Técnica ─────────────────────────────────────────────────────
-  sectionTitle('4. Técnica de Definición');
+  // ── Section 04 · Técnica ─────────────────────────────────────────────────
+  sectionHead('04', 'Técnica', 'Definición y secado');
+  editorialChip(consulta.resultado.tecnicaDefinicion, '#FBF4EC', GOLD_DEEP, GOLD_DEEP);
 
-  setFill('#FBF4EC');
-  doc.roundedRect(margin, y, pageW - margin * 2, 8, 2, 2, 'F');
-  doc.setFontSize(10);
-  setTextColor(AMBER);
-  doc.setFont('helvetica', 'bold');
-  doc.text(consulta.resultado.tecnicaDefinicion, margin + 3, y + 5);
-  y += 12;
-
-  doc.setFontSize(9);
-  setTextColor(TEXT_DARK);
+  const tecLines = doc.splitTextToSize(consulta.resultado.tecnicaDescripcion, contentW - 4) as string[];
+  need(tecLines.length * 4 + 4);
   doc.setFont('helvetica', 'normal');
-  const tecLines = doc.splitTextToSize(consulta.resultado.tecnicaDescripcion, pageW - margin * 2 - 4);
-  checkNewPage(tecLines.length * 5 + 5);
+  doc.setFontSize(8.5);
+  setTextColor(TEXT_DARK);
   doc.text(tecLines, margin + 2, y);
-  y += tecLines.length * 5 + 4;
+  y += tecLines.length * 4 + 3;
 
-  labelValue('Método de secado', consulta.resultado.metodoSecado);
-  y += 3;
+  highlightLine('Método de secado', consulta.resultado.metodoSecado);
+  y += 2;
 
-  // ── Section 5: Routine ─────────────────────────────────────────────────────
-  checkNewPage(30);
-  sectionTitle('5. Rutina para Casa');
-
-  const routineBlock = (title: string, items: string[]) => {
-    checkNewPage(10 + items.length * 6);
-    doc.setFontSize(9);
-    setTextColor(GREEN);
+  // ── Section 05 · Rutina para casa ────────────────────────────────────────
+  sectionHead('05', 'Rutina', 'Cuidado en casa');
+  const routineBlocks: { title: string; items: string[] }[] = [
+    { title: 'Día de lavado', items: consulta.resultado.cuidadoCasa.diaLavado },
+    { title: 'Mantenimiento nocturno', items: consulta.resultado.cuidadoCasa.nocturno },
+    { title: 'Refresh días 2-3', items: consulta.resultado.cuidadoCasa.refresh },
+    { title: 'Evitar', items: consulta.resultado.cuidadoCasa.evitar },
+  ];
+  routineBlocks.forEach((blk, i) => {
+    if (!blk.items?.length) return;
+    need(10 + blk.items.length * 5);
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(8);
+    setTextColor(TEXT_MUTED);
+    doc.text(`· ${String(i + 1).padStart(2, '0')}`, margin, y);
     doc.setFont('helvetica', 'bold');
-    doc.text(title, margin + 2, y);
-    y += 5;
-    items.forEach((item) => bulletItem(item, 2));
+    doc.setFontSize(9);
+    setTextColor(FOREST);
+    doc.text(blk.title.toUpperCase(), margin + 7, y, { charSpace: 0.6 });
+    y += 4.5;
+    blk.items.forEach((it) => {
+      need(5);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      setTextColor(TEXT_DARK);
+      const lines = doc.splitTextToSize(`· ${it}`, contentW - 6) as string[];
+      doc.text(lines, margin + 4, y);
+      y += lines.length * 4;
+    });
     y += 3;
-  };
+  });
 
-  routineBlock('Día de Lavado', consulta.resultado.cuidadoCasa.diaLavado);
-  routineBlock('Mantenimiento Nocturno', consulta.resultado.cuidadoCasa.nocturno);
-  routineBlock('Refresh Días 2-3', consulta.resultado.cuidadoCasa.refresh);
-  routineBlock('Evitar', consulta.resultado.cuidadoCasa.evitar);
-
-  // ── Section 6: Productos recomendados ──────────────────────────────────────
-  checkNewPage(60);
-  sectionTitle('6. Productos Recomendados Para Ti');
-
-  // Reconstruye la recomendación estructurada para consultas antiguas que no la tengan.
+  // ── Section 06 · Productos recomendados ──────────────────────────────────
+  sectionHead('06', 'Productos', 'Para tu rutina diaria');
   const reco: RecomendacionProductos =
     consulta.resultado.recomendacionProductos ??
     buildRecomendacionProductos({
@@ -404,212 +687,190 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
       embarazo: consulta.embarazo,
     });
 
-  doc.setFontSize(9);
-  setTextColor(TEXT_DARK);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont('times', 'italic');
+  doc.setFontSize(9.5);
+  setTextColor(TEXT_GRAY);
   const introLines = doc.splitTextToSize(
-    `Tu cabello tipo ${consulta.tipoRizoPrincipal || '—'} necesita productos con estas características:`,
-    pageW - margin * 2 - 4
-  );
+    `Para cabello tipo ${tipo}, busca productos con estas características:`,
+    contentW - 4
+  ) as string[];
+  need(introLines.length * 4 + 2);
   doc.text(introLines, margin + 2, y);
-  y += introLines.length * 5 + 3;
+  y += introLines.length * 4 + 2;
 
-  // Buscar
-  checkNewPage(10 + reco.ingredientesBuscar.length * 5);
-  doc.setFontSize(10);
-  setTextColor(GREEN);
-  doc.setFont('helvetica', 'bold');
-  doc.text('DEBES BUSCAR:', margin + 2, y);
-  y += 6;
-  reco.ingredientesBuscar.forEach((ing) => {
-    checkNewPage(8);
-    doc.setFontSize(9);
-    setTextColor(GREEN);
-    doc.setFont('helvetica', 'bold');
-    doc.text('✓', margin + 3, y);
-    setTextColor(TEXT_DARK);
-    doc.setFont('helvetica', 'normal');
-    const lines = doc.splitTextToSize(ing, pageW - margin * 2 - 10);
-    doc.text(lines, margin + 8, y);
-    y += lines.length * 5;
-  });
-  y += 3;
+  // Buscar / Evitar — two columns
+  if (reco.ingredientesBuscar?.length || reco.ingredientesEvitar?.length) {
+    need(8);
+    const colW = (contentW - 4) / 2;
 
-  // Evitar
-  checkNewPage(10 + reco.ingredientesEvitar.length * 5);
-  doc.setFontSize(10);
-  setTextColor('#8E2D2D');
-  doc.setFont('helvetica', 'bold');
-  doc.text('EVITA:', margin + 2, y);
-  y += 6;
-  reco.ingredientesEvitar.forEach((ing) => {
-    checkNewPage(8);
-    doc.setFontSize(9);
-    setTextColor('#8E2D2D');
     doc.setFont('helvetica', 'bold');
-    doc.text('✗', margin + 3, y);
-    setTextColor(TEXT_DARK);
-    doc.setFont('helvetica', 'normal');
-    const lines = doc.splitTextToSize(ing, pageW - margin * 2 - 10);
-    doc.text(lines, margin + 8, y);
-    y += lines.length * 5;
-  });
-  y += 4;
+    doc.setFontSize(7.5);
+    setTextColor(FOREST);
+    doc.text('DEBES BUSCAR', margin, y, { charSpace: 0.7 });
+    setTextColor(DANGER);
+    doc.text('EVITA', margin + colW + 4, y, { charSpace: 0.7 });
+    y += 4;
 
-  // Rutina
-  checkNewPage(12 + reco.rutina.length * 8);
-  doc.setFontSize(10);
-  setTextColor(GREEN);
-  doc.setFont('helvetica', 'bold');
-  doc.text('RUTINA RECOMENDADA:', margin + 2, y);
-  y += 6;
-  reco.rutina.forEach((paso, i) => {
-    checkNewPage(10);
-    doc.setFontSize(9);
-    setTextColor(AMBER);
+    const buscar = reco.ingredientesBuscar || [];
+    const evitar = reco.ingredientesEvitar || [];
+    const rowsCount = Math.max(buscar.length, evitar.length);
+    for (let i = 0; i < rowsCount; i++) {
+      const b = buscar[i];
+      const e = evitar[i];
+      const bLines = b ? (doc.splitTextToSize(b, colW - 6) as string[]) : [];
+      const eLines = e ? (doc.splitTextToSize(e, colW - 6) as string[]) : [];
+      const rowH = Math.max(bLines.length, eLines.length, 1) * 4 + 1;
+      need(rowH);
+      if (b) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        setTextColor(FOREST);
+        doc.text('+', margin, y);
+        doc.setFont('helvetica', 'normal');
+        setTextColor(TEXT_DARK);
+        doc.text(bLines, margin + 4, y);
+      }
+      if (e) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        setTextColor(DANGER);
+        doc.text('×', margin + colW + 4, y);
+        doc.setFont('helvetica', 'normal');
+        setTextColor(TEXT_DARK);
+        doc.text(eLines, margin + colW + 8, y);
+      }
+      y += rowH;
+    }
+    y += 3;
+  }
+
+  // Rutina recomendada — numbered cards
+  if (reco.rutina?.length) {
+    need(8);
     doc.setFont('helvetica', 'bold');
-    doc.text(`${i + 1}.`, margin + 3, y);
-    setTextColor(TEXT_DARK);
-    doc.setFont('helvetica', 'bold');
-    doc.text(paso.producto, margin + 9, y);
-    doc.setFont('helvetica', 'normal');
-    setTextColor(TEXT_GRAY);
-    const cuerpo = ` — ${paso.caracteristicas} · ${paso.frecuencia}`;
-    const wrapped = doc.splitTextToSize(cuerpo, pageW - margin * 2 - 35);
-    doc.text(wrapped, margin + 9 + doc.getTextWidth(paso.producto), y);
-    y += Math.max(5, wrapped.length * 5);
-  });
-  y += 3;
+    doc.setFontSize(7.5);
+    setTextColor(FOREST);
+    doc.text('RUTINA SUGERIDA', margin, y, { charSpace: 0.7 });
+    y += 4;
+    reco.rutina.forEach((paso, i) => {
+      numberedCard(
+        String(i + 1).padStart(2, '0'),
+        paso.producto,
+        `${paso.caracteristicas} · ${paso.frecuencia}`
+      );
+    });
+  }
 
   // Disclaimer
-  checkNewPage(16);
-  setFill('#FBF4EC');
-  const discLines = doc.splitTextToSize(reco.disclaimer, pageW - margin * 2 - 6);
-  const discBoxH = discLines.length * 4.2 + 6;
-  doc.roundedRect(margin, y, pageW - margin * 2, discBoxH, 2, 2, 'F');
-  doc.setFontSize(8);
-  setTextColor(TEXT_GRAY);
-  doc.setFont('helvetica', 'italic');
-  doc.text(discLines, margin + 3, y + 5);
-  y += discBoxH + 4;
-
-  // ── Section 7: Notes ───────────────────────────────────────────────────────
-  if (consulta.resultado.notasAdicionales.length) {
-    checkNewPage(20);
-    sectionTitle('7. Notas Adicionales');
-    consulta.resultado.notasAdicionales.forEach((n) => bulletItem(n));
-    y += 3;
+  if (reco.disclaimer) {
+    const dLines = doc.splitTextToSize(reco.disclaimer, contentW - 8) as string[];
+    const dH = dLines.length * 3.5 + 4;
+    need(dH + 3);
+    setFill('#FBF4EC');
+    doc.roundedRect(margin, y, contentW, dH, 1.5, 1.5, 'F');
+    doc.setFont('times', 'italic');
+    doc.setFontSize(7.5);
+    setTextColor(TEXT_GRAY);
+    doc.text(dLines, margin + 4, y + 4);
+    y += dH + 4;
   }
 
-  // ── Section 8: Estilista notes + satisfaction ──────────────────────────────
+  // ── Section 07 · Recomendaciones (cuidados que multiplican) ──────────────
+  if (consulta.resultado.notasAdicionales?.length) {
+    sectionHead('07', 'Cuidados', 'Hábitos que multiplican el resultado');
+    recommendationsPanel(consulta.resultado.notasAdicionales);
+  }
+
+  // ── Section 08 · Notas de la estilista ───────────────────────────────────
   if (consulta.notasEstilista || consulta.satisfaccionEstrellas) {
-    checkNewPage(25);
-    sectionTitle('8. Notas de la Estilista');
+    sectionHead('08', 'Estilista', 'Observaciones del servicio');
     if (consulta.notasEstilista) {
-      const nLines = doc.splitTextToSize(consulta.notasEstilista, pageW - margin * 2 - 4);
+      const nLines = doc.splitTextToSize(consulta.notasEstilista, contentW - 4) as string[];
+      need(nLines.length * 4 + 4);
+      doc.setFont('times', 'italic');
+      doc.setFontSize(10);
+      setTextColor(TEXT_GRAY);
+      doc.text('"', margin, y + 2);
+      doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       setTextColor(TEXT_DARK);
-      doc.setFont('helvetica', 'normal');
-      doc.text(nLines, margin + 2, y);
-      y += nLines.length * 5 + 4;
+      doc.text(nLines, margin + 4, y + 1);
+      y += nLines.length * 4 + 4;
     }
     if (consulta.satisfaccionEstrellas) {
-      doc.setFontSize(9);
-      setTextColor(AMBER);
+      need(7);
       doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.5);
+      setTextColor(TEXT_MUTED);
+      doc.text('SATISFACCIÓN', margin, y, { charSpace: 0.7 });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      setTextColor(GOLD_DEEP);
       const stars = '★'.repeat(consulta.satisfaccionEstrellas) + '☆'.repeat(5 - consulta.satisfaccionEstrellas);
-      doc.text(`Satisfacción: ${stars} (${consulta.satisfaccionEstrellas}/5)`, margin + 2, y);
-      y += 7;
+      doc.text(`${stars}  ${consulta.satisfaccionEstrellas}/5`, margin + 30, y);
+      y += 6;
     }
     y += 3;
   }
 
-  // ── Section 9: Next appointment ────────────────────────────────────────────
-  checkNewPage(25);
-  sectionTitle('9. Próxima Cita');
+  // ── Section 09 · Próxima cita ────────────────────────────────────────────
+  sectionHead('09', 'Continuidad', 'Próxima cita');
+  need(20);
+  setFill(ACCENT_PALE);
+  setStroke('#C8DDC4');
+  doc.setLineWidth(0.25);
+  doc.roundedRect(margin, y, contentW, 16, 2, 2, 'FD');
 
-  setFill(LIGHT_GREEN);
-  doc.roundedRect(margin, y, pageW - margin * 2, 16, 3, 3, 'F');
-  doc.setFontSize(9);
-  setTextColor(TEXT_GRAY);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Intervalo recomendado:', margin + 4, y + 7);
-  doc.setFontSize(10);
-  setTextColor(GREEN);
   doc.setFont('helvetica', 'bold');
-  doc.text(consulta.resultado.intervaloSugerido, margin + 4, y + 13);
+  doc.setFontSize(7);
+  setTextColor(TEXT_MUTED);
+  doc.text('INTERVALO RECOMENDADO', margin + 4, y + 5, { charSpace: 0.7 });
+  doc.setFont('times', 'normal');
+  doc.setFontSize(11);
+  setTextColor(FOREST);
+  doc.text(consulta.resultado.intervaloSugerido, margin + 4, y + 12);
 
   if (consulta.proximaCita) {
-    doc.setFontSize(9);
-    setTextColor(TEXT_GRAY);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Fecha agendada:', pageW / 2 + 4, y + 7);
-    doc.setFontSize(10);
-    setTextColor(GREEN);
     doc.setFont('helvetica', 'bold');
-    doc.text(formatDate(consulta.proximaCita), pageW / 2 + 4, y + 13);
+    doc.setFontSize(7);
+    setTextColor(TEXT_MUTED);
+    doc.text('FECHA AGENDADA', pageW / 2, y + 5, { charSpace: 0.7 });
+    doc.setFont('times', 'italic');
+    doc.setFontSize(11);
+    setTextColor(FOREST);
+    doc.text(formatDate(consulta.proximaCita), pageW / 2, y + 12);
   }
   y += 22;
 
-  // ── Section 10: Registro fotográfico ──────────────────────────────────────
-  const hasAntes = !!consulta.fotoAntes;
-  const hasDespues = !!consulta.fotoDespues;
-  const hasAnalisis = !!(consulta.fotoAnalisis && consulta.fotoAnalisis.length > 0);
-
-  if (hasAntes || hasDespues || hasAnalisis) {
-    addPage();
-    sectionTitle('10. Registro Fotográfico');
-    y += 2;
-
-    // Before / After side by side
-    if (hasAntes || hasDespues) {
-      const maxPhotoW = 85;
-      const maxPhotoH = 80;
-      let rowHeight = 0;
-
-      if (hasAntes) {
-        const h = await addPhotoToDoc(doc, consulta.fotoAntes!, margin, y, maxPhotoW, maxPhotoH);
-        if (h > rowHeight) rowHeight = h;
-        doc.setFontSize(8);
-        setTextColor(TEXT_GRAY);
-        doc.setFont('helvetica', 'bold');
-        doc.text('ANTES', margin + maxPhotoW / 2, y + h + 4, { align: 'center' });
-      }
-
-      if (hasDespues) {
-        const xD = margin + 90;
-        const h = await addPhotoToDoc(doc, consulta.fotoDespues!, xD, y, maxPhotoW, maxPhotoH);
-        if (h > rowHeight) rowHeight = h;
-        doc.setFontSize(8);
-        setTextColor(TEXT_GRAY);
-        doc.setFont('helvetica', 'bold');
-        doc.text('DESPUÉS', xD + maxPhotoW / 2, y + h + 4, { align: 'center' });
-      }
-
-      y += rowHeight + 10;
+  // ── Section 10 · Registro fotográfico (full page if needed) ──────────────
+  const hasAnalisis = !!(consulta.fotoAnalisis && consulta.fotoAnalisis.length > 1);
+  if (hasAnalisis) {
+    addNewPage();
+    y = margin + 6;
+    sectionHead('10', 'Registro', 'Captura del análisis IA');
+    const angleLabels = ['Frontal', 'Lateral', 'Corona'];
+    const photoGap2 = 3;
+    const slots = Math.min(consulta.fotoAnalisis!.length, 3);
+    const slotW = (contentW - photoGap2 * (slots - 1)) / slots;
+    const slotH = 60;
+    need(slotH + 8);
+    for (let i = 0; i < slots; i++) {
+      const x = margin + i * (slotW + photoGap2);
+      setFill('#3D2A1C');
+      doc.roundedRect(x, y, slotW, slotH, 2, 2, 'F');
+      await addPhotoToDoc(doc, consulta.fotoAnalisis![i], x, y, slotW, slotH);
+      setFill('#1F1108');
+      doc.rect(x, y + slotH - 7, slotW, 7, 'F');
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(7);
+      setTextColor('#F0E6D0');
+      doc.text(`· ${(angleLabels[i] || `Foto ${i + 1}`).toUpperCase()}`, x + 2.5, y + slotH - 2.4, { charSpace: 0.6 });
     }
-
-    // Analysis photos row (up to 3)
-    if (hasAnalisis) {
-      checkNewPage(65);
-      const photoW = 53;
-      const photoH = 55;
-      const angleLabels = ['Frontal', 'Lateral', 'Corona'];
-      let rowH = 0;
-
-      for (let i = 0; i < Math.min(consulta.fotoAnalisis!.length, 3); i++) {
-        const xP = margin + i * (photoW + 4);
-        const h = await addPhotoToDoc(doc, consulta.fotoAnalisis![i], xP, y, photoW, photoH);
-        if (h > rowH) rowH = h;
-        doc.setFontSize(7);
-        setTextColor(TEXT_GRAY);
-        doc.setFont('helvetica', 'normal');
-        doc.text(angleLabels[i] || `Foto ${i + 1}`, xP + photoW / 2, y + h + 3, { align: 'center' });
-      }
-      y += rowH + 8;
-    }
+    y += slotH + 4;
   }
 
-  addFooter();
+  // Final footer (with total page count)
+  drawFooter(pageNo, pageNo);
+
   doc.save(`Velli-${clienta.nombre.replace(/\s+/g, '_')}-${consulta.fecha}.pdf`);
 }
