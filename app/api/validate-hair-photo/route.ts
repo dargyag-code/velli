@@ -10,8 +10,11 @@ const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 
 // ── Límites de payload ────────────────────────────────────────────────────
+// 1M chars en base64 ≈ 750KB de binario. 5 fotos × 1M ≈ 5MB JSON, justo por
+// debajo del proxyClientMaxBodySize (5mb) — así el rechazo es 413 limpio en
+// vez de un truncamiento del proxy + 400 de JSON parse.
 const MAX_FOTOS = 5;
-const MAX_FOTO_CHARS = 1_600_000; // ≈ 1.2MB binario
+const MAX_FOTO_CHARS = 1_000_000;
 
 const SYSTEM_PROMPT =
   'Eres un validador estricto de fotos para diagnóstico capilar. Responde SOLO con un JSON válido sin texto adicional, sin markdown, sin backticks.';
