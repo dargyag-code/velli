@@ -1,5 +1,12 @@
 import { EstadoCabelloFoto, AnguloCaptura } from '@/lib/types';
 import { PROMPT_ANALISIS, CONTEXTO_ESTADO, HairAnalysisResult } from '@/lib/hairAnalysis';
+import { requireUser } from '@/lib/api/auth';
+import { analyzeLimiter, checkRateLimit } from '@/lib/api/rateLimit';
+
+// ── Límites de payload ────────────────────────────────────────────────────
+// 1.6M chars en base64 ≈ 1.2MB de binario. 5 fotos máx por request.
+const MAX_FOTOS = 5;
+const MAX_FOTO_CHARS = 1_600_000;
 
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
@@ -152,6 +159,20 @@ async function analyzeHair(
 // ── Route handler ─────────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
+  // 1. Auth
+  const auth = await requireUser();
+  if (auth.response) return auth.response;
+
+  // 2. Rate limit (20/h por user)
+  const rl = await checkRateLimit(analyzeLimiter(), auth.user.id);
+  if (!rl.ok) {
+    const retryAfter = Math.max(0, Math.ceil((rl.reset - Date.now()) / 1000));
+    return Response.json(
+      { error: 'rate_limited', reset: rl.reset },
+      { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+    );
+  }
+
   if (!process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY) {
     return Response.json(
       { error: 'Ningún proveedor de IA configurado en el servidor (ANTHROPIC_API_KEY o OPENAI_API_KEY)' },
@@ -159,6 +180,7 @@ export async function POST(request: Request) {
     );
   }
 
+  // 3. Parseo y validación de payload
   let body: { fotos: string[]; estadoCabello: EstadoCabelloFoto; angulos: AnguloCaptura[] };
   try {
     body = await request.json();
@@ -167,11 +189,34 @@ export async function POST(request: Request) {
   }
 
   const { fotos, estadoCabello, angulos } = body;
-  if (!fotos?.length || !estadoCabello || !angulos?.length) {
+  if (!Array.isArray(fotos) || fotos.length < 1 || fotos.length > MAX_FOTOS) {
     return Response.json(
-      { error: 'Faltan campos requeridos: fotos, estadoCabello, angulos' },
+      { error: `fotos debe ser un array de 1 a ${MAX_FOTOS} elementos` },
       { status: 400 }
     );
+  }
+  if (!estadoCabello || !angulos?.length) {
+    return Response.json(
+      { error: 'Faltan campos requeridos: estadoCabello, angulos' },
+      { status: 400 }
+    );
+  }
+
+  // 4. Tamaño individual de cada foto
+  for (let i = 0; i < fotos.length; i++) {
+    const foto = fotos[i];
+    if (typeof foto !== 'string') {
+      return Response.json(
+        { error: `fotos[${i}] no es una cadena válida` },
+        { status: 400 }
+      );
+    }
+    if (foto.length > MAX_FOTO_CHARS) {
+      return Response.json(
+        { error: `fotos[${i}] excede el tamaño máximo permitido (≈1.2MB)` },
+        { status: 413 }
+      );
+    }
   }
 
   try {

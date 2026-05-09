@@ -3,8 +3,15 @@
 // completo, no pared, no objetos). Se llama desde el cliente sólo cuando
 // el score de calidad es < 80, para no agregar coste innecesario.
 
+import { requireUser } from '@/lib/api/auth';
+import { validateLimiter, checkRateLimit } from '@/lib/api/rateLimit';
+
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+
+// ── Límites de payload ────────────────────────────────────────────────────
+const MAX_FOTOS = 5;
+const MAX_FOTO_CHARS = 1_600_000; // ≈ 1.2MB binario
 
 const SYSTEM_PROMPT =
   'Eres un validador estricto de fotos para diagnóstico capilar. Responde SOLO con un JSON válido sin texto adicional, sin markdown, sin backticks.';
@@ -131,6 +138,20 @@ async function validar(fotos: string[]): Promise<ValidationItem[]> {
 }
 
 export async function POST(request: Request) {
+  // 1. Auth
+  const auth = await requireUser();
+  if (auth.response) return auth.response;
+
+  // 2. Rate limit (60/h por user)
+  const rl = await checkRateLimit(validateLimiter(), auth.user.id);
+  if (!rl.ok) {
+    const retryAfter = Math.max(0, Math.ceil((rl.reset - Date.now()) / 1000));
+    return Response.json(
+      { error: 'rate_limited', reset: rl.reset },
+      { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+    );
+  }
+
   if (!process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY) {
     return Response.json(
       { error: 'Ningún proveedor de IA configurado (ANTHROPIC_API_KEY o OPENAI_API_KEY)' },
@@ -138,6 +159,7 @@ export async function POST(request: Request) {
     );
   }
 
+  // 3. Parseo y validación de payload
   let body: { fotos: string[] };
   try {
     body = await request.json();
@@ -146,11 +168,28 @@ export async function POST(request: Request) {
   }
 
   const { fotos } = body;
-  if (!fotos?.length) {
-    return Response.json({ error: 'Falta el campo `fotos` (array de data URLs)' }, { status: 400 });
+  if (!Array.isArray(fotos) || fotos.length < 1 || fotos.length > MAX_FOTOS) {
+    return Response.json(
+      { error: `fotos debe ser un array de 1 a ${MAX_FOTOS} elementos` },
+      { status: 400 }
+    );
   }
-  if (fotos.length > 5) {
-    return Response.json({ error: 'Máximo 5 fotos por validación' }, { status: 400 });
+
+  // 4. Tamaño individual de cada foto
+  for (let i = 0; i < fotos.length; i++) {
+    const foto = fotos[i];
+    if (typeof foto !== 'string') {
+      return Response.json(
+        { error: `fotos[${i}] no es una cadena válida` },
+        { status: 400 }
+      );
+    }
+    if (foto.length > MAX_FOTO_CHARS) {
+      return Response.json(
+        { error: `fotos[${i}] excede el tamaño máximo permitido (≈1.2MB)` },
+        { status: 413 }
+      );
+    }
   }
 
   try {

@@ -6,6 +6,9 @@ export interface Profile {
   nombreNegocio?: string;
   telefono?: string;
   ciudad?: string;
+  // Opt-in para registrar lat/lon aproximada al tomar fotos del wizard.
+  // Default false — la columna en DB tiene NOT NULL DEFAULT false.
+  permiteUbicacion?: boolean;
 }
 
 type ProfileRow = {
@@ -14,6 +17,7 @@ type ProfileRow = {
   nombre_negocio: string | null;
   telefono: string | null;
   ciudad: string | null;
+  permite_ubicacion: boolean | null;
 };
 
 function rowToProfile(r: ProfileRow): Profile {
@@ -23,6 +27,7 @@ function rowToProfile(r: ProfileRow): Profile {
     nombreNegocio: r.nombre_negocio ?? undefined,
     telefono: r.telefono ?? undefined,
     ciudad: r.ciudad ?? undefined,
+    permiteUbicacion: r.permite_ubicacion ?? false,
   };
 }
 
@@ -49,6 +54,7 @@ export async function updateProfile(updates: Partial<Omit<Profile, 'id'>>): Prom
   if (updates.nombreNegocio !== undefined) patch.nombre_negocio = updates.nombreNegocio || null;
   if (updates.telefono !== undefined) patch.telefono = updates.telefono || null;
   if (updates.ciudad !== undefined) patch.ciudad = updates.ciudad || null;
+  if (updates.permiteUbicacion !== undefined) patch.permite_ubicacion = updates.permiteUbicacion;
 
   const { data, error } = await supabase
     .from('profiles')

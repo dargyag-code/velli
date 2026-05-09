@@ -18,6 +18,11 @@ import {
 import { analizarCabello, HairAnalysisResult } from '@/lib/hairAnalysis';
 import { Btn, Chip } from '@/components/v2';
 import { vibracionSutil, vibracionConfirmacion, vibracionError, sonidoCaptura, sonidoScoreAlto } from '@/lib/haptics';
+import { getProfile } from '@/lib/profile';
+
+// localStorage key del aviso "fotos a IA externa". Sube la versión cuando
+// cambie el copy para que el banner vuelva a aparecer en clientes ya vistos.
+const AI_DISCLAIMER_KEY = 'velli_ai_disclaimer_v1';
 
 // ── Tipos internos ─────────────────────────────────────────────────────────
 type FlowStep = 'estado' | 'camera' | 'score' | 'gallery' | 'analyzing' | 'result' | 'error';
@@ -144,6 +149,35 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
 
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const facingModeRef = useRef<'environment' | 'user'>('environment');
+
+  // Opt-in de geolocalización (profile.permite_ubicacion). Default off.
+  // Se lee una sola vez al montar; si la estilista cambia el toggle en
+  // /configuracion, aplica la próxima vez que abra la cámara.
+  const [permiteUbicacion, setPermiteUbicacion] = useState(false);
+
+  // Disclaimer "fotos a IA externa". Bloquea nada, sólo informa una vez por
+  // dispositivo. Se cierra con "Entendido" → flag en localStorage.
+  const [showAIDisclaimer, setShowAIDisclaimer] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    getProfile()
+      .then((p) => { if (active) setPermiteUbicacion(!!p?.permiteUbicacion); })
+      .catch(() => { /* perfil no cargable → mantener default false */ });
+    if (typeof window !== 'undefined') {
+      try {
+        if (localStorage.getItem(AI_DISCLAIMER_KEY) !== 'ok') {
+          setShowAIDisclaimer(true);
+        }
+      } catch { /* localStorage bloqueado → no mostrar */ }
+    }
+    return () => { active = false; };
+  }, []);
+
+  const dismissAIDisclaimer = useCallback(() => {
+    try { localStorage.setItem(AI_DISCLAIMER_KEY, 'ok'); } catch { /* ignore */ }
+    setShowAIDisclaimer(false);
+  }, []);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -373,7 +407,9 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
   const buildMetadata = useCallback(async (): Promise<CaptureMetadata | null> => {
     if (!estadoCabello) return null;
     const dispositivo = obtenerMetadataDispositivo();
-    const ubicacion = await obtenerUbicacionAproximada();
+    // Geolocalización solo si la estilista hizo opt-in en /configuracion.
+    // Default false → undefined en metadata, no se persiste lat/lon.
+    const ubicacion = permiteUbicacion ? await obtenerUbicacionAproximada() : undefined;
     const track = streamRef.current?.getVideoTracks()[0];
     return {
       estadoCabello,
@@ -395,7 +431,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
       // BUG-2: incluye el resultado de la validación GPT-4o si se ejecutó
       hairPhotoValidation: hairValidation ?? undefined,
     };
-  }, [estadoCabello, scoreResult, fotos, hairValidation]);
+  }, [estadoCabello, scoreResult, fotos, hairValidation, permiteUbicacion]);
 
   const handleCorregirManual = useCallback(async () => {
     // BUG-1 LOG · cada paso de la función
@@ -1820,6 +1856,83 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
           >
             Llenar manualmente sin cámara
           </Btn>
+        </div>
+      )}
+
+      {/* ═══ AI DISCLAIMER · una vez por dispositivo ═══════════════════════ */}
+      {showAIDisclaimer && (
+        <div
+          onClick={dismissAIDisclaimer}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 70,
+            background: 'rgba(20, 36, 26, 0.6)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="v-grain"
+            style={{
+              width: '100%',
+              maxWidth: 460,
+              background: 'var(--bg-card)',
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              padding: '20px 22px calc(26px + env(safe-area-inset-bottom))',
+              boxShadow: '0 -8px 30px rgba(20,15,10,0.18)',
+            }}
+          >
+            <div
+              style={{
+                width: 38,
+                height: 4,
+                borderRadius: 999,
+                background: 'var(--border-strong)',
+                margin: '0 auto 14px',
+              }}
+            />
+            <div className="v-caps" style={{ marginBottom: 6 }}>
+              Cámara IA · privacidad
+            </div>
+            <h3
+              style={{
+                margin: 0,
+                fontFamily: 'var(--font-serif)',
+                fontSize: 22,
+                lineHeight: 1.15,
+                letterSpacing: '-0.015em',
+                color: 'var(--text-main)',
+              }}
+            >
+              Cómo procesamos <em style={{ color: 'var(--secondary-deep)' }}>las fotos</em>
+            </h3>
+            <p
+              style={{
+                margin: '10px 0 18px',
+                fontSize: 13,
+                lineHeight: 1.5,
+                color: 'var(--text-secondary)',
+              }}
+            >
+              Las fotos se envían a servicios de inteligencia artificial externos
+              (Anthropic y OpenAI) para sugerir el tipo de rizo. Evita incluir el
+              rostro de tu clienta cuando sea posible.
+            </p>
+            <Btn
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={dismissAIDisclaimer}
+            >
+              Entendido
+            </Btn>
+          </div>
         </div>
       )}
     </div>

@@ -37,6 +37,11 @@ export default function ConfiguracionPage() {
   const [saveOk, setSaveOk] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Toggle independiente: opt-in de geolocalización en fotos del wizard.
+  // Se persiste inmediatamente al cambiar (sin botón "guardar").
+  const [permiteUbicacion, setPermiteUbicacion] = useState(false);
+  const [savingGeo, setSavingGeo] = useState(false);
+
   const [exportLoading, setExportLoading] = useState(false);
   const [importMsg, setImportMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -53,10 +58,30 @@ export default function ConfiguracionPage() {
           setNombreNegocio(p.nombreNegocio ?? '');
           setTelefono(p.telefono ?? '');
           setCiudad(p.ciudad ?? '');
+          setPermiteUbicacion(!!p.permiteUbicacion);
         }
       })
       .finally(() => setProfileLoading(false));
   }, []);
+
+  const toggleGeo = async () => {
+    if (savingGeo) return;
+    const next = !permiteUbicacion;
+    // Optimistic update con rollback si falla.
+    setPermiteUbicacion(next);
+    setSavingGeo(true);
+    try {
+      const updated = await updateProfile({ permiteUbicacion: next });
+      setProfile(updated);
+      showToast(next ? 'Ubicación activada' : 'Ubicación desactivada', 'success');
+    } catch (e) {
+      console.error('[profile.geo]', e);
+      setPermiteUbicacion(!next);
+      showToast('No se pudo guardar la preferencia', 'error');
+    } finally {
+      setSavingGeo(false);
+    }
+  };
 
   const saveProfile = async () => {
     setSaving(true);
@@ -434,6 +459,14 @@ export default function ConfiguracionPage() {
 
         {/* ── 03 Privacidad ─────────────────────────────────────────── */}
         <SectionEditorial num="03" eyebrow="Privacidad">
+          <ToggleRowEditorial
+            icon={<Shield size={16} />}
+            title="Permitir capturar ubicación aproximada en fotos"
+            sub="Si lo activas, registramos la ubicación aproximada al tomar fotos. No se comparte con terceros, solo queda en tu base de datos."
+            value={permiteUbicacion}
+            onChange={toggleGeo}
+            saving={savingGeo}
+          />
           <RowEditorial
             icon={<Heart size={16} />}
             title="Política de privacidad"
@@ -719,6 +752,105 @@ function RowEditorial({
         )}
       </span>
       {rightEl ?? (interactive ? <ChevronRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} /> : null)}
+    </button>
+  );
+}
+
+function ToggleRowEditorial({
+  icon,
+  title,
+  sub,
+  value,
+  onChange,
+  saving = false,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  sub?: string;
+  value: boolean;
+  onChange: () => void;
+  saving?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onChange}
+      disabled={saving}
+      style={{
+        width: '100%',
+        background: 'transparent',
+        border: 'none',
+        cursor: saving ? 'wait' : 'pointer',
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 12,
+        padding: '12px 14px',
+        borderBottom: '1px solid var(--border-soft)',
+        textAlign: 'left',
+        color: 'var(--text-main)',
+        fontFamily: 'var(--font-sans)',
+        opacity: saving ? 0.7 : 1,
+      }}
+    >
+      <span
+        style={{
+          width: 34,
+          height: 34,
+          borderRadius: 10,
+          background: 'var(--primary-pale)',
+          color: 'var(--primary)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        {icon}
+      </span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: 'block', fontSize: 14, fontWeight: 600, lineHeight: 1.2 }}>{title}</span>
+        {sub && (
+          <span
+            style={{
+              display: 'block',
+              fontSize: 11.5,
+              color: 'var(--text-tertiary)',
+              marginTop: 4,
+              fontWeight: 400,
+              lineHeight: 1.45,
+            }}
+          >
+            {sub}
+          </span>
+        )}
+      </span>
+      <span
+        aria-hidden
+        style={{
+          width: 38,
+          height: 22,
+          borderRadius: 999,
+          background: value ? 'var(--primary)' : 'var(--border-strong)',
+          position: 'relative',
+          flexShrink: 0,
+          transition: 'background 160ms ease',
+          marginTop: 4,
+        }}
+      >
+        <span
+          style={{
+            position: 'absolute',
+            top: 2,
+            left: value ? 18 : 2,
+            width: 18,
+            height: 18,
+            borderRadius: '50%',
+            background: '#fff',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+            transition: 'left 160ms ease',
+          }}
+        />
+      </span>
     </button>
   );
 }

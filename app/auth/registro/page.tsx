@@ -15,6 +15,7 @@ export default function RegistroPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -28,6 +29,7 @@ export default function RegistroPage() {
     if (!email.trim()) return setError('Ingresa tu email');
     if (password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres');
     if (password !== password2) return setError('Las contraseñas no coinciden');
+    if (!acceptedLegal) return setError('Debes aceptar los Términos y la Política de Privacidad');
 
     setLoading(true);
     const supabase = createClient();
@@ -253,6 +255,36 @@ export default function RegistroPage() {
           </div>
         </div>
 
+        <label className="flex items-start gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={acceptedLegal}
+            onChange={(e) => setAcceptedLegal(e.target.checked)}
+            className="mt-0.5 w-4 h-4 accent-[#2D5A27] cursor-pointer flex-shrink-0"
+          />
+          <span className="text-xs text-[#666666] leading-relaxed">
+            He leído y acepto los{' '}
+            <Link
+              href="/legal/terminos"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#2D5A27] font-semibold hover:underline"
+            >
+              Términos de Servicio
+            </Link>
+            {' '}y la{' '}
+            <Link
+              href="/legal/privacidad"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#2D5A27] font-semibold hover:underline"
+            >
+              Política de Privacidad
+            </Link>
+            .
+          </span>
+        </label>
+
         {error && (
           <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl p-2">
             {error}
@@ -261,8 +293,8 @@ export default function RegistroPage() {
 
         <button
           type="submit"
-          disabled={loading}
-          className="w-full py-3 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
+          disabled={loading || !acceptedLegal}
+          className="w-full py-3 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           style={{
             background: 'linear-gradient(135deg, #2D5A27, #4A8C42)',
             fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif",
