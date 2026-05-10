@@ -16,3 +16,4 @@ export { default as Masthead } from './Masthead';
 export { default as InnerHeader } from './InnerHeader';
 export { default as BottomNavV2 } from './BottomNavV2';
 export { default as StepBarV2 } from './StepBarV2';
+export { default as SettingsIconButton } from './SettingsIconButton';

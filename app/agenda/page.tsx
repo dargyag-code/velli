@@ -5,7 +5,7 @@ import {
   Plus, ChevronRight, ChevronLeft, CalendarX, Sparkles,
 } from 'lucide-react';
 import {
-  Btn, Chip, AvatarV2, toneFromTipoRizo, BottomNavV2, SectionLabel,
+  Btn, Chip, AvatarV2, toneFromTipoRizo, BottomNavV2, SectionLabel, SettingsIconButton,
 } from '@/components/v2';
 import { getUpcomingCitas, getPastCitas } from '@/lib/db';
 import { Clienta, Consulta } from '@/lib/types';
@@ -307,6 +307,7 @@ export default function AgendaPage() {
               >
                 <ChevronRight size={14} />
               </button>
+              <SettingsIconButton />
             </div>
           </div>
 

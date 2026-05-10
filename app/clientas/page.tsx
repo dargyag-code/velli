@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Users, Plus, Search, Filter, SlidersHorizontal, ChevronRight } from 'lucide-react';
 import {
-  BottomNavV2, Btn, Chip, AvatarV2, toneFromTipoRizo,
+  BottomNavV2, Btn, Chip, AvatarV2, toneFromTipoRizo, SettingsIconButton,
 } from '@/components/v2';
 import { getAllClientas } from '@/lib/db';
 import { Clienta } from '@/lib/types';
@@ -100,9 +100,12 @@ export default function ClientasPage() {
                 )}
               </h1>
             </div>
-            <Link href="/clientas/nueva" style={{ flexShrink: 0 }}>
-              <Btn size="sm" variant="dark" icon={<Plus size={12} />}>Nueva</Btn>
-            </Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+              <Link href="/clientas/nueva">
+                <Btn size="sm" variant="dark" icon={<Plus size={12} />}>Nueva</Btn>
+              </Link>
+              <SettingsIconButton />
+            </div>
           </div>
 
           {/* Search bar */}

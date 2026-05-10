@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { BarChart2, Download, Sparkles } from 'lucide-react';
 import {
-  Btn, Chip, BottomNavV2, SectionLabel, StatTile, type StatAccent,
+  Btn, Chip, BottomNavV2, SectionLabel, StatTile, SettingsIconButton, type StatAccent,
 } from '@/components/v2';
 import {
   getAllClientas, getStatsThisMonth, getConsultasByMonth,
@@ -135,18 +135,30 @@ export default function ReportesPage() {
             borderBottom: '1px solid var(--border-soft)',
           }}
         >
-          <div style={{ maxWidth: 768, margin: '0 auto' }}>
-            <div className="v-caps">{monthCapitalLabel()}</div>
-            <h1
-              style={{
-                margin: '2px 0 0',
-                fontFamily: 'var(--font-serif)',
-                fontSize: 26,
-                letterSpacing: '-0.02em',
-              }}
-            >
-              Tu salón <em style={{ color: 'var(--secondary-deep)' }}>en cifras</em>
-            </h1>
+          <div
+            style={{
+              maxWidth: 768,
+              margin: '0 auto',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              gap: 12,
+            }}
+          >
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div className="v-caps">{monthCapitalLabel()}</div>
+              <h1
+                style={{
+                  margin: '2px 0 0',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 26,
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                Tu salón <em style={{ color: 'var(--secondary-deep)' }}>en cifras</em>
+              </h1>
+            </div>
+            <SettingsIconButton />
           </div>
         </header>
 
@@ -247,9 +259,12 @@ export default function ReportesPage() {
               Tu salón <em style={{ color: 'var(--secondary-deep)' }}>en cifras</em>
             </h1>
           </div>
-          <Btn size="sm" variant="outline" icon={<Download size={12} />} disabled>
-            PDF
-          </Btn>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <Btn size="sm" variant="outline" icon={<Download size={12} />} disabled>
+              PDF
+            </Btn>
+            <SettingsIconButton />
+          </div>
         </div>
       </header>
 

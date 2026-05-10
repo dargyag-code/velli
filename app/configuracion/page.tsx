@@ -6,7 +6,7 @@ import {
   Heart, FileText, Shield, Phone, ChevronRight, Check,
   AlertCircle, LogOut,
 } from 'lucide-react';
-import BottomNav from '@/components/layout/BottomNav';
+import { BottomNavV2 } from '@/components/v2';
 import {
   getAllClientas,
   getAllConsultas,
@@ -655,7 +655,7 @@ export default function ConfiguracionPage() {
         @keyframes velliSlideUp { from { transform: translateY(40px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
       `}</style>
 
-      <BottomNav />
+      <BottomNavV2 />
     </div>
   );
 }
