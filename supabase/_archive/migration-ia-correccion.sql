@@ -1,3 +1,6 @@
+-- ARCHIVED: los efectos de esta migración ya están en supabase/schema.sql.
+-- No ejecutar en una DB nueva. Conservado solo como registro histórico.
+
 -- ══════════════════════════════════════════════════════════════════════════
 -- VELLI PRO — MIGRACIÓN: feedback de corrección manual sobre la IA
 -- ══════════════════════════════════════════════════════════════════════════

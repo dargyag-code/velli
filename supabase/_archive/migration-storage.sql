@@ -1,3 +1,8 @@
+-- ARCHIVED: los efectos de esta migración ya están en supabase/schema.sql.
+-- (Nota: las políticas de storage viven en schema "storage" y no se capturan
+-- en el dump --schema public, pero ya están aplicadas en producción).
+-- No ejecutar en una DB nueva sin antes verificar el schema storage.
+
 -- ══════════════════════════════════════════════════════════════════════════
 -- VELLI PRO — STORAGE: bucket "fotos" + políticas por usuario
 -- ══════════════════════════════════════════════════════════════════════════
