@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/client';
 export interface Profile {
   id: string;
   nombre: string;
-  nombreNegocio?: string;
+  nombreSalon?: string;
   telefono?: string;
   ciudad?: string;
   // Opt-in para registrar lat/lon aproximada al tomar fotos del wizard.
@@ -14,7 +14,7 @@ export interface Profile {
 type ProfileRow = {
   id: string;
   nombre: string;
-  nombre_negocio: string | null;
+  nombre_salon: string | null;
   telefono: string | null;
   ciudad: string | null;
   permite_ubicacion: boolean | null;
@@ -24,7 +24,7 @@ function rowToProfile(r: ProfileRow): Profile {
   return {
     id: r.id,
     nombre: r.nombre,
-    nombreNegocio: r.nombre_negocio ?? undefined,
+    nombreSalon: r.nombre_salon ?? undefined,
     telefono: r.telefono ?? undefined,
     ciudad: r.ciudad ?? undefined,
     permiteUbicacion: r.permite_ubicacion ?? false,
@@ -51,7 +51,7 @@ export async function updateProfile(updates: Partial<Omit<Profile, 'id'>>): Prom
 
   const patch: Partial<ProfileRow> = {};
   if (updates.nombre !== undefined) patch.nombre = updates.nombre;
-  if (updates.nombreNegocio !== undefined) patch.nombre_negocio = updates.nombreNegocio || null;
+  if (updates.nombreSalon !== undefined) patch.nombre_salon = updates.nombreSalon || null;
   if (updates.telefono !== undefined) patch.telefono = updates.telefono || null;
   if (updates.ciudad !== undefined) patch.ciudad = updates.ciudad || null;
   if (updates.permiteUbicacion !== undefined) patch.permite_ubicacion = updates.permiteUbicacion;

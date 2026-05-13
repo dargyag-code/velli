@@ -91,7 +91,7 @@ export default function Dashboard() {
 
   const displayClientas = search ? searchResults : recentClientas;
   const isFirstTime = !loading && clientas.length === 0;
-  const profileCompleto = !!(profile?.nombre && profile?.nombreNegocio);
+  const profileCompleto = !!(profile?.nombre && profile?.nombreSalon);
   const stylistName = profile?.nombre || '';
 
   const today = todayLabel();

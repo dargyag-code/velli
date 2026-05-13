@@ -11,7 +11,7 @@ const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 export default function RegistroPage() {
   const router = useRouter();
   const [nombre, setNombre] = useState('');
-  const [nombreNegocio, setNombreNegocio] = useState('');
+  const [nombreSalon, setNombreSalon] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
@@ -39,7 +39,7 @@ export default function RegistroPage() {
       options: {
         data: {
           nombre: nombre.trim(),
-          nombre_negocio: nombreNegocio.trim() || null,
+          nombre_salon: nombreSalon.trim() || null,
         },
       },
     });
@@ -196,8 +196,8 @@ export default function RegistroPage() {
             <input
               type="text"
               autoComplete="organization"
-              value={nombreNegocio}
-              onChange={(e) => setNombreNegocio(e.target.value)}
+              value={nombreSalon}
+              onChange={(e) => setNombreSalon(e.target.value)}
               placeholder="Velli Salón"
               className="w-full pl-10 pr-3 py-2.5 rounded-xl border-2 border-[#E5E5E5] text-sm text-[#2D2D2D] focus:border-[#2D5A27] outline-none"
             />

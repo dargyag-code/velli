@@ -31,7 +31,7 @@ export default function ConfiguracionPage() {
   const [profileLoading, setProfileLoading] = useState(true);
   const [editingProfile, setEditingProfile] = useState(false);
   const [nombre, setNombre] = useState('');
-  const [nombreNegocio, setNombreNegocio] = useState('');
+  const [nombreSalon, setNombreSalon] = useState('');
   const [telefono, setTelefono] = useState('');
   const [ciudad, setCiudad] = useState('');
   const [saveOk, setSaveOk] = useState(false);
@@ -55,7 +55,7 @@ export default function ConfiguracionPage() {
         if (p) {
           setProfile(p);
           setNombre(p.nombre);
-          setNombreNegocio(p.nombreNegocio ?? '');
+          setNombreSalon(p.nombreSalon ?? '');
           setTelefono(p.telefono ?? '');
           setCiudad(p.ciudad ?? '');
           setPermiteUbicacion(!!p.permiteUbicacion);
@@ -88,7 +88,7 @@ export default function ConfiguracionPage() {
     try {
       const p = await updateProfile({
         nombre: nombre.trim() || 'Estilista',
-        nombreNegocio: nombreNegocio.trim(),
+        nombreSalon: nombreSalon.trim(),
         telefono: telefono.trim(),
         ciudad: ciudad.trim(),
       });
@@ -194,7 +194,7 @@ export default function ConfiguracionPage() {
   };
 
   const profileName = profile?.nombre || 'Tu nombre';
-  const profileSub = profile?.nombreNegocio || 'Velli — Inteligencia capilar a tu alcance';
+  const profileSub = profile?.nombreSalon || 'Velli — Inteligencia capilar a tu alcance';
   const initials = profile?.nombre ? getInitials(profile.nombre) : '?';
 
   return (
@@ -333,7 +333,7 @@ export default function ConfiguracionPage() {
           ) : editingProfile ? (
             <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
               <FieldEditorial label="Nombre" value={nombre} onChange={setNombre} placeholder="Tu nombre" />
-              <FieldEditorial label="Nombre del salón" value={nombreNegocio} onChange={setNombreNegocio} placeholder="Velli — Inteligencia capilar a tu alcance" />
+              <FieldEditorial label="Nombre del salón" value={nombreSalon} onChange={setNombreSalon} placeholder="Velli — Inteligencia capilar a tu alcance" />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 <FieldEditorial label="Teléfono" value={telefono} onChange={setTelefono} placeholder="+57 ..." />
                 <FieldEditorial label="Ciudad" value={ciudad} onChange={setCiudad} placeholder="Bogotá" />
