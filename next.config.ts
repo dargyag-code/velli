@@ -18,7 +18,9 @@ const CSP = [
   "style-src 'self' 'unsafe-inline'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
   "img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in",
-  `connect-src 'self'${isDev ? ' ws: wss:' : ''} https://*.supabase.co https://*.supabase.in https://api.anthropic.com https://api.openai.com`,
+  // Sentry: solo el ingest de errores (browser → envelope endpoint). No se
+  // toca ninguna otra directiva — la política sigue igual de estricta.
+  `connect-src 'self'${isDev ? ' ws: wss:' : ''} https://*.supabase.co https://*.supabase.in https://api.anthropic.com https://api.openai.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io`,
   "font-src 'self' data:",
   "frame-ancestors 'none'",
   "base-uri 'self'",

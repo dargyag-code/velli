@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import * as Sentry from '@sentry/nextjs';
 import { requireUser } from '@/lib/api/auth';
 import { checkoutLimiter, checkRateLimit } from '@/lib/api/rateLimit';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -92,6 +93,7 @@ export async function POST(req: Request) {
     return Response.json({ url: checkout.url, referencia });
   } catch (e) {
     console.error('[pagos.checkout] proveedor falló:', e);
+    Sentry.captureException(e, { tags: { area: 'pagos', endpoint: 'checkout' } });
     await admin.from('payments').update({ status: 'error' }).eq('id', pago.id);
     return Response.json(
       { error: 'La pasarela de pago no respondió. Intenta de nuevo en un momento.' },

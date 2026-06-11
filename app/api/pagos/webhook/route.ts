@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getPaymentProvider } from '@/lib/payments';
 
@@ -49,15 +50,38 @@ export async function POST(req: Request) {
 
     if (error) {
       console.error('[pagos.webhook] procesar_evento_pago falló:', error);
+      Sentry.captureException(error, {
+        tags: { area: 'pagos', endpoint: 'webhook', etapa: 'rpc' },
+      });
       return Response.json({ error: 'Error procesando el evento' }, { status: 500 });
     }
 
     if (data === 'unknown_reference') {
       console.warn('[pagos.webhook] referencia desconocida:', evento.referencia);
     }
+
+    // Funnel beta: primer pago aplicado de la cuenta. Best-effort (el UNIQUE
+    // en DB dedupe los siguientes); jamás afecta la respuesta al proveedor.
+    if (data === 'applied') {
+      const { data: pago } = await admin
+        .from('payments')
+        .select('user_id')
+        .eq('reference', evento.referencia)
+        .maybeSingle();
+      if (pago?.user_id) {
+        await admin
+          .from('eventos_activacion')
+          .upsert(
+            { user_id: pago.user_id, evento: 'pago' },
+            { onConflict: 'user_id,evento', ignoreDuplicates: true }
+          );
+      }
+    }
+
     return Response.json({ ok: true, resultado: data });
   } catch (e) {
     console.error('[pagos.webhook] error inesperado:', e);
+    Sentry.captureException(e, { tags: { area: 'pagos', endpoint: 'webhook' } });
     return Response.json({ error: 'Error interno' }, { status: 500 });
   }
 }
