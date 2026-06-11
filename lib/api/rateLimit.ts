@@ -53,6 +53,24 @@ export function validateLimiter(): Ratelimit | null {
   return _validateLimiter;
 }
 
+let _checkoutLimiter: Ratelimit | null | undefined;
+
+export function checkoutLimiter(): Ratelimit | null {
+  if (_checkoutLimiter !== undefined) return _checkoutLimiter;
+  const redis = getRedis();
+  if (!redis) {
+    _checkoutLimiter = null;
+    return null;
+  }
+  _checkoutLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(10, '1 h'),
+    prefix: 'velli:rl:checkout',
+    analytics: false,
+  });
+  return _checkoutLimiter;
+}
+
 // ── checkRateLimit ─────────────────────────────────────────────────────────
 export interface RateLimitResult {
   ok: boolean;
