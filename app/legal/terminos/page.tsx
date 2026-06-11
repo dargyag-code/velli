@@ -1,3 +1,5 @@
+import BannerPlaceholder from '@/components/legal/BannerPlaceholder';
+
 const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 
 export const metadata = {
@@ -11,6 +13,8 @@ export default function TerminosPage() {
         Términos de uso
       </h1>
       <p className="text-xs text-[#999999] mb-6">Última actualización: abril 2026</p>
+
+      <BannerPlaceholder />
 
       <div className="flex flex-col gap-5 text-sm text-[#2D2D2D] leading-relaxed">
         <section>

@@ -347,7 +347,9 @@ function WizardContent() {
         fotoAnalisis: uploadedAnalisis,
         fotoAntes: uploadedAntes,
         fotoDespues: uploadedDespues,
-        satisfaccionEstrellas: estrellas as (1|2|3|4|5) | undefined,
+        // Escala única 1–5; conserva la calificación previa al editar si no
+        // se tocó en esta pasada.
+        satisfaccion: (estrellas as (1 | 2 | 3 | 4 | 5) | undefined) ?? consulta.satisfaccion,
       };
 
       if (editParam) {

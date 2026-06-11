@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { User, Mail, Lock, Store, Check, ArrowRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { friendlyAuthError } from '@/lib/errors';
+import { LEGAL_VERSION } from '@/lib/legal';
 
 const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 
@@ -40,6 +41,9 @@ export default function RegistroPage() {
         data: {
           nombre: nombre.trim(),
           nombre_salon: nombreSalon.trim() || null,
+          // handle_new_user persiste versión + fecha de aceptación legal en
+          // profiles (el checkbox de arriba es obligatorio para llegar aquí).
+          legal_version: LEGAL_VERSION,
         },
       },
     });

@@ -851,7 +851,7 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
   }
 
   // ── Section 08 · Notas de la estilista ───────────────────────────────────
-  if (consulta.notasEstilista || consulta.satisfaccionEstrellas) {
+  if (consulta.notasEstilista || consulta.satisfaccion) {
     sectionHead('08', 'Estilista', 'Observaciones del servicio');
     if (consulta.notasEstilista) {
       const nLines = doc.splitTextToSize(consulta.notasEstilista, contentW - 4) as string[];
@@ -866,7 +866,7 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
       doc.text(nLines, margin + 4, y + 1);
       y += nLines.length * 4 + 4;
     }
-    if (consulta.satisfaccionEstrellas) {
+    if (consulta.satisfaccion) {
       need(7);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(7.5);
@@ -875,8 +875,8 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
       setTextColor(GOLD_DEEP);
-      const stars = '★'.repeat(consulta.satisfaccionEstrellas) + '☆'.repeat(5 - consulta.satisfaccionEstrellas);
-      doc.text(`${stars}  ${consulta.satisfaccionEstrellas}/5`, margin + 30, y);
+      const stars = '★'.repeat(consulta.satisfaccion) + '☆'.repeat(5 - consulta.satisfaccion);
+      doc.text(`${stars}  ${consulta.satisfaccion}/5`, margin + 30, y);
       y += 6;
     }
     y += 3;

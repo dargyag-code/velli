@@ -2,9 +2,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown, ChevronUp, Calendar, Star, FileText, Download, MessageCircle, Pencil } from 'lucide-react';
-import { Clienta, Consulta } from '@/lib/types';
+import { Clienta, Consulta, SatisfaccionNivel } from '@/lib/types';
 import { formatDate, getTratamientoBg, getTratamientoTextColor, getTratamientoBorderColor, getRizoLabel } from '@/lib/utils';
 import { generateConsultaPDF } from '@/lib/pdfGenerator';
+import { updateConsulta } from '@/lib/db';
 
 interface Props {
   consultas: Consulta[];
@@ -50,6 +51,26 @@ function ConsultaItem({ consulta, clienta, index }: { consulta: Consulta; client
   const [expanded, setExpanded] = useState(index === 0);
   const [downloading, setDownloading] = useState(false);
 
+  // Satisfacción 1–5, captura de un toque al cerrar la visita: si la
+  // consulta aún no tiene calificación, las estrellas son tocables y
+  // persisten de inmediato (optimista, con rollback si falla).
+  const [sat, setSat] = useState<SatisfaccionNivel | undefined>(consulta.satisfaccion);
+  const [savingSat, setSavingSat] = useState(false);
+
+  const calificar = async (n: SatisfaccionNivel) => {
+    if (sat || savingSat) return;
+    setSat(n);
+    setSavingSat(true);
+    try {
+      await updateConsulta({ ...consulta, satisfaccion: n });
+    } catch (e) {
+      console.error('[HistorialTimeline] satisfaccion error:', e);
+      setSat(undefined);
+    } finally {
+      setSavingSat(false);
+    }
+  };
+
   const handleDownloadPDF = async () => {
     setDownloading(true);
     try { await generateConsultaPDF(clienta, consulta); }
@@ -61,13 +82,6 @@ function ConsultaItem({ consulta, clienta, index }: { consulta: Consulta; client
   const borderColor = getTratamientoBorderColor(resultado.tratamientoPrincipal);
   const treatBg = getTratamientoBg(resultado.tratamientoPrincipal);
   const treatColor = getTratamientoTextColor(resultado.tratamientoPrincipal);
-
-  const satLabels: Record<string, { label: string; color: string }> = {
-    muy_satisfecha:    { label: '😍 Muy satisfecha', color: 'text-green-600' },
-    satisfecha:        { label: '😊 Satisfecha',     color: 'text-blue-600' },
-    parcial:           { label: '🤔 Parcialmente',   color: 'text-amber-600' },
-    necesita_ajustes:  { label: '⚠️ Necesita ajustes', color: 'text-red-600' },
-  };
 
   return (
     <div className="relative pl-7 mb-4">
@@ -183,15 +197,32 @@ function ConsultaItem({ consulta, clienta, index }: { consulta: Consulta; client
               </div>
             )}
 
-            {/* Satisfacción */}
-            {consulta.satisfaccion && (
-              <div className="flex items-center gap-2">
-                <Star size={13} className="text-[#C9956B]" />
-                <span className={`text-xs font-semibold ${satLabels[consulta.satisfaccion]?.color}`}>
-                  {satLabels[consulta.satisfaccion]?.label}
-                </span>
+            {/* Satisfacción 1–5 — lectura si ya existe, captura de un toque si no */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[10px] font-bold text-[#666666]" style={serif}>
+                {sat ? 'Satisfacción:' : '¿Cómo quedó tu clienta?'}
+              </span>
+              <div className="flex gap-0.5">
+                {([1, 2, 3, 4, 5] as SatisfaccionNivel[]).map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    disabled={!!sat || savingSat}
+                    onClick={() => calificar(n)}
+                    aria-label={`Calificar ${n} de 5`}
+                    className={sat ? 'cursor-default' : 'active:scale-90 transition-transform'}
+                  >
+                    <Star
+                      size={15}
+                      fill={sat && n <= sat ? '#C9956B' : 'none'}
+                      className={sat && n <= sat ? 'text-[#C9956B]' : 'text-[#D8D2C6]'}
+                    />
+                  </button>
+                ))}
               </div>
-            )}
+              {sat && <span className="text-xs font-semibold text-[#9A6A3A]">{sat}/5</span>}
+              {!sat && <span className="text-[10px] text-[#999999]">opcional · un toque</span>}
+            </div>
 
             {/* Acciones */}
             <div className="flex gap-2 flex-wrap">

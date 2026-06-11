@@ -7,6 +7,7 @@ import EditorMarca from '@/components/marca/EditorMarca';
 import { getProfile, updateProfile, COLOR_VELLI } from '@/lib/profile';
 import { uploadFoto } from '@/lib/storage';
 import { showToast } from '@/lib/toast';
+import { registrarEvento } from '@/lib/funnel';
 
 // ─── Wizard de primera vez (solo cuentas nuevas) ───────────────────────────
 // 3 pasos, todos saltables con "Completar después". Gateado por
@@ -130,6 +131,7 @@ export default function OnboardingPage() {
         horarioAtencion: dias.length > 0 ? { dias: [...dias].sort(), desde, hasta } : undefined,
         onboardingCompleted: true,
       });
+      registrarEvento('onboarding_completado');
       router.replace('/');
     } catch (e) {
       console.error('[onboarding.paso3]', e);
@@ -142,6 +144,9 @@ export default function OnboardingPage() {
     setSaving(true);
     try {
       await updateProfile({ onboardingCompleted: true });
+      // "Completar después" también cuenta como onboarding completado para
+      // el funnel: la cuenta quedó operativa, que es lo que medimos.
+      registrarEvento('onboarding_completado');
       router.replace('/');
     } catch (e) {
       console.error('[onboarding.skip]', e);

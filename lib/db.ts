@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
+import { registrarEvento } from '@/lib/funnel';
 import type {
   Clienta,
   Consulta,
@@ -7,6 +8,7 @@ import type {
   CuidadoCasaResult,
   ProductosActuales,
   ResultadoConsulta,
+  SatisfaccionNivel,
 } from './types';
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -57,23 +59,26 @@ type ConsultaRow = {
   frecuencia_calor: string | null;
   frecuencia_lavado: string | null;
   // Motor (columnas derivadas + catch-all JSONB).
-  // recomendaciones_casa y cronograma son TEXT[] en la DB — se aplanan
-  // desde el objeto estructurado al escribir. La estructura original
-  // completa se preserva en resultado_ia (JSONB).
+  // recomendaciones_casa es TEXT[]; cronograma y productos_recomendados son
+  // JSONB en prod (drift auditado): el código escribe siempre arrays JSON de
+  // strings (válido como jsonb), y al leer se normaliza con asStringArray()
+  // por si hay datos viejos con otra forma. La estructura original completa
+  // se preserva en resultado_ia (JSONB).
   necesidad_principal: string | null;
   tecnica_definicion: string | null;
-  productos_recomendados: string[] | null;
+  productos_recomendados: unknown;
   recomendaciones_casa: string[] | null;
   resultado_esperado: string | null;
   tratamientos: string[] | null;
-  cronograma: string[] | null;
+  cronograma: unknown;
   resultado_ia: ResultadoConsulta | null;
   ia_confirmada: boolean;
   ia_tipo_sugerido: string | null;
   ia_correccion: string | null;
   // Post-consulta
   observaciones_estilista: string | null;
-  satisfaccion_clienta: Consulta['satisfaccion'] | null;
+  // integer 1..5 en la DB (CHECK diagnosticos_satisfaccion_clienta_check).
+  satisfaccion_clienta: number | null;
   proxima_cita: string | null;
   // Fotos y captura
   foto_antes: string | null;
@@ -130,6 +135,14 @@ const EMPTY_CUIDADO_CASA: CuidadoCasaResult = {
 };
 const EMPTY_PRODUCTOS_ACTUALES: ProductosActuales = {};
 
+// Normaliza un valor JSONB que debería ser un array de strings. Tolera
+// datos viejos con otra forma (null, objeto, números) sin romper la lectura.
+function asStringArray(v: unknown): string[] | null {
+  if (!Array.isArray(v)) return null;
+  const out = v.filter((x): x is string => typeof x === 'string');
+  return out.length ? out : null;
+}
+
 // Aplana CuidadoCasaResult → array de strings con prefijo de categoría.
 function flattenCuidadoCasa(c: CuidadoCasaResult | null | undefined): string[] | null {
   if (!c) return null;
@@ -165,7 +178,7 @@ function rowToConsulta(r: ConsultaRow): Consulta {
       tecnicaDefinicion: r.tecnica_definicion ?? '',
       tecnicaDescripcion: '',
       metodoSecado: '',
-      productosPonto: r.productos_recomendados ?? [],
+      productosPonto: asStringArray(r.productos_recomendados) ?? [],
       cuidadoCasa: EMPTY_CUIDADO_CASA,
       intervaloSugerido: '',
       notasAdicionales: [],
@@ -212,9 +225,7 @@ function rowToConsulta(r: ConsultaRow): Consulta {
     embarazo: false,
     nivelEstres: '',
     resultado,
-    satisfaccion: r.satisfaccion_clienta ?? undefined,
-    // satisfaccion_estrellas no existe — no se persiste.
-    satisfaccionEstrellas: undefined,
+    satisfaccion: (r.satisfaccion_clienta as SatisfaccionNivel | null) ?? undefined,
     notasEstilista: r.observaciones_estilista ?? undefined,
     proximaCita: r.proxima_cita ?? undefined,
     fotoAntes: r.foto_antes ?? undefined,
@@ -261,8 +272,7 @@ function consultaToRow(c: Consulta): Omit<ConsultaRow, 'user_id'> {
     ia_correccion: c.iaCorreccion ?? null,
     // Post-consulta
     observaciones_estilista: c.notasEstilista ?? null,
-    // satisfaccion_clienta tiene CHECK — '' → null.
-    satisfaccion_clienta: c.satisfaccion || null,
+    satisfaccion_clienta: c.satisfaccion ?? null,
     proxima_cita: c.proximaCita ?? null,
     // Fotos y captura
     foto_antes: c.fotoAntes ?? null,
@@ -312,6 +322,8 @@ export async function createClienta(clienta: Clienta): Promise<void> {
     .from('clientas')
     .insert({ ...clientaToRow(clienta), user_id: userId });
   if (error) throw error;
+  // Funnel beta: el UNIQUE en DB dedupe — solo cuenta la primera.
+  registrarEvento('primera_clienta');
 }
 
 export async function updateClienta(clienta: Clienta): Promise<void> {
@@ -419,6 +431,9 @@ export async function createConsulta(consulta: Consulta): Promise<void> {
     });
     throw insertError;
   }
+
+  // Funnel beta: el UNIQUE en DB dedupe — solo cuenta el primero.
+  registrarEvento('primer_diagnostico');
 
   // Actualizar clienta: última visita, total de visitas, tipo de rizo principal.
   // Los errores del select/update aquí ANTES se tragaban — ahora se capturan
@@ -664,14 +679,6 @@ export async function getConsultasBorrador(): Promise<
   return pairsWithClienta((data ?? []).map(rowToConsulta));
 }
 
-// Mapeo de satisfaccion_clienta (enum) → estrellas para promediar.
-const SATISFACCION_SCORE: Record<NonNullable<Consulta['satisfaccion']>, number> = {
-  muy_satisfecha: 5,
-  satisfecha: 4,
-  parcial: 3,
-  necesita_ajustes: 2,
-};
-
 export async function getSatisfaccionPromedio(
   yearMonth?: string
 ): Promise<number | null> {
@@ -690,9 +697,10 @@ export async function getSatisfaccionPromedio(
     .lt('fecha', fin);
   if (error) throw error;
   if (!data || data.length === 0) return null;
-  const scores = (data as { satisfaccion_clienta: keyof typeof SATISFACCION_SCORE | null }[])
-    .map((r) => (r.satisfaccion_clienta ? SATISFACCION_SCORE[r.satisfaccion_clienta] : 0))
-    .filter((n) => n > 0);
+  // Escala única 1–5: la columna ya es integer con CHECK 1..5.
+  const scores = (data as { satisfaccion_clienta: number | null }[])
+    .map((r) => r.satisfaccion_clienta ?? 0)
+    .filter((n) => n >= 1 && n <= 5);
   if (scores.length === 0) return null;
   const sum = scores.reduce((s, n) => s + n, 0);
   return Math.round((sum / scores.length) * 10) / 10;

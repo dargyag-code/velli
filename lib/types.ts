@@ -1,3 +1,5 @@
+export type SatisfaccionNivel = 1 | 2 | 3 | 4 | 5;
+
 export interface Clienta {
   id: string;
   nombre: string;
@@ -117,8 +119,10 @@ export interface Consulta {
   resultado: ResultadoConsulta;
 
   // Post-consulta
-  satisfaccion?: 'muy_satisfecha' | 'satisfecha' | 'parcial' | 'necesita_ajustes';
-  satisfaccionEstrellas?: 1 | 2 | 3 | 4 | 5;
+  // Satisfacción de la clienta en escala única 1–5: espeja el CHECK de
+  // satisfaccion_clienta (integer 1..5) en la DB. El viejo enum de texto y
+  // el campo paralelo satisfaccionEstrellas se unificaron aquí.
+  satisfaccion?: SatisfaccionNivel;
   notasEstilista?: string;
   proximaCita?: string;
 

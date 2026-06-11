@@ -10,6 +10,7 @@ import {
   getRizoDistribution, getTratamientosDistribution, getSatisfaccionPromedio,
 } from '@/lib/db';
 import { getTratamientoBg, getTratamientoTextColor } from '@/lib/utils';
+import { getFunnelActivacion, ETAPAS_FUNNEL, type EventoActivacion } from '@/lib/funnel';
 
 // ── Group-level colors for distribution bar ─────────────────────────────
 const RIZO_GROUP_META: Record<string, { label: string; color: string; tone: StatAccent }> = {
@@ -50,6 +51,9 @@ export default function ReportesPage() {
   const [tratDistrib, setTratDistrib] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [satisfaccionProm, setSatisfaccionProm] = useState<number | null>(null);
+  // Funnel de activación agregado — null = oculto (cuenta no fundadora,
+  // migración sin aplicar o sin red). Solo el equipo ve esta sección.
+  const [funnel, setFunnel] = useState<Record<EventoActivacion, number> | null>(null);
 
   const load = useCallback(async () => {
     // allSettled: si una query falla (ej. SQL error), las otras se preservan
@@ -88,6 +92,7 @@ export default function ReportesPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { getFunnelActivacion().then(setFunnel).catch(() => {}); }, []);
 
   const last6 = useMemo(() => getLast6Months(), []);
   const maxMonthVal = Math.max(...last6.map((m) => byMonth[m] ?? 0), 1);
@@ -658,6 +663,57 @@ export default function ReportesPage() {
             spark="0,16 14,13 28,11 42,12 56,9 70,10 85,5 100,4"
           />
         </div>
+
+        {/* ── Funnel de activación · solo cuentas fundadoras ───────────── */}
+        {funnel && (
+          <>
+            <SectionLabel
+              num="·"
+              eyebrow="Solo equipo · beta"
+              title="Funnel de activación"
+            />
+            <section className="v-card" style={{ padding: 16, marginBottom: 22 }}>
+              <p style={{ margin: '0 0 12px', fontSize: 11, color: 'var(--text-tertiary)', lineHeight: 1.45 }}>
+                Cuentas (todas las estilistas) que alcanzaron cada hito desde el
+                lanzamiento del funnel. Aquí se ve dónde se atascan las nuevas.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {ETAPAS_FUNNEL.map(({ evento, label }, i) => {
+                  const base = Math.max(funnel.registro, 1);
+                  const n = funnel[evento];
+                  const pct = Math.round((n / base) * 100);
+                  return (
+                    <div key={evento} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span className="v-num" style={{ width: 16, flexShrink: 0, fontSize: 9 }}>
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 3 }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-main)', fontFamily: 'var(--font-sans)' }}>
+                            {label}
+                          </span>
+                          <span style={{ fontSize: 11, color: 'var(--text-tertiary)', flexShrink: 0 }}>
+                            {n} · {pct}%
+                          </span>
+                        </div>
+                        <div style={{ height: 6, borderRadius: 99, background: 'var(--bg)', overflow: 'hidden' }}>
+                          <div
+                            style={{
+                              height: '100%',
+                              width: `${Math.min(pct, 100)}%`,
+                              borderRadius: 99,
+                              background: 'linear-gradient(90deg, var(--primary), #4A8C42)',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          </>
+        )}
 
         {/* ── Footer note ──────────────────────────────────────────────── */}
         <div

@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Velli Pro
 
-## Getting Started
+SaaS multi-tenant para estilistas capilares: diagnóstico capilar con IA,
+fichero de clientas (CRM), agenda, reportes y PDF de resultados con la marca
+del salón. PWA mobile-first.
 
-First, run the development server:
+**Stack:** Next.js 16 (Turbopack) · React 19 · TypeScript · Tailwind 4 ·
+Supabase (Auth, Postgres con RLS, Storage) · Bold (suscripciones prepago) ·
+Claude Sonnet con fallback GPT-4o (análisis capilar).
+
+## Desarrollo
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000). Variables de entorno en
+`.env.local` (Supabase URL/keys, Bold, claves de IA — ver route handlers en
+`app/api/`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Documentación interna
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `AGENTS.md` / `CLAUDE.md` — convenciones para agentes de código.
+- `supabase/README.md` — schema, migraciones y cómo regenerar `schema.sql`.
+- `PAGOS.md` — modelo de suscripciones prepago con Bold.
 
-## Learn More
+## Deploy
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Push a `main` despliega a producción vía Vercel (proyecto `velli`). Las
+migraciones SQL (`supabase/migration-*.sql`) se aplican a mano en el SQL
+Editor de Supabase **antes** del deploy correspondiente.
