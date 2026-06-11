@@ -1,3 +1,4 @@
+-- ARCHIVED: Ejecutado en prod y consolidado en schema.sql el 2026-06-11
 -- ============================================================================
 -- migration-onboarding.sql — Onboarding autónomo (wizard + checklist)
 -- ============================================================================

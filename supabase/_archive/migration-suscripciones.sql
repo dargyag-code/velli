@@ -1,3 +1,4 @@
+-- ARCHIVED: Ejecutado en prod y consolidado en schema.sql el 2026-06-11
 -- ============================================================================
 -- migration-suscripciones.sql — Sistema de suscripciones prepago (Bold)
 -- ============================================================================
