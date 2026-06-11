@@ -3,9 +3,13 @@ import { Clienta, Consulta, RecomendacionProductos } from './types';
 import { formatDate, getTratamientoBg, getTratamientoTextColor } from './utils';
 import { resolveFotoUrl } from './storage';
 import { buildRecomendacionProductos } from './diagnosticEngine';
+import { getProfile, updateProfile } from './profile';
 
 // ── Editorial palette (alineado a Mejoras.html · A4 · forest + gold) ──────
-const FOREST = '#2D5A27';
+// FOREST_DEFAULT es el acento Velli; dentro de generateConsultaPDF se
+// shadowea con el color_primario del perfil (marca del salón, paso 2 del
+// onboarding) cuando la estilista personalizó su marca.
+const FOREST_DEFAULT = '#2D5A27';
 const FOREST_DEEP = '#14241A';
 const GOLD = '#E8C290';
 const GOLD_DEEP = '#B47E4D';
@@ -105,6 +109,10 @@ function cap(s: string | undefined): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+function isHex6(v: string | undefined): v is string {
+  return !!v && /^#[0-9A-Fa-f]{6}$/.test(v);
+}
+
 // ── Main export ────────────────────────────────────────────────────────────
 
 export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta): Promise<void> {
@@ -116,6 +124,27 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
 
   const folio = buildFolio(consulta);
   const today = formatDate(consulta.fecha);
+
+  // ── Marca del salón (paso 2 del onboarding) ──────────────────────────────
+  // El color principal del perfil tiñe los acentos (shadowing de
+  // FOREST_DEFAULT); el logo y el nombre del salón visten el header. Sin
+  // personalización (o sin red), el PDF sale con la marca Velli de siempre.
+  const profile = await getProfile().catch(() => null);
+  const colorMarca = profile?.colorPrimario;
+  const FOREST = isHex6(colorMarca) ? colorMarca : FOREST_DEFAULT;
+
+  let logo: { dataUrl: string; w: number; h: number } | null = null;
+  if (profile?.logoUrl) {
+    try {
+      const resolved = (await resolveFotoUrl(profile.logoUrl)) || profile.logoUrl;
+      const dataUrl = await toDataUrl(resolved);
+      const dims = await getImageDimensions(dataUrl);
+      const fitted = scaleToBounds(dims.w, dims.h, 12, 12); // caja de 14mm − 1mm de aire
+      logo = { dataUrl, ...fitted };
+    } catch (err) {
+      console.warn('[pdf] no se pudo cargar el logo del salón:', err);
+    }
+  }
 
   // ── color helpers ────────────────────────────────────────────────────────
   const hexToRgb = (hex: string) => {
@@ -187,29 +216,69 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
     setFill(FOREST_DEEP);
     doc.rect(0, 50, pageW, 6, 'F');
 
-    // Logo block
+    // Logo block — logo del salón si existe; si no, la "V" de Velli
     const logoBoxW = 14;
-    setFill(FOREST_DEEP);
-    doc.roundedRect(margin, 10, logoBoxW, logoBoxW, 2, 2, 'F');
-    setStroke(GOLD);
-    doc.setLineWidth(0.25);
-    doc.roundedRect(margin, 10, logoBoxW, logoBoxW, 2, 2, 'S');
+    if (logo) {
+      setFill('#FFFFFF');
+      doc.roundedRect(margin, 10, logoBoxW, logoBoxW, 2, 2, 'F');
+      setStroke(GOLD);
+      doc.setLineWidth(0.25);
+      doc.roundedRect(margin, 10, logoBoxW, logoBoxW, 2, 2, 'S');
+      try {
+        doc.addImage(
+          logo.dataUrl,
+          getImageFormat(logo.dataUrl),
+          margin + (logoBoxW - logo.w) / 2,
+          10 + (logoBoxW - logo.h) / 2,
+          logo.w,
+          logo.h
+        );
+      } catch (err) {
+        console.warn('[pdf] formato de logo no soportado:', err);
+      }
+    } else {
+      setFill(FOREST_DEEP);
+      doc.roundedRect(margin, 10, logoBoxW, logoBoxW, 2, 2, 'F');
+      setStroke(GOLD);
+      doc.setLineWidth(0.25);
+      doc.roundedRect(margin, 10, logoBoxW, logoBoxW, 2, 2, 'S');
 
-    doc.setFont('times', 'italic');
-    doc.setFontSize(20);
-    setTextColor(GOLD);
-    doc.text('V', margin + logoBoxW / 2, 20.5, { align: 'center' });
-    setFill(GOLD);
-    doc.circle(margin + logoBoxW - 3, 21, 0.6, 'F');
+      doc.setFont('times', 'italic');
+      doc.setFontSize(20);
+      setTextColor(GOLD);
+      doc.text('V', margin + logoBoxW / 2, 20.5, { align: 'center' });
+      setFill(GOLD);
+      doc.circle(margin + logoBoxW - 3, 21, 0.6, 'F');
+    }
 
-    // Brand wordmark
-    doc.setFont('times', 'normal');
-    doc.setFontSize(15);
-    setTextColor(CREAM);
-    doc.text('Velli', margin + logoBoxW + 4, 17.2);
-    doc.setFont('times', 'italic');
-    setTextColor(GOLD);
-    doc.text(' · Pro', margin + logoBoxW + 4 + doc.getTextWidth('Velli'), 17.2);
+    // Brand wordmark — nombre del salón si existe; si no, la marca Velli
+    const nombreMarca = profile?.nombreSalon?.trim();
+    if (nombreMarca) {
+      doc.setFont('times', 'normal');
+      // 42mm reservados a la derecha para el bloque de folio
+      const maxBrandW = pageW - margin * 2 - logoBoxW - 4 - 42;
+      let brandSize = 15;
+      doc.setFontSize(brandSize);
+      while (brandSize > 10 && doc.getTextWidth(nombreMarca) > maxBrandW) {
+        brandSize -= 1;
+        doc.setFontSize(brandSize);
+      }
+      let brandText = nombreMarca;
+      while (brandText.length > 4 && doc.getTextWidth(`${brandText}…`) > maxBrandW) {
+        brandText = brandText.slice(0, -1);
+      }
+      if (brandText !== nombreMarca) brandText += '…';
+      setTextColor(CREAM);
+      doc.text(brandText, margin + logoBoxW + 4, 17.2);
+    } else {
+      doc.setFont('times', 'normal');
+      doc.setFontSize(15);
+      setTextColor(CREAM);
+      doc.text('Velli', margin + logoBoxW + 4, 17.2);
+      doc.setFont('times', 'italic');
+      setTextColor(GOLD);
+      doc.text(' · Pro', margin + logoBoxW + 4 + doc.getTextWidth('Velli'), 17.2);
+    }
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.5);
@@ -873,4 +942,10 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
   drawFooter(pageNo, pageNo);
 
   doc.save(`Velli-${clienta.nombre.replace(/\s+/g, '_')}-${consulta.fecha}.pdf`);
+
+  // Checklist de inicio: marcar el primer PDF descargado (una sola vez,
+  // fire-and-forget — la descarga jamás se bloquea por esto).
+  if (profile && !profile.primerPdfDescargado) {
+    updateProfile({ primerPdfDescargado: true }).catch(() => {});
+  }
 }

@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Bell } from 'lucide-react';
 
@@ -9,10 +9,15 @@ interface MastheadProps {
   action?: React.ReactNode;
   /** Mostrar marca "EST · 2026" en la esquina superior derecha */
   showEst?: boolean;
+  /** Logo del salón: reemplaza la inicial en el avatar de configuración. */
+  logoUrl?: string | null;
 }
 
-export default function Masthead({ name = '', subtitle, action, showEst = true }: MastheadProps) {
+export default function Masthead({ name = '', subtitle, action, showEst = true, logoUrl }: MastheadProps) {
   const initial = name.trim()[0]?.toUpperCase() ?? 'V';
+  // Si la URL firmada del logo expiró o no carga, volvemos a la inicial.
+  const [logoError, setLogoError] = useState(false);
+  const showLogo = !!logoUrl && !logoError;
   return (
     <header
       className="v-grain"
@@ -152,7 +157,7 @@ export default function Masthead({ name = '', subtitle, action, showEst = true }
                 width: 38,
                 height: 38,
                 borderRadius: '50%',
-                background: 'rgba(232, 194, 144, 0.95)',
+                background: showLogo ? '#FFFEFB' : 'rgba(232, 194, 144, 0.95)',
                 color: '#14241A',
                 fontFamily: 'var(--font-serif)',
                 fontSize: 16,
@@ -164,12 +169,24 @@ export default function Masthead({ name = '', subtitle, action, showEst = true }
                 cursor: 'pointer',
                 transition: 'transform 120ms ease, box-shadow 120ms ease',
                 outline: 'none',
+                overflow: 'hidden',
+                border: showLogo ? '1.5px solid rgba(232, 194, 144, 0.95)' : 'none',
               }}
               onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.94)'; }}
               onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
             >
-              {initial}
+              {showLogo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={logoUrl!}
+                  alt="Logo del salón"
+                  onError={() => setLogoError(true)}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                initial
+              )}
             </Link>
           </div>
         )}

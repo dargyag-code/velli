@@ -1,20 +1,22 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Users, CalendarDays, TrendingUp, BarChart2, Search,
-  ChevronRight, Camera, Sparkles, AlertCircle, FileText,
+  ChevronRight, Camera, Sparkles, AlertCircle, FileText, UserPlus,
 } from 'lucide-react';
 import {
   Masthead, StatTile, SectionLabel, BottomNavV2,
   Btn, Chip, AvatarV2, toneFromTipoRizo,
 } from '@/components/v2';
-import Onboarding from '@/components/dashboard/Onboarding';
+import ChecklistInicio from '@/components/dashboard/ChecklistInicio';
 import SubscriptionBanner from '@/components/subscription/SubscriptionBanner';
 import {
   getAllClientas, getRecentClientas, getStatsThisMonth,
   getMostFrequentTratamiento, getNextCita,
   getClientasInactivas, getConsultasBorrador, getLastTratamientosMap,
+  getAllConsultas,
 } from '@/lib/db';
 import { getProfile, type Profile } from '@/lib/profile';
 import { Clienta, Consulta } from '@/lib/types';
@@ -42,6 +44,7 @@ function todayLabel(): { caps: string; serif: string; full: string } {
 }
 
 export default function Dashboard() {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [clientas, setClientas] = useState<Clienta[]>([]);
   const [recentClientas, setRecentClientas] = useState<Clienta[]>([]);
@@ -56,10 +59,22 @@ export default function Dashboard() {
   const [borradores, setBorradores] = useState<Array<{ consulta: Consulta; clienta: Clienta }>>([]);
   const [tratamientosMap, setTratamientosMap] = useState<Record<string, string>>({});
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [tieneConsultas, setTieneConsultas] = useState(false);
+  const [checklistVisible, setChecklistVisible] = useState(false);
 
   const loadData = useCallback(async () => {
+    // Perfil primero: una cuenta nueva (onboarding pendiente) va directo al
+    // wizard, antes de pintar el dashboard. Si el perfil no carga (sin red),
+    // no se redirige — mejor un dashboard degradado que un loop.
+    const prof = await getProfile().catch(() => null);
+    if (prof && !prof.onboardingCompleted) {
+      router.replace('/onboarding');
+      return; // se queda el skeleton; sin flash del dashboard
+    }
+    setProfile(prof);
+
     try {
-      const [all, recent, month, frecuente, next, inact, borr, prof] = await Promise.all([
+      const [all, recent, month, frecuente, next, inact, borr] = await Promise.all([
         getAllClientas(),
         getRecentClientas(8),
         getStatsThisMonth(),
@@ -67,14 +82,21 @@ export default function Dashboard() {
         getNextCita(),
         getClientasInactivas(45),
         getConsultasBorrador(),
-        getProfile().catch(() => null),
       ]);
       setClientas(all);
       setRecentClientas(recent);
       setStats({ total: all.length, thisMonth: month, nextCita: next, frecuente });
       setInactivas(inact.slice(0, 3));
       setBorradores(borr.slice(0, 3));
-      setProfile(prof);
+
+      // La checklist solo existe para cuentas nuevas; la consulta extra de
+      // "¿ya hay diagnósticos?" no se paga en cuentas que ya la descartaron.
+      if (prof && !prof.checklistDescartada) {
+        const consultas = await getAllConsultas().catch(() => []);
+        setTieneConsultas(consultas.length > 0);
+        setChecklistVisible(true);
+      }
+
       const tMap = await getLastTratamientosMap(recent.map((c) => c.id));
       setTratamientosMap(tMap);
     } catch (e) {
@@ -82,7 +104,7 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
@@ -91,8 +113,6 @@ export default function Dashboard() {
     : [];
 
   const displayClientas = search ? searchResults : recentClientas;
-  const isFirstTime = !loading && clientas.length === 0;
-  const profileCompleto = !!(profile?.nombre && profile?.nombreSalon);
   const stylistName = profile?.nombre || '';
 
   const today = todayLabel();
@@ -105,16 +125,22 @@ export default function Dashboard() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', position: 'relative' }}>
-      <Masthead name={stylistName || 'Estilista'} subtitle={subtitle} />
+      <Masthead name={stylistName || 'Estilista'} subtitle={subtitle} logoUrl={profile?.logoUrl} />
 
       <main style={{ maxWidth: 768, margin: '0 auto', padding: '20px 16px 120px' }}>
 
         <SubscriptionBanner />
 
-        {isFirstTime ? (
-          <Onboarding nombre={profile?.nombre} profileCompleto={profileCompleto} />
-        ) : (
-          <>
+        {profile && checklistVisible && (
+          <ChecklistInicio
+            profile={profile}
+            tieneClientas={clientas.length > 0}
+            tieneConsultas={tieneConsultas}
+            onDismissed={() => setChecklistVisible(false)}
+          />
+        )}
+
+        <>
             {/* ── Today summary card · editorial hero ───────────────────── */}
             <section
               className="v-card-hi v-grain"
@@ -602,13 +628,23 @@ export default function Dashboard() {
                 >
                   {search ? 'Sin resultados' : 'Aún no tienes clientas'}
                 </p>
-                <p style={{ margin: '4px 0 14px', fontSize: 12, color: 'var(--text-tertiary)' }}>
-                  {search ? `No se encontró "${search}"` : '¡Comienza tu primera consulta!'}
+                <p
+                  style={{
+                    margin: '4px auto 14px',
+                    maxWidth: 300,
+                    fontSize: 12,
+                    color: 'var(--text-tertiary)',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {search
+                    ? `No se encontró "${search}"`
+                    : 'Aquí vivirá tu fichero: la historia y salud capilar de cada clienta. Crea la primera y haz su diagnóstico en minutos.'}
                 </p>
                 {!search && (
-                  <Link href="/diagnostico">
-                    <Btn variant="primary" size="md" icon={<Sparkles size={14} />}>
-                      Primera consulta
+                  <Link href="/clientas/nueva">
+                    <Btn variant="primary" size="md" icon={<UserPlus size={14} />}>
+                      Crea tu primera clienta
                     </Btn>
                   </Link>
                 )}
@@ -754,8 +790,7 @@ export default function Dashboard() {
                 </div>
               </section>
             )}
-          </>
-        )}
+        </>
       </main>
 
       <BottomNavV2 />

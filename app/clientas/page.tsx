@@ -314,15 +314,23 @@ export default function ClientasPage() {
             >
               {search || filterRizo !== 'todas' ? 'Sin resultados' : 'Aún no tienes clientas'}
             </p>
-            <p style={{ margin: '4px 0 14px', fontSize: 12, color: 'var(--text-tertiary)' }}>
+            <p
+              style={{
+                margin: '4px auto 14px',
+                maxWidth: 300,
+                fontSize: 12,
+                color: 'var(--text-tertiary)',
+                lineHeight: 1.5,
+              }}
+            >
               {search || filterRizo !== 'todas'
                 ? 'Prueba con otros filtros'
-                : 'Comienza tu primera consulta'}
+                : 'Este es tu fichero profesional: cada clienta con su ficha, su historia y sus diagnósticos. Empieza creando la primera.'}
             </p>
             {!search && filterRizo === 'todas' && (
-              <Link href="/diagnostico">
+              <Link href="/clientas/nueva">
                 <Btn variant="primary" size="md" icon={<Plus size={14} />}>
-                  Nueva consulta
+                  Crea tu primera clienta
                 </Btn>
               </Link>
             )}

@@ -8,6 +8,7 @@ import {
   Btn, Chip, AvatarV2, toneFromTipoRizo, BottomNavV2, SectionLabel, SettingsIconButton,
 } from '@/components/v2';
 import { getUpcomingCitas, getPastCitas } from '@/lib/db';
+import { getProfile, type HorarioAtencion } from '@/lib/profile';
 import { Clienta, Consulta } from '@/lib/types';
 import { formatDate, getRizoLabel } from '@/lib/utils';
 
@@ -44,6 +45,21 @@ function sameDay(aISO: string, b: Date): boolean {
 function getMesLabel(dateStr: string): string {
   const d = new Date(dateStr);
   return d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+}
+
+// "L–S · 09:00–18:00" a partir del horario base del onboarding. Si los días
+// no son un rango contiguo, se listan ("L · X · V").
+function horarioLabel(h: HorarioAtencion): string {
+  const dias = [...h.dias].sort((a, b) => a - b);
+  if (dias.length === 0) return '';
+  const contiguo = dias.every((d, i) => i === 0 || d === dias[i - 1] + 1);
+  const diasTxt =
+    dias.length === 1
+      ? DAYS_SHORT[dias[0]]
+      : contiguo
+        ? `${DAYS_SHORT[dias[0]]}–${DAYS_SHORT[dias[dias.length - 1]]}`
+        : dias.map((d) => DAYS_SHORT[d]).join(' · ');
+  return `${diasTxt} · ${h.desde}–${h.hasta}`;
 }
 
 // ── Day chip helpers ──────────────────────────────────────────────────────
@@ -176,12 +192,20 @@ export default function AgendaPage() {
   const [loading, setLoading] = useState(true);
   const [showPast, setShowPast] = useState(false);
   const [weekOffset, setWeekOffset] = useState(0);
+  // Horario base del salón (paso 3 del onboarding): atenúa los días no
+  // laborables en la franja semanal y se muestra como caption.
+  const [horario, setHorario] = useState<HorarioAtencion | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const [up, pa] = await Promise.all([getUpcomingCitas(), getPastCitas(15)]);
+      const [up, pa, prof] = await Promise.all([
+        getUpcomingCitas(),
+        getPastCitas(15),
+        getProfile().catch(() => null),
+      ]);
       setUpcoming(up);
       setPast(pa);
+      if (prof?.horarioAtencion?.dias?.length) setHorario(prof.horarioAtencion);
     } finally {
       setLoading(false);
     }
@@ -250,6 +274,11 @@ export default function AgendaPage() {
                 style={{ textTransform: 'capitalize' }}
               >
                 {monthLabel}
+                {horario && (
+                  <span style={{ textTransform: 'none', color: 'var(--text-tertiary)' }}>
+                    {' '}· {horarioLabel(horario)}
+                  </span>
+                )}
               </div>
               <h1
                 style={{
@@ -315,6 +344,10 @@ export default function AgendaPage() {
           <div style={{ display: 'flex', gap: 6 }}>
             {weekDays.map((d, i) => {
               const isSelected = d.isToday;
+              // Día fuera del horario base del salón: atenuado (sigue
+              // mostrando citas si las hay — el horario es una guía, no un
+              // bloqueo).
+              const noLaborable = !!horario && !horario.dias.includes(d.date.getDay());
               return (
                 <div
                   key={i}
@@ -330,6 +363,7 @@ export default function AgendaPage() {
                     alignItems: 'center',
                     gap: 4,
                     transition: 'all 0.2s ease',
+                    opacity: noLaborable && !isSelected ? 0.4 : 1,
                   }}
                 >
                   <span
@@ -547,11 +581,12 @@ export default function AgendaPage() {
                 lineHeight: 1.5,
               }}
             >
-              Aquí aparecerán tus próximas citas. Se agendan al finalizar cada diagnóstico.
+              Esta es tu agenda: aquí viven las próximas visitas de tus clientas.
+              La primera cita se agenda al finalizar un diagnóstico — empieza por ahí.
             </p>
             <Link href="/diagnostico">
               <Btn variant="primary" size="md" icon={<Sparkles size={14} />}>
-                Nueva consulta
+                Agenda tu primera cita
               </Btn>
             </Link>
           </div>

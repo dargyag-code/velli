@@ -59,8 +59,11 @@ export default function RegistroPage() {
     }
   };
 
+  // El onboarding de primera vez vive en /onboarding (3 pasos, saltable).
+  // "Ir al inicio" también acaba ahí: el Dashboard redirige mientras
+  // onboarding_completed sea false.
   const goCompletarPerfil = () => {
-    router.push('/configuracion');
+    router.push('/onboarding');
     router.refresh();
   };
 
@@ -88,8 +91,8 @@ export default function RegistroPage() {
           Tu cuenta está lista
         </p>
         <p className="text-sm text-[#666666] mb-7">
-          Completa tu perfil para que tus diagnósticos y reportes salgan con tu información
-          profesional.
+          Configura tu salón en 3 pasos rápidos para que tus diagnósticos y PDF
+          salgan con tu marca.
         </p>
         <div className="flex flex-col gap-3">
           <button
@@ -101,7 +104,7 @@ export default function RegistroPage() {
               ...serif,
             }}
           >
-            Completar mi perfil <ArrowRight size={16} />
+            Configurar mi salón <ArrowRight size={16} />
           </button>
           <button
             onClick={goDashboard}

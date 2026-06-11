@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Edit3, Calendar, Database, Download, Upload, Trash2,
   Heart, FileText, Shield, Phone, ChevronRight, Check,
-  AlertCircle, LogOut, CreditCard,
+  AlertCircle, LogOut, CreditCard, Palette,
 } from 'lucide-react';
 import { BottomNavV2 } from '@/components/v2';
 import {
@@ -14,8 +14,12 @@ import {
   bulkUpsertConsultas,
   clearAllData,
 } from '@/lib/db';
-import { getProfile, updateProfile, signOut } from '@/lib/profile';
+import { getProfile, updateProfile, signOut, COLOR_VELLI } from '@/lib/profile';
 import type { Profile } from '@/lib/profile';
+import { getSuscripcionEfectiva, type SuscripcionEfectiva } from '@/lib/subscription/estado';
+import { PLANES } from '@/lib/subscription/plans';
+import EditorMarca from '@/components/marca/EditorMarca';
+import { uploadFoto } from '@/lib/storage';
 import { showToast } from '@/lib/toast';
 import { friendlyError } from '@/lib/errors';
 import { getInitials } from '@/lib/utils';
@@ -42,6 +46,15 @@ export default function ConfiguracionPage() {
   const [permiteUbicacion, setPermiteUbicacion] = useState(false);
   const [savingGeo, setSavingGeo] = useState(false);
 
+  // Marca del salón (logo + color): editable aquí en cualquier momento, sin
+  // repetir el onboarding. Mismo editor que el paso 2 del wizard.
+  const [editingMarca, setEditingMarca] = useState(false);
+  const [marcaLogoPreview, setMarcaLogoPreview] = useState<string | null>(null); // dataURL nueva
+  const [marcaLogoActual, setMarcaLogoActual] = useState<string | null>(null);   // URL guardada
+  const [marcaColor, setMarcaColor] = useState(COLOR_VELLI);
+  const [savingMarca, setSavingMarca] = useState(false);
+  const [logoError, setLogoError] = useState(false);
+
   const [exportLoading, setExportLoading] = useState(false);
   const [importMsg, setImportMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -49,7 +62,14 @@ export default function ConfiguracionPage() {
   const [signingOut, setSigningOut] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
+  // Estado efectivo de la suscripción para la fila "Tu plan". Punto de
+  // entrada permanente a /planes: visible en cualquier estado (trial,
+  // activa, gracia, vencida), a diferencia del banner que solo aparece
+  // cuando hay algo accionable.
+  const [sub, setSub] = useState<SuscripcionEfectiva | null>(null);
+
   useEffect(() => {
+    getSuscripcionEfectiva().then(setSub).catch(() => {});
     getProfile()
       .then((p) => {
         if (p) {
@@ -59,6 +79,8 @@ export default function ConfiguracionPage() {
           setTelefono(p.telefono ?? '');
           setCiudad(p.ciudad ?? '');
           setPermiteUbicacion(!!p.permiteUbicacion);
+          setMarcaLogoActual(p.logoUrl ?? null);
+          setMarcaColor(p.colorPrimario ?? COLOR_VELLI);
         }
       })
       .finally(() => setProfileLoading(false));
@@ -81,6 +103,37 @@ export default function ConfiguracionPage() {
     } finally {
       setSavingGeo(false);
     }
+  };
+
+  const guardarMarca = async () => {
+    setSavingMarca(true);
+    try {
+      // '' persiste null (logo quitado); una URL existente se conserva.
+      let logoUrl = marcaLogoActual ?? '';
+      if (marcaLogoPreview) {
+        logoUrl = await uploadFoto(marcaLogoPreview, 'branding/logo');
+      }
+      const updated = await updateProfile({ logoUrl, colorPrimario: marcaColor });
+      setProfile(updated);
+      setMarcaLogoActual(updated.logoUrl ?? null);
+      setMarcaLogoPreview(null);
+      setLogoError(false);
+      setEditingMarca(false);
+      showToast('Marca actualizada', 'success');
+    } catch (e) {
+      console.error('[marca.save]', e);
+      showToast('No se pudo guardar tu marca', 'error');
+    } finally {
+      setSavingMarca(false);
+    }
+  };
+
+  const cancelarMarca = () => {
+    if (savingMarca) return;
+    setMarcaLogoPreview(null);
+    setMarcaLogoActual(profile?.logoUrl ?? null);
+    setMarcaColor(profile?.colorPrimario ?? COLOR_VELLI);
+    setEditingMarca(false);
   };
 
   const saveProfile = async () => {
@@ -250,23 +303,40 @@ export default function ConfiguracionPage() {
             className="v-card"
             style={{ padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}
           >
-            <div
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: '50%',
-                background: '#FBF4EC',
-                color: '#8A5A2E',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontFamily: 'var(--font-serif)',
-                fontSize: 20,
-                flexShrink: 0,
-              }}
-            >
-              {initials}
-            </div>
+            {profile?.logoUrl && !logoError ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={profile.logoUrl}
+                alt="Logo del salón"
+                onError={() => setLogoError(true)}
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '1px solid var(--border-soft)',
+                  flexShrink: 0,
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: '50%',
+                  background: '#FBF4EC',
+                  color: '#8A5A2E',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 20,
+                  flexShrink: 0,
+                }}
+              >
+                {initials}
+              </div>
+            )}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
@@ -392,6 +462,103 @@ export default function ConfiguracionPage() {
               onClick={() => setEditingProfile(true)}
             />
           )}
+          {editingMarca ? (
+            <div style={{ padding: 16, borderBottom: '1px solid var(--border-soft)' }}>
+              <EditorMarca
+                logoSrc={marcaLogoPreview ?? marcaLogoActual}
+                onLogo={(dataUrl) => {
+                  if (dataUrl) {
+                    setMarcaLogoPreview(dataUrl);
+                  } else {
+                    setMarcaLogoPreview(null);
+                    setMarcaLogoActual(null);
+                  }
+                }}
+                color={marcaColor}
+                onColor={setMarcaColor}
+                nombreSalon={profile?.nombreSalon}
+              />
+              <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+                <button
+                  type="button"
+                  onClick={cancelarMarca}
+                  disabled={savingMarca}
+                  style={{
+                    flex: 1,
+                    padding: '12px 0',
+                    borderRadius: 999,
+                    background: 'transparent',
+                    border: '1px solid var(--border-strong)',
+                    color: 'var(--text-secondary)',
+                    fontFamily: 'var(--font-sans)',
+                    fontWeight: 600,
+                    fontSize: 13,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={guardarMarca}
+                  disabled={savingMarca}
+                  style={{
+                    flex: 1,
+                    padding: '12px 0',
+                    borderRadius: 999,
+                    background: 'var(--primary)',
+                    border: 'none',
+                    color: '#fff',
+                    fontFamily: 'var(--font-sans)',
+                    fontWeight: 700,
+                    fontSize: 13,
+                    cursor: savingMarca ? 'not-allowed' : 'pointer',
+                    opacity: savingMarca ? 0.6 : 1,
+                  }}
+                >
+                  {savingMarca ? 'Guardando…' : 'Guardar'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <RowEditorial
+              icon={<Palette size={16} />}
+              title="Tu marca"
+              sub="Logo y color que visten tus PDF"
+              onClick={() => setEditingMarca(true)}
+              rightEl={
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  {marcaLogoActual && !logoError && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={marcaLogoActual}
+                      alt=""
+                      aria-hidden
+                      onError={() => setLogoError(true)}
+                      style={{
+                        width: 26,
+                        height: 26,
+                        borderRadius: 8,
+                        objectFit: 'cover',
+                        border: '1px solid var(--border-soft)',
+                      }}
+                    />
+                  )}
+                  <span
+                    aria-hidden
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: '50%',
+                      background: marcaColor,
+                      border: '1px solid rgba(0,0,0,0.08)',
+                    }}
+                  />
+                  <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
+                </span>
+              }
+            />
+          )}
           <RowEditorial
             icon={<Calendar size={16} />}
             title="Horario y disponibilidad"
@@ -401,8 +568,25 @@ export default function ConfiguracionPage() {
           <RowEditorial
             icon={<CreditCard size={16} />}
             title="Tu plan"
-            sub="Suscripción, renovación y pagos"
+            sub={descripcionSuscripcion(sub)}
             onClick={() => router.push('/planes')}
+            rightEl={
+              <span
+                style={{
+                  flexShrink: 0,
+                  padding: '6px 12px',
+                  borderRadius: 999,
+                  background: 'var(--primary-pale)',
+                  color: 'var(--primary)',
+                  fontFamily: 'var(--font-sans)',
+                  fontWeight: 700,
+                  fontSize: 11,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Cambiar de plan
+              </span>
+            }
           />
         </SectionEditorial>
 
@@ -664,6 +848,36 @@ export default function ConfiguracionPage() {
       <BottomNavV2 />
     </div>
   );
+}
+
+// Subtítulo de la fila "Tu plan": plan actual + días restantes en todos los
+// estados. null = RPC aún sin responder (o migración no aplicada) → texto
+// genérico para que la fila siga siendo un punto de entrada útil.
+function descripcionSuscripcion(sub: SuscripcionEfectiva | null): string {
+  if (!sub) return 'Suscripción, renovación y pagos';
+
+  const nombre = sub.plan ? PLANES[sub.plan].nombre : null;
+  const dias =
+    sub.diasRestantes === null
+      ? null
+      : sub.diasRestantes === 0
+        ? 'vence hoy'
+        : sub.diasRestantes === 1
+          ? '1 día restante'
+          : `${sub.diasRestantes} días restantes`;
+
+  switch (sub.estado) {
+    case 'trialing':
+      return `Prueba gratuita${dias ? ` · ${dias}` : ''}`;
+    case 'active':
+      return `Plan ${nombre ?? '—'}${dias ? ` · ${dias}` : ' · activo'}`;
+    case 'past_due':
+      return `Plan ${nombre ?? '—'} · en días de gracia${dias ? ` (${dias})` : ''}`;
+    case 'canceled':
+      return `Plan ${nombre ?? '—'} · no se renueva${dias ? ` · ${dias}` : ''}`;
+    case 'expired':
+      return 'Plan vencido · renueva para seguir creando registros';
+  }
 }
 
 // ─── Subcomponentes editoriales ───────────────────────────────────────────
