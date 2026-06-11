@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sin conexión — Velli Pro</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #FAF6EF;
+      color: #2A241C;
+      font-family: Georgia, 'Times New Roman', serif;
+      text-align: center;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    .logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 13px;
+      background: linear-gradient(160deg, #2D5A27 0%, #14241A 100%);
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-style: italic;
+      font-size: 34px;
+      color: #E8C290;
+    }
+    h1 { font-size: 24px; margin: 0 0 8px; letter-spacing: -0.02em; }
+    h1 em { color: #8A5A2E; }
+    p {
+      font-family: -apple-system, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      color: #6B6256;
+      max-width: 300px;
+      margin: 0 auto 20px;
+      line-height: 1.5;
+    }
+    button {
+      font-family: -apple-system, 'Segoe UI', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+      background: #2D5A27;
+      border: none;
+      border-radius: 999px;
+      padding: 13px 28px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="logo">V</div>
+    <h1>Sin <em>conexión</em></h1>
+    <p>No pudimos cargar esta página. Revisa tu conexión a internet e intenta de nuevo — tus datos siguen a salvo.</p>
+    <button onclick="location.reload()">Reintentar</button>
+  </main>
+</body>
+</html>

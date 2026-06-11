@@ -6,12 +6,19 @@ import type { NextConfig } from "next";
 // fotos del wizard, y supabase para signed URLs. connect-src cubre supabase
 // (cliente browser → DB/storage) + Anthropic/OpenAI (route handlers, no
 // estrictamente necesario desde el browser pero se incluye para consistencia).
+//
+// Solo en desarrollo (next dev) se relaja: React requiere eval() para
+// reconstruir stacks de error del servidor en el browser ('unsafe-eval' en
+// script-src) y el HMR de Turbopack abre un WebSocket (ws:/wss: en
+// connect-src). En producción la política queda exactamente igual.
+const isDev = process.env.NODE_ENV === 'development';
+
 const CSP = [
   "default-src 'self'",
   "style-src 'self' 'unsafe-inline'",
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
   "img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in",
-  "connect-src 'self' https://*.supabase.co https://*.supabase.in https://api.anthropic.com https://api.openai.com",
+  `connect-src 'self'${isDev ? ' ws: wss:' : ''} https://*.supabase.co https://*.supabase.in https://api.anthropic.com https://api.openai.com`,
   "font-src 'self' data:",
   "frame-ancestors 'none'",
   "base-uri 'self'",
