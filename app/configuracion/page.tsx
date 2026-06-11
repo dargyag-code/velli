@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Edit3, Calendar, Database, Download, Upload, Trash2,
   Heart, FileText, Shield, Phone, ChevronRight, Check,
-  AlertCircle, LogOut,
+  AlertCircle, LogOut, CreditCard,
 } from 'lucide-react';
 import { BottomNavV2 } from '@/components/v2';
 import {
@@ -397,6 +397,12 @@ export default function ConfiguracionPage() {
             title="Horario y disponibilidad"
             sub="Bloques de agenda"
             onClick={() => router.push('/agenda')}
+          />
+          <RowEditorial
+            icon={<CreditCard size={16} />}
+            title="Tu plan"
+            sub="Suscripción, renovación y pagos"
+            onClick={() => router.push('/planes')}
           />
         </SectionEditorial>
 

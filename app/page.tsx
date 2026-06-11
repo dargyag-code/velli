@@ -10,6 +10,7 @@ import {
   Btn, Chip, AvatarV2, toneFromTipoRizo,
 } from '@/components/v2';
 import Onboarding from '@/components/dashboard/Onboarding';
+import SubscriptionBanner from '@/components/subscription/SubscriptionBanner';
 import {
   getAllClientas, getRecentClientas, getStatsThisMonth,
   getMostFrequentTratamiento, getNextCita,
@@ -107,6 +108,8 @@ export default function Dashboard() {
       <Masthead name={stylistName || 'Estilista'} subtitle={subtitle} />
 
       <main style={{ maxWidth: 768, margin: '0 auto', padding: '20px 16px 120px' }}>
+
+        <SubscriptionBanner />
 
         {isFirstTime ? (
           <Onboarding nombre={profile?.nombre} profileCompleto={profileCompleto} />
