@@ -85,6 +85,10 @@ type ConsultaRow = {
   foto_despues: string | null;
   foto_analisis: string[] | null;
   capture_metadata: CaptureMetadata | null;
+  // Perfil capilar extensible (jsonb, migración knowledge-base). Opcional en
+  // el row: el payload de escritura solo lo incluye cuando hay valor, así
+  // los inserts no fallan si la migración aún no corrió en ese entorno.
+  perfil_extendido?: Record<string, unknown> | null;
   es_borrador: boolean;
 };
 
@@ -232,12 +236,13 @@ function rowToConsulta(r: ConsultaRow): Consulta {
     fotoDespues: r.foto_despues ?? undefined,
     fotoAnalisis: r.foto_analisis ?? undefined,
     captureMetadata: r.capture_metadata ?? undefined,
+    perfilExtendido: r.perfil_extendido ?? undefined,
     esBorrador: r.es_borrador,
   };
 }
 
 function consultaToRow(c: Consulta): Omit<ConsultaRow, 'user_id'> {
-  return {
+  const row: Omit<ConsultaRow, 'user_id'> = {
     id: c.id,
     clienta_id: c.clientaId,
     fecha: c.fecha,
@@ -281,6 +286,14 @@ function consultaToRow(c: Consulta): Omit<ConsultaRow, 'user_id'> {
     capture_metadata: c.captureMetadata ?? null,
     es_borrador: c.esBorrador ?? false,
   };
+  // Solo incluir la columna cuando hay valor: un payload con columna
+  // desconocida da 400 en PostgREST si la migración knowledge-base aún no
+  // se aplicó en este entorno — y el wizard solo la llena con un flujo
+  // publicado, que a su vez requiere la migración.
+  if (c.perfilExtendido !== undefined) {
+    row.perfil_extendido = c.perfilExtendido;
+  }
+  return row;
 }
 
 async function currentUserId(): Promise<string> {

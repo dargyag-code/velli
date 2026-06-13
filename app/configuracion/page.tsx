@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Edit3, Calendar, Database, Download, Upload, Trash2,
   Heart, FileText, Shield, Phone, ChevronRight, Check,
-  AlertCircle, LogOut, CreditCard, Palette,
+  AlertCircle, LogOut, CreditCard, Palette, BookOpen,
 } from 'lucide-react';
 import { BottomNavV2 } from '@/components/v2';
 import {
@@ -588,6 +588,14 @@ export default function ConfiguracionPage() {
               </span>
             }
           />
+          {profile?.esFundadora && (
+            <RowEditorial
+              icon={<BookOpen size={16} />}
+              title="Panel de conocimiento"
+              sub="Reglas de diagnóstico, flujos y prompts (solo fundadoras)"
+              onClick={() => router.push('/conocimiento')}
+            />
+          )}
         </SectionEditorial>
 
         {/* ── 02 Backup y datos ─────────────────────────────────────── */}

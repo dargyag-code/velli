@@ -8,6 +8,7 @@ import { WizardData, CaptureMetadata } from '@/lib/types';
 import { HairAnalysisResult } from '@/lib/hairAnalysis';
 import { rizoTypes, RizoPattern } from './RizoPatterns';
 import CameraCapture from './CameraCapture';
+import PreguntasFlujo from './PreguntasFlujo';
 import { Btn, Chip } from '@/components/v2';
 import { vibracionSutil, vibracionConfirmacion } from '@/lib/haptics';
 
@@ -975,6 +976,15 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
             onChange={(v) => onChange({ problemas: v })}
           />
         </div>
+
+        {/* Preguntas dinámicas de la knowledge base (solo si hay un flujo
+            PUBLICADO para este tipo de cabello — p.ej. liso en Fase 2).
+            Sin flujo publicado no renderiza nada: producción sigue igual. */}
+        <PreguntasFlujo
+          tipoCabello={data.tipoRizoPrincipal}
+          valores={data.perfilExtendido}
+          onChange={(perfilExtendido) => onChange({ perfilExtendido })}
+        />
 
         {/* + Más detalles */}
         <button

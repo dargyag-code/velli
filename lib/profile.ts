@@ -31,6 +31,10 @@ export interface Profile {
   // ── Operación (paso 3) ──
   servicios?: string[];
   horarioAtencion?: HorarioAtencion;
+  // Cuenta fundadora: acceso al funnel agregado y al panel de conocimiento
+  // (/conocimiento). La escritura en kb_* la exige también la RLS — esto
+  // solo gatea la UI.
+  esFundadora: boolean;
 }
 
 type ProfileRow = {
@@ -47,6 +51,7 @@ type ProfileRow = {
   color_primario: string | null;
   servicios: string[] | null;
   horario_atencion: HorarioAtencion | null;
+  es_fundadora: boolean | null;
 };
 
 function rowToProfile(r: ProfileRow): Profile {
@@ -67,6 +72,7 @@ function rowToProfile(r: ProfileRow): Profile {
     colorPrimario: r.color_primario ?? undefined,
     servicios: Array.isArray(r.servicios) ? r.servicios : undefined,
     horarioAtencion: r.horario_atencion ?? undefined,
+    esFundadora: r.es_fundadora ?? false,
   };
 }
 

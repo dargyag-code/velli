@@ -55,6 +55,23 @@ necesario.
 **No ejecutes los archivos en `_archive/`** — sus efectos ya están en
 `schema.sql` (incluido el apéndice manual).
 
+## Migración pendiente de aplicar: `migration-knowledge-base.sql`
+
+Knowledge base del motor de diagnóstico (tablas `kb_reglas`, `kb_flujos`,
+`kb_prompts`, `kb_dimensiones`, `kb_auditoria` + columna
+`consultas.perfil_extendido`). Ver `CONOCIMIENTO.md` en la raíz del repo.
+
+- **GENERADA** desde el seed canónico TS: no editar a mano; correr
+  `npm run kb:sql` tras cambiar `lib/kb/seed/*.ts`.
+- Idempotente: el seed usa `ON CONFLICT DO NOTHING` — re-ejecutarla no pisa
+  ediciones hechas por fundadoras desde el panel `/conocimiento`.
+- **La app funciona sin aplicarla**: el wizard cae al motor incorporado con
+  resultados idénticos (garantizado por `npm test`). Aplicar la migración
+  activa el camino por datos.
+- Tras aplicar, verificar en Dashboard → Settings → Data API que las tablas
+  `kb_*` quedan accesibles (desde abr-2026 las tablas nuevas pueden no
+  exponerse automáticamente al Data API).
+
 ## Aplicar cambios futuros
 
 1. Crear `migration-<nombre>.sql` en este directorio (idempotente con

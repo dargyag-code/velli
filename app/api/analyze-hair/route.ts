@@ -1,5 +1,6 @@
 import { EstadoCabelloFoto, AnguloCaptura } from '@/lib/types';
-import { PROMPT_ANALISIS, CONTEXTO_ESTADO, HairAnalysisResult } from '@/lib/hairAnalysis';
+import { HairAnalysisResult } from '@/lib/hairAnalysis';
+import { componerPromptsAnalisis, PromptsAnalisis } from '@/lib/kb/promptsServidor';
 import { requireUser } from '@/lib/api/auth';
 import { analyzeLimiter, checkRateLimit } from '@/lib/api/rateLimit';
 
@@ -13,12 +14,12 @@ const MAX_FOTO_CHARS = 1_000_000;
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 
-const SYSTEM_PROMPT =
-  'Eres un experto en análisis de texturas capilares. Responde SOLO con el objeto JSON solicitado. No uses backticks, no uses bloques de código markdown, no agregues texto antes ni después del JSON.';
-
 interface AnalyzeContext {
   estadoCabello: EstadoCabelloFoto;
   angulos: AnguloCaptura[];
+  // Prompts compuestos desde la knowledge base (kb_prompts publicados) con
+  // fallback al contenido hardcodeado — ver lib/kb/promptsServidor.ts.
+  prompts: PromptsAnalisis;
 }
 
 // ── Utilidades de parseo compartidas ──────────────────────────────────────
@@ -31,11 +32,6 @@ function extractJSON(rawText: string): unknown {
   const match = cleanText.match(/\{[\s\S]*\}/);
   if (!match) throw new Error('La IA no devolvió un JSON válido');
   return JSON.parse(match[0]);
-}
-
-function buildUserPrompt(context: AnalyzeContext): string {
-  const contexto = CONTEXTO_ESTADO[context.estadoCabello] ?? '';
-  return `CONTEXTO DE CAPTURA:\n${contexto}\n\n${PROMPT_ANALISIS}`;
 }
 
 // dataURL "data:image/webp;base64,XXXX" → { mediaType, data }
@@ -67,7 +63,7 @@ async function analyzeWithClaude(
       text: `[Foto ${index + 1}: ángulo ${context.angulos[index] ?? 'desconocido'}]`,
     });
   });
-  content.push({ type: 'text', text: buildUserPrompt(context) });
+  content.push({ type: 'text', text: context.prompts.usuario });
 
   const res = await fetch(ANTHROPIC_URL, {
     method: 'POST',
@@ -79,7 +75,7 @@ async function analyzeWithClaude(
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: 1500,
-      system: SYSTEM_PROMPT,
+      system: context.prompts.sistema,
       messages: [{ role: 'user', content }],
     }),
   });
@@ -112,7 +108,7 @@ async function analyzeWithOpenAI(
       text: `[Foto ${index + 1}: ángulo ${context.angulos[index] ?? 'desconocido'}]`,
     });
   });
-  content.push({ type: 'text', text: buildUserPrompt(context) });
+  content.push({ type: 'text', text: context.prompts.usuario });
 
   const res = await fetch(OPENAI_URL, {
     method: 'POST',
@@ -124,7 +120,7 @@ async function analyzeWithOpenAI(
       model: 'gpt-4o',
       max_tokens: 1500,
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: context.prompts.sistema },
         { role: 'user', content },
       ],
     }),
@@ -183,14 +179,21 @@ export async function POST(request: Request) {
   }
 
   // 3. Parseo y validación de payload
-  let body: { fotos: string[]; estadoCabello: EstadoCabelloFoto; angulos: AnguloCaptura[] };
+  let body: {
+    fotos: string[];
+    estadoCabello: EstadoCabelloFoto;
+    angulos: AnguloCaptura[];
+    // Opcional: tipo previamente estimado — habilita segmentos de prompt
+    // específicos por tipo de cabello publicados en la knowledge base.
+    tipoEstimado?: string;
+  };
   try {
     body = await request.json();
   } catch {
     return Response.json({ error: 'Cuerpo de solicitud inválido' }, { status: 400 });
   }
 
-  const { fotos, estadoCabello, angulos } = body;
+  const { fotos, estadoCabello, angulos, tipoEstimado } = body;
   if (!Array.isArray(fotos) || fotos.length < 1 || fotos.length > MAX_FOTOS) {
     return Response.json(
       { error: `fotos debe ser un array de 1 a ${MAX_FOTOS} elementos` },
@@ -222,7 +225,14 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await analyzeHair(fotos, { estadoCabello, angulos });
+    // Prompt compuesto desde la knowledge base (sin redeploy al publicar);
+    // fallback automático al contenido hardcodeado si la KB no responde.
+    const prompts = await componerPromptsAnalisis(
+      auth.supabase,
+      estadoCabello,
+      typeof tipoEstimado === 'string' ? tipoEstimado : undefined
+    );
+    const result = await analyzeHair(fotos, { estadoCabello, angulos, prompts });
     return Response.json(result);
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : 'Error al analizar el cabello';

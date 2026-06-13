@@ -7,7 +7,8 @@ import PasoClienta from '@/components/wizard/PasoClienta';
 import PasoCabello from '@/components/wizard/PasoCabello';
 import PasoPlan from '@/components/wizard/PasoPlan';
 import { WizardData, WIZARD_INITIAL_DATA, Consulta, Clienta } from '@/lib/types';
-import { generateDiagnosis, SaludClienta } from '@/lib/diagnosticEngine';
+import { SaludClienta } from '@/lib/diagnosticEngine';
+import { generarDiagnostico } from '@/lib/kb/diagnostico';
 import { createConsulta, createClienta, getClientaById, getConsultasByClienta, getConsultaById, updateConsulta } from '@/lib/db';
 import { generateId, todayISO } from '@/lib/utils';
 import { generateConsultaPDF } from '@/lib/pdfGenerator';
@@ -103,6 +104,7 @@ function WizardContent() {
         fotoAnalisis: fotoAnalisisUrls.length ? fotoAnalisisUrls : undefined,
         fotoAntes: fotoAntesUrl,
         fotoDespues: fotoDespuesUrl,
+        perfilExtendido: existing.perfilExtendido,
       }));
 
       // El estado de consulta arranca con el resultado existente para que
@@ -149,6 +151,7 @@ function WizardContent() {
         estadoPuntas: consulta.estadoPuntas || '',
         tipoDano: consulta.tipoDano,
         lineaDemarcacion: consulta.lineaDemarcacion || '',
+        perfilExtendido: consulta.perfilExtendido,
       }));
       setPaso(1);
     });
@@ -214,7 +217,9 @@ function WizardContent() {
         condicionesMedicas: clienta.condicionesMedicas,
         medicamentos: clienta.medicamentos,
       } : undefined;
-      const res = generateDiagnosis(wizardData, saludClienta);
+      // Knowledge base publicada si está disponible; si no, motor legacy.
+      // Mismo resultado garantizado por tests/diagnostico.regresion.test.ts.
+      const { resultado: res } = await generarDiagnostico(wizardData, saludClienta);
 
       let clientaObj = clienta;
       if (!wizardData.clientaId && !clienta) {
@@ -262,6 +267,7 @@ function WizardContent() {
         resultado: res,
         captureMetadata: wizardData.captureMetadata,
         fotoAnalisis: wizardData.fotoAnalisis,
+        perfilExtendido: wizardData.perfilExtendido,
       };
 
       setConsulta(c);

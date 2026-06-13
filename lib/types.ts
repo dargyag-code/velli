@@ -134,6 +134,9 @@ export interface Consulta {
   // Metadata de captura estandarizada
   captureMetadata?: CaptureMetadata;
 
+  // Perfil capilar extensible (ver WizardData.perfilExtendido)
+  perfilExtendido?: Record<string, unknown>;
+
   // Modo borrador (diagnóstico express sin detalles opcionales)
   esBorrador?: boolean;
 }
@@ -236,6 +239,13 @@ export interface WizardData {
   fotoAnalisis?: string[];
   fotoAntes?: string;
   fotoDespues?: string;
+
+  // Perfil capilar extensible (knowledge base): respuestas de flujos
+  // dinámicos por tipo de cabello (canas, densidad por zonas, señales de
+  // alopecia, tipo de cuero cabelludo, procesos químicos…). Se persiste
+  // como jsonb en consultas.perfil_extendido — nuevas dimensiones no
+  // requieren migración.
+  perfilExtendido?: Record<string, unknown>;
 }
 
 export const WIZARD_INITIAL_DATA: WizardData = {
@@ -270,4 +280,5 @@ export const WIZARD_INITIAL_DATA: WizardData = {
   fotoAnalisis: undefined,
   fotoAntes: undefined,
   fotoDespues: undefined,
+  perfilExtendido: undefined,
 };
