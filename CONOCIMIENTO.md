@@ -116,20 +116,14 @@ sigue hardcodeado e idéntico).
   (sin policy de INSERT — nadie puede escribirla a mano); solo fundadoras la
   leen. Cada UPDATE además incrementa `version` automáticamente.
 
-## Pasos manuales para activar (una vez)
+## Activación en prod — COMPLETADA (2026-08-04)
 
-1. Supabase Dashboard → SQL Editor → pegar
-   `supabase/migration-knowledge-base.sql` completa → Run. (Idempotente; el
-   seed no pisa ediciones previas del panel.)
-2. Verificar en Settings → Data API que las tablas `kb_*` quedan accesibles
-   (cambio de Supabase de abr-2026: las tablas nuevas pueden no exponerse
-   automáticamente).
-3. Probar: `/conocimiento` con una cuenta fundadora debe listar 142 reglas;
-   con una cuenta normal debe mostrar "Solo cuentas fundadoras".
-4. Tras el rollout, regenerar `supabase/schema.sql` (ver supabase/README.md)
-   y mover la migración a `_archive/`.
-
-**Sin aplicar la migración nada cambia**: el wizard usa el motor incorporado.
+La migración y el patch de `flujo.liso` se aplicaron en prod, la exposición
+Data API y las RLS quedaron verificadas, `supabase/schema.sql` se regeneró
+desde prod (con las tablas `kb_*`) y ambos archivos se movieron a
+`supabase/_archive/`. El wizard usa el camino por datos con las reglas
+publicadas del Sprint A; la Fase 2 sigue en borrador hasta publicarla con
+Keila desde el panel `/conocimiento`.
 
 ## Cómo expandir (Fase 2 / Fase 3)
 

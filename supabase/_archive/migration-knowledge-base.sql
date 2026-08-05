@@ -1,3 +1,4 @@
+-- ARCHIVED: Ejecutado en prod y consolidado en schema.sql el 2026-08-04
 -- ============================================================================
 -- MIGRACIÓN: Knowledge Base del motor de diagnóstico
 -- ============================================================================

@@ -1,3 +1,4 @@
+-- ARCHIVED: Ejecutado en prod y consolidado en schema.sql el 2026-08-04
 -- ============================================================================
 -- PATCH: flujo.liso — completa la plantilla del Sprint A con la Entrega 1
 -- ============================================================================

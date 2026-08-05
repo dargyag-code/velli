@@ -55,22 +55,20 @@ necesario.
 **No ejecutes los archivos en `_archive/`** — sus efectos ya están en
 `schema.sql` (incluido el apéndice manual).
 
-## Migración pendiente de aplicar: `migration-knowledge-base.sql`
+## Knowledge base: migración APLICADA y archivada (2026-08-04)
 
-Knowledge base del motor de diagnóstico (tablas `kb_reglas`, `kb_flujos`,
-`kb_prompts`, `kb_dimensiones`, `kb_auditoria` + columna
-`consultas.perfil_extendido`). Ver `CONOCIMIENTO.md` en la raíz del repo.
+`migration-knowledge-base.sql` (tablas `kb_*` + `consultas.perfil_extendido`
++ seed Sprint A/B) y `patch-flujo-liso.sql` (UPSERT del flujo de liso
+completado) se aplicaron en prod, se verificó la exposición Data API y RLS,
+y ambos se movieron a `_archive/`. Ver `CONOCIMIENTO.md` en la raíz.
 
-- **GENERADA** desde el seed canónico TS: no editar a mano; correr
-  `npm run kb:sql` tras cambiar `lib/kb/seed/*.ts`.
-- Idempotente: el seed usa `ON CONFLICT DO NOTHING` — re-ejecutarla no pisa
-  ediciones hechas por fundadoras desde el panel `/conocimiento`.
-- **La app funciona sin aplicarla**: el wizard cae al motor incorporado con
-  resultados idénticos (garantizado por `npm test`). Aplicar la migración
-  activa el camino por datos.
-- Tras aplicar, verificar en Dashboard → Settings → Data API que las tablas
-  `kb_*` quedan accesibles (desde abr-2026 las tablas nuevas pueden no
-  exponerse automáticamente al Data API).
+- La migración se **GENERA** desde el seed canónico TS: `npm run kb:sql`
+  tras cambiar `lib/kb/seed/*.ts` la recrea en `supabase/` (idempotente:
+  `ON CONFLICT DO NOTHING` — no pisa ediciones del panel `/conocimiento`).
+  Cambios sobre filas ya existentes en prod requieren patch aparte (ver
+  `_archive/patch-flujo-liso.sql` como plantilla de UPSERT seguro).
+- El contenido de Fase 2 (Sprint B) quedó cargado en estado **borrador**:
+  se revisa y publica desde el panel `/conocimiento`.
 
 ## Aplicar cambios futuros
 
@@ -86,14 +84,16 @@ Knowledge base del motor de diagnóstico (tablas `kb_reglas`, `kb_flujos`,
 
 ## Estado del archivo (última regeneración)
 
-- Fecha: 2026-05-10
-- Por: Claude Code via Sprint 1.5
-- Método: `supabase db dump --db-url ...` (`link` no disponible por permisos)
-- Incluye en `public` (vía dump): tablas `clientas`, `consultas`, `profiles`,
-  `citas`; RLS policies en las 4; función `handle_new_user`; función
-  `update_updated_at` y triggers `set_updated_at_clientas` /
-  `set_updated_at_profiles`; función event-trigger `rls_auto_enable`;
-  columna `permite_ubicacion` en `profiles` (Sprint 1).
+- Fecha: 2026-08-04
+- Por: Vane + Claude Code (Sprint B, knowledge base Fase 2)
+- Método: `supabase db dump --db-url ...` (`link` sigue no disponible por
+  permisos) + apéndice manual restaurado al final.
+- Incluye en `public` (vía dump): tablas `clientas`, `consultas` (con
+  `perfil_extendido`), `profiles`, `citas`, `eventos_activacion`,
+  `payments`, `subscriptions`, `subscription_notifications` y las 5 de la
+  knowledge base (`kb_reglas`, `kb_flujos`, `kb_prompts`, `kb_dimensiones`,
+  `kb_auditoria`) con sus RLS policies, `es_cuenta_fundadora()`,
+  `kb_touch_version()` y `kb_auditar()`.
 - Añadido manualmente (apéndice al final del archivo):
   - Trigger `on_auth_user_created` sobre `auth.users`
   - Bucket `fotos` y 4 policies de `storage.objects`

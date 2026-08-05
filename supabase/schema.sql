@@ -23,6 +23,20 @@ COMMENT ON SCHEMA "public" IS 'standard public schema';
 
 
 
+CREATE OR REPLACE FUNCTION "public"."es_cuenta_fundadora"() RETURNS boolean
+    LANGUAGE "sql" STABLE
+    SET "search_path" TO ''
+    AS $$
+  select coalesce(
+    (select p.es_fundadora from public.profiles p where p.id = (select auth.uid())),
+    false
+  );
+$$;
+
+
+ALTER FUNCTION "public"."es_cuenta_fundadora"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."funnel_activacion"() RETURNS TABLE("evento" "text", "cuentas" bigint)
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO ''
@@ -78,6 +92,44 @@ $$;
 
 
 ALTER FUNCTION "public"."handle_new_user"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."kb_auditar"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO ''
+    AS $$
+begin
+  insert into public.kb_auditoria (tabla, registro_id, accion, usuario, datos_antes, datos_despues)
+  values (
+    tg_table_name,
+    coalesce(new.id, old.id),
+    tg_op,
+    auth.uid(),
+    case when tg_op <> 'INSERT' then to_jsonb(old) end,
+    case when tg_op <> 'DELETE' then to_jsonb(new) end
+  );
+  return coalesce(new, old);
+end;
+$$;
+
+
+ALTER FUNCTION "public"."kb_auditar"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."kb_touch_version"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    SET "search_path" TO ''
+    AS $$
+begin
+  new.version := old.version + 1;
+  new.updated_at := now();
+  new.updated_by := auth.uid();
+  return new;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."kb_touch_version"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."procesar_evento_pago"("p_tipo" "text", "p_reference" "text", "p_provider_payment_id" "text", "p_amount" integer, "p_metodo" "text", "p_raw" "jsonb") RETURNS "text"
@@ -450,6 +502,7 @@ CREATE TABLE IF NOT EXISTS "public"."consultas" (
     "created_at" timestamp with time zone DEFAULT "now"(),
     "ia_tipo_sugerido" "text",
     "ia_correccion" "text",
+    "perfil_extendido" "jsonb",
     CONSTRAINT "diagnosticos_densidad_check" CHECK (("densidad" = ANY (ARRAY['baja'::"text", 'media'::"text", 'alta'::"text"]))),
     CONSTRAINT "diagnosticos_elasticidad_check" CHECK (("elasticidad" = ANY (ARRAY['baja'::"text", 'media'::"text", 'alta'::"text"]))),
     CONSTRAINT "diagnosticos_grosor_hebra_check" CHECK (("grosor_hebra" = ANY (ARRAY['fino'::"text", 'medio'::"text", 'grueso'::"text"]))),
@@ -471,6 +524,109 @@ CREATE TABLE IF NOT EXISTS "public"."eventos_activacion" (
 
 
 ALTER TABLE "public"."eventos_activacion" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."kb_auditoria" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "tabla" "text" NOT NULL,
+    "registro_id" "uuid" NOT NULL,
+    "accion" "text" NOT NULL,
+    "usuario" "uuid",
+    "datos_antes" "jsonb",
+    "datos_despues" "jsonb",
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "kb_auditoria_accion_check" CHECK (("accion" = ANY (ARRAY['INSERT'::"text", 'UPDATE'::"text", 'DELETE'::"text"])))
+);
+
+
+ALTER TABLE "public"."kb_auditoria" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."kb_dimensiones" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "clave" "text" NOT NULL,
+    "locale" "text" DEFAULT 'es'::"text" NOT NULL,
+    "etiqueta" "text" NOT NULL,
+    "descripcion" "text",
+    "tipo" "text" NOT NULL,
+    "opciones" "jsonb",
+    "bandera_medica" boolean DEFAULT false NOT NULL,
+    "estado" "text" DEFAULT 'borrador'::"text" NOT NULL,
+    "version" integer DEFAULT 1 NOT NULL,
+    "created_by" "uuid",
+    "updated_by" "uuid",
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "kb_dimensiones_estado_check" CHECK (("estado" = ANY (ARRAY['borrador'::"text", 'publicada'::"text", 'archivada'::"text"]))),
+    CONSTRAINT "kb_dimensiones_tipo_check" CHECK (("tipo" = ANY (ARRAY['opcion'::"text", 'multi'::"text", 'texto'::"text", 'booleano'::"text"])))
+);
+
+
+ALTER TABLE "public"."kb_dimensiones" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."kb_flujos" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "clave" "text" NOT NULL,
+    "locale" "text" DEFAULT 'es'::"text" NOT NULL,
+    "tipos_cabello" "text"[],
+    "definicion" "jsonb" NOT NULL,
+    "estado" "text" DEFAULT 'borrador'::"text" NOT NULL,
+    "version" integer DEFAULT 1 NOT NULL,
+    "notas_internas" "text",
+    "created_by" "uuid",
+    "updated_by" "uuid",
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "kb_flujos_estado_check" CHECK (("estado" = ANY (ARRAY['borrador'::"text", 'publicada'::"text", 'archivada'::"text"])))
+);
+
+
+ALTER TABLE "public"."kb_flujos" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."kb_prompts" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "clave" "text" NOT NULL,
+    "locale" "text" DEFAULT 'es'::"text" NOT NULL,
+    "tipos_cabello" "text"[],
+    "contenido" "text" NOT NULL,
+    "estado" "text" DEFAULT 'borrador'::"text" NOT NULL,
+    "version" integer DEFAULT 1 NOT NULL,
+    "notas_internas" "text",
+    "created_by" "uuid",
+    "updated_by" "uuid",
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "kb_prompts_estado_check" CHECK (("estado" = ANY (ARRAY['borrador'::"text", 'publicada'::"text", 'archivada'::"text"])))
+);
+
+
+ALTER TABLE "public"."kb_prompts" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."kb_reglas" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "clave" "text" NOT NULL,
+    "locale" "text" DEFAULT 'es'::"text" NOT NULL,
+    "segmento" "text" NOT NULL,
+    "prioridad" integer DEFAULT 100 NOT NULL,
+    "condiciones" "jsonb",
+    "salida" "jsonb" NOT NULL,
+    "es_bandera_medica" boolean DEFAULT false NOT NULL,
+    "estado" "text" DEFAULT 'borrador'::"text" NOT NULL,
+    "version" integer DEFAULT 1 NOT NULL,
+    "notas_internas" "text",
+    "created_by" "uuid",
+    "updated_by" "uuid",
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "kb_reglas_estado_check" CHECK (("estado" = ANY (ARRAY['borrador'::"text", 'publicada'::"text", 'archivada'::"text"]))),
+    CONSTRAINT "kb_reglas_segmento_check" CHECK (("segmento" = ANY (ARRAY['hecho'::"text", 'derivacion_medica'::"text", 'tratamiento_principal'::"text", 'tratamiento_adicional'::"text", 'cronograma'::"text", 'tecnica'::"text", 'producto_resumen'::"text", 'ingrediente_buscar'::"text", 'ingrediente_evitar'::"text", 'rutina'::"text", 'nota'::"text", 'cuidado_casa'::"text", 'intervalo'::"text", 'config'::"text"])))
+);
+
+
+ALTER TABLE "public"."kb_reglas" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."payments" (
@@ -588,6 +744,51 @@ ALTER TABLE ONLY "public"."eventos_activacion"
 
 
 
+ALTER TABLE ONLY "public"."kb_auditoria"
+    ADD CONSTRAINT "kb_auditoria_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."kb_dimensiones"
+    ADD CONSTRAINT "kb_dimensiones_clave_locale_key" UNIQUE ("clave", "locale");
+
+
+
+ALTER TABLE ONLY "public"."kb_dimensiones"
+    ADD CONSTRAINT "kb_dimensiones_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."kb_flujos"
+    ADD CONSTRAINT "kb_flujos_clave_locale_key" UNIQUE ("clave", "locale");
+
+
+
+ALTER TABLE ONLY "public"."kb_flujos"
+    ADD CONSTRAINT "kb_flujos_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."kb_prompts"
+    ADD CONSTRAINT "kb_prompts_clave_locale_key" UNIQUE ("clave", "locale");
+
+
+
+ALTER TABLE ONLY "public"."kb_prompts"
+    ADD CONSTRAINT "kb_prompts_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."kb_reglas"
+    ADD CONSTRAINT "kb_reglas_clave_locale_key" UNIQUE ("clave", "locale");
+
+
+
+ALTER TABLE ONLY "public"."kb_reglas"
+    ADD CONSTRAINT "kb_reglas_pkey" PRIMARY KEY ("id");
+
+
+
 ALTER TABLE ONLY "public"."payments"
     ADD CONSTRAINT "payments_pkey" PRIMARY KEY ("id");
 
@@ -672,6 +873,26 @@ CREATE INDEX "idx_eventos_activacion_evento" ON "public"."eventos_activacion" US
 
 
 
+CREATE INDEX "idx_kb_auditoria_fecha" ON "public"."kb_auditoria" USING "btree" ("created_at" DESC);
+
+
+
+CREATE INDEX "idx_kb_auditoria_registro" ON "public"."kb_auditoria" USING "btree" ("tabla", "registro_id", "created_at" DESC);
+
+
+
+CREATE INDEX "idx_kb_flujos_lookup" ON "public"."kb_flujos" USING "btree" ("locale", "estado");
+
+
+
+CREATE INDEX "idx_kb_prompts_lookup" ON "public"."kb_prompts" USING "btree" ("locale", "estado");
+
+
+
+CREATE INDEX "idx_kb_reglas_lookup" ON "public"."kb_reglas" USING "btree" ("locale", "estado", "segmento", "prioridad");
+
+
+
 CREATE INDEX "idx_payments_user_created" ON "public"."payments" USING "btree" ("user_id", "created_at" DESC);
 
 
@@ -689,6 +910,38 @@ CREATE OR REPLACE TRIGGER "guard_suscripcion_clientas" BEFORE INSERT ON "public"
 
 
 CREATE OR REPLACE TRIGGER "guard_suscripcion_consultas" BEFORE INSERT ON "public"."consultas" FOR EACH ROW EXECUTE FUNCTION "public"."trg_escritura_guard"();
+
+
+
+CREATE OR REPLACE TRIGGER "kb_audit_dimensiones" AFTER INSERT OR DELETE OR UPDATE ON "public"."kb_dimensiones" FOR EACH ROW EXECUTE FUNCTION "public"."kb_auditar"();
+
+
+
+CREATE OR REPLACE TRIGGER "kb_audit_flujos" AFTER INSERT OR DELETE OR UPDATE ON "public"."kb_flujos" FOR EACH ROW EXECUTE FUNCTION "public"."kb_auditar"();
+
+
+
+CREATE OR REPLACE TRIGGER "kb_audit_prompts" AFTER INSERT OR DELETE OR UPDATE ON "public"."kb_prompts" FOR EACH ROW EXECUTE FUNCTION "public"."kb_auditar"();
+
+
+
+CREATE OR REPLACE TRIGGER "kb_audit_reglas" AFTER INSERT OR DELETE OR UPDATE ON "public"."kb_reglas" FOR EACH ROW EXECUTE FUNCTION "public"."kb_auditar"();
+
+
+
+CREATE OR REPLACE TRIGGER "kb_touch_dimensiones" BEFORE UPDATE ON "public"."kb_dimensiones" FOR EACH ROW EXECUTE FUNCTION "public"."kb_touch_version"();
+
+
+
+CREATE OR REPLACE TRIGGER "kb_touch_flujos" BEFORE UPDATE ON "public"."kb_flujos" FOR EACH ROW EXECUTE FUNCTION "public"."kb_touch_version"();
+
+
+
+CREATE OR REPLACE TRIGGER "kb_touch_prompts" BEFORE UPDATE ON "public"."kb_prompts" FOR EACH ROW EXECUTE FUNCTION "public"."kb_touch_version"();
+
+
+
+CREATE OR REPLACE TRIGGER "kb_touch_reglas" BEFORE UPDATE ON "public"."kb_reglas" FOR EACH ROW EXECUTE FUNCTION "public"."kb_touch_version"();
 
 
 
@@ -740,6 +993,46 @@ ALTER TABLE ONLY "public"."consultas"
 
 ALTER TABLE ONLY "public"."eventos_activacion"
     ADD CONSTRAINT "eventos_activacion_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."kb_dimensiones"
+    ADD CONSTRAINT "kb_dimensiones_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "auth"."users"("id") ON DELETE SET NULL;
+
+
+
+ALTER TABLE ONLY "public"."kb_dimensiones"
+    ADD CONSTRAINT "kb_dimensiones_updated_by_fkey" FOREIGN KEY ("updated_by") REFERENCES "auth"."users"("id") ON DELETE SET NULL;
+
+
+
+ALTER TABLE ONLY "public"."kb_flujos"
+    ADD CONSTRAINT "kb_flujos_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "auth"."users"("id") ON DELETE SET NULL;
+
+
+
+ALTER TABLE ONLY "public"."kb_flujos"
+    ADD CONSTRAINT "kb_flujos_updated_by_fkey" FOREIGN KEY ("updated_by") REFERENCES "auth"."users"("id") ON DELETE SET NULL;
+
+
+
+ALTER TABLE ONLY "public"."kb_prompts"
+    ADD CONSTRAINT "kb_prompts_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "auth"."users"("id") ON DELETE SET NULL;
+
+
+
+ALTER TABLE ONLY "public"."kb_prompts"
+    ADD CONSTRAINT "kb_prompts_updated_by_fkey" FOREIGN KEY ("updated_by") REFERENCES "auth"."users"("id") ON DELETE SET NULL;
+
+
+
+ALTER TABLE ONLY "public"."kb_reglas"
+    ADD CONSTRAINT "kb_reglas_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "auth"."users"("id") ON DELETE SET NULL;
+
+
+
+ALTER TABLE ONLY "public"."kb_reglas"
+    ADD CONSTRAINT "kb_reglas_updated_by_fkey" FOREIGN KEY ("updated_by") REFERENCES "auth"."users"("id") ON DELETE SET NULL;
 
 
 
@@ -864,6 +1157,105 @@ CREATE POLICY "eventos_activacion_select_own" ON "public"."eventos_activacion" F
 
 
 
+ALTER TABLE "public"."kb_auditoria" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "kb_auditoria_select_fundadora" ON "public"."kb_auditoria" FOR SELECT TO "authenticated" USING (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+ALTER TABLE "public"."kb_dimensiones" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "kb_dimensiones_delete_fundadora" ON "public"."kb_dimensiones" FOR DELETE TO "authenticated" USING (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+CREATE POLICY "kb_dimensiones_insert_fundadora" ON "public"."kb_dimensiones" FOR INSERT TO "authenticated" WITH CHECK (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+CREATE POLICY "kb_dimensiones_select_fundadora" ON "public"."kb_dimensiones" FOR SELECT TO "authenticated" USING (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+CREATE POLICY "kb_dimensiones_select_publicadas" ON "public"."kb_dimensiones" FOR SELECT TO "authenticated" USING (("estado" = 'publicada'::"text"));
+
+
+
+CREATE POLICY "kb_dimensiones_update_fundadora" ON "public"."kb_dimensiones" FOR UPDATE TO "authenticated" USING (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora")) WITH CHECK (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+ALTER TABLE "public"."kb_flujos" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "kb_flujos_delete_fundadora" ON "public"."kb_flujos" FOR DELETE TO "authenticated" USING (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+CREATE POLICY "kb_flujos_insert_fundadora" ON "public"."kb_flujos" FOR INSERT TO "authenticated" WITH CHECK (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+CREATE POLICY "kb_flujos_select_fundadora" ON "public"."kb_flujos" FOR SELECT TO "authenticated" USING (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+CREATE POLICY "kb_flujos_select_publicadas" ON "public"."kb_flujos" FOR SELECT TO "authenticated" USING (("estado" = 'publicada'::"text"));
+
+
+
+CREATE POLICY "kb_flujos_update_fundadora" ON "public"."kb_flujos" FOR UPDATE TO "authenticated" USING (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora")) WITH CHECK (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+ALTER TABLE "public"."kb_prompts" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "kb_prompts_delete_fundadora" ON "public"."kb_prompts" FOR DELETE TO "authenticated" USING (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+CREATE POLICY "kb_prompts_insert_fundadora" ON "public"."kb_prompts" FOR INSERT TO "authenticated" WITH CHECK (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+CREATE POLICY "kb_prompts_select_fundadora" ON "public"."kb_prompts" FOR SELECT TO "authenticated" USING (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+CREATE POLICY "kb_prompts_select_publicadas" ON "public"."kb_prompts" FOR SELECT TO "authenticated" USING (("estado" = 'publicada'::"text"));
+
+
+
+CREATE POLICY "kb_prompts_update_fundadora" ON "public"."kb_prompts" FOR UPDATE TO "authenticated" USING (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora")) WITH CHECK (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+ALTER TABLE "public"."kb_reglas" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "kb_reglas_delete_fundadora" ON "public"."kb_reglas" FOR DELETE TO "authenticated" USING (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+CREATE POLICY "kb_reglas_insert_fundadora" ON "public"."kb_reglas" FOR INSERT TO "authenticated" WITH CHECK (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+CREATE POLICY "kb_reglas_select_fundadora" ON "public"."kb_reglas" FOR SELECT TO "authenticated" USING (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
+CREATE POLICY "kb_reglas_select_publicadas" ON "public"."kb_reglas" FOR SELECT TO "authenticated" USING (("estado" = 'publicada'::"text"));
+
+
+
+CREATE POLICY "kb_reglas_update_fundadora" ON "public"."kb_reglas" FOR UPDATE TO "authenticated" USING (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora")) WITH CHECK (( SELECT "public"."es_cuenta_fundadora"() AS "es_cuenta_fundadora"));
+
+
+
 ALTER TABLE "public"."payments" ENABLE ROW LEVEL SECURITY;
 
 
@@ -899,6 +1291,13 @@ GRANT USAGE ON SCHEMA "public" TO "service_role";
 
 
 
+REVOKE ALL ON FUNCTION "public"."es_cuenta_fundadora"() FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."es_cuenta_fundadora"() TO "anon";
+GRANT ALL ON FUNCTION "public"."es_cuenta_fundadora"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."es_cuenta_fundadora"() TO "service_role";
+
+
+
 REVOKE ALL ON FUNCTION "public"."funnel_activacion"() FROM PUBLIC;
 GRANT ALL ON FUNCTION "public"."funnel_activacion"() TO "anon";
 GRANT ALL ON FUNCTION "public"."funnel_activacion"() TO "authenticated";
@@ -909,6 +1308,20 @@ GRANT ALL ON FUNCTION "public"."funnel_activacion"() TO "service_role";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "anon";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "service_role";
+
+
+
+REVOKE ALL ON FUNCTION "public"."kb_auditar"() FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."kb_auditar"() TO "anon";
+GRANT ALL ON FUNCTION "public"."kb_auditar"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."kb_auditar"() TO "service_role";
+
+
+
+REVOKE ALL ON FUNCTION "public"."kb_touch_version"() FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."kb_touch_version"() TO "anon";
+GRANT ALL ON FUNCTION "public"."kb_touch_version"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."kb_touch_version"() TO "service_role";
 
 
 
@@ -974,6 +1387,36 @@ GRANT ALL ON TABLE "public"."eventos_activacion" TO "service_role";
 
 
 
+GRANT ALL ON TABLE "public"."kb_auditoria" TO "anon";
+GRANT ALL ON TABLE "public"."kb_auditoria" TO "authenticated";
+GRANT ALL ON TABLE "public"."kb_auditoria" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."kb_dimensiones" TO "anon";
+GRANT ALL ON TABLE "public"."kb_dimensiones" TO "authenticated";
+GRANT ALL ON TABLE "public"."kb_dimensiones" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."kb_flujos" TO "anon";
+GRANT ALL ON TABLE "public"."kb_flujos" TO "authenticated";
+GRANT ALL ON TABLE "public"."kb_flujos" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."kb_prompts" TO "anon";
+GRANT ALL ON TABLE "public"."kb_prompts" TO "authenticated";
+GRANT ALL ON TABLE "public"."kb_prompts" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."kb_reglas" TO "anon";
+GRANT ALL ON TABLE "public"."kb_reglas" TO "authenticated";
+GRANT ALL ON TABLE "public"."kb_reglas" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."payments" TO "anon";
 GRANT ALL ON TABLE "public"."payments" TO "authenticated";
 GRANT ALL ON TABLE "public"."payments" TO "service_role";
@@ -1023,7 +1466,12 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
 
--- =============================================================================
+
+
+
+
+
+
 -- MANUALLY APPENDED — cross-schema items not captured by `dump --schema public`
 -- =============================================================================
 -- Estos objetos viven en otros schemas (auth, storage) pero son requeridos
