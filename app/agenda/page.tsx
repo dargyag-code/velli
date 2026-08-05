@@ -9,6 +9,7 @@ import {
 } from '@/components/v2';
 import { getUpcomingCitas, getPastCitas } from '@/lib/db';
 import { getProfile, type HorarioAtencion } from '@/lib/profile';
+import CitasServicio from '@/components/agenda/CitasServicio';
 import { Clienta, Consulta } from '@/lib/types';
 import { formatDate, getRizoLabel } from '@/lib/utils';
 
@@ -195,6 +196,8 @@ export default function AgendaPage() {
   // Horario base del salón (paso 3 del onboarding): atenúa los días no
   // laborables en la franja semanal y se muestra como caption.
   const [horario, setHorario] = useState<HorarioAtencion | null>(null);
+  // Bloque reservado para servicios tipo 4 (configurable por salón).
+  const [bloqueoTipo4, setBloqueoTipo4] = useState(180);
 
   const load = useCallback(async () => {
     try {
@@ -206,6 +209,7 @@ export default function AgendaPage() {
       setUpcoming(up);
       setPast(pa);
       if (prof?.horarioAtencion?.dias?.length) setHorario(prof.horarioAtencion);
+      if (prof?.bloqueoTipo4Minutos) setBloqueoTipo4(prof.bloqueoTipo4Minutos);
     } finally {
       setLoading(false);
     }
@@ -474,6 +478,9 @@ export default function AgendaPage() {
             </div>
           </div>
         )}
+
+        {/* Citas de servicio con bloqueos de seguridad (validación Keila) */}
+        {!loading && <CitasServicio bloqueoTipo4Minutos={bloqueoTipo4} />}
 
         {/* CTA nueva consulta */}
         <Link href="/diagnostico" style={{ textDecoration: 'none', display: 'block', marginBottom: 22 }}>

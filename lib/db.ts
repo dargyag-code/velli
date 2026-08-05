@@ -35,6 +35,11 @@ type ClientaRow = {
   tipo_cabello_principal: string | null;
   ultima_visita: string | null;
   total_visitas: number;
+  // Seguridad química (migración legal-gobernanza). Opcionales en el row:
+  // el payload de escritura solo las incluye cuando hay valor, así los
+  // upserts no fallan si la migración aún no corrió en ese entorno.
+  nueva_en_color?: boolean | null;
+  cambio_marca_quimica?: boolean | null;
 };
 
 type ConsultaRow = {
@@ -109,11 +114,15 @@ function rowToClienta(r: ClientaRow): Clienta {
     tipoRizoPrincipal: r.tipo_cabello_principal ?? undefined,
     ultimaVisita: r.ultima_visita ?? undefined,
     totalVisitas: r.total_visitas,
+    // undefined (no false) cuando la columna aún no existe en este entorno:
+    // así clientaToRow omite la columna y el upsert no rompe sin migración.
+    nuevaEnColor: r.nueva_en_color ?? undefined,
+    cambioMarcaQuimica: r.cambio_marca_quimica ?? undefined,
   };
 }
 
 function clientaToRow(c: Clienta): Omit<ClientaRow, 'user_id' | 'created_at'> {
-  return {
+  const row: Omit<ClientaRow, 'user_id' | 'created_at'> = {
     id: c.id,
     nombre: c.nombre,
     edad: c.edad ?? 0,
@@ -129,6 +138,11 @@ function clientaToRow(c: Clienta): Omit<ClientaRow, 'user_id' | 'created_at'> {
     ultima_visita: c.ultimaVisita ?? null,
     total_visitas: c.totalVisitas,
   };
+  // Columnas de la migración legal-gobernanza: solo se incluyen con valor
+  // definido para no romper (400 PostgREST) en entornos sin la migración.
+  if (c.nuevaEnColor !== undefined) row.nueva_en_color = c.nuevaEnColor;
+  if (c.cambioMarcaQuimica !== undefined) row.cambio_marca_quimica = c.cambioMarcaQuimica;
+  return row;
 }
 
 const EMPTY_CRONOGRAMA: CronogramaResult = {

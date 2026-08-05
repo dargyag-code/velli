@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Edit3, Calendar, Database, Download, Upload, Trash2,
   Heart, FileText, Shield, Phone, ChevronRight, Check,
-  AlertCircle, LogOut, CreditCard, Palette, BookOpen,
+  AlertCircle, LogOut, CreditCard, Palette, BookOpen, Clock,
 } from 'lucide-react';
 import { BottomNavV2 } from '@/components/v2';
 import {
@@ -55,6 +55,11 @@ export default function ConfiguracionPage() {
   const [savingMarca, setSavingMarca] = useState(false);
   const [logoError, setLogoError] = useState(false);
 
+  // Bloque que la agenda reserva para "día de lavado tipo 4" e "instalación
+  // de peinado protector" (validación Keila 6.P7): 2–4 h por salón.
+  const [bloqueoTipo4, setBloqueoTipo4] = useState(180);
+  const [savingBloqueo, setSavingBloqueo] = useState(false);
+
   const [exportLoading, setExportLoading] = useState(false);
   const [importMsg, setImportMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -81,6 +86,7 @@ export default function ConfiguracionPage() {
           setPermiteUbicacion(!!p.permiteUbicacion);
           setMarcaLogoActual(p.logoUrl ?? null);
           setMarcaColor(p.colorPrimario ?? COLOR_VELLI);
+          setBloqueoTipo4(p.bloqueoTipo4Minutos ?? 180);
         }
       })
       .finally(() => setProfileLoading(false));
@@ -102,6 +108,24 @@ export default function ConfiguracionPage() {
       showToast('No se pudo guardar la preferencia', 'error');
     } finally {
       setSavingGeo(false);
+    }
+  };
+
+  const cambiarBloqueoTipo4 = async (minutos: number) => {
+    if (savingBloqueo) return;
+    const anterior = bloqueoTipo4;
+    setBloqueoTipo4(minutos);
+    setSavingBloqueo(true);
+    try {
+      const updated = await updateProfile({ bloqueoTipo4Minutos: minutos });
+      setProfile(updated);
+      showToast('Bloque de agenda actualizado', 'success');
+    } catch (e) {
+      console.error('[profile.bloqueoTipo4]', e);
+      setBloqueoTipo4(anterior);
+      showToast('No se pudo guardar el bloque', 'error');
+    } finally {
+      setSavingBloqueo(false);
     }
   };
 
@@ -565,6 +589,46 @@ export default function ConfiguracionPage() {
             sub="Bloques de agenda"
             onClick={() => router.push('/agenda')}
           />
+          {/* Bloque reservado para servicios tipo 4 (Keila 6.P7) */}
+          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-soft)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+              <Clock size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-main)' }}>
+                Bloque para servicios tipo 4
+              </div>
+            </div>
+            <p style={{ margin: '0 0 10px 26px', fontSize: 11, color: 'var(--text-tertiary)', lineHeight: 1.45 }}>
+              Día de lavado tipo 4 e instalación de peinado protector reservan
+              este tiempo y bloquean citas encima.
+            </p>
+            <div style={{ display: 'flex', gap: 6, marginLeft: 26 }}>
+              {[120, 180, 240].map((m) => {
+                const on = bloqueoTipo4 === m;
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => cambiarBloqueoTipo4(m)}
+                    disabled={savingBloqueo}
+                    style={{
+                      flex: 1,
+                      padding: '9px 8px',
+                      borderRadius: 12,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      fontFamily: 'var(--font-sans)',
+                      background: on ? 'var(--primary-pale)' : 'var(--bg-card)',
+                      color: on ? 'var(--primary)' : 'var(--text-secondary)',
+                      border: `1px solid ${on ? 'rgba(45, 90, 39, 0.3)' : 'var(--border-soft)'}`,
+                      cursor: savingBloqueo ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {m / 60} horas
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <RowEditorial
             icon={<CreditCard size={16} />}
             title="Tu plan"
@@ -588,11 +652,18 @@ export default function ConfiguracionPage() {
               </span>
             }
           />
-          {profile?.esFundadora && (
+          {profile?.rol === 'corporativo' ? (
             <RowEditorial
               icon={<BookOpen size={16} />}
               title="Panel de conocimiento"
-              sub="Reglas de diagnóstico, flujos y prompts (solo fundadoras)"
+              sub="Reglas, flujos, prompts y cartas de marca (nivel corporativo)"
+              onClick={() => router.push('/conocimiento')}
+            />
+          ) : (
+            <RowEditorial
+              icon={<BookOpen size={16} />}
+              title="Marcas de tu salón"
+              sub="Elige qué marcas de la librería tienes en tu inventario"
               onClick={() => router.push('/conocimiento')}
             />
           )}
@@ -682,6 +753,18 @@ export default function ConfiguracionPage() {
             title="Términos y condiciones"
             sub="Uso de la plataforma Velli Pro"
             onClick={() => router.push('/legal/terminos')}
+          />
+          <RowEditorial
+            icon={<FileText size={16} />}
+            title="Consentimiento · servicios químicos"
+            sub="Lo firma cada clienta en su ficha antes de decolorar"
+            onClick={() => router.push('/legal/consentimiento-quimico')}
+          />
+          <RowEditorial
+            icon={<FileText size={16} />}
+            title="Consentimiento · imágenes"
+            sub="Requisito para activar la cámara en alopecia y químicos"
+            onClick={() => router.push('/legal/consentimiento-imagenes')}
           />
         </SectionEditorial>
 

@@ -11,6 +11,7 @@ import { Btn, Chip, type ChipTone } from '@/components/v2';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import HistorialTimeline from '@/components/clienta/HistorialTimeline';
+import SeguridadLegal from '@/components/clienta/SeguridadLegal';
 import { getClientaById, getConsultasByClienta, deleteClienta, updateClienta } from '@/lib/db';
 import { Clienta, Consulta } from '@/lib/types';
 import { formatDate, getRizoLabel } from '@/lib/utils';
@@ -1129,6 +1130,9 @@ export default function ClientaPage() {
                     </div>
                   </article>
                 )}
+
+                {/* Consentimientos + seguridad química (validación Keila) */}
+                <SeguridadLegal clienta={clienta} onClientaChange={setClienta} />
 
                 {/* Sin consultas */}
                 {consultas.length === 0 && (
