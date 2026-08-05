@@ -19,9 +19,16 @@ const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const { REGLAS_RIZADO } = await import(
   new URL('../lib/kb/seed/reglasRizado.ts', import.meta.url)
 );
+const { REGLAS_FASE2 } = await import(
+  new URL('../lib/kb/seed/reglasFase2.ts', import.meta.url)
+);
 const { DIMENSIONES, FLUJOS, PROMPTS } = await import(
   new URL('../lib/kb/seed/contenido.ts', import.meta.url)
 );
+
+// Rizos (publicadas — paridad exacta con el motor legacy) + Fase 2
+// (borradores — liso, ondulado, canas, alopecia, complementos 3–4).
+const REGLAS = [...REGLAS_RIZADO, ...REGLAS_FASE2];
 
 // ── Helpers de SQL ──────────────────────────────────────────────────────────
 
@@ -355,7 +362,7 @@ grant all on public.kb_auditoria to service_role;
 // ── Seed ────────────────────────────────────────────────────────────────────
 
 function seedReglas() {
-  const filas = REGLAS_RIZADO.map((r) => {
+  const filas = REGLAS.map((r) => {
     const cols = [
       str(r.clave),
       str(r.locale ?? 'es'),
@@ -365,11 +372,12 @@ function seedReglas() {
       jsonb(r.salida),
       bool(r.esBanderaMedica ?? false),
       str(r.estado ?? 'publicada'),
+      r.notasInternas ? str(r.notasInternas) : 'NULL',
     ];
     return `  (${cols.join(', ')})`;
   });
   return `insert into public.kb_reglas
-  (clave, locale, segmento, prioridad, condiciones, salida, es_bandera_medica, estado)
+  (clave, locale, segmento, prioridad, condiciones, salida, es_bandera_medica, estado, notas_internas)
 values
 ${filas.join(',\n')}
 on conflict (clave, locale) do nothing;`;
@@ -435,7 +443,8 @@ on conflict (clave, locale) do nothing;`;
 const sql = [
   DDL,
   '-- ============================================================================',
-  `-- SEED — ${REGLAS_RIZADO.length} reglas de rizos, ${DIMENSIONES.length} dimensiones, ${FLUJOS.length} flujo(s), ${PROMPTS.length} prompts`,
+  `-- SEED — ${REGLAS_RIZADO.length} reglas de rizos (publicadas) + ${REGLAS_FASE2.length} reglas Fase 2 (borrador),`,
+  `--        ${DIMENSIONES.length} dimensiones, ${FLUJOS.length} flujo(s), ${PROMPTS.length} prompts`,
   '-- ============================================================================',
   '',
   seedReglas(),
@@ -451,5 +460,5 @@ const sql = [
 const destino = path.join(raiz, 'supabase', 'migration-knowledge-base.sql');
 writeFileSync(destino, sql, 'utf8');
 console.log(
-  `OK → ${destino}\n  reglas: ${REGLAS_RIZADO.length} · dimensiones: ${DIMENSIONES.length} · flujos: ${FLUJOS.length} · prompts: ${PROMPTS.length}`
+  `OK → ${destino}\n  reglas: ${REGLAS.length} (${REGLAS_RIZADO.length} rizos publicadas + ${REGLAS_FASE2.length} fase 2 en borrador) · dimensiones: ${DIMENSIONES.length} · flujos: ${FLUJOS.length} · prompts: ${PROMPTS.length}`
 );

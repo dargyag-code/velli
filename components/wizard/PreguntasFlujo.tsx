@@ -13,7 +13,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { AlertTriangle, BookOpen } from 'lucide-react';
-import { cargarFlujoParaTipo } from '@/lib/kb/diagnostico';
+import { cargarFlujosParaTipo } from '@/lib/kb/diagnostico';
 import { FlujoKBRow, PreguntaFlujo } from '@/lib/kb/tipos';
 import { vibracionSutil } from '@/lib/haptics';
 
@@ -32,52 +32,37 @@ function esOpcionMedica(pregunta: PreguntaFlujo, valor: unknown): boolean {
 }
 
 export default function PreguntasFlujo({ tipoCabello, valores, onChange }: Props) {
-  const [flujo, setFlujo] = useState<FlujoKBRow | null>(null);
+  const [flujos, setFlujos] = useState<FlujoKBRow[]>([]);
 
   useEffect(() => {
     let activo = true;
     if (!tipoCabello) {
-      setFlujo(null);
+      setFlujos([]);
       return;
     }
-    cargarFlujoParaTipo(tipoCabello).then((f) => {
-      if (activo) setFlujo(f);
+    cargarFlujosParaTipo(tipoCabello).then((fs) => {
+      if (activo) setFlujos(fs);
     });
     return () => {
       activo = false;
     };
   }, [tipoCabello]);
 
-  if (!flujo) return null;
+  if (flujos.length === 0) return null;
 
   const respuestas = valores ?? {};
   const setRespuesta = (clave: string, valor: unknown) => {
     onChange({ ...respuestas, [clave]: valor });
   };
 
-  const hayBanderaMedica = flujo.definicion.preguntas.some((p) =>
-    esOpcionMedica(p, respuestas[p.clave])
+  // La bandera se evalúa sobre TODOS los flujos activos (el módulo de canas
+  // y la guía de cabina son transversales y pueden levantar señal médica).
+  const hayBanderaMedica = flujos.some((f) =>
+    f.definicion.preguntas.some((p) => esOpcionMedica(p, respuestas[p.clave]))
   );
 
   return (
-    <section
-      className="v-card"
-      style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <BookOpen size={14} style={{ color: 'var(--primary)' }} />
-        <div>
-          <div className="v-caps" style={{ color: 'var(--primary)' }}>
-            {flujo.definicion.titulo}
-          </div>
-          {flujo.definicion.descripcion && (
-            <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--text-tertiary)' }}>
-              {flujo.definicion.descripcion}
-            </p>
-          )}
-        </div>
-      </div>
-
+    <>
       {hayBanderaMedica && (
         <div
           style={{
@@ -101,15 +86,37 @@ export default function PreguntasFlujo({ tipoCabello, valores, onChange }: Props
         </div>
       )}
 
-      {flujo.definicion.preguntas.map((p) => (
-        <Pregunta
-          key={p.clave}
-          pregunta={p}
-          valor={respuestas[p.clave]}
-          onSelect={(v) => setRespuesta(p.clave, v)}
-        />
+      {flujos.map((flujo) => (
+        <section
+          key={flujo.clave}
+          className="v-card"
+          style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <BookOpen size={14} style={{ color: 'var(--primary)' }} />
+            <div>
+              <div className="v-caps" style={{ color: 'var(--primary)' }}>
+                {flujo.definicion.titulo}
+              </div>
+              {flujo.definicion.descripcion && (
+                <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--text-tertiary)' }}>
+                  {flujo.definicion.descripcion}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {flujo.definicion.preguntas.map((p) => (
+            <Pregunta
+              key={p.clave}
+              pregunta={p}
+              valor={respuestas[p.clave]}
+              onSelect={(v) => setRespuesta(p.clave, v)}
+            />
+          ))}
+        </section>
       ))}
-    </section>
+    </>
   );
 }
 

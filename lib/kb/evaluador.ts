@@ -12,15 +12,15 @@
 // tratamiento, sin importar qué digan las demás reglas.
 // ══════════════════════════════════════════════════════════════════════════
 
-import {
+import type {
   WizardData,
   ResultadoConsulta,
   CronogramaResult,
   CuidadoCasaResult,
   RutinaPaso,
 } from '../types';
-import { SaludClienta } from '../diagnosticEngine';
-import {
+import type { SaludClienta } from '../diagnosticEngine';
+import type {
   Condicion,
   ReglaKB,
   SalidaHecho,
@@ -56,6 +56,14 @@ export function construirHechosBase(data: WizardData, salud?: SaludClienta): Hec
     lineaDemarcacion: data.lineaDemarcacion || '',
     embarazo: salud?.embarazo ?? false,
     nivelEstres: salud?.nivelEstres ?? '',
+    // Fase 2: hechos que el wizard ya captura en el paso de historial pero
+    // que el motor legacy nunca leyó. Las reglas del seed de rizos no los
+    // referencian → cero impacto en la regresión; las reglas de Fase 2
+    // (liso/ondulado/canas) condicionan sobre ellos.
+    quimicos: data.quimicos || [],
+    frecuenciaCalor: data.frecuenciaCalor || '',
+    usaProtectorTermico: data.usaProtectorTermico ?? false,
+    frecuenciaLavado: data.frecuenciaLavado || '',
   };
 
   // Dimensiones extensibles (canas, alopecia, cuero cabelludo, químicos…)

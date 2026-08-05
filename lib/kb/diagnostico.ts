@@ -86,15 +86,18 @@ export async function generarDiagnostico(
 }
 
 /**
- * Flujo de wizard PUBLICADO aplicable al tipo de cabello (o null).
- * Solo los flujos publicados activan preguntas dinámicas — los borradores
- * (p.ej. el flujo de liso del seed) no afectan producción.
+ * Flujos de wizard PUBLICADOS aplicables al tipo de cabello. Devuelve
+ * primero los flujos específicos del tipo (flujo.liso, flujo.ondulado…) y
+ * después los transversales (tipos_cabello null: módulo de canas, guía de
+ * cabina — se suman a CUALQUIER tipo, Entrega 2). Solo los flujos
+ * publicados activan preguntas dinámicas — los borradores no afectan
+ * producción.
  */
-export async function cargarFlujoParaTipo(
+export async function cargarFlujosParaTipo(
   tipoCabello: string,
   locale = 'es'
-): Promise<FlujoKBRow | null> {
-  if (!tipoCabello) return null;
+): Promise<FlujoKBRow[]> {
+  if (!tipoCabello) return [];
   try {
     if (!cacheFlujos || cacheFlujos.expira <= Date.now()) {
       const supabase = createClient();
@@ -103,15 +106,15 @@ export async function cargarFlujoParaTipo(
         .select('*')
         .eq('locale', locale)
         .eq('estado', 'publicada');
-      if (error || !data) return null;
+      if (error || !data) return [];
       cacheFlujos = { flujos: data as FlujoKBRow[], expira: Date.now() + TTL_MS };
     }
-    return (
-      cacheFlujos.flujos.find(
-        (f) => f.tipos_cabello === null || f.tipos_cabello.includes(tipoCabello)
-      ) ?? null
+    const especificos = cacheFlujos.flujos.filter(
+      (f) => f.tipos_cabello !== null && f.tipos_cabello.includes(tipoCabello)
     );
+    const transversales = cacheFlujos.flujos.filter((f) => f.tipos_cabello === null);
+    return [...especificos, ...transversales];
   } catch {
-    return null;
+    return [];
   }
 }
