@@ -42,7 +42,7 @@ export function registrarEvento(evento: EventoActivacion): void {
 }
 
 /** Resumen agregado del funnel (todas las cuentas). Solo responde para
- *  cuentas fundadoras — para el resto la RPC lanza y devolvemos null
+ *  cuentas de rol corporativo — para el resto la RPC lanza y devolvemos null
  *  (la UI oculta la sección). */
 export async function getFunnelActivacion(): Promise<Record<EventoActivacion, number> | null> {
   try {

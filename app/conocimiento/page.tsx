@@ -1,19 +1,23 @@
 'use client';
 // ══════════════════════════════════════════════════════════════════════════
-// Panel de conocimiento — SOLO cuentas fundadoras.
+// Panel de conocimiento — gobernanza por rol (validación Keila 6.P2).
 //
-// CRUD de reglas de diagnóstico, flujos de wizard y prompts de IA, con
-// vista previa ("si el perfil es X, la recomendación sería Y"), publicación
-// controlada (borrador → publicada) y auditoría de quién cambió qué.
-// La RLS de kb_* es la barrera real (escritura solo fundadoras); esta UI
-// además se oculta para cuentas normales.
+// rol 'corporativo': administra la librería global — CRUD de reglas de
+// diagnóstico, flujos de wizard, prompts de IA y cartas técnicas de marca,
+// con vista previa ("si el perfil es X, la recomendación sería Y"),
+// publicación controlada (borrador → publicada) y auditoría.
+//
+// rol 'salon' (default de todo tenant): NO edita reglas base ni cartas de
+// marca; solo selecciona qué marcas de la librería global están activas en
+// su inventario físico (salon_marcas_activas). La RLS de kb_* es la barrera
+// real; esta UI refleja el mismo modelo.
 // ══════════════════════════════════════════════════════════════════════════
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   BookOpen, Plus, AlertTriangle, Eye, History, Sparkles, GitBranch,
-  MessageSquareText, ShieldCheck,
+  MessageSquareText, ShieldCheck, Palette, Check,
 } from 'lucide-react';
 import { InnerHeader, Btn } from '@/components/v2';
 import Modal from '@/components/ui/Modal';
@@ -33,8 +37,12 @@ import {
   listarPrompts, guardarPrompt, eliminarPrompt,
   listarAuditoria, AuditoriaRow, ReglaEditable, FlujoEditable, PromptEditable,
 } from '@/lib/kb/admin';
+import {
+  MarcaKBRow, listarMarcas, guardarMarca, eliminarMarca,
+  listarMarcasActivasIds, activarMarca, desactivarMarca,
+} from '@/lib/kb/marcas';
 
-type Tab = 'reglas' | 'flujos' | 'prompts' | 'preview' | 'auditoria';
+type Tab = 'reglas' | 'flujos' | 'prompts' | 'marcas' | 'preview' | 'auditoria';
 
 const SEGMENTOS: SegmentoRegla[] = [
   'hecho', 'derivacion_medica', 'tratamiento_principal', 'tratamiento_adicional',
@@ -196,12 +204,13 @@ function JsonArea({
 export default function ConocimientoPage() {
   const router = useRouter();
   const [cargando, setCargando] = useState(true);
-  const [esFundadora, setEsFundadora] = useState(false);
+  const [esCorporativo, setEsCorporativo] = useState(false);
   const [tab, setTab] = useState<Tab>('reglas');
 
   const [reglas, setReglas] = useState<ReglaKBRow[]>([]);
   const [flujos, setFlujos] = useState<FlujoKBRow[]>([]);
   const [prompts, setPrompts] = useState<PromptKBRow[]>([]);
+  const [marcas, setMarcas] = useState<MarcaKBRow[]>([]);
   const [auditoria, setAuditoria] = useState<AuditoriaRow[]>([]);
   const [kbDisponible, setKbDisponible] = useState(true);
 
@@ -217,14 +226,22 @@ export default function ConocimientoPage() {
       console.error('[conocimiento] carga falló', e);
       setKbDisponible(false);
     }
+    // kb_marcas llega con la migración legal-gobernanza: su ausencia no debe
+    // tumbar el resto del panel.
+    try {
+      setMarcas(await listarMarcas());
+    } catch (e) {
+      console.error('[conocimiento] marcas no disponibles', e);
+      setMarcas([]);
+    }
   }, []);
 
   useEffect(() => {
     (async () => {
       try {
         const perfil = await getProfile();
-        const ok = !!perfil?.esFundadora;
-        setEsFundadora(ok);
+        const ok = perfil?.rol === 'corporativo';
+        setEsCorporativo(ok);
         if (ok) await recargar();
       } finally {
         setCargando(false);
@@ -233,10 +250,10 @@ export default function ConocimientoPage() {
   }, [recargar]);
 
   useEffect(() => {
-    if (tab === 'auditoria' && esFundadora) {
+    if (tab === 'auditoria' && esCorporativo) {
       listarAuditoria().then(setAuditoria).catch(() => {});
     }
-  }, [tab, esFundadora]);
+  }, [tab, esCorporativo]);
 
   if (cargando) {
     return (
@@ -247,21 +264,29 @@ export default function ConocimientoPage() {
     );
   }
 
-  if (!esFundadora) {
+  // Rol salon: la librería global es de solo lectura. Lo único que administra
+  // es qué marcas publicadas están activas en su inventario.
+  if (!esCorporativo) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-        <InnerHeader title="Panel de conocimiento" eyebrow="Knowledge base" backHref="/configuracion" />
-        <div style={{ maxWidth: 480, margin: '40px auto', padding: 16, textAlign: 'center' }}>
-          <ShieldCheck size={32} style={{ color: 'var(--text-tertiary)', margin: '0 auto 12px' }} />
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 20, margin: '0 0 6px' }}>
-            Solo cuentas fundadoras
-          </h2>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 18px' }}>
-            Esta sección administra las reglas de diagnóstico de Velli y está
-            restringida a cuentas fundadoras.
-          </p>
-          <Btn variant="soft" onClick={() => router.push('/')}>Volver al inicio</Btn>
-        </div>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: 60 }}>
+        <InnerHeader title="Marcas de tu salón" eyebrow="Inventario" backHref="/configuracion" />
+        <main style={{ maxWidth: 768, margin: '0 auto', padding: '14px 16px' }}>
+          <div
+            style={{
+              display: 'flex', gap: 8, alignItems: 'flex-start', padding: '12px 14px',
+              borderRadius: 12, marginBottom: 14,
+              background: 'var(--bg-card)', border: '1px solid var(--border-soft)',
+            }}
+          >
+            <ShieldCheck size={16} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: 1 }} />
+            <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+              Las reglas base de diagnóstico y las cartas técnicas de marca las
+              administra Velli a nivel corporativo. Aquí eliges cuáles de esas
+              marcas tienes disponibles en tu inventario físico.
+            </p>
+          </div>
+          <TabMarcasSalon />
+        </main>
       </div>
     );
   }
@@ -270,6 +295,7 @@ export default function ConocimientoPage() {
     { id: 'reglas', label: 'Reglas', icon: <BookOpen size={13} /> },
     { id: 'flujos', label: 'Flujos', icon: <GitBranch size={13} /> },
     { id: 'prompts', label: 'Prompts IA', icon: <MessageSquareText size={13} /> },
+    { id: 'marcas', label: 'Marcas', icon: <Palette size={13} /> },
     { id: 'preview', label: 'Vista previa', icon: <Eye size={13} /> },
     { id: 'auditoria', label: 'Auditoría', icon: <History size={13} /> },
   ];
@@ -323,9 +349,272 @@ export default function ConocimientoPage() {
         {tab === 'reglas' && <TabReglas reglas={reglas} onCambio={recargar} />}
         {tab === 'flujos' && <TabFlujos flujos={flujos} onCambio={recargar} />}
         {tab === 'prompts' && <TabPrompts prompts={prompts} onCambio={recargar} />}
+        {tab === 'marcas' && <TabMarcas marcas={marcas} onCambio={recargar} />}
         {tab === 'preview' && <TabPreview reglas={reglas} />}
         {tab === 'auditoria' && <TabAuditoria eventos={auditoria} />}
       </main>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Tab: Marcas (librería global — solo corporativo)
+// ════════════════════════════════════════════════════════════════════════════
+
+function TabMarcas({ marcas, onCambio }: { marcas: MarcaKBRow[]; onCambio: () => Promise<void> }) {
+  const [editando, setEditando] = useState<MarcaKBRow | 'nueva' | null>(null);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between' }}>
+        <p style={{ margin: 0, fontSize: 11, color: 'var(--text-tertiary)' }}>
+          {marcas.length} marca(s) · los salones solo ven las{' '}
+          <strong>publicadas</strong> para activarlas en su inventario.
+        </p>
+        <Btn size="sm" icon={<Plus size={13} />} onClick={() => setEditando('nueva')}>
+          Nueva marca
+        </Btn>
+      </div>
+
+      {marcas.map((m) => (
+        <button
+          key={m.id}
+          type="button"
+          onClick={() => setEditando(m)}
+          className="v-card active:scale-[0.99] transition-transform"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px',
+            textAlign: 'left', cursor: 'pointer', border: '1px solid var(--border-soft)',
+            background: 'var(--bg-card)', width: '100%',
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-main)' }}>
+              {m.nombre}
+            </div>
+            <div style={{ fontSize: 10.5, color: 'var(--text-tertiary)', marginTop: 2, fontFamily: 'var(--font-mono)' }}>
+              {m.clave} · v{m.version}
+            </div>
+          </div>
+          <ChipEstado estado={m.estado} />
+        </button>
+      ))}
+
+      {editando && (
+        <EditorMarca
+          marca={editando === 'nueva' ? null : editando}
+          onCerrar={() => setEditando(null)}
+          onCambio={onCambio}
+        />
+      )}
+    </div>
+  );
+}
+
+function EditorMarca({
+  marca, onCerrar, onCambio,
+}: {
+  marca: MarcaKBRow | null;
+  onCerrar: () => void;
+  onCambio: () => Promise<void>;
+}) {
+  const [clave, setClave] = useState(marca?.clave ?? '');
+  const [nombre, setNombre] = useState(marca?.nombre ?? '');
+  const [estado, setEstado] = useState<EstadoKB>(marca?.estado ?? 'borrador');
+  const [cartaTexto, setCartaTexto] = useState(
+    JSON.stringify(marca?.carta ?? { alturas: [], series: [] }, null, 2)
+  );
+  const [cartaValida, setCartaValida] = useState(true);
+  const [guardando, setGuardando] = useState(false);
+
+  const guardar = async () => {
+    if (!clave.trim() || !nombre.trim() || !cartaValida) return;
+    setGuardando(true);
+    try {
+      await guardarMarca({
+        id: marca?.id,
+        clave: clave.trim(),
+        nombre: nombre.trim(),
+        carta: cartaTexto.trim() ? JSON.parse(cartaTexto) : null,
+        estado,
+      });
+      showToast('Marca guardada', 'success');
+      await onCambio();
+      onCerrar();
+    } catch (e) {
+      console.error('[marcas.guardar]', e);
+      showToast('No se pudo guardar la marca', 'error');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const borrar = async () => {
+    if (!marca) return;
+    setGuardando(true);
+    try {
+      await eliminarMarca(marca.id);
+      showToast('Marca eliminada', 'success');
+      await onCambio();
+      onCerrar();
+    } catch (e) {
+      console.error('[marcas.eliminar]', e);
+      showToast('No se pudo eliminar la marca', 'error');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  return (
+    <Modal open onClose={onCerrar} title={marca ? 'Editar marca' : 'Nueva marca'} size="lg">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <Campo label="Clave">
+          <input
+            value={clave}
+            onChange={(e) => setClave(e.target.value)}
+            placeholder="marca.ejemplo"
+            style={{ ...inputStyle, fontFamily: 'var(--font-mono)' }}
+          />
+        </Campo>
+        <Campo label="Nombre visible">
+          <input
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            placeholder="Nombre comercial de la marca"
+            style={inputStyle}
+          />
+        </Campo>
+        <Campo label="Estado">
+          <SelectSimple
+            value={estado}
+            options={ESTADOS}
+            onChange={(v) => setEstado(v as EstadoKB)}
+          />
+        </Campo>
+        <Campo label="Carta técnica (JSON)">
+          <JsonArea
+            value={cartaTexto}
+            onChange={(t, ok) => { setCartaTexto(t); setCartaValida(ok); }}
+            rows={10}
+            permitirNull
+          />
+        </Campo>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {marca && (
+            <Btn variant="ghost" size="md" onClick={borrar} disabled={guardando}>
+              Eliminar
+            </Btn>
+          )}
+          <Btn
+            variant="primary"
+            size="md"
+            fullWidth
+            onClick={guardar}
+            disabled={guardando || !clave.trim() || !nombre.trim() || !cartaValida}
+          >
+            {guardando ? 'Guardando…' : 'Guardar'}
+          </Btn>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Vista del rol salon: activar/desactivar marcas publicadas en su inventario
+// ════════════════════════════════════════════════════════════════════════════
+
+function TabMarcasSalon() {
+  const [marcas, setMarcas] = useState<MarcaKBRow[]>([]);
+  const [activas, setActivas] = useState<Set<string>>(new Set());
+  const [cargando, setCargando] = useState(true);
+  const [guardando, setGuardando] = useState<string | null>(null);
+
+  const cargar = useCallback(async () => {
+    try {
+      const [ms, act] = await Promise.all([listarMarcas(), listarMarcasActivasIds()]);
+      // La RLS ya filtra a publicadas para el rol salon; el filtro explícito
+      // deja la intención clara y protege si la policy cambia.
+      setMarcas(ms.filter((m) => m.estado === 'publicada'));
+      setActivas(act);
+    } catch (e) {
+      console.error('[marcas.salon]', e);
+      setMarcas([]);
+    } finally {
+      setCargando(false);
+    }
+  }, []);
+
+  useEffect(() => { cargar(); }, [cargar]);
+
+  const toggle = async (marcaId: string) => {
+    setGuardando(marcaId);
+    const estaActiva = activas.has(marcaId);
+    try {
+      if (estaActiva) await desactivarMarca(marcaId);
+      else await activarMarca(marcaId);
+      setActivas((prev) => {
+        const next = new Set(prev);
+        if (estaActiva) next.delete(marcaId);
+        else next.add(marcaId);
+        return next;
+      });
+    } catch (e) {
+      console.error('[marcas.toggle]', e);
+      showToast('No se pudo actualizar tu inventario', 'error');
+    } finally {
+      setGuardando(null);
+    }
+  };
+
+  if (cargando) {
+    return <p className="v-caps" style={{ textAlign: 'center', padding: 30 }}>Cargando…</p>;
+  }
+
+  if (marcas.length === 0) {
+    return (
+      <div className="v-card" style={{ padding: 24, textAlign: 'center' }}>
+        <Palette size={26} style={{ color: 'var(--text-tertiary)', margin: '0 auto 10px' }} />
+        <p style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--text-main)' }}>
+          Aún no hay marcas publicadas
+        </p>
+        <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-tertiary)' }}>
+          Cuando Velli publique cartas técnicas, podrás activarlas aquí.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {marcas.map((m) => {
+        const on = activas.has(m.id);
+        return (
+          <button
+            key={m.id}
+            type="button"
+            onClick={() => toggle(m.id)}
+            disabled={guardando === m.id}
+            className="v-card active:scale-[0.99] transition-transform"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px',
+              textAlign: 'left', cursor: 'pointer', width: '100%',
+              background: on ? 'var(--primary-pale)' : 'var(--bg-card)',
+              border: `1px solid ${on ? 'rgba(45, 90, 39, 0.3)' : 'var(--border-soft)'}`,
+            }}
+          >
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: on ? 'var(--primary)' : 'var(--text-main)' }}>
+                {m.nombre}
+              </div>
+              <div style={{ fontSize: 10.5, color: 'var(--text-tertiary)', marginTop: 2 }}>
+                {on ? 'Activa en tu inventario' : 'Disponible en la librería'}
+              </div>
+            </div>
+            {on && <Check size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />}
+          </button>
+        );
+      })}
     </div>
   );
 }

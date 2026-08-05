@@ -31,10 +31,19 @@ export interface Profile {
   // ── Operación (paso 3) ──
   servicios?: string[];
   horarioAtencion?: HorarioAtencion;
-  // Cuenta fundadora: acceso al funnel agregado y al panel de conocimiento
-  // (/conocimiento). La escritura en kb_* la exige también la RLS — esto
-  // solo gatea la UI.
+  // Cuenta fundadora (legado): acceso al funnel agregado. Desde la capa de
+  // gobernanza el gating real es `rol` — es_fundadora queda como flag
+  // histórico mapeado a rol corporativo por la migración legal-gobernanza.
   esFundadora: boolean;
+  // ── Gobernanza (validación Keila 6.P2) ──
+  // 'corporativo': administra la librería global (reglas base, cartas de
+  // marca, fichas de corte). 'salon' (default): NO edita la librería; solo
+  // selecciona qué marcas publicadas están activas en su inventario.
+  // La RLS es la barrera real — esto solo gatea la UI.
+  rol: 'corporativo' | 'salon';
+  // Bloque de agenda para "día de lavado tipo 4" / "instalación de peinado
+  // protector", en minutos (120–240, default 180). Configurable por salón.
+  bloqueoTipo4Minutos: number;
 }
 
 type ProfileRow = {
@@ -52,6 +61,8 @@ type ProfileRow = {
   servicios: string[] | null;
   horario_atencion: HorarioAtencion | null;
   es_fundadora: boolean | null;
+  rol?: 'corporativo' | 'salon' | null;
+  bloqueo_tipo4_minutos?: number | null;
 };
 
 function rowToProfile(r: ProfileRow): Profile {
@@ -73,6 +84,10 @@ function rowToProfile(r: ProfileRow): Profile {
     servicios: Array.isArray(r.servicios) ? r.servicios : undefined,
     horarioAtencion: r.horario_atencion ?? undefined,
     esFundadora: r.es_fundadora ?? false,
+    // Sin migración legal-gobernanza (columna ausente): las fundadoras
+    // conservan el acceso corporativo; el resto es salon.
+    rol: r.rol ?? (r.es_fundadora ? 'corporativo' : 'salon'),
+    bloqueoTipo4Minutos: r.bloqueo_tipo4_minutos ?? 180,
   };
 }
 
@@ -107,6 +122,10 @@ export async function updateProfile(updates: Partial<Omit<Profile, 'id'>>): Prom
   if (updates.colorPrimario !== undefined) patch.color_primario = updates.colorPrimario || null;
   if (updates.servicios !== undefined) patch.servicios = updates.servicios?.length ? updates.servicios : null;
   if (updates.horarioAtencion !== undefined) patch.horario_atencion = updates.horarioAtencion ?? null;
+  // rol NO es editable desde el cliente (se asigna por SQL a nivel corporativo).
+  if (updates.bloqueoTipo4Minutos !== undefined) {
+    patch.bloqueo_tipo4_minutos = Math.min(240, Math.max(120, updates.bloqueoTipo4Minutos));
+  }
 
   const { data, error } = await supabase
     .from('profiles')

@@ -51,7 +51,7 @@ export default function ReportesPage() {
   const [tratDistrib, setTratDistrib] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [satisfaccionProm, setSatisfaccionProm] = useState<number | null>(null);
-  // Funnel de activación agregado — null = oculto (cuenta no fundadora,
+  // Funnel de activación agregado — null = oculto (cuenta no corporativa,
   // migración sin aplicar o sin red). Solo el equipo ve esta sección.
   const [funnel, setFunnel] = useState<Record<EventoActivacion, number> | null>(null);
 
