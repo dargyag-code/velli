@@ -14,6 +14,8 @@ import {
 import { getTratamientoPrincipalExplicacion } from '@/lib/diagnosticEngine';
 import { Btn, Chip, type ChipTone } from '@/components/v2';
 import { vibracionConfirmacion, vibracionSutil } from '@/lib/haptics';
+import type { EstadoCamara } from '@/lib/consentimientos';
+import ModalFirmaConsentimiento from '@/components/legal/ModalFirmaConsentimiento';
 
 interface Props {
   consulta: Consulta;
@@ -29,6 +31,11 @@ interface Props {
   ) => Promise<string>;
   saving: boolean;
   editMode?: boolean;
+  // GATING DURO (Keila 6.P3): las fotos antes/después de una consulta con
+  // procesos químicos son registro fotográfico de servicio químico → exigen
+  // consentimiento de imágenes vigente. Fail-closed si no llega el gate.
+  imagenesGate?: EstadoCamara;
+  onConsentimientoFirmado?: () => void;
 }
 
 const TratamientoIcon = ({ t, size = 14 }: { t: string; size?: number }) => {
@@ -110,7 +117,10 @@ function hasDetallesCompletos(data: WizardData): boolean {
   );
 }
 
-export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving, editMode = false }: Props) {
+export default function PasoPlan({
+  consulta, clienta, wizardData, onSave, saving, editMode = false,
+  imagenesGate, onConsentimientoFirmado,
+}: Props) {
   const router = useRouter();
   const { resultado } = consulta;
   const [proximaCita, setProximaCita] = useState(
@@ -123,6 +133,17 @@ export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving
   const fotoDespuesRef = useRef<HTMLInputElement>(null);
   const [estrellas, setEstrellas] = useState<number>(0);
   const [savedOverlay, setSavedOverlay] = useState<{ tipo: 'express' | 'completo'; clientaId: string } | null>(null);
+  const [firmandoImagenes, setFirmandoImagenes] = useState(false);
+
+  // Registro fotográfico de servicio químico: la consulta declara procesos
+  // químicos en juego → las fotos antes/después exigen consentimiento de
+  // imágenes vigente (Keila 6.P3). Sin químicos, las fotos siguen libres.
+  const esRegistroQuimico = (wizardData.quimicos ?? []).some(
+    (q) => q && q.toLowerCase() !== 'ninguno'
+  );
+  const gateImagenes: EstadoCamara =
+    imagenesGate ?? { permitida: false, motivo: 'sin_clienta' };
+  const fotosBloqueadas = esRegistroQuimico && !gateImagenes.permitida;
 
   const handleFotoAntes = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -649,28 +670,54 @@ export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving
 
         {/* ═══ Fotos antes/después ═════════════════════════════════════════ */}
         <SectionCard num="07" eyebrow="Documentación" title="Fotos del servicio">
-          <div style={{ display: 'flex', gap: 12 }}>
-            <FotoSlot
-              label="ANTES"
-              src={fotoAntes}
-              onChange={handleFotoAntes}
-              onClear={() => {
-                setFotoAntes(undefined);
-                if (fotoAntesRef.current) fotoAntesRef.current.value = '';
-              }}
-              inputRef={fotoAntesRef}
-            />
-            <FotoSlot
-              label="DESPUÉS"
-              src={fotoDespues}
-              onChange={handleFotoDespues}
-              onClear={() => {
-                setFotoDespues(undefined);
-                if (fotoDespuesRef.current) fotoDespuesRef.current.value = '';
-              }}
-              inputRef={fotoDespuesRef}
-            />
-          </div>
+          {fotosBloqueadas ? (
+            <div style={{ textAlign: 'center', padding: '10px 4px' }}>
+              <p
+                style={{
+                  margin: 0, fontSize: 12, color: 'var(--text-secondary)',
+                  lineHeight: 1.5, maxWidth: 420, marginInline: 'auto',
+                }}
+              >
+                Esta consulta registra <strong>procesos químicos</strong>: las
+                fotos del servicio requieren el consentimiento de imágenes
+                firmado y vigente de la clienta.
+              </p>
+              {gateImagenes.motivo === 'falta_consentimiento' && clienta ? (
+                <div style={{ marginTop: 12 }}>
+                  <Btn variant="soft" size="md" onClick={() => setFirmandoImagenes(true)}>
+                    Firmar consentimiento de imágenes
+                  </Btn>
+                </div>
+              ) : (
+                <p style={{ margin: '8px 0 0', fontSize: 11, color: 'var(--text-tertiary)' }}>
+                  Registra a la clienta y firma el consentimiento desde su ficha.
+                </p>
+              )}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: 12 }}>
+              <FotoSlot
+                label="ANTES"
+                src={fotoAntes}
+                onChange={handleFotoAntes}
+                onClear={() => {
+                  setFotoAntes(undefined);
+                  if (fotoAntesRef.current) fotoAntesRef.current.value = '';
+                }}
+                inputRef={fotoAntesRef}
+              />
+              <FotoSlot
+                label="DESPUÉS"
+                src={fotoDespues}
+                onChange={handleFotoDespues}
+                onClear={() => {
+                  setFotoDespues(undefined);
+                  if (fotoDespuesRef.current) fotoDespuesRef.current.value = '';
+                }}
+                inputRef={fotoDespuesRef}
+              />
+            </div>
+          )}
         </SectionCard>
 
         {/* ═══ Notas estilista ═════════════════════════════════════════════ */}
@@ -866,6 +913,16 @@ export default function PasoPlan({ consulta, clienta, wizardData, onSave, saving
             REDIRIGIENDO AL PERFIL…
           </p>
         </div>
+      )}
+
+      {firmandoImagenes && clienta && (
+        <ModalFirmaConsentimiento
+          tipo="consentimiento_imagenes"
+          clientaId={clienta.id}
+          clientaNombre={clienta.nombre}
+          onClose={() => setFirmandoImagenes(false)}
+          onFirmado={() => onConsentimientoFirmado?.()}
+        />
       )}
     </div>
   );

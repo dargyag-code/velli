@@ -8,9 +8,11 @@ import { WizardData, CaptureMetadata } from '@/lib/types';
 import { HairAnalysisResult } from '@/lib/hairAnalysis';
 import { rizoTypes, RizoPattern } from './RizoPatterns';
 import CameraCapture from './CameraCapture';
+import ConsentimientoGate from './ConsentimientoGate';
 import PreguntasFlujo from './PreguntasFlujo';
 import { Btn, Chip } from '@/components/v2';
 import { vibracionSutil, vibracionConfirmacion } from '@/lib/haptics';
+import type { EstadoCamara } from '@/lib/consentimientos';
 
 interface Props {
   data: WizardData;
@@ -18,6 +20,15 @@ interface Props {
   errors: Record<string, string>;
   onExpressReady?: () => void;
   autoCamera?: boolean;
+  // GATING DURO (validación Keila 6.P3): estado del consentimiento de
+  // imágenes de la clienta. Sin gate explícito se asume BLOQUEADA
+  // (fail-closed) — el wizard siempre lo pasa desde app/diagnostico.
+  camaraGate?: EstadoCamara;
+  clientaFirma?: { id: string; nombre: string } | null;
+  onConsentimientoFirmado?: () => void;
+  // Permite registrar a la clienta desde el gate cuando aún no existe, para
+  // que el flujo express (clienta nueva + cámara) no quede sin salida.
+  onRegistrarClienta?: () => Promise<{ id: string; nombre: string } | null>;
 }
 
 type Mode = 'choose' | 'camera' | 'form';
@@ -234,7 +245,10 @@ const FRECUENCIA_LAVADO = [
 ];
 
 // ── Componente principal ───────────────────────────────────────────────────
-export default function PasoCabello({ data, onChange, errors, onExpressReady, autoCamera }: Props) {
+export default function PasoCabello({
+  data, onChange, errors, onExpressReady, autoCamera,
+  camaraGate, clientaFirma, onConsentimientoFirmado, onRegistrarClienta,
+}: Props) {
   const [mode, setMode] = useState<Mode>(autoCamera ? 'camera' : 'choose');
   const [iaCampos, setIaCampos] = useState<IACampos>(new Set());
   const [expressReady, setExpressReady] = useState(false);
@@ -553,6 +567,23 @@ export default function PasoCabello({ data, onChange, errors, onExpressReady, au
   // Si correctingMode está activo, NUNCA renderizamos la cámara aunque mode
   // accidentalmente vuelva a 'camera' (e.g. autoCamera reseteo, remount, etc).
   if (showCamera) {
+    // GATING DURO (Keila 6.P3): sin consentimiento de imágenes vigente de la
+    // clienta, la cámara NO se activa (las fotos incluyen cuero cabelludo →
+    // módulo de alopecia → datos sensibles). Fail-closed si no llegó el gate.
+    const gate: EstadoCamara = camaraGate ?? { permitida: false, motivo: 'sin_clienta' };
+    if (!gate.permitida) {
+      return (
+        <ConsentimientoGate
+          motivo={gate.motivo ?? 'sin_clienta'}
+          clienta={clientaFirma ?? null}
+          puedeRegistrar={data.nombre.trim() || undefined}
+          onRegistrarClienta={onRegistrarClienta}
+          onFirmado={() => onConsentimientoFirmado?.()}
+          onManual={() => setMode('form')}
+          onCancel={() => setMode('choose')}
+        />
+      );
+    }
     return (
       <CameraCapture
         onComplete={handleCameraComplete}

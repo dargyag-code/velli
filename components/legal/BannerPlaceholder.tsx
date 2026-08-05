@@ -1,8 +1,10 @@
 import { LEGAL_VERSION } from '@/lib/legal';
 
 // Aviso visible mientras el texto legal definitivo lo redacta la abogada.
-// Quitar este banner (y subir LEGAL_VERSION) al publicar la versión final.
-export default function BannerPlaceholder() {
+// Quitar este banner (y subir la versión correspondiente) al publicar la
+// versión final. `version` permite reutilizarlo en los consentimientos
+// versionados por clienta (default: LEGAL_VERSION de Términos/Privacidad).
+export default function BannerPlaceholder({ version }: { version?: string }) {
   return (
     <div
       role="note"
@@ -14,7 +16,7 @@ export default function BannerPlaceholder() {
       <p className="text-xs text-[#7A5200] leading-relaxed">
         Este texto es un borrador de trabajo y no constituye el documento legal
         definitivo, que está en redacción por nuestra asesora legal. Versión:{' '}
-        <code className="font-mono">{LEGAL_VERSION}</code>
+        <code className="font-mono">{version ?? LEGAL_VERSION}</code>
       </p>
     </div>
   );

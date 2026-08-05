@@ -14,6 +14,11 @@ import { generateId, todayISO } from '@/lib/utils';
 import { generateConsultaPDF } from '@/lib/pdfGenerator';
 import { uploadFoto, uploadFotos, resolveFotoUrl, resolveFotoUrls } from '@/lib/storage';
 import { showToast } from '@/lib/toast';
+import {
+  evaluarCamara,
+  listarConsentimientos,
+  type ConsentimientoClienta,
+} from '@/lib/consentimientos';
 
 const TOTAL_PASOS = 3;
 const STORAGE_KEY = 'velli_wizard_v2_draft';
@@ -37,6 +42,61 @@ function WizardContent() {
   const [saving, setSaving] = useState(false);
   const [consulta, setConsulta] = useState<Consulta | null>(null);
   const [clienta, setClienta] = useState<Clienta | null>(null);
+
+  // GATING DURO de cámara (validación Keila 6.P3): las firmas vigentes de la
+  // clienta gobiernan si la cámara del wizard y las fotos de servicios
+  // químicos se activan. Sin clienta registrada no hay firma posible → gate
+  // cerrado (fail-closed).
+  const [consentimientos, setConsentimientos] = useState<ConsentimientoClienta[]>([]);
+
+  const recargarConsentimientos = useCallback(async () => {
+    if (!clienta?.id) {
+      setConsentimientos([]);
+      return;
+    }
+    try {
+      setConsentimientos(await listarConsentimientos(clienta.id));
+    } catch (e) {
+      console.error('[diagnostico.consentimientos]', e);
+      setConsentimientos([]);
+    }
+  }, [clienta?.id]);
+
+  useEffect(() => { recargarConsentimientos(); }, [recargarConsentimientos]);
+
+  const camaraGate = evaluarCamara({
+    contexto: 'analisis_alopecia',
+    clientaRegistrada: !!clienta?.id,
+    firmas: consentimientos,
+  });
+
+  // Registrar a la clienta desde el gate de cámara: la firma se guarda en su
+  // historial, así que debe existir antes de firmar. Adelanta la creación que
+  // handleSave haría al final; al fijar data.clientaId, handleSave no la
+  // duplica.
+  const registrarClientaDesdeGate = useCallback(async () => {
+    const nombre = data.nombre.trim();
+    if (!nombre || clienta?.id) return clienta ? { id: clienta.id, nombre: clienta.nombre } : null;
+    const nueva: Clienta = {
+      id: generateId(),
+      nombre,
+      edad: parseInt(data.edad) || 0,
+      telefono: data.telefono,
+      email: data.email || undefined,
+      fechaRegistro: todayISO(),
+      totalVisitas: 0,
+    };
+    await createClienta(nueva);
+    setClienta(nueva);
+    setData((prev) => ({ ...prev, clientaId: nueva.id }));
+    return { id: nueva.id, nombre: nueva.nombre };
+  }, [data.nombre, data.edad, data.telefono, data.email, clienta]);
+
+  const imagenesGate = evaluarCamara({
+    contexto: 'registro_servicio_quimico',
+    clientaRegistrada: !!clienta?.id,
+    firmas: consentimientos,
+  });
 
   // Cargar borrador guardado (solo si no hay repeatFrom ni edit)
   useEffect(() => {
@@ -426,6 +486,10 @@ function WizardContent() {
             errors={errors}
             onExpressReady={handleExpressReady}
             autoCamera={modeParam === 'camera'}
+            camaraGate={camaraGate}
+            clientaFirma={clienta ? { id: clienta.id, nombre: clienta.nombre } : null}
+            onConsentimientoFirmado={recargarConsentimientos}
+            onRegistrarClienta={registrarClientaDesdeGate}
           />
         )}
         {paso === 2 && consulta && (
@@ -436,6 +500,8 @@ function WizardContent() {
             onSave={handleSave}
             saving={saving}
             editMode={!!editParam}
+            imagenesGate={imagenesGate}
+            onConsentimientoFirmado={recargarConsentimientos}
           />
         )}
       </main>

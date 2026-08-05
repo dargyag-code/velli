@@ -8,3 +8,23 @@
 // versión anterior podrán re-aceptar en una iteración futura si se requiere.
 
 export const LEGAL_VERSION = '2026-06-11-placeholder';
+
+// ── Consentimientos digitales por clienta (validación Keila, sección 6.P3) ──
+// Mismo patrón de versionado que LEGAL_VERSION, pero la firma es POR CLIENTA
+// (no por cuenta): nombre completo tecleado + checkbox + timestamp + versión,
+// guardados en public.consentimientos_clienta.
+//
+// IMPORTANTE: estas constantes tienen un espejo en la DB
+// (public.legal_versiones, seed en supabase/migration-legal-gobernanza.sql).
+// El trigger citas_guard_legal valida "vigente" contra esa tabla. Al publicar
+// los textos definitivos de Keila: subir la versión aquí, actualizar el
+// contenido en app/legal/* y correr:
+// UPDATE public.legal_versiones SET version = '<nueva>' WHERE tipo = '<tipo>';
+// tests/gobernanza.legal.test.ts vigila que ambos lados no se desincronicen.
+
+export type TipoConsentimiento = 'consentimiento_quimico' | 'consentimiento_imagenes';
+
+export const CONSENTIMIENTO_VERSIONES: Record<TipoConsentimiento, string> = {
+  consentimiento_quimico: '2026-08-05-placeholder',
+  consentimiento_imagenes: '2026-08-05-placeholder',
+};
