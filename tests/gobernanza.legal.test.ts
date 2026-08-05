@@ -16,7 +16,7 @@
 // ══════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import {
   evaluarCamara,
@@ -34,6 +34,19 @@ import {
 } from '../lib/agenda/reglas';
 import { CONSENTIMIENTO_VERSIONES, TipoConsentimiento } from '../lib/legal';
 
+// La migración vive en supabase/ hasta que se aplica en prod y pasa a
+// _archive/. El test debe seguirla en ambos sitios: es la fuente de la RLS
+// desplegada tanto antes como después del rollout.
+function leerMigracion(nombre: string): string {
+  const candidatos = [
+    path.resolve(__dirname, `../supabase/${nombre}`),
+    path.resolve(__dirname, `../supabase/_archive/${nombre}`),
+  ];
+  const encontrada = candidatos.find((c) => existsSync(c));
+  if (!encontrada) throw new Error(`No se encontró ${nombre} en supabase/ ni en supabase/_archive/`);
+  return readFileSync(encontrada, 'utf8');
+}
+
 const V = CONSENTIMIENTO_VERSIONES;
 
 function firma(tipo: TipoConsentimiento, version = V[tipo], aceptado = true) {
@@ -43,10 +56,7 @@ function firma(tipo: TipoConsentimiento, version = V[tipo], aceptado = true) {
 // ═══ BLOQUEO 1 · Gobernanza: el rol salon no escribe la librería ═══════════
 
 describe('bloqueo 1 · rol salon no puede escribir reglas base ni cartas', () => {
-  const migracion = readFileSync(
-    path.resolve(__dirname, '../supabase/migration-legal-gobernanza.sql'),
-    'utf8'
-  );
+  const migracion = leerMigracion('migration-legal-gobernanza.sql');
 
   it('define el rol con default salon y CHECK de valores válidos', () => {
     expect(migracion).toMatch(/ADD COLUMN IF NOT EXISTS rol text NOT NULL DEFAULT 'salon'/);
@@ -410,10 +420,7 @@ describe('bloqueo 3b · bloque de 2–4 h para servicios tipo 4', () => {
 // ═══ Paridad TS ⇄ SQL: las reglas de la UI espejan las de la DB ════════════
 
 describe('paridad entre las reglas del cliente y el trigger de la DB', () => {
-  const migracion = readFileSync(
-    path.resolve(__dirname, '../supabase/migration-legal-gobernanza.sql'),
-    'utf8'
-  );
+  const migracion = leerMigracion('migration-legal-gobernanza.sql');
 
   it('el trigger citas_guard_legal está instalado sobre citas', () => {
     expect(migracion).toMatch(

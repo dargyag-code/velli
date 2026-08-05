@@ -13,6 +13,9 @@ export interface PlanFeatures {
    *  paywallea: los datos siempre son de la estilista. */
   exportacionExcel: boolean;
   marcaPersonalizada: boolean;
+  /** Calculadora de colorimetría (Pro+). La colorimetría MANUAL entra en Pro;
+   *  el análisis de color por foto queda para Pro+IA bajo iaFacial. */
+  calculadoraColor: boolean;
   /** IA facial (Pro+IA). Llega después: además del plan, exige el feature
    *  flag global NEXT_PUBLIC_FEATURE_IA_FACIAL=true para encenderse. */
   iaFacial: boolean;
@@ -50,6 +53,7 @@ export const PLANES: Record<PlanId, PlanDef> = {
       reportes: false,
       exportacionExcel: false,
       marcaPersonalizada: false,
+      calculadoraColor: false,
       iaFacial: false,
     },
   },
@@ -62,6 +66,7 @@ export const PLANES: Record<PlanId, PlanDef> = {
     beneficios: [
       'Clientas ilimitadas',
       'Todo lo del plan Básico',
+      'Calculadora de colorimetría',
       'Reportes de tu negocio',
       'Exportación a Excel',
       'Personalización de marca',
@@ -71,6 +76,7 @@ export const PLANES: Record<PlanId, PlanDef> = {
       reportes: true,
       exportacionExcel: true,
       marcaPersonalizada: true,
+      calculadoraColor: true,
       iaFacial: false,
     },
   },
@@ -89,6 +95,7 @@ export const PLANES: Record<PlanId, PlanDef> = {
       reportes: true,
       exportacionExcel: true,
       marcaPersonalizada: true,
+      calculadoraColor: true,
       iaFacial: true,
     },
   },

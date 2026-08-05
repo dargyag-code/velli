@@ -44,6 +44,7 @@ export function featuresEfectivas(sub: SuscripcionEfectiva | null): PlanFeatures
     reportes: false,
     exportacionExcel: false,
     marcaPersonalizada: false,
+    calculadoraColor: false,
     iaFacial: false,
   };
   if (!sub) return sinPlan;
