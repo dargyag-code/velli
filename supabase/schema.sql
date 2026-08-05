@@ -23,14 +23,137 @@ COMMENT ON SCHEMA "public" IS 'standard public schema';
 
 
 
-CREATE OR REPLACE FUNCTION "public"."es_cuenta_fundadora"() RETURNS boolean
+CREATE OR REPLACE FUNCTION "public"."citas_guard_legal"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO ''
+    AS $$
+DECLARE
+  v_tipo text;
+  v_bloque integer;
+  v_nueva boolean;
+  v_cambio boolean;
+BEGIN
+  v_tipo := public.clasificar_servicio(NEW.servicio);
+
+  -- (1) Bloque extendido automático para servicios tipo 4.
+  IF v_tipo = 'bloqueo_tipo4' THEN
+    SELECT p.bloqueo_tipo4_minutos INTO v_bloque
+      FROM public.profiles p WHERE p.id = NEW.user_id;
+    NEW.duracion_minutos := LEAST(240, GREATEST(120, COALESCE(v_bloque, 180)));
+  END IF;
+
+  -- (2) Sin solapes con bloques extendidos (en ambos sentidos).
+  IF COALESCE(NEW.estado, 'pendiente') NOT IN ('cancelada', 'no_show') THEN
+    IF EXISTS (
+      SELECT 1 FROM public.citas c
+      WHERE c.user_id = NEW.user_id
+        AND c.id <> NEW.id
+        AND COALESCE(c.estado, 'pendiente') NOT IN ('cancelada', 'no_show')
+        AND (v_tipo = 'bloqueo_tipo4' OR public.clasificar_servicio(c.servicio) = 'bloqueo_tipo4')
+        AND tstzrange(c.fecha, c.fecha + make_interval(mins => COALESCE(c.duracion_minutos, 60))) &&
+            tstzrange(NEW.fecha, NEW.fecha + make_interval(mins => COALESCE(NEW.duracion_minutos, 60)))
+    ) THEN
+      RAISE EXCEPTION 'AGENDA_BLOQUEADA: el horario se solapa con un bloque extendido (día de lavado tipo 4 / instalación de peinado protector)';
+    END IF;
+  END IF;
+
+  -- (3) y (4): solo al CONFIRMAR (transición a estado confirmada).
+  IF NEW.estado = 'confirmada'
+     AND (TG_OP = 'INSERT' OR OLD.estado IS DISTINCT FROM 'confirmada') THEN
+
+    IF v_tipo IN ('color', 'decoloracion') THEN
+      SELECT c.nueva_en_color, c.cambio_marca_quimica
+        INTO v_nueva, v_cambio
+        FROM public.clientas c WHERE c.id = NEW.clienta_id;
+
+      IF COALESCE(v_nueva, false) OR COALESCE(v_cambio, false) THEN
+        IF NOT EXISTS (
+          SELECT 1 FROM public.pruebas_sensibilidad ps
+          WHERE ps.clienta_id = NEW.clienta_id
+            AND ps.resultado = 'negativo'
+            AND ps.aplicado_at <= NEW.fecha - interval '48 hours'
+            AND ps.aplicado_at >= NEW.fecha - interval '14 days'
+        ) THEN
+          RAISE EXCEPTION 'PARCHE_SENSIBILIDAD_REQUERIDO: registra una prueba de sensibilidad negativa aplicada al menos 48 horas antes de la cita';
+        END IF;
+      END IF;
+
+      IF v_tipo = 'decoloracion' THEN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM public.consentimientos_clienta cc
+          JOIN public.legal_versiones lv ON lv.tipo = 'consentimiento_quimico'
+          WHERE cc.clienta_id = NEW.clienta_id
+            AND cc.tipo = 'consentimiento_quimico'
+            AND cc.version_aceptada = lv.version
+        ) THEN
+          RAISE EXCEPTION 'CONSENTIMIENTO_QUIMICO_REQUERIDO: la clienta debe firmar el consentimiento informado de servicios químicos vigente antes de confirmar la decoloración';
+        END IF;
+      END IF;
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."citas_guard_legal"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."clasificar_servicio"("p_servicio" "text") RETURNS "text"
+    LANGUAGE "sql" IMMUTABLE
+    SET "search_path" TO ''
+    AS $$
+  select case
+    when p_servicio is null then 'otro'
+    -- Día de lavado tipo 4 / instalación de peinado protector → bloque 2–4 h.
+    when lower(p_servicio) like '%lavado tipo 4%'
+      or lower(p_servicio) like '%dia de lavado%'
+      or lower(p_servicio) like '%día de lavado%'
+      or (lower(p_servicio) like '%instalaci%' and lower(p_servicio) like '%protector%')
+      or lower(p_servicio) like '%peinado protector%'
+      then 'bloqueo_tipo4'
+    -- Decoloración (también es servicio de color para efectos del parche).
+    when lower(p_servicio) like '%decolor%'
+      or lower(p_servicio) like '%mecha%'
+      or lower(p_servicio) like '%balayage%'
+      or lower(p_servicio) like '%babylight%'
+      or lower(p_servicio) like '%highlight%'
+      or lower(p_servicio) like '%platino%'
+      then 'decoloracion'
+    when lower(p_servicio) like '%tinte%'
+      or lower(p_servicio) like '%tintur%'
+      or lower(p_servicio) like '%color%'
+      or lower(p_servicio) like '%matiz%'
+      then 'color'
+    else 'otro'
+  end;
+$$;
+
+
+ALTER FUNCTION "public"."clasificar_servicio"("p_servicio" "text") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."es_cuenta_corporativa"() RETURNS boolean
     LANGUAGE "sql" STABLE
     SET "search_path" TO ''
     AS $$
   select coalesce(
-    (select p.es_fundadora from public.profiles p where p.id = (select auth.uid())),
+    (select p.rol = 'corporativo' from public.profiles p where p.id = (select auth.uid())),
     false
   );
+$$;
+
+
+ALTER FUNCTION "public"."es_cuenta_corporativa"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."es_cuenta_fundadora"() RETURNS boolean
+    LANGUAGE "sql" STABLE
+    SET "search_path" TO ''
+    AS $$
+  select public.es_cuenta_corporativa();
 $$;
 
 
@@ -42,11 +165,8 @@ CREATE OR REPLACE FUNCTION "public"."funnel_activacion"() RETURNS TABLE("evento"
     SET "search_path" TO ''
     AS $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM public.profiles p
-    WHERE p.id = auth.uid() AND p.es_fundadora
-  ) THEN
-    RAISE EXCEPTION 'forbidden: solo cuentas fundadoras';
+  IF NOT public.es_cuenta_corporativa() THEN
+    RAISE EXCEPTION 'forbidden: solo cuentas corporativas';
   END IF;
 
   RETURN QUERY
@@ -456,11 +576,31 @@ CREATE TABLE IF NOT EXISTS "public"."clientas" (
     "ultima_visita" timestamp with time zone,
     "created_at" timestamp with time zone DEFAULT "now"(),
     "updated_at" timestamp with time zone DEFAULT "now"(),
+    "nueva_en_color" boolean DEFAULT false NOT NULL,
+    "cambio_marca_quimica" boolean DEFAULT false NOT NULL,
     CONSTRAINT "clientas_nivel_estres_check" CHECK (("nivel_estres" = ANY (ARRAY['bajo'::"text", 'medio'::"text", 'alto'::"text"])))
 );
 
 
 ALTER TABLE "public"."clientas" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."consentimientos_clienta" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "user_id" "uuid" NOT NULL,
+    "clienta_id" "uuid" NOT NULL,
+    "tipo" "text" NOT NULL,
+    "version_aceptada" "text" NOT NULL,
+    "nombre_firmante" "text" NOT NULL,
+    "aceptado" boolean NOT NULL,
+    "firmado_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "consentimientos_aceptado_check" CHECK ("aceptado"),
+    CONSTRAINT "consentimientos_nombre_check" CHECK (("char_length"("btrim"("nombre_firmante")) >= 5)),
+    CONSTRAINT "consentimientos_tipo_check" CHECK (("tipo" = ANY (ARRAY['consentimiento_quimico'::"text", 'consentimiento_imagenes'::"text"])))
+);
+
+
+ALTER TABLE "public"."consentimientos_clienta" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."consultas" (
@@ -585,6 +725,26 @@ CREATE TABLE IF NOT EXISTS "public"."kb_flujos" (
 ALTER TABLE "public"."kb_flujos" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."kb_marcas" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "clave" "text" NOT NULL,
+    "locale" "text" DEFAULT 'es'::"text" NOT NULL,
+    "nombre" "text" NOT NULL,
+    "carta" "jsonb",
+    "estado" "text" DEFAULT 'borrador'::"text" NOT NULL,
+    "version" integer DEFAULT 1 NOT NULL,
+    "notas_internas" "text",
+    "created_by" "uuid",
+    "updated_by" "uuid",
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "kb_marcas_estado_check" CHECK (("estado" = ANY (ARRAY['borrador'::"text", 'publicada'::"text", 'archivada'::"text"])))
+);
+
+
+ALTER TABLE "public"."kb_marcas" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."kb_prompts" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "clave" "text" NOT NULL,
@@ -627,6 +787,16 @@ CREATE TABLE IF NOT EXISTS "public"."kb_reglas" (
 
 
 ALTER TABLE "public"."kb_reglas" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."legal_versiones" (
+    "tipo" "text" NOT NULL,
+    "version" "text" NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."legal_versiones" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."payments" (
@@ -677,11 +847,41 @@ CREATE TABLE IF NOT EXISTS "public"."profiles" (
     "horario_atencion" "jsonb",
     "es_fundadora" boolean DEFAULT false NOT NULL,
     "legal_aceptado_at" timestamp with time zone,
-    "legal_version" "text"
+    "legal_version" "text",
+    "rol" "text" DEFAULT 'salon'::"text" NOT NULL,
+    "bloqueo_tipo4_minutos" integer DEFAULT 180 NOT NULL,
+    CONSTRAINT "profiles_bloqueo_tipo4_check" CHECK ((("bloqueo_tipo4_minutos" >= 120) AND ("bloqueo_tipo4_minutos" <= 240))),
+    CONSTRAINT "profiles_rol_check" CHECK (("rol" = ANY (ARRAY['corporativo'::"text", 'salon'::"text"])))
 );
 
 
 ALTER TABLE "public"."profiles" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."pruebas_sensibilidad" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "user_id" "uuid" NOT NULL,
+    "clienta_id" "uuid" NOT NULL,
+    "aplicado_at" timestamp with time zone NOT NULL,
+    "resultado" "text" NOT NULL,
+    "notas" "text",
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "pruebas_resultado_check" CHECK (("resultado" = ANY (ARRAY['negativo'::"text", 'positivo'::"text"])))
+);
+
+
+ALTER TABLE "public"."pruebas_sensibilidad" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."salon_marcas_activas" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "user_id" "uuid" NOT NULL,
+    "marca_id" "uuid" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."salon_marcas_activas" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."subscription_notifications" (
@@ -729,6 +929,11 @@ ALTER TABLE ONLY "public"."clientas"
 
 
 
+ALTER TABLE ONLY "public"."consentimientos_clienta"
+    ADD CONSTRAINT "consentimientos_clienta_pkey" PRIMARY KEY ("id");
+
+
+
 ALTER TABLE ONLY "public"."consultas"
     ADD CONSTRAINT "diagnosticos_pkey" PRIMARY KEY ("id");
 
@@ -769,6 +974,16 @@ ALTER TABLE ONLY "public"."kb_flujos"
 
 
 
+ALTER TABLE ONLY "public"."kb_marcas"
+    ADD CONSTRAINT "kb_marcas_clave_locale_key" UNIQUE ("clave", "locale");
+
+
+
+ALTER TABLE ONLY "public"."kb_marcas"
+    ADD CONSTRAINT "kb_marcas_pkey" PRIMARY KEY ("id");
+
+
+
 ALTER TABLE ONLY "public"."kb_prompts"
     ADD CONSTRAINT "kb_prompts_clave_locale_key" UNIQUE ("clave", "locale");
 
@@ -789,6 +1004,11 @@ ALTER TABLE ONLY "public"."kb_reglas"
 
 
 
+ALTER TABLE ONLY "public"."legal_versiones"
+    ADD CONSTRAINT "legal_versiones_pkey" PRIMARY KEY ("tipo");
+
+
+
 ALTER TABLE ONLY "public"."payments"
     ADD CONSTRAINT "payments_pkey" PRIMARY KEY ("id");
 
@@ -806,6 +1026,21 @@ ALTER TABLE ONLY "public"."payments"
 
 ALTER TABLE ONLY "public"."profiles"
     ADD CONSTRAINT "profiles_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."pruebas_sensibilidad"
+    ADD CONSTRAINT "pruebas_sensibilidad_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."salon_marcas_activas"
+    ADD CONSTRAINT "salon_marcas_activas_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."salon_marcas_activas"
+    ADD CONSTRAINT "salon_marcas_activas_user_marca_key" UNIQUE ("user_id", "marca_id");
 
 
 
@@ -837,11 +1072,23 @@ CREATE INDEX "idx_citas_user" ON "public"."citas" USING "btree" ("user_id");
 
 
 
+CREATE INDEX "idx_citas_user_fecha" ON "public"."citas" USING "btree" ("user_id", "fecha");
+
+
+
 CREATE INDEX "idx_clientas_updated" ON "public"."clientas" USING "btree" ("updated_at" DESC);
 
 
 
 CREATE INDEX "idx_clientas_user" ON "public"."clientas" USING "btree" ("user_id");
+
+
+
+CREATE INDEX "idx_consentimientos_clienta" ON "public"."consentimientos_clienta" USING "btree" ("clienta_id", "tipo", "firmado_at" DESC);
+
+
+
+CREATE INDEX "idx_consentimientos_user" ON "public"."consentimientos_clienta" USING "btree" ("user_id");
 
 
 
@@ -885,6 +1132,10 @@ CREATE INDEX "idx_kb_flujos_lookup" ON "public"."kb_flujos" USING "btree" ("loca
 
 
 
+CREATE INDEX "idx_kb_marcas_lookup" ON "public"."kb_marcas" USING "btree" ("locale", "estado");
+
+
+
 CREATE INDEX "idx_kb_prompts_lookup" ON "public"."kb_prompts" USING "btree" ("locale", "estado");
 
 
@@ -897,7 +1148,23 @@ CREATE INDEX "idx_payments_user_created" ON "public"."payments" USING "btree" ("
 
 
 
+CREATE INDEX "idx_pruebas_clienta" ON "public"."pruebas_sensibilidad" USING "btree" ("clienta_id", "aplicado_at" DESC);
+
+
+
+CREATE INDEX "idx_pruebas_user" ON "public"."pruebas_sensibilidad" USING "btree" ("user_id");
+
+
+
+CREATE INDEX "idx_salon_marcas_marca" ON "public"."salon_marcas_activas" USING "btree" ("marca_id");
+
+
+
 CREATE INDEX "idx_subnotif_user" ON "public"."subscription_notifications" USING "btree" ("user_id", "created_at" DESC);
+
+
+
+CREATE OR REPLACE TRIGGER "guard_legal_citas" BEFORE INSERT OR UPDATE ON "public"."citas" FOR EACH ROW EXECUTE FUNCTION "public"."citas_guard_legal"();
 
 
 
@@ -921,6 +1188,10 @@ CREATE OR REPLACE TRIGGER "kb_audit_flujos" AFTER INSERT OR DELETE OR UPDATE ON 
 
 
 
+CREATE OR REPLACE TRIGGER "kb_audit_marcas" AFTER INSERT OR DELETE OR UPDATE ON "public"."kb_marcas" FOR EACH ROW EXECUTE FUNCTION "public"."kb_auditar"();
+
+
+
 CREATE OR REPLACE TRIGGER "kb_audit_prompts" AFTER INSERT OR DELETE OR UPDATE ON "public"."kb_prompts" FOR EACH ROW EXECUTE FUNCTION "public"."kb_auditar"();
 
 
@@ -934,6 +1205,10 @@ CREATE OR REPLACE TRIGGER "kb_touch_dimensiones" BEFORE UPDATE ON "public"."kb_d
 
 
 CREATE OR REPLACE TRIGGER "kb_touch_flujos" BEFORE UPDATE ON "public"."kb_flujos" FOR EACH ROW EXECUTE FUNCTION "public"."kb_touch_version"();
+
+
+
+CREATE OR REPLACE TRIGGER "kb_touch_marcas" BEFORE UPDATE ON "public"."kb_marcas" FOR EACH ROW EXECUTE FUNCTION "public"."kb_touch_version"();
 
 
 
@@ -981,6 +1256,16 @@ ALTER TABLE ONLY "public"."clientas"
 
 
 
+ALTER TABLE ONLY "public"."consentimientos_clienta"
+    ADD CONSTRAINT "consentimientos_clienta_clienta_id_fkey" FOREIGN KEY ("clienta_id") REFERENCES "public"."clientas"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."consentimientos_clienta"
+    ADD CONSTRAINT "consentimientos_clienta_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
+
+
+
 ALTER TABLE ONLY "public"."consultas"
     ADD CONSTRAINT "diagnosticos_clienta_id_fkey" FOREIGN KEY ("clienta_id") REFERENCES "public"."clientas"("id") ON DELETE CASCADE;
 
@@ -1016,6 +1301,16 @@ ALTER TABLE ONLY "public"."kb_flujos"
 
 
 
+ALTER TABLE ONLY "public"."kb_marcas"
+    ADD CONSTRAINT "kb_marcas_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "auth"."users"("id") ON DELETE SET NULL;
+
+
+
+ALTER TABLE ONLY "public"."kb_marcas"
+    ADD CONSTRAINT "kb_marcas_updated_by_fkey" FOREIGN KEY ("updated_by") REFERENCES "auth"."users"("id") ON DELETE SET NULL;
+
+
+
 ALTER TABLE ONLY "public"."kb_prompts"
     ADD CONSTRAINT "kb_prompts_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "auth"."users"("id") ON DELETE SET NULL;
 
@@ -1048,6 +1343,26 @@ ALTER TABLE ONLY "public"."payments"
 
 ALTER TABLE ONLY "public"."profiles"
     ADD CONSTRAINT "profiles_id_fkey" FOREIGN KEY ("id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."pruebas_sensibilidad"
+    ADD CONSTRAINT "pruebas_sensibilidad_clienta_id_fkey" FOREIGN KEY ("clienta_id") REFERENCES "public"."clientas"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."pruebas_sensibilidad"
+    ADD CONSTRAINT "pruebas_sensibilidad_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."salon_marcas_activas"
+    ADD CONSTRAINT "salon_marcas_activas_marca_id_fkey" FOREIGN KEY ("marca_id") REFERENCES "public"."kb_marcas"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."salon_marcas_activas"
+    ADD CONSTRAINT "salon_marcas_activas_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
 
 
 
@@ -1125,6 +1440,19 @@ ALTER TABLE "public"."citas" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."clientas" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."consentimientos_clienta" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "consentimientos_insert_own" ON "public"."consentimientos_clienta" FOR INSERT TO "authenticated" WITH CHECK (((( SELECT "auth"."uid"() AS "uid") = "user_id") AND (EXISTS ( SELECT 1
+   FROM "public"."clientas" "c"
+  WHERE (("c"."id" = "consentimientos_clienta"."clienta_id") AND ("c"."user_id" = ( SELECT "auth"."uid"() AS "uid")))))));
+
+
+
+CREATE POLICY "consentimientos_select_own" ON "public"."consentimientos_clienta" FOR SELECT TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "user_id"));
+
 
 
 ALTER TABLE "public"."consultas" ENABLE ROW LEVEL SECURITY;
@@ -1210,6 +1538,29 @@ CREATE POLICY "kb_flujos_update_fundadora" ON "public"."kb_flujos" FOR UPDATE TO
 
 
 
+ALTER TABLE "public"."kb_marcas" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "kb_marcas_delete_corporativo" ON "public"."kb_marcas" FOR DELETE TO "authenticated" USING (( SELECT "public"."es_cuenta_corporativa"() AS "es_cuenta_corporativa"));
+
+
+
+CREATE POLICY "kb_marcas_insert_corporativo" ON "public"."kb_marcas" FOR INSERT TO "authenticated" WITH CHECK (( SELECT "public"."es_cuenta_corporativa"() AS "es_cuenta_corporativa"));
+
+
+
+CREATE POLICY "kb_marcas_select_corporativo" ON "public"."kb_marcas" FOR SELECT TO "authenticated" USING (( SELECT "public"."es_cuenta_corporativa"() AS "es_cuenta_corporativa"));
+
+
+
+CREATE POLICY "kb_marcas_select_publicadas" ON "public"."kb_marcas" FOR SELECT TO "authenticated" USING (("estado" = 'publicada'::"text"));
+
+
+
+CREATE POLICY "kb_marcas_update_corporativo" ON "public"."kb_marcas" FOR UPDATE TO "authenticated" USING (( SELECT "public"."es_cuenta_corporativa"() AS "es_cuenta_corporativa")) WITH CHECK (( SELECT "public"."es_cuenta_corporativa"() AS "es_cuenta_corporativa"));
+
+
+
 ALTER TABLE "public"."kb_prompts" ENABLE ROW LEVEL SECURITY;
 
 
@@ -1256,6 +1607,13 @@ CREATE POLICY "kb_reglas_update_fundadora" ON "public"."kb_reglas" FOR UPDATE TO
 
 
 
+ALTER TABLE "public"."legal_versiones" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "legal_versiones_select_all" ON "public"."legal_versiones" FOR SELECT TO "authenticated" USING (true);
+
+
+
 ALTER TABLE "public"."payments" ENABLE ROW LEVEL SECURITY;
 
 
@@ -1264,6 +1622,40 @@ CREATE POLICY "payments_select_own" ON "public"."payments" FOR SELECT TO "authen
 
 
 ALTER TABLE "public"."profiles" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "pruebas_delete_own" ON "public"."pruebas_sensibilidad" FOR DELETE TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "user_id"));
+
+
+
+CREATE POLICY "pruebas_insert_own" ON "public"."pruebas_sensibilidad" FOR INSERT TO "authenticated" WITH CHECK (((( SELECT "auth"."uid"() AS "uid") = "user_id") AND (EXISTS ( SELECT 1
+   FROM "public"."clientas" "c"
+  WHERE (("c"."id" = "pruebas_sensibilidad"."clienta_id") AND ("c"."user_id" = ( SELECT "auth"."uid"() AS "uid")))))));
+
+
+
+CREATE POLICY "pruebas_select_own" ON "public"."pruebas_sensibilidad" FOR SELECT TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "user_id"));
+
+
+
+ALTER TABLE "public"."pruebas_sensibilidad" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."salon_marcas_activas" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "salon_marcas_delete_own" ON "public"."salon_marcas_activas" FOR DELETE TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "user_id"));
+
+
+
+CREATE POLICY "salon_marcas_insert_own" ON "public"."salon_marcas_activas" FOR INSERT TO "authenticated" WITH CHECK (((( SELECT "auth"."uid"() AS "uid") = "user_id") AND (EXISTS ( SELECT 1
+   FROM "public"."kb_marcas" "m"
+  WHERE (("m"."id" = "salon_marcas_activas"."marca_id") AND ("m"."estado" = 'publicada'::"text"))))));
+
+
+
+CREATE POLICY "salon_marcas_select_own" ON "public"."salon_marcas_activas" FOR SELECT TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "user_id"));
+
 
 
 CREATE POLICY "subnotif_select_own" ON "public"."subscription_notifications" FOR SELECT TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "user_id"));
@@ -1288,6 +1680,27 @@ GRANT USAGE ON SCHEMA "public" TO "postgres";
 GRANT USAGE ON SCHEMA "public" TO "anon";
 GRANT USAGE ON SCHEMA "public" TO "authenticated";
 GRANT USAGE ON SCHEMA "public" TO "service_role";
+
+
+
+REVOKE ALL ON FUNCTION "public"."citas_guard_legal"() FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."citas_guard_legal"() TO "anon";
+GRANT ALL ON FUNCTION "public"."citas_guard_legal"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."citas_guard_legal"() TO "service_role";
+
+
+
+REVOKE ALL ON FUNCTION "public"."clasificar_servicio"("p_servicio" "text") FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."clasificar_servicio"("p_servicio" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."clasificar_servicio"("p_servicio" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."clasificar_servicio"("p_servicio" "text") TO "service_role";
+
+
+
+REVOKE ALL ON FUNCTION "public"."es_cuenta_corporativa"() FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."es_cuenta_corporativa"() TO "anon";
+GRANT ALL ON FUNCTION "public"."es_cuenta_corporativa"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."es_cuenta_corporativa"() TO "service_role";
 
 
 
@@ -1375,6 +1788,12 @@ GRANT ALL ON TABLE "public"."clientas" TO "service_role";
 
 
 
+GRANT ALL ON TABLE "public"."consentimientos_clienta" TO "anon";
+GRANT ALL ON TABLE "public"."consentimientos_clienta" TO "authenticated";
+GRANT ALL ON TABLE "public"."consentimientos_clienta" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."consultas" TO "anon";
 GRANT ALL ON TABLE "public"."consultas" TO "authenticated";
 GRANT ALL ON TABLE "public"."consultas" TO "service_role";
@@ -1405,6 +1824,12 @@ GRANT ALL ON TABLE "public"."kb_flujos" TO "service_role";
 
 
 
+GRANT ALL ON TABLE "public"."kb_marcas" TO "anon";
+GRANT ALL ON TABLE "public"."kb_marcas" TO "authenticated";
+GRANT ALL ON TABLE "public"."kb_marcas" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."kb_prompts" TO "anon";
 GRANT ALL ON TABLE "public"."kb_prompts" TO "authenticated";
 GRANT ALL ON TABLE "public"."kb_prompts" TO "service_role";
@@ -1417,6 +1842,12 @@ GRANT ALL ON TABLE "public"."kb_reglas" TO "service_role";
 
 
 
+GRANT ALL ON TABLE "public"."legal_versiones" TO "anon";
+GRANT ALL ON TABLE "public"."legal_versiones" TO "authenticated";
+GRANT ALL ON TABLE "public"."legal_versiones" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."payments" TO "anon";
 GRANT ALL ON TABLE "public"."payments" TO "authenticated";
 GRANT ALL ON TABLE "public"."payments" TO "service_role";
@@ -1426,6 +1857,18 @@ GRANT ALL ON TABLE "public"."payments" TO "service_role";
 GRANT ALL ON TABLE "public"."profiles" TO "anon";
 GRANT ALL ON TABLE "public"."profiles" TO "authenticated";
 GRANT ALL ON TABLE "public"."profiles" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."pruebas_sensibilidad" TO "anon";
+GRANT ALL ON TABLE "public"."pruebas_sensibilidad" TO "authenticated";
+GRANT ALL ON TABLE "public"."pruebas_sensibilidad" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."salon_marcas_activas" TO "anon";
+GRANT ALL ON TABLE "public"."salon_marcas_activas" TO "authenticated";
+GRANT ALL ON TABLE "public"."salon_marcas_activas" TO "service_role";
 
 
 
@@ -1465,11 +1908,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
-
-
-
-
-
 
 
 -- MANUALLY APPENDED — cross-schema items not captured by `dump --schema public`
@@ -1522,9 +1960,3 @@ CREATE POLICY "fotos_delete_own" ON storage.objects
     bucket_id = 'fotos'
     AND (storage.foldername(name))[1] = auth.uid()::text
   );
-
-
-
-
-
-

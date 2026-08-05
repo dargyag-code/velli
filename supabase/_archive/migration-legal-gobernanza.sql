@@ -1,3 +1,4 @@
+-- ARCHIVED: Ejecutado en prod y consolidado en schema.sql el 2026-08-05
 -- ═══════════════════════════════════════════════════════════════════════════
 -- MIGRACIÓN: Capa legal y de gobernanza (validación firmada de Keila Moreno)
 -- docs/conocimiento/VALIDACIÓN KEILA MORENO.docx — secciones 6.P2, 6.P3 y 6.P7
