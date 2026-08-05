@@ -4,6 +4,11 @@
 // TODO en estado BORRADOR: producción no cambia hasta publicar desde el
 // panel /conocimiento. Mismo criterio que el Sprint B.
 //
+// SEGMENTO: 'referencia_color', que el evaluador de diagnóstico IGNORA.
+// NO usar 'config': su campo disclaimerProductos se inyecta en el resultado
+// de CADA diagnóstico, así que publicar esto como config reemplazaría el
+// disclaimer de productos de todas las clientas.
+//
 // Las tablas universales y las reglas CO se DERIVAN de lib/color/*, que es
 // la fuente canónica que consume la calculadora — así el seed no puede
 // driftear del motor (lo vigila tests/colorimetria.seed.test.ts).
@@ -24,17 +29,15 @@ import { CO09_PROTOCOLO_VERBATIM, tramoCanas } from '@/lib/color/reglas';
 const BORRADOR = 'borrador' as const;
 
 // ── Tablas universales como datos ─────────────────────────────────────────
-// Segmento 'config': valores fijos que la calculadora consulta, sin
-// condiciones sobre el perfil. Una fila por nivel para que Keila pueda
-// ajustar un nivel suelto desde el panel sin tocar los demás.
+// Una fila por nivel para que Keila pueda ajustar un nivel suelto desde el
+// panel sin tocar los demás.
 
 const REGLAS_ALTURAS: ReglaKB[] = TABLA_ALTURAS.map((fila) => ({
   clave: `color.altura.${fila.nivel}`,
-  segmento: 'config',
+  segmento: 'referencia_color',
   prioridad: 100 + fila.nivel,
   condiciones: null,
   salida: {
-    campo: 'disclaimerProductos',
     texto: `Nivel ${fila.nivel} · ${fila.nombre} — fondo de aclaración: ${fila.fondoAclaracion}; neutraliza con ${fila.neutralizante} (${fila.denominacionLatam}).`,
   },
   estado: BORRADOR,
@@ -44,11 +47,10 @@ const REGLAS_ALTURAS: ReglaKB[] = TABLA_ALTURAS.map((fila) => ({
 
 const REGLAS_NEUTRALIZACION: ReglaKB[] = PARES_NEUTRALIZACION.map((par, i) => ({
   clave: `color.neutraliza.${par.pigmento.toLowerCase().replace(/\s+/g, '_')}`,
-  segmento: 'config',
+  segmento: 'referencia_color',
   prioridad: 200 + i,
   condiciones: null,
   salida: {
-    campo: 'disclaimerProductos',
     texto: `${par.pigmento} se neutraliza con ${par.neutralizaCon}.`,
   },
   estado: BORRADOR,
@@ -58,11 +60,10 @@ const REGLAS_NEUTRALIZACION: ReglaKB[] = PARES_NEUTRALIZACION.map((par, i) => ({
 const REGLAS_REFLEJOS: ReglaKB[] = [
   ...REFLEJOS_BASE.map((r, i) => ({
     clave: `color.reflejo.${r.digito.replace('.', '')}`,
-    segmento: 'config' as const,
+    segmento: 'referencia_color' as const,
     prioridad: 300 + i,
     condiciones: null,
     salida: {
-      campo: 'disclaimerProductos' as const,
       texto: `${r.digito} ${r.nombre} — pigmento ${r.pigmento}${r.nota ? `. ${r.nota}` : ''}.`,
     },
     estado: BORRADOR,
@@ -70,10 +71,10 @@ const REGLAS_REFLEJOS: ReglaKB[] = [
   })),
   {
     clave: 'color.reflejo.marca',
-    segmento: 'config',
+    segmento: 'referencia_color',
     prioridad: 399,
     condiciones: null,
-    salida: { campo: 'disclaimerProductos', texto: REFLEJO_DEPENDE_DE_MARCA },
+    salida: { texto: REFLEJO_DEPENDE_DE_MARCA },
     estado: BORRADOR,
     notasInternas: 'Entrega 3 §3.4 · de .7 en adelante lo define el fabricante.',
   },
@@ -81,11 +82,10 @@ const REGLAS_REFLEJOS: ReglaKB[] = [
 
 const REGLAS_OXIDANTES: ReglaKB[] = OXIDANTES.map((o, i) => ({
   clave: `color.oxidante.${o.volumen}`,
-  segmento: 'config',
+  segmento: 'referencia_color',
   prioridad: 400 + i,
   condiciones: null,
   salida: {
-    campo: 'disclaimerProductos',
     texto: `${o.volumen} vol (${o.concentracion}) — aclara ${o.aclara[0]}–${o.aclara[1]} nivel(es). ${o.usoTipico}.`,
   },
   estado: BORRADOR,
@@ -177,11 +177,10 @@ const CO: DefinicionCO[] = [
 
 const REGLAS_CO: ReglaKB[] = CO.map((r, i) => ({
   clave: `color.regla.${r.clave.toLowerCase()}`,
-  segmento: 'config',
+  segmento: 'referencia_color',
   prioridad: 500 + i,
   condiciones: null,
   salida: {
-    campo: 'disclaimerProductos',
     texto: `${r.clave} · ${r.titulo}\n${r.texto}`,
   },
   estado: BORRADOR,
@@ -201,10 +200,10 @@ const SEGURIDAD: string[] = [
 
 const REGLAS_SEGURIDAD: ReglaKB[] = SEGURIDAD.map((texto, i) => ({
   clave: `color.seguridad.${i + 1}`,
-  segmento: 'config',
+  segmento: 'referencia_color',
   prioridad: 600 + i,
   condiciones: null,
-  salida: { campo: 'disclaimerProductos', texto },
+  salida: { texto },
   estado: BORRADOR,
   notasInternas: 'Entrega 3 §5 · checklist previa a todo servicio de color.',
 }));

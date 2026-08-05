@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   Phone, MessageCircle, Trash2, Plus, Calendar, Hash,
   Pencil, Check, X, RotateCcw, Image as ImageIcon, ArrowLeft,
-  MoreHorizontal, Heart, ChevronRight, Palette,
+  MoreHorizontal, Heart, ChevronRight, Palette, Scissors,
 } from 'lucide-react';
 import { Btn, Chip, type ChipTone } from '@/components/v2';
 import Modal from '@/components/ui/Modal';
@@ -773,9 +773,14 @@ export default function ClientaPage() {
                 Nueva consulta
               </Btn>
             </Link>
-            <Link href={`/color?clientaId=${clienta.id}`} style={{ textDecoration: 'none', flex: '1 1 100%' }}>
+            <Link href={`/color?clientaId=${clienta.id}`} style={{ textDecoration: 'none', flex: 1, minWidth: 150 }}>
               <Btn variant="soft" size="md" fullWidth icon={<Palette size={14} />}>
-                Calculadora de color
+                Color
+              </Btn>
+            </Link>
+            <Link href={`/cortes?clientaId=${clienta.id}`} style={{ textDecoration: 'none', flex: 1, minWidth: 150 }}>
+              <Btn variant="soft" size="md" fullWidth icon={<Scissors size={14} />}>
+                Cortes
               </Btn>
             </Link>
             {consultas.length > 0 && (

@@ -46,7 +46,14 @@ export type SegmentoRegla =
   | 'nota'                  // todas (notasAdicionales)
   | 'cuidado_casa'          // todas, append por campo
   | 'intervalo'             // primera
-  | 'config';               // valores fijos (disclaimer)
+  | 'config'                // valores fijos (disclaimer)
+  // Segmentos de REFERENCIA: contenido consultable desde el panel que el
+  // evaluador de diagnóstico IGNORA por completo. Existen para que Keila
+  // revise y versione material que no forma parte del plan de la clienta.
+  // NO reutilizar 'config' para esto: su campo disclaimerProductos SÍ se
+  // inyecta en el resultado del diagnóstico.
+  | 'referencia_color'      // tablas y reglas de la calculadora (Fase 3)
+  | 'referencia_corte';     // principios de visagismo (Entrega 5)
 
 export type EstadoKB = 'borrador' | 'publicada' | 'archivada';
 
