@@ -70,6 +70,23 @@ y ambos se movieron a `_archive/`. Ver `CONOCIMIENTO.md` en la raíz.
 - El contenido de Fase 2 (Sprint B) quedó cargado en estado **borrador**:
   se revisa y publica desde el panel `/conocimiento`.
 
+## Capa legal y de gobernanza: migración PENDIENTE de aplicar
+
+`migration-legal-gobernanza.sql` implementa la validación firmada de Keila
+(roles corporativo/salon, cartas de marca `kb_marcas` + `salon_marcas_activas`,
+consentimientos versionados por clienta, pruebas de sensibilidad y el trigger
+`citas_guard_legal` de la agenda). Ver `GOBERNANZA.md` en la raíz.
+
+- Es **idempotente**: se puede re-ejecutar sin efectos dobles.
+- Reescribe `es_cuenta_fundadora()` para delegar en `es_cuenta_corporativa()`
+  — con eso todas las policies `kb_*` existentes pasan a exigir rol
+  corporativo sin recrearlas.
+- **Al aplicarla**, mover a `_archive/` y regenerar `schema.sql` (conservando
+  el apéndice manual, como siempre).
+- `public.legal_versiones` es el espejo en DB de `lib/legal.ts`: si subes una
+  versión de consentimiento en el código, corre también el `UPDATE`
+  correspondiente en esa tabla.
+
 ## Aplicar cambios futuros
 
 1. Crear `migration-<nombre>.sql` en este directorio (idempotente con
