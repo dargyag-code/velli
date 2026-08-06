@@ -14,9 +14,9 @@
 // ══════════════════════════════════════════════════════════════════════════
 
 import type { DimensionKB, ReglaKB } from '../tipos';
-import { FICHAS_CORTE, GUIA_ROSTROS } from '@/lib/cortes/fichas';
-import { GLOSARIO_VERBOS } from '@/lib/cortes/lenguaje';
-import type { FichaCorte } from '@/lib/cortes/tipos';
+import { FICHAS_CORTE, GUIA_ROSTROS } from '../../cortes/fichas';
+import { GLOSARIO_VERBOS } from '../../cortes/lenguaje';
+import { fichaAFila as _fichaAFila, type FilaCorteSeed } from '../../cortes/serializacion';
 
 const BORRADOR = 'borrador' as const;
 
@@ -104,49 +104,13 @@ export const REGLAS_CORTES: ReglaKB[] = [
 ];
 
 // ── 2. Fichas para kb_cortes ──────────────────────────────────────────────
+// fichaAFila vive en lib/cortes/serializacion.ts porque ese módulo importa
+// solo tipos y por eso los scripts de Node pueden usarlo directamente.
 
-export interface FilaCorteSeed {
-  clave: string;
-  locale: string;
-  nombre: string;
-  largo: string;
-  capas: string;
-  densidad_ideal: string[];
-  textura: string[];
-  etiqueta_genero: string;
-  ficha: Record<string, unknown>;
-  ciclo_semanas_min: number;
-  ciclo_semanas_max: number;
-  estado: string;
-  notas_internas: string | null;
-}
+export { fichaAFila } from '../../cortes/serializacion';
+export type { FilaCorteSeed } from '../../cortes/serializacion';
 
-/** Traduce una FichaCorte del seed canónico a la fila de kb_cortes. */
-export function fichaAFila(f: FichaCorte): FilaCorteSeed {
-  const {
-    clave, nombre, largo, capas, etiquetaGenero, densidadIdeal, textura,
-    cicloSemanas, notasInternas, ...resto
-  } = f;
-  return {
-    clave,
-    locale: 'es',
-    nombre,
-    largo,
-    capas,
-    densidad_ideal: densidadIdeal,
-    textura,
-    etiqueta_genero: etiquetaGenero,
-    // El resto de la ficha viaja como jsonb: crecer el catálogo no exige
-    // migración.
-    ficha: { ...resto, densidadIdeal, textura, cicloSemanas },
-    ciclo_semanas_min: cicloSemanas[0],
-    ciclo_semanas_max: cicloSemanas[1],
-    estado: BORRADOR,
-    notas_internas: notasInternas ?? null,
-  };
-}
-
-export const FILAS_CORTES: FilaCorteSeed[] = FICHAS_CORTE.map(fichaAFila);
+export const FILAS_CORTES: FilaCorteSeed[] = FICHAS_CORTE.map(_fichaAFila);
 
 // ── 3. Dimensión nueva: remolinos y dirección de crecimiento (PR-05) ──────
 

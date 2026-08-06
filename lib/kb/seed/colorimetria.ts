@@ -23,8 +23,8 @@ import type { ReglaKB } from '../tipos';
 import {
   OXIDANTES, PARES_NEUTRALIZACION, REFLEJOS_BASE, REFLEJO_DEPENDE_DE_MARCA,
   TABLA_ALTURAS,
-} from '@/lib/color/tablas';
-import { CO09_PROTOCOLO_VERBATIM, tramoCanas } from '@/lib/color/reglas';
+} from '../../color/tablas';
+import { CO09_PROTOCOLO_VERBATIM, tramoCanas } from '../../color/reglas';
 
 const BORRADOR = 'borrador' as const;
 
