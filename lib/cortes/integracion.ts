@@ -25,21 +25,40 @@ const DIRECCIONES: DireccionCrecimiento[] = [
   'hacia_adelante', 'hacia_atras', 'lateral', 'irregular',
 ];
 
+/**
+ * Lee el dato de crecimiento del perfil extendido.
+ *
+ * Devuelve undefined SOLO cuando no hay dato — es decir, cuando la estilista
+ * no respondió esas preguntas (clienta anterior al flujo, o preguntas
+ * omitidas por ser opcionales). Un "no" explícito SÍ es dato: se conserva,
+ * aunque no dispare ningún veto. La distinción importa porque "no tiene
+ * remolino" y "no lo miramos" son cosas distintas en la ficha.
+ */
 export function crecimientoDesdePerfil(
   perfil: Record<string, unknown> | undefined
 ): PerfilCrecimiento | undefined {
   if (!perfil) return undefined;
+
+  const respondida = (clave: string) =>
+    perfil[clave] !== undefined && perfil[clave] !== null && perfil[clave] !== '';
+
   const dir = perfil[CLAVE_DIRECCION_CRECIMIENTO];
-  const crecimiento: PerfilCrecimiento = {
+  const direccion = DIRECCIONES.includes(dir as DireccionCrecimiento)
+    ? (dir as DireccionCrecimiento)
+    : undefined;
+
+  const hayDato =
+    respondida(CLAVE_REMOLINO_FRONTAL) ||
+    respondida(CLAVE_REMOLINO_CORONILLA) ||
+    direccion !== undefined;
+
+  if (!hayDato) return undefined;
+
+  return {
     remolinoFrontal: perfil[CLAVE_REMOLINO_FRONTAL] === true,
     remolinoCoronilla: perfil[CLAVE_REMOLINO_CORONILLA] === true,
-    direccion: DIRECCIONES.includes(dir as DireccionCrecimiento)
-      ? (dir as DireccionCrecimiento)
-      : undefined,
+    direccion,
   };
-  const tieneAlgo =
-    crecimiento.remolinoFrontal || crecimiento.remolinoCoronilla || crecimiento.direccion;
-  return tieneAlgo ? crecimiento : undefined;
 }
 
 export function diagnosticoDesdeConsulta(

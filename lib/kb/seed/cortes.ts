@@ -13,7 +13,7 @@
 //      que alimenta perfil_extendido igual que las dimensiones del Sprint B.
 // ══════════════════════════════════════════════════════════════════════════
 
-import type { DimensionKB, ReglaKB } from '../tipos';
+import type { DimensionKB, FlujoKB, PreguntaFlujo, ReglaKB } from '../tipos';
 import { FICHAS_CORTE, GUIA_ROSTROS } from '../../cortes/fichas';
 import { GLOSARIO_VERBOS } from '../../cortes/lenguaje';
 import { fichaAFila as _fichaAFila, type FilaCorteSeed } from '../../cortes/serializacion';
@@ -145,3 +145,40 @@ export const DIMENSIONES_CORTES: DimensionKB[] = [
     estado: BORRADOR,
   },
 ];
+
+// ── 4. Flujo del wizard que captura ese dato ──────────────────────────────
+// El wizard renderiza desde kb_flujos, no desde kb_dimensiones. Las
+// preguntas se DERIVAN de las dimensiones para que no puedan driftear: si
+// Keila ajusta una etiqueta o una opción en la dimensión, la pregunta la
+// hereda.
+//
+// Las tres son OPCIONALES a propósito. El dato es una observación de cabina
+// que muchas clientas ya registradas no tienen, y el veto de PR-05 solo
+// actúa cuando hay dato: sin él, la matriz se comporta igual que antes.
+
+export function dimensionAPregunta(d: DimensionKB): PreguntaFlujo {
+  return {
+    clave: d.clave,
+    etiqueta: d.etiqueta,
+    ayuda: d.descripcion,
+    tipo: d.tipo,
+    opciones: d.opciones,
+    opcional: true,
+  };
+}
+
+export const FLUJO_CRECIMIENTO: FlujoKB = {
+  clave: 'flujo.crecimiento',
+  // Transversal: el remolino no depende del patrón de rizo, y el veto de
+  // PR-05 aplica a cualquier tipo de cabello.
+  tiposCabello: null,
+  estado: BORRADOR,
+  definicion: {
+    titulo: 'Remolinos y dirección de crecimiento',
+    descripcion:
+      'Observación de cabina para el módulo de cortes (PR-05): la coronilla y los remolinos vetan flequillos y rayas que peleen contra el crecimiento natural. Es opcional — si no lo observaste, continúa sin marcar nada.',
+    preguntas: DIMENSIONES_CORTES.map(dimensionAPregunta),
+  },
+};
+
+export const FLUJOS_CORTES: FlujoKB[] = [FLUJO_CRECIMIENTO];

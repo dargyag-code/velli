@@ -13,7 +13,8 @@ import {
 } from '../lib/cortes/integracion';
 import { rowToFicha, type CorteKBRow } from '../lib/cortes/catalogo';
 import {
-  DIMENSIONES_CORTES, FILAS_CORTES, REGLAS_CORTES, fichaAFila,
+  DIMENSIONES_CORTES, FILAS_CORTES, FLUJOS_CORTES, FLUJO_CRECIMIENTO,
+  REGLAS_CORTES, dimensionAPregunta, fichaAFila,
 } from '../lib/kb/seed/cortes';
 import { REGLAS_COLORIMETRIA } from '../lib/kb/seed/colorimetria';
 import { FICHAS_CORTE, fichaPorClave } from '../lib/cortes/fichas';
@@ -177,6 +178,134 @@ describe('seed de cortes: todo en borrador y sin lenguaje vetado', () => {
   it('NINGÚN texto del seed contiene lenguaje vetado', () => {
     const hallazgos = auditarLenguaje([REGLAS_CORTES, FILAS_CORTES, DIMENSIONES_CORTES]);
     expect(hallazgos, JSON.stringify(hallazgos, null, 2)).toEqual([]);
+  });
+});
+
+// ═══ PR-05 · el wizard captura el dato y la matriz lo veta ══════════════
+
+describe('flujo del wizard para remolinos y dirección de crecimiento', () => {
+  it('es transversal: aplica a cualquier tipo de cabello', () => {
+    expect(FLUJO_CRECIMIENTO.tiposCabello).toBeNull();
+    expect(FLUJOS_CORTES).toHaveLength(1);
+  });
+
+  it('entra en borrador, como todo el contenido nuevo', () => {
+    expect(FLUJO_CRECIMIENTO.estado).toBe('borrador');
+  });
+
+  it('sus preguntas se derivan de las dimensiones, sin duplicar definiciones', () => {
+    const preguntas = FLUJO_CRECIMIENTO.definicion.preguntas;
+    expect(preguntas).toHaveLength(DIMENSIONES_CORTES.length);
+    for (const [i, d] of DIMENSIONES_CORTES.entries()) {
+      expect(preguntas[i].clave).toBe(d.clave);
+      expect(preguntas[i].etiqueta).toBe(d.etiqueta);
+      expect(preguntas[i].tipo).toBe(d.tipo);
+      expect(preguntas[i].opciones).toEqual(d.opciones);
+    }
+  });
+
+  it('TODAS las preguntas son opcionales: el dato no se le exige a nadie', () => {
+    for (const p of FLUJO_CRECIMIENTO.definicion.preguntas) {
+      expect(p.opcional, p.clave).toBe(true);
+    }
+  });
+
+  it('las claves del flujo coinciden con las que lee la matriz', () => {
+    const claves = FLUJO_CRECIMIENTO.definicion.preguntas.map((p) => p.clave);
+    expect(claves).toEqual([
+      CLAVE_REMOLINO_FRONTAL, CLAVE_REMOLINO_CORONILLA, CLAVE_DIRECCION_CRECIMIENTO,
+    ]);
+  });
+
+  it('dimensionAPregunta arrastra la descripción como ayuda de cabina', () => {
+    const p = dimensionAPregunta(DIMENSIONES_CORTES[0]);
+    expect(p.ayuda).toBe(DIMENSIONES_CORTES[0].descripcion);
+  });
+});
+
+describe('el veto de PR-05 solo actúa cuando hay dato', () => {
+  // Shag (W-04) depende de flequillo: es el corte que el remolino frontal veta.
+  const sesion = {
+    formaRostro: 'alargado' as const,
+    toleranciaMantenimiento: 'alta' as const,
+  };
+  const claves = (perfil?: Record<string, unknown>) =>
+    recomendarCortes({
+      diagnostico: diagnosticoDesdeConsulta(
+        consultaBase({ tipoRizoPrincipal: '2B', perfilExtendido: perfil })
+      ),
+      sesion,
+      top: 16,
+    });
+
+  it('SIN dato: la matriz se comporta como antes — W-04 sigue disponible', () => {
+    const r = claves(undefined);
+    expect(r.recomendaciones.map((x) => x.ficha.clave)).toContain('W-04');
+    expect(r.descartados.map((d) => d.clave)).not.toContain('W-04');
+    expect(r.advertencias).toEqual([]);
+  });
+
+  it('con perfil extendido pero SIN estas preguntas: tampoco veta', () => {
+    const r = claves({ estadoCanas: 'sin_canas', otraCosa: true });
+    expect(r.recomendaciones.map((x) => x.ficha.clave)).toContain('W-04');
+  });
+
+  it('CON dato afirmativo: el veto actúa y explica el motivo', () => {
+    const r = claves({ [CLAVE_REMOLINO_FRONTAL]: true });
+    expect(r.recomendaciones.map((x) => x.ficha.clave)).not.toContain('W-04');
+    expect(r.descartados.find((d) => d.clave === 'W-04')!.motivo).toMatch(/remolino frontal/i);
+  });
+
+  it('CON dato negativo: hay dato, pero no veta nada', () => {
+    const r = claves({ [CLAVE_REMOLINO_FRONTAL]: false, [CLAVE_REMOLINO_CORONILLA]: false });
+    expect(r.recomendaciones.map((x) => x.ficha.clave)).toContain('W-04');
+    expect(r.descartados.map((d) => d.clave)).not.toContain('W-04');
+  });
+
+  it('un "no" explícito SÍ se conserva como dato observado', () => {
+    // "No tiene remolino" y "no lo miramos" son cosas distintas en la ficha.
+    const c = crecimientoDesdePerfil({ [CLAVE_REMOLINO_FRONTAL]: false });
+    expect(c).toBeDefined();
+    expect(c!.remolinoFrontal).toBe(false);
+  });
+
+  it('sin ninguna de las tres claves no hay dato', () => {
+    expect(crecimientoDesdePerfil({})).toBeUndefined();
+    expect(crecimientoDesdePerfil({ estadoCanas: 'mas_50' })).toBeUndefined();
+  });
+
+  it('una dirección vacía o inválida no cuenta como dato', () => {
+    expect(crecimientoDesdePerfil({ [CLAVE_DIRECCION_CRECIMIENTO]: '' })).toBeUndefined();
+    expect(crecimientoDesdePerfil({ [CLAVE_DIRECCION_CRECIMIENTO]: 'inventada' })).toBeUndefined();
+  });
+
+  it('la dirección sola basta para que haya dato y para vetar', () => {
+    const r = claves({ [CLAVE_DIRECCION_CRECIMIENTO]: 'hacia_atras' });
+    expect(r.recomendaciones.map((x) => x.ficha.clave)).not.toContain('W-04');
+  });
+
+  it('el remolino de coronilla advierte sin sacar el corte del top', () => {
+    const r = claves({ [CLAVE_REMOLINO_CORONILLA]: true });
+    expect(r.advertencias.length).toBeGreaterThan(0);
+    expect(r.advertencias.join(' ')).toMatch(/raya/i);
+    // W-02 declara raya y sigue siendo recomendable.
+    expect(r.descartados.map((d) => d.clave)).not.toContain('W-02');
+  });
+
+  it('el dato viaja del wizard a la matriz sin transformación intermedia', () => {
+    // Lo que PreguntasFlujo guarda para un booleano es true/false directo.
+    const dx = diagnosticoDesdeConsulta(
+      consultaBase({
+        perfilExtendido: {
+          [CLAVE_REMOLINO_FRONTAL]: true,
+          [CLAVE_REMOLINO_CORONILLA]: false,
+          [CLAVE_DIRECCION_CRECIMIENTO]: 'lateral',
+        },
+      })
+    );
+    expect(dx.crecimiento).toEqual({
+      remolinoFrontal: true, remolinoCoronilla: false, direccion: 'lateral',
+    });
   });
 });
 

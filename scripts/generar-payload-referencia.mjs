@@ -34,7 +34,8 @@ const server = await createServer({
 });
 
 const { REGLAS_COLORIMETRIA } = await server.ssrLoadModule('/lib/kb/seed/colorimetria.ts');
-const { REGLAS_CORTES, DIMENSIONES_CORTES } = await server.ssrLoadModule('/lib/kb/seed/cortes.ts');
+const { REGLAS_CORTES, DIMENSIONES_CORTES, FLUJOS_CORTES } =
+  await server.ssrLoadModule('/lib/kb/seed/cortes.ts');
 await server.close();
 
 // ── Mapeo a filas de la DB ──────────────────────────────────────────────
@@ -62,15 +63,24 @@ const dimensionAFila = (d) => ({
   estado: d.estado ?? 'borrador',
 });
 
+const flujoAFila = (f) => ({
+  clave: f.clave,
+  locale: f.locale ?? 'es',
+  tipos_cabello: f.tiposCabello ?? null,
+  definicion: f.definicion,
+  estado: f.estado ?? 'borrador',
+});
+
 const reglas = [...REGLAS_COLORIMETRIA, ...REGLAS_CORTES].map(reglaAFila);
 const dimensiones = DIMENSIONES_CORTES.map(dimensionAFila);
+const flujos = FLUJOS_CORTES.map(flujoAFila);
 
 // ── Verificaciones defensivas ───────────────────────────────────────────
 // Nada sale de aquí publicado, ni con un segmento que el evaluador consuma.
 
 const SEGMENTOS_REFERENCIA = ['referencia_color', 'referencia_corte'];
 
-const noBorrador = [...reglas, ...dimensiones].filter((x) => x.estado !== 'borrador');
+const noBorrador = [...reglas, ...dimensiones, ...flujos].filter((x) => x.estado !== 'borrador');
 if (noBorrador.length) {
   console.error(`ABORTADO: ${noBorrador.length} fila(s) no están en borrador: ` +
     noBorrador.map((x) => x.clave).join(', '));
@@ -94,10 +104,23 @@ if (duplicadas.length) {
   process.exit(1);
 }
 
+// Las preguntas del flujo deben existir como dimensión: si una se cuela sin
+// su dimensión, el panel no la puede editar y quedaría huérfana.
+const clavesDim = new Set(dimensiones.map((d) => d.clave));
+const huerfanas = flujos.flatMap((f) =>
+  f.definicion.preguntas.filter((p) => !clavesDim.has(p.clave)).map((p) => `${f.clave}:${p.clave}`)
+);
+if (huerfanas.length) {
+  console.error(`ABORTADO: preguntas sin dimensión asociada: ${huerfanas.join(', ')}`);
+  process.exit(1);
+}
+
 writeFileSync(path.join(salida, 'reglas-referencia.json'), JSON.stringify(reglas, null, 2), 'utf8');
 writeFileSync(path.join(salida, 'dimensiones-cortes.json'), JSON.stringify(dimensiones, null, 2), 'utf8');
+writeFileSync(path.join(salida, 'flujos-cortes.json'), JSON.stringify(flujos, null, 2), 'utf8');
 
 console.log(`reglas: ${reglas.length} (color: ${REGLAS_COLORIMETRIA.length}, corte: ${REGLAS_CORTES.length})`);
 console.log(`dimensiones: ${dimensiones.length}`);
+console.log(`flujos: ${flujos.length} (${flujos.map((f) => `${f.clave}/${f.definicion.preguntas.length} preguntas`).join(', ')})`);
 console.log(`segmentos: ${[...new Set(reglas.map((r) => r.segmento))].join(', ')}`);
-console.log(`estados: ${[...new Set([...reglas, ...dimensiones].map((x) => x.estado))].join(', ')}`);
+console.log(`estados: ${[...new Set([...reglas, ...dimensiones, ...flujos].map((x) => x.estado))].join(', ')}`);
