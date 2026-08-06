@@ -17,7 +17,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   BookOpen, Plus, AlertTriangle, Eye, History, Sparkles, GitBranch,
-  MessageSquareText, ShieldCheck, Palette, Check,
+  MessageSquareText, ShieldCheck, Palette, Check, Scissors,
 } from 'lucide-react';
 import { InnerHeader, Btn } from '@/components/v2';
 import Modal from '@/components/ui/Modal';
@@ -41,14 +41,24 @@ import {
   MarcaKBRow, listarMarcas, guardarMarca, eliminarMarca,
   listarMarcasActivasIds, activarMarca, desactivarMarca,
 } from '@/lib/kb/marcas';
+import {
+  CorteKBRow, listarCortes, cambiarEstadoCorte,
+} from '@/lib/cortes/catalogo';
 
-type Tab = 'reglas' | 'flujos' | 'prompts' | 'marcas' | 'preview' | 'auditoria';
+type Tab = 'reglas' | 'flujos' | 'prompts' | 'marcas' | 'cortes' | 'preview' | 'auditoria';
 
 const SEGMENTOS: SegmentoRegla[] = [
   'hecho', 'derivacion_medica', 'tratamiento_principal', 'tratamiento_adicional',
   'cronograma', 'tecnica', 'producto_resumen', 'ingrediente_buscar',
   'ingrediente_evitar', 'rutina', 'nota', 'cuidado_casa', 'intervalo', 'config',
+  // Segmentos de REFERENCIA: contenido consultable (tablas de colorimetría,
+  // principios de visagismo) que el evaluador de diagnóstico IGNORA. Sin
+  // ellos en esta lista, esas reglas quedan invisibles desde el panel.
+  'referencia_color', 'referencia_corte',
 ];
+
+/** Segmentos cuyo contenido NO entra en el plan de la clienta. */
+const SEGMENTOS_REFERENCIA: SegmentoRegla[] = ['referencia_color', 'referencia_corte'];
 
 const ESTADOS: EstadoKB[] = ['borrador', 'publicada', 'archivada'];
 
@@ -296,6 +306,7 @@ export default function ConocimientoPage() {
     { id: 'flujos', label: 'Flujos', icon: <GitBranch size={13} /> },
     { id: 'prompts', label: 'Prompts IA', icon: <MessageSquareText size={13} /> },
     { id: 'marcas', label: 'Marcas', icon: <Palette size={13} /> },
+    { id: 'cortes', label: 'Cortes', icon: <Scissors size={13} /> },
     { id: 'preview', label: 'Vista previa', icon: <Eye size={13} /> },
     { id: 'auditoria', label: 'Auditoría', icon: <History size={13} /> },
   ];
@@ -350,6 +361,7 @@ export default function ConocimientoPage() {
         {tab === 'flujos' && <TabFlujos flujos={flujos} onCambio={recargar} />}
         {tab === 'prompts' && <TabPrompts prompts={prompts} onCambio={recargar} />}
         {tab === 'marcas' && <TabMarcas marcas={marcas} onCambio={recargar} />}
+        {tab === 'cortes' && <TabCortes />}
         {tab === 'preview' && <TabPreview reglas={reglas} />}
         {tab === 'auditoria' && <TabAuditoria eventos={auditoria} />}
       </main>
@@ -517,6 +529,141 @@ function EditorMarca({
         </div>
       </div>
     </Modal>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Tab: Cortes (catálogo global — solo corporativo)
+//
+// Las fichas se cargan desde el seed canónico con
+// scripts/generar-payload-cortes.mjs; desde aquí se revisan y se publican.
+// Publicar es lo que hace que la matriz consuma kb_cortes en vez del seed
+// incorporado en el código.
+// ════════════════════════════════════════════════════════════════════════════
+
+function TabCortes() {
+  const [cortes, setCortes] = useState<CorteKBRow[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [guardando, setGuardando] = useState<string | null>(null);
+  const [detalle, setDetalle] = useState<CorteKBRow | null>(null);
+
+  const recargar = useCallback(async () => {
+    try {
+      setCortes(await listarCortes());
+    } catch (e) {
+      console.error('[conocimiento.cortes]', e);
+      setCortes([]);
+    } finally {
+      setCargando(false);
+    }
+  }, []);
+
+  useEffect(() => { recargar(); }, [recargar]);
+
+  const cambiar = async (c: CorteKBRow, estado: EstadoKB) => {
+    setGuardando(c.id);
+    try {
+      await cambiarEstadoCorte(c.id, estado);
+      showToast(`${c.nombre}: ${estado}`, 'success');
+      await recargar();
+    } catch (e) {
+      console.error('[cortes.estado]', e);
+      showToast('No se pudo cambiar el estado', 'error');
+    } finally {
+      setGuardando(null);
+    }
+  };
+
+  if (cargando) {
+    return <p className="v-caps" style={{ textAlign: 'center', padding: 30 }}>Cargando…</p>;
+  }
+
+  if (cortes.length === 0) {
+    return (
+      <div className="v-card" style={{ padding: 20 }}>
+        <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+          No hay fichas de corte cargadas. Se generan desde el seed canónico con{' '}
+          <code style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+            node scripts/generar-payload-cortes.mjs
+          </code>{' '}
+          y se cargan en <code style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>kb_cortes</code>.
+        </p>
+      </div>
+    );
+  }
+
+  const publicadas = cortes.filter((c) => c.estado === 'publicada').length;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <p style={{ margin: 0, fontSize: 11, color: 'var(--text-tertiary)', lineHeight: 1.45 }}>
+        {cortes.length} ficha(s) · {publicadas} publicada(s). La matriz de cortes usa las
+        <strong> publicadas</strong>; si no hay ninguna, cae al catálogo semilla del código.
+      </p>
+
+      {cortes.map((c) => (
+        <article
+          key={c.id}
+          className="v-card"
+          style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}
+        >
+          <button
+            type="button"
+            onClick={() => setDetalle(c)}
+            style={{
+              flex: 1, minWidth: 0, textAlign: 'left', background: 'transparent',
+              border: 'none', padding: 0, cursor: 'pointer',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'var(--text-tertiary)' }}>
+                {c.clave}
+              </span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-main)' }}>
+                {c.nombre}
+              </span>
+            </div>
+            <div style={{ fontSize: 10.5, color: 'var(--text-tertiary)', marginTop: 2 }}>
+              {c.largo} · {c.capas} · {c.etiqueta_genero.replace('_', ' ')} ·
+              {' '}retoque {c.ciclo_semanas_min}–{c.ciclo_semanas_max} sem · v{c.version}
+            </div>
+          </button>
+          <ChipEstado estado={c.estado} />
+          <Btn
+            size="sm"
+            variant={c.estado === 'publicada' ? 'ghost' : 'soft'}
+            disabled={guardando === c.id}
+            onClick={() => cambiar(c, c.estado === 'publicada' ? 'borrador' : 'publicada')}
+          >
+            {c.estado === 'publicada' ? 'Despublicar' : 'Publicar'}
+          </Btn>
+        </article>
+      ))}
+
+      {detalle && (
+        <Modal open onClose={() => setDetalle(null)} title={`${detalle.clave} · ${detalle.nombre}`} size="lg">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 12.5, color: 'var(--text-main)', lineHeight: 1.55 }}>
+            <Campo label="Estructura">
+              <p style={{ margin: 0 }}>{String(detalle.ficha.estructura ?? '—')}</p>
+            </Campo>
+            <Campo label="Línea de término">
+              <p style={{ margin: 0 }}>{String(detalle.ficha.lineaTermino ?? '—')}</p>
+            </Campo>
+            <Campo label="Dónde vive el volumen">
+              <p style={{ margin: 0 }}>{String(detalle.ficha.volumenEn ?? '—')}</p>
+            </Campo>
+            <Campo label="Técnica clave">
+              <p style={{ margin: 0 }}>{String(detalle.ficha.tecnicaClave ?? '—')}</p>
+            </Campo>
+            <Campo label="Ficha completa (JSON)">
+              <pre style={{ ...monoArea, margin: 0, maxHeight: 260, overflow: 'auto', whiteSpace: 'pre-wrap' }}>
+                {JSON.stringify(detalle.ficha, null, 2)}
+              </pre>
+            </Campo>
+          </div>
+        </Modal>
+      )}
+    </div>
   );
 }
 
@@ -780,6 +927,12 @@ function EditorRegla({
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
           <Campo label="Segmento">
             <SelectSimple value={segmento} options={SEGMENTOS} onChange={(v) => setSegmento(v as SegmentoRegla)} />
+            {SEGMENTOS_REFERENCIA.includes(segmento) && (
+              <span style={{ fontSize: 10.5, color: 'var(--text-tertiary)', marginTop: 4, lineHeight: 1.45 }}>
+                Segmento de referencia: material consultable que el motor de diagnóstico
+                ignora. Publicarlo no cambia el plan de ninguna clienta.
+              </span>
+            )}
           </Campo>
           <Campo label="Prioridad">
             <input
