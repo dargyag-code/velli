@@ -1,0 +1,42 @@
+prompts publicados: analisis_foto.sistema(195 car.), analisis_foto.principal(1648 car.), analisis_foto.contexto.seco_natural(105 car.), analisis_foto.contexto.humedo(121 car.), analisis_foto.contexto.con_producto(121 car.), analisis_foto.contexto.recien_lavado(80 car.)
+extras: 0
+
+=== claude-sonnet-4-6
+token por imagen 720x1280 (diferencia 2−1 fotos): 1211
+token por imagen sint_1280x720.webp: 1211
+token por imagen sint_1920x1080.webp: 1575
+token por imagen sint_3000x4000.webp: 1579
+análisis 1 foto(s) 720x1280 · entrada: 1939
+análisis 3 foto(s) 720x1280 · entrada: 4361
+análisis 5 foto(s) 720x1280 · entrada: 6784
+análisis 3 fotos estado=humedo · entrada: 4363
+análisis 3 fotos estado=con_producto · entrada: 4362
+análisis 3 fotos estado=recien_lavado · entrada: 4354
+validación 1 foto(s) · entrada: 1511
+validación 3 foto(s) · entrada: 3923
+validación 5 foto(s) · entrada: 6335
+análisis 5 fotos 3000x4000 (caso galería grande) · entrada: 8624
+validación 5 fotos 3000x4000 · entrada: 8175
+salida típica análisis (JSON): ~110 tokens
+salida típica validación 3 fotos: ~81 tokens
+salida típica validación 5 fotos: ~125 tokens
+
+=== claude-sonnet-5-5
+token por imagen 720x1280 (diferencia 2−1 fotos): 1215
+token por imagen sint_1280x720.webp: 1215
+token por imagen sint_1920x1080.webp: 2710
+token por imagen sint_3000x4000.webp: 4759
+análisis 1 foto(s) 720x1280 · entrada: 2148
+análisis 3 foto(s) 720x1280 · entrada: 4577
+análisis 5 foto(s) 720x1280 · entrada: 7007
+análisis 3 fotos estado=humedo · entrada: 4580
+análisis 3 fotos estado=con_producto · entrada: 4583
+análisis 3 fotos estado=recien_lavado · entrada: 4571
+validación 1 foto(s) · entrada: 1598
+validación 3 foto(s) · entrada: 4012
+validación 5 foto(s) · entrada: 6426
+análisis 5 fotos 3000x4000 (caso galería grande) · entrada: 24727
+validación 5 fotos 3000x4000 · entrada: 24146
+salida típica análisis (JSON): ~134 tokens
+salida típica validación 3 fotos: ~83 tokens
+salida típica validación 5 fotos: ~127 tokens
