@@ -17,6 +17,7 @@ import { Clienta, Consulta } from '@/lib/types';
 import { formatDate, getRizoLabel } from '@/lib/utils';
 import { showToast } from '@/lib/toast';
 import { resolveFotoUrl, resolveFotoUrls } from '@/lib/storage';
+import { useFlags } from '@/lib/flags/useFlags';
 
 type Tab = 'info' | 'historial' | 'galeria';
 
@@ -310,6 +311,7 @@ function rizoChipTone(tipo?: string): ChipTone {
 export default function ClientaPage() {
   const params = useParams();
   const router = useRouter();
+  const flags = useFlags();
   const id = params.id as string;
 
   const [clienta, setClienta] = useState<Clienta | null>(null);
@@ -778,11 +780,13 @@ export default function ClientaPage() {
                 Color
               </Btn>
             </Link>
-            <Link href={`/cortes?clientaId=${clienta.id}`} style={{ textDecoration: 'none', flex: 1, minWidth: 150 }}>
-              <Btn variant="soft" size="md" fullWidth icon={<Scissors size={14} />}>
-                Cortes
-              </Btn>
-            </Link>
+            {flags.cortes && (
+              <Link href={`/cortes?clientaId=${clienta.id}`} style={{ textDecoration: 'none', flex: 1, minWidth: 150 }}>
+                <Btn variant="soft" size="md" fullWidth icon={<Scissors size={14} />}>
+                  Cortes
+                </Btn>
+              </Link>
+            )}
             {consultas.length > 0 && (
               <Link
                 href={`/diagnostico?clientaId=${clienta.id}&repeatFrom=${consultas.at(-1)?.id}`}

@@ -31,6 +31,7 @@ import {
   prerrequisitosDecoloracion,
 } from '@/lib/color/integracion';
 import { registrarServicioColor } from '@/lib/color/registro';
+import { useFlags } from '@/lib/flags/useFlags';
 import { NIVELES, filaAltura, type NivelTono, type Temperatura, type Volumen } from '@/lib/color/tablas';
 import type { Clienta } from '@/lib/types';
 import type {
@@ -47,6 +48,7 @@ const TEMPERATURAS: { v: Temperatura; label: string }[] = [
 function CalculadoraContent() {
   const params = useSearchParams();
   const router = useRouter();
+  const flags = useFlags();
   const clientaId = params.get('clientaId');
 
   const [cargando, setCargando] = useState(true);
@@ -443,9 +445,11 @@ function CalculadoraContent() {
               </article>
             ))}
           </div>
-          <p style={{ margin: '12px 0 0', fontSize: 11, color: 'var(--text-tertiary)', lineHeight: 1.5 }}>
-            Hitos para el Pasaporte Capilar: {resultado.planMultiSesion.hitosPasaporte.length} fotos de cierre.
-          </p>
+          {flags.app_clientas && (
+            <p style={{ margin: '12px 0 0', fontSize: 11, color: 'var(--text-tertiary)', lineHeight: 1.5 }}>
+              Hitos para el Pasaporte Capilar: {resultado.planMultiSesion.hitosPasaporte.length} fotos de cierre.
+            </p>
+          )}
         </section>
       )}
 

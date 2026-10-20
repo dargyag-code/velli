@@ -4,8 +4,18 @@ Fuentes: `docs/conocimiento/Velli_Base_Conocimiento_Entrega5_Cortes_BORRADOR_v0.
 (fichas y la lógica de su §7) y la `VALIDACIÓN KEILA MORENO.docx`. **Las
 respuestas 4 y 5 de Keila mandan sobre la entrega** donde difieran.
 
-Migración: `supabase/migration-cortes.sql` (idempotente, **pendiente**).
+Migración: `supabase/migration-cortes.sql` (idempotente). **Ya está en
+producción**: lo verifiqué por lectura el 2026-10-19 (`kb_cortes` con 16
+fichas publicadas y `cortes_ejecutados` creada). Falta archivarla y regenerar
+`schema.sql`.
 Tests: `tests/cortes.test.ts` y `tests/cortes.integracion.test.ts`.
+
+> **Congelado desde octubre de 2026** (Velli BI). El flag `cortes` está
+> apagado en `lib/flags/registro.ts`. Con el flag apagado, los salones no ven
+> `/cortes`, el botón de la ficha ni las preguntas de `flujo.crecimiento` en
+> el asistente. Código, catálogo, tablas y RLS quedan intactos, y las pruebas
+> siguen corriendo. `lib/cortes/preagenda.ts` se reutilizará para los avisos
+> de retoque. Las decisiones están en `docs/velli-bi/00-auditoria.md`.
 
 ---
 
@@ -102,15 +112,16 @@ colorimetría vuelve a `config`.
 
 ## Pendientes
 
-1. Aplicar `supabase/migration-cortes.sql` (segmentos + `kb_cortes` +
-   `cortes_ejecutados`). **Aplicarla antes de publicar cualquier seed de
-   referencia**: sin el CHECK extendido, el insert falla.
-2. Cargar las 16 fichas en `kb_cortes` desde `FILAS_CORTES` y publicarlas.
-   Hasta entonces la matriz usa el seed incorporado y lo declara en pantalla.
-3. Publicar el seed de referencia (principios, rostros, vocabulario) y la
-   dimensión de remolinos desde `/conocimiento`.
-4. Añadir las tres preguntas de remolinos al flujo del wizard para que el dato
-   se capture en cabina; hoy la matriz funciona sin él y solo omite el veto.
+Estado de los pendientes, verificado en producción por lectura el 2026-10-19:
+
+1. Hecho: la migración está aplicada (segmentos, `kb_cortes` y
+   `cortes_ejecutados`). Falta moverla a `_archive/`.
+2. Hecho: las 16 fichas están cargadas y publicadas.
+3. Hecho a medias: el seed de referencia está publicado (17 reglas
+   `referencia_corte`), pero las tres dimensiones de remolinos siguen en
+   borrador.
+4. Hecho (commit `ba8fba3`): `flujo.crecimiento` está publicado. Con el
+   módulo congelado, el asistente lo oculta.
 5. Preguntas abiertas de la Entrega 5 §8 sin decidir: si se abren las
    barberías como segmento comercial, validación del mapeo rostro × corte
    contra la escuela de Keila, y la ruta de fotos del catálogo.

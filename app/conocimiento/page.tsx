@@ -22,6 +22,7 @@ import {
 import { InnerHeader, Btn } from '@/components/v2';
 import Modal from '@/components/ui/Modal';
 import { getProfile } from '@/lib/profile';
+import { flagsActivos } from '@/lib/flags';
 import { showToast } from '@/lib/toast';
 import { formatDate } from '@/lib/utils';
 import { WizardData, WIZARD_INITIAL_DATA, ResultadoConsulta } from '@/lib/types';
@@ -596,6 +597,16 @@ function TabCortes() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {!flagsActivos().cortes && (
+        <p
+          className="v-card"
+          style={{ margin: 0, padding: '10px 12px', fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.45 }}
+        >
+          <strong>Módulo congelado (flag <code style={{ fontFamily: 'var(--font-mono)' }}>cortes</code>).</strong>{' '}
+          Los salones no ven la matriz ni las preguntas de remolinos. Publicar o
+          despublicar aquí no cambia eso; el catálogo se conserva intacto.
+        </p>
+      )}
       <p style={{ margin: 0, fontSize: 11, color: 'var(--text-tertiary)', lineHeight: 1.45 }}>
         {cortes.length} ficha(s) · {publicadas} publicada(s). La matriz de cortes usa las
         <strong> publicadas</strong>; si no hay ninguna, cae al catálogo semilla del código.

@@ -70,7 +70,29 @@ y ambos se movieron a `_archive/`. Ver `CONOCIMIENTO.md` en la raíz.
 - El contenido de Fase 2 (Sprint B) quedó cargado en estado **borrador**:
   se revisa y publica desde el panel `/conocimiento`.
 
-## Capa legal y de gobernanza: migración PENDIENTE de aplicar
+## Velli BI: migraciones pendientes y desfases (octubre 2026)
+
+Ninguna de estas se ha aplicado. Las aplica Vanessa en el SQL Editor, en
+este orden:
+
+1. **`migration-proteger-perfil.sql` (prioridad ALTA).** Hoy una cuenta con
+   sesión puede cambiar su propio `profiles.rol` a `corporativo` y escribir
+   en la librería global. El trigger cierra `rol`, `es_fundadora` y
+   `feature_flags` a las sesiones de usuario. Ver R17 en
+   `docs/velli-bi/00-auditoria.md`.
+2. **`migration-feature-flags.sql`.** Agrega `profiles.feature_flags`, los
+   overrides de flags por salón de `lib/flags`. El código funciona sin ella:
+   usa los valores del entorno. Trae la misma guardia que la anterior, así
+   que el orden da igual.
+
+Desfase conocido. `migration-colorimetria.sql` y `migration-cortes.sql` ya
+están aplicadas en producción: el 2026-10-19 verifiqué por lectura que
+existen `servicios_color`, `kb_cortes` y `cortes_ejecutados`. Pero
+`schema.sql` todavía no las refleja. Hay que regenerarlo con `--db-url`
+(conservando el apéndice manual) **antes** de archivarlas. Si se archivan
+primero, una base nueva montada desde `schema.sql` quedaría sin esas tablas.
+
+## Capa legal y de gobernanza: migración APLICADA y archivada
 
 `migration-legal-gobernanza.sql` implementa la validación firmada de Keila
 (roles corporativo/salon, cartas de marca `kb_marcas` + `salon_marcas_activas`,

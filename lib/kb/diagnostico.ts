@@ -11,6 +11,7 @@
 import { createClient } from '@/lib/supabase/client';
 import { WizardData, ResultadoConsulta } from '@/lib/types';
 import { generateDiagnosis, SaludClienta } from '@/lib/diagnosticEngine';
+import { filtrarFlujos, flagsActivos, flujosOcultos } from '@/lib/flags';
 import { evaluarDiagnostico } from './evaluador';
 import { ReglaKB, ReglaKBRow, FlujoKBRow } from './tipos';
 
@@ -92,10 +93,14 @@ export async function generarDiagnostico(
  * cabina — se suman a CUALQUIER tipo, Entrega 2). Solo los flujos
  * publicados activan preguntas dinámicas — los borradores no afectan
  * producción.
+ *
+ * `ocultos`: flujos de módulos congelados (lib/flags). Siguen publicados en
+ * la base; solo dejan de mostrarse. Por defecto, los del entorno actual.
  */
 export async function cargarFlujosParaTipo(
   tipoCabello: string,
-  locale = 'es'
+  locale = 'es',
+  ocultos: readonly string[] = flujosOcultos(flagsActivos())
 ): Promise<FlujoKBRow[]> {
   if (!tipoCabello) return [];
   try {
@@ -113,7 +118,7 @@ export async function cargarFlujosParaTipo(
       (f) => f.tipos_cabello !== null && f.tipos_cabello.includes(tipoCabello)
     );
     const transversales = cacheFlujos.flujos.filter((f) => f.tipos_cabello === null);
-    return [...especificos, ...transversales];
+    return filtrarFlujos([...especificos, ...transversales], ocultos);
   } catch {
     return [];
   }

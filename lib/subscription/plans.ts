@@ -3,6 +3,8 @@
 // (trial 14, periodo 30, gracia 3) se espejan en
 // supabase/migration-suscripciones.sql — cambiar ambos lados a la vez.
 
+import { flagsActivos } from '@/lib/flags';
+
 export type PlanId = 'basico' | 'pro' | 'pro_ia';
 
 export interface PlanFeatures {
@@ -85,9 +87,11 @@ export const PLANES: Record<PlanId, PlanDef> = {
     nombre: 'Pro + IA',
     precioCop: 120_000,
     tagline: 'La experiencia Velli completa',
+    // La IA facial salió de esta lista al congelar el corte por rostro
+    // (flag `cortes` / `ia_facial`). Los beneficios nuevos de Pro+IA
+    // (diagnóstico con tope, cotización sin marca) entran cuando existan.
     beneficios: [
       'Todo lo del plan Pro',
-      'Funciones de IA facial (próximamente)',
       'Acceso anticipado a nuevas funciones de IA',
     ],
     features: {
@@ -108,9 +112,10 @@ export function esPlanId(v: unknown): v is PlanId {
 }
 
 /** Flag global de IA facial ("llega después"). Encender requiere plan
- *  pro_ia Y este flag — así el rollout es un cambio de env, no de código. */
+ *  pro_ia Y el flag `ia_facial` del entorno (lib/flags; acepta todavía
+ *  NEXT_PUBLIC_FEATURE_IA_FACIAL=true) — el rollout es un cambio de env. */
 export function iaFacialHabilitada(): boolean {
-  return process.env.NEXT_PUBLIC_FEATURE_IA_FACIAL === 'true';
+  return flagsActivos().ia_facial;
 }
 
 export function formatearCop(monto: number): string {

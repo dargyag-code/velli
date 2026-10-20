@@ -16,6 +16,8 @@ import { AlertTriangle, BookOpen } from 'lucide-react';
 import { cargarFlujosParaTipo } from '@/lib/kb/diagnostico';
 import { FlujoKBRow, PreguntaFlujo } from '@/lib/kb/tipos';
 import { vibracionSutil } from '@/lib/haptics';
+import { flujosOcultos } from '@/lib/flags';
+import { useFlags } from '@/lib/flags/useFlags';
 
 interface Props {
   tipoCabello: string;
@@ -33,6 +35,9 @@ function esOpcionMedica(pregunta: PreguntaFlujo, valor: unknown): boolean {
 
 export default function PreguntasFlujo({ tipoCabello, valores, onChange }: Props) {
   const [flujos, setFlujos] = useState<FlujoKBRow[]>([]);
+  // Flujos de módulos congelados (p. ej. remolinos de cortes): siguen
+  // publicados en la base, pero el asistente no los pregunta.
+  const ocultos = flujosOcultos(useFlags()).join(',');
 
   useEffect(() => {
     let activo = true;
@@ -40,13 +45,13 @@ export default function PreguntasFlujo({ tipoCabello, valores, onChange }: Props
       setFlujos([]);
       return;
     }
-    cargarFlujosParaTipo(tipoCabello).then((fs) => {
+    cargarFlujosParaTipo(tipoCabello, 'es', ocultos ? ocultos.split(',') : []).then((fs) => {
       if (activo) setFlujos(fs);
     });
     return () => {
       activo = false;
     };
-  }, [tipoCabello]);
+  }, [tipoCabello, ocultos]);
 
   if (flujos.length === 0) return null;
 

@@ -5,7 +5,13 @@ Entrega 3 — §7 es la especificación funcional, §2–§6 el contenido) y la
 `VALIDACIÓN KEILA MORENO.docx`. **Las reglas de Keila mandan sobre la
 Entrega 3** donde difieran.
 
-Migración: `supabase/migration-colorimetria.sql` (idempotente, **pendiente**).
+Migración: `supabase/migration-colorimetria.sql` (idempotente). **Ya está en
+producción**: lo verifiqué por lectura el 2026-10-19 (`servicios_color`
+existe y tiene 0 filas). Falta archivarla y regenerar `schema.sql`.
+
+> Desde octubre de 2026 (Velli BI), la calculadora es además la fuente del
+> costo de producto de cada servicio. Las reglas CO-01 a CO-10 no cambian.
+> El diseño está en `docs/velli-bi/02-diseno-cotizador.md`.
 Tests: `tests/colorimetria.test.ts` y `tests/colorimetria.integracion.test.ts`.
 
 > El motor de diagnóstico no se tocó: `diagnostico.regresion` y
@@ -110,9 +116,20 @@ La verificación de que "la calculadora está viva". Cubiertos en
 
 ## Pendientes
 
-1. Aplicar `supabase/migration-colorimetria.sql` (tabla `servicios_color`).
-2. Publicar el seed de colorimetría desde `/conocimiento` (está en borrador).
-3. Cargar las primeras cartas técnicas de marca (Keila sugiere 1–2 bien
-   cargadas antes que 5 a medias) usando `ESQUEMA_CARTA_MARCA` como guía.
+Estado verificado en producción por lectura el 2026-10-19:
+
+1. Hecho: la migración está aplicada (`servicios_color`). Falta moverla a
+   `_archive/`.
+2. Hecho: el seed está publicado (42 reglas `referencia_color`).
+3. Pendiente: las 4 marcas publicadas tienen la carta vacía
+   (`{"series":[],"alturas":[]}`), así que la fórmula sale siempre
+   «orientativa», con 60 g por tubo. Cargar 1 o 2 cartas completas usando
+   `ESQUEMA_CARTA_MARCA` como guía.
+4. **Desajuste de datos.** El asistente guarda las canas como
+   `perfil_extendido.estadoCanas`, por rangos. La calculadora lee
+   `perfil_extendido.porcentajeCanas`, un número que nada escribe. Por eso
+   CO-05 (fracción de tubo y candado de 20 vol) nunca se activa con
+   diagnósticos reales. La propuesta, que no toca las reglas, está en
+   `docs/velli-bi/02-diseno-cotizador.md`.
 4. Preguntas abiertas de la Entrega 3 §9 que siguen sin decidir: qué marcas
    soportar primero, y si la Entrega 4 (catálogo de cortes) arranca ya.

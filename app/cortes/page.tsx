@@ -21,6 +21,7 @@ import { showToast } from '@/lib/toast';
 import { getClientaById } from '@/lib/db';
 import { getProfile } from '@/lib/profile';
 import { getSuscripcionEfectiva, featuresEfectivas } from '@/lib/subscription/estado';
+import { flagsActivos } from '@/lib/flags';
 import { uploadFoto } from '@/lib/storage';
 import { evaluarCamara, listarConsentimientos, type ConsentimientoClienta } from '@/lib/consentimientos';
 import ModalFirmaConsentimiento from '@/components/legal/ModalFirmaConsentimiento';
@@ -65,6 +66,9 @@ function MatrizContent() {
   const clientaId = params.get('clientaId');
 
   const [cargando, setCargando] = useState(true);
+  // Módulo congelado (flag `cortes`, Velli BI): la página no carga nada y
+  // explica la pausa. Datos y catálogo quedan intactos.
+  const [congelado, setCongelado] = useState(() => !flagsActivos().cortes);
   const [habilitada, setHabilitada] = useState(false);
   const [clienta, setClienta] = useState<{ id: string; nombre: string } | null>(null);
   const [diagnostico, setDiagnostico] = useState<EntradaDiagnosticoCorte>({});
@@ -95,10 +99,15 @@ function MatrizContent() {
   useEffect(() => {
     (async () => {
       try {
-        const [sub, cat, perfil] = await Promise.all([
+        const perfil = await getProfile().catch(() => null);
+        if (!flagsActivos(perfil?.featureFlags).cortes) {
+          setCongelado(true);
+          return;
+        }
+        setCongelado(false);
+        const [sub, cat] = await Promise.all([
           getSuscripcionEfectiva(),
           cargarCatalogo().catch(() => ({ fichas: [], origen: 'seed' as const })),
-          getProfile().catch(() => null),
         ]);
         setHabilitada(featuresEfectivas(sub).calculadoraColor);
         setCatalogo(cat.fichas);
@@ -190,6 +199,19 @@ function MatrizContent() {
   };
 
   if (cargando) return <Marco><p className="v-caps" style={{ textAlign: 'center', padding: 40 }}>Cargando…</p></Marco>;
+
+  if (congelado) {
+    return (
+      <Marco>
+        <Aviso icono={<Scissors size={26} />} titulo="El módulo de cortes está en pausa"
+          texto="Por ahora Velli no ofrece recomendaciones de corte. Nada de lo registrado se borró.">
+          <Btn variant="primary" onClick={() => router.push(clientaId ? `/clientas/${clientaId}` : '/')}>
+            Volver
+          </Btn>
+        </Aviso>
+      </Marco>
+    );
+  }
 
   if (!habilitada) {
     return (
