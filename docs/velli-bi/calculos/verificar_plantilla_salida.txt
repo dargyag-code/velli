@@ -1,0 +1,63 @@
+fórmulas evaluadas en filas con datos: 100 · con error: 0
+== Escenario 1: ejemplo del documento de diseño (precio 182.000, margen 42.435)
+OK    Simulador!B15 · esperado 120000 · obtenido 120000
+OK    Simulador!B16 · esperado 15000 · obtenido 15000
+OK    Simulador!B17 · esperado 0.35 · obtenido 0.35
+OK    Simulador!B19 · esperado 182000 · obtenido 182000
+OK    Simulador!B27 · esperado 117 · obtenido 117.0
+OK    Simulador!B28 · esperado 58500 · obtenido 58500
+OK    Simulador!B29 · esperado 175.5 · obtenido 175.5
+OK    Simulador!B30 · esperado 5265 · obtenido 5265.0
+OK    Simulador!B31 · esperado 3000 · obtenido 3000
+OK    Simulador!B32 · esperado 66765 · obtenido 66765
+OK    Simulador!B36 · esperado 0.4 · obtenido 0.4
+OK    Simulador!B38 · esperado 72800 · obtenido 72800.0
+OK    Simulador!B39 · esperado 42435 · obtenido 42435
+OK    Simulador!B40 · esperado 0.23315934065934066 · obtenido 0.23315934065934066
+OK    Registro!I5 · esperado 182000 · obtenido 182000
+OK    Registro!K5 · esperado 8000 · obtenido 8000
+OK    Registro!L5 · esperado 0.04395604395604402 · obtenido 0.04395604395604402
+OK    Registro!P5 · esperado 1 · obtenido 1
+OK    Resumen!B4 · esperado 1 · obtenido 1
+OK    Resumen!B5 · esperado 1 · obtenido 1.0
+OK    Resumen!B6 · esperado 0.04395604395604402 · obtenido 0.04395604395604402
+OK    Resumen!A9 · esperado Ejemplo · Caro · obtenido Ejemplo · Caro
+OK    Resumen!B9 · esperado 1 · obtenido 1
+OK    Resumen!D9 · esperado 0 · obtenido 0
+OK    Resumen!A10 · esperado  · obtenido 
+OK    Productos!G5 · esperado 500 · obtenido 500.0
+OK    Productos!G6 · esperado 30 · obtenido 30.0
+OK    Consumo!B7 · esperado Corto · obtenido Corto
+OK    Consumo!B13 · esperado Alta · obtenido Alta
+fórmulas evaluadas en filas con datos: 115 · con error: 0
+== Escenario 2: corte sin fórmula, otra estilista con % de color sobre precio menos producto
+OK    Registro!I6 · esperado 64000 · obtenido 64000
+OK    Registro!L6 · esperado -0.0625 · obtenido -0.0625
+OK    Registro!P6 · esperado 0 · obtenido 0
+OK    Registro!I7 · esperado 259000 · obtenido 259000
+OK    Registro!K7 · esperado 0 · obtenido 0
+OK    Registro!P7 · esperado 1 · obtenido 1
+OK    Registro!I8 · esperado 120000 · obtenido 120000
+OK    Registro!K8 · esperado 10000 · obtenido 10000
+OK    Registro!P8 · esperado 0 · obtenido 0
+OK    Simulador!B19 · esperado 259000 · obtenido 259000
+OK    Simulador!B27 · esperado 180 · obtenido 180
+OK    Simulador!B28 · esperado 90000 · obtenido 90000
+OK    Simulador!B30 · esperado 8100 · obtenido 8100
+OK    Simulador!B32 · esperado 103100 · obtenido 103100
+OK    Simulador!B36 · esperado 0.3 · obtenido 0.3
+OK    Simulador!B37 · esperado Precio menos producto · obtenido Precio menos producto
+OK    Simulador!B38 · esperado 46770.0 · obtenido 46770.0
+OK    Simulador!B39 · esperado 109130.0 · obtenido 109130
+OK    Resumen!B4 · esperado 4 · obtenido 4
+OK    Resumen!B5 · esperado 0.5 · obtenido 0.5
+OK    Resumen!B6 · esperado 0.022399999999999975 · obtenido 0.022399999999999975
+OK    Resumen!B9 · esperado 2 · obtenido 2
+OK    Resumen!C9 · esperado 0.018140589569161092 · obtenido 0.018140589569161092
+OK    Resumen!D9 · esperado 0 · obtenido 0
+OK    Resumen!A10 · esperado Dani · obtenido Dani
+OK    Resumen!B10 · esperado 2 · obtenido 2
+OK    Resumen!C10 · esperado 0.032608695652173836 · obtenido 0.032608695652173836
+OK    Resumen!D10 · esperado 2 · obtenido 2
+fórmulas del Registro distintas a la fila 5: 0 (de 495)
+RESULTADO: OK

@@ -85,6 +85,21 @@ este orden:
    usa los valores del entorno. Trae la misma guardia que la anterior, así
    que el orden da igual.
 
+**Borradores de diseño (Etapa 3), en `supabase/borradores/`: NO se aplican
+todavía.**
+- `velli-bi-cotizador.sql`: estilistas, servicios, plantillas de precio
+  versionadas, productos, comisiones, cotizaciones, su bitácora y el link
+  público.
+- `velli-bi-uso-ia.sql`: el registro de uso de la IA, necesario para el tope
+  de Pro+IA.
+
+El diseño está en `docs/velli-bi/02-diseno-cotizador.md`. Se probaron con las
+dos migraciones de arriba en un Postgres en memoria (PGlite), nunca contra
+producción: 50 de 50 en verde
+(`docs/velli-bi/calculos/probar_borradores.mjs`). Antes de aplicarlos hacen
+falta la prueba en papel, la validación de Keila y, de preferencia, una base de
+staging.
+
 Desfase conocido. `migration-colorimetria.sql` y `migration-cortes.sql` ya
 están aplicadas en producción: el 2026-10-19 verifiqué por lectura que
 existen `servicios_color`, `kb_cortes` y `cortes_ejecutados`. Pero
