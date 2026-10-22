@@ -43,17 +43,54 @@ Reglas:
 - confianza: "alta" si el patrón es claro y todos los campos son determinables con certeza, "media" si hay duda en algún campo, "baja" si las fotos no son suficientes
 - porosidad, densidad, danoVisible: incluir siempre si las fotos tienen calidad suficiente`;
 
+// Sin respaldo de otro proveedor (decisión D2, docs/velli-bi/01-costo-ia.md):
+// cuando la IA no puede responder, la cámara ofrece seguir con el diagnóstico
+// manual en vez de mostrar el error técnico. `message` es la causa, en
+// palabras de la estilista.
+export type MotivoSinIA = 'sin_conexion' | 'sin_respuesta' | 'limite_hora';
+
+export class IANoDisponibleError extends Error {
+  readonly motivo: MotivoSinIA;
+
+  constructor(motivo: MotivoSinIA, message: string) {
+    super(message);
+    this.name = 'IANoDisponibleError';
+    this.motivo = motivo;
+  }
+}
+
+function mensajeLimiteHora(retryAfter: string | null): string {
+  const base = 'Llegaste al límite de análisis con IA por hora.';
+  const segundos = Number(retryAfter);
+  if (!Number.isFinite(segundos) || segundos <= 0) return base;
+  const minutos = Math.ceil(segundos / 60);
+  return `${base} Vuelve a estar disponible en ${minutos} ${minutos === 1 ? 'minuto' : 'minutos'}.`;
+}
+
 export async function analizarCabello(
   fotos: string[],
   estadoCabello: EstadoCabelloFoto,
   angulos: AnguloCaptura[]
 ): Promise<HairAnalysisResult> {
-  const response = await fetch('/api/analyze-hair', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fotos, estadoCabello, angulos }),
-  });
+  let response: Response;
+  try {
+    response = await fetch('/api/analyze-hair', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fotos, estadoCabello, angulos }),
+    });
+  } catch {
+    // fetch solo se rechaza cuando la petición no llega al servidor.
+    throw new IANoDisponibleError('sin_conexion', 'No hay conexión a internet para usar la IA.');
+  }
 
+  if (response.status === 429) {
+    throw new IANoDisponibleError('limite_hora', mensajeLimiteHora(response.headers.get('Retry-After')));
+  }
+  // 5xx: Claude falló, falta la llave o la función se agotó (504 sin JSON).
+  if (response.status >= 500) {
+    throw new IANoDisponibleError('sin_respuesta', 'La IA no respondió esta vez.');
+  }
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
     throw new Error(err.error || `Error ${response.status} del servidor`);

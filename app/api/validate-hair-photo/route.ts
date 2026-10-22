@@ -1,13 +1,17 @@
-// BUG-2: segunda capa de validación con GPT-4o vision.
+// BUG-2: segunda capa de validación con Claude (visión).
 // Verifica que las fotos REALMENTE muestran cabello humano (no rostro
 // completo, no pared, no objetos). Se llama desde el cliente sólo cuando
-// el score de calidad es < 80, para no agregar coste innecesario.
+// el score de calidad es < 80 o las fotos vienen de la galería, para no
+// agregar coste innecesario.
+// Sin respaldo de otro proveedor (decisión D2, docs/velli-bi/01-costo-ia.md):
+// si Claude falla, el cliente sigue sin validación (lib/captureQuality.ts).
 
+import * as Sentry from '@sentry/nextjs';
 import { requireUser } from '@/lib/api/auth';
 import { validateLimiter, checkRateLimit } from '@/lib/api/rateLimit';
 
-const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+const VALIDACION_NO_DISPONIBLE = 'La validación con IA no está disponible en este momento.';
 
 // ── Límites de payload ────────────────────────────────────────────────────
 // 1M chars en base64 ≈ 750KB de binario. 5 fotos × 1M ≈ 5MB JSON, justo por
@@ -90,56 +94,6 @@ async function validarConClaude(fotos: string[]): Promise<ValidationItem[]> {
   return parsed.perFoto ?? [];
 }
 
-// ── OpenAI GPT-4o ──────────────────────────────────────────────────────
-async function validarConOpenAI(fotos: string[]): Promise<ValidationItem[]> {
-  const apiKey = process.env.OPENAI_API_KEY!;
-  const content: unknown[] = [];
-  fotos.forEach((foto, index) => {
-    const dataUrl = foto.startsWith('data:') ? foto : `data:image/webp;base64,${foto}`;
-    content.push({ type: 'image_url', image_url: { url: dataUrl, detail: 'low' } });
-    content.push({ type: 'text', text: `[Foto ${index}]` });
-  });
-  content.push({ type: 'text', text: USER_PROMPT.replace('{N}', String(fotos.length)) });
-
-  const res = await fetch(OPENAI_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      max_tokens: 400,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content },
-      ],
-    }),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text().catch(() => '');
-    throw new Error(`OpenAI respondió ${res.status}: ${errText}`);
-  }
-  const json = await res.json();
-  const rawText: string = json?.choices?.[0]?.message?.content ?? '';
-  const parsed = extractJSON(rawText) as { perFoto: ValidationItem[] };
-  return parsed.perFoto ?? [];
-}
-
-async function validar(fotos: string[]): Promise<ValidationItem[]> {
-  if (process.env.ANTHROPIC_API_KEY) {
-    try {
-      console.log('[validate-hair-photo] usando Claude');
-      return await validarConClaude(fotos);
-    } catch (error) {
-      console.error('[validate-hair-photo] Claude falló, fallback a OpenAI:', error);
-    }
-  }
-  console.log('[validate-hair-photo] usando OpenAI');
-  return await validarConOpenAI(fotos);
-}
-
 export async function POST(request: Request) {
   // 1. Auth
   const auth = await requireUser();
@@ -155,11 +109,9 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY) {
-    return Response.json(
-      { error: 'Ningún proveedor de IA configurado (ANTHROPIC_API_KEY o OPENAI_API_KEY)' },
-      { status: 500 }
-    );
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error('[validate-hair-photo] ANTHROPIC_API_KEY no configurada');
+    return Response.json({ error: VALIDACION_NO_DISPONIBLE }, { status: 500 });
   }
 
   // 3. Parseo y validación de payload
@@ -196,7 +148,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const perFoto = await validar(fotos);
+    const perFoto = await validarConClaude(fotos);
 
     // Sanitizar: si la IA omitió alguna foto, asumimos isHair=true para no bloquear injustamente
     const normalized: ValidationItem[] = fotos.map((_, i) => {
@@ -228,7 +180,8 @@ export async function POST(request: Request) {
       message,
     });
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : 'Error al validar las fotos';
-    return Response.json({ error: msg }, { status: 502 });
+    console.error('[validate-hair-photo] Claude falló:', e);
+    Sentry.captureException(e, { tags: { area: 'ia', endpoint: 'validate-hair-photo' } });
+    return Response.json({ error: VALIDACION_NO_DISPONIBLE }, { status: 502 });
   }
 }

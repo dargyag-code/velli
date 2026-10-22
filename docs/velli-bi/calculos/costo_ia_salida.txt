@@ -5,22 +5,28 @@ Costo por llamada (USD):
   analisis5GrandeLargo: 0.03037
   validacion5GrandeMax: 0.03053
   analisis5GrandeMax: 0.04837
-  respaldoGpt4o: 0.01406
 
 Costo por diagnóstico:
   A · típico observado (validación + análisis, 3 fotos): USD 0.0277 · COP 88 (TRM) · 94 (conservadora)
   B · sin validación (calidad ≥ 80, 3 fotos): USD 0.0147 · COP 47 (TRM) · 50 (conservadora)
-  C · alto realista (2 rondas de 5 fotos grandes + 1 respaldo GPT-4o): USD 0.1276 · COP 405 (TRM) · 434 (conservadora)
-  D · techo de UNA ronda (5 grandes, max_tokens agotado, + respaldo): USD 0.0930 · COP 295 (TRM) · 316 (conservadora)
+  C · alto realista (2 rondas de 5 fotos grandes): USD 0.1135 · COP 360 (TRM) · 386 (conservadora)
+  D · techo de UNA ronda (5 grandes, max_tokens agotado): USD 0.0789 · COP 250 (TRM) · 268 (conservadora)
+  E · techo con la regla del tope (2 validaciones + 1 análisis, al máximo): USD 0.1094 · COP 347 (TRM) · 372 (conservadora)
 
 Costo mensual por salón (COP, TRM conservadora):
-  50 diagnósticos: A=4.712 · B=2.505 · C=21.693
-  150 diagnósticos: A=14.136 · B=7.514 · C=65.079
-  300 diagnósticos: A=28.271 · B=15.028 · C=130.159
+  50 diagnósticos: A=4.712 · B=2.505 · C=19.302
+  150 diagnósticos: A=14.136 · B=7.514 · C=57.907
+  300 diagnósticos: A=28.271 · B=15.028 · C=115.815
 
 Tope propuesto (Pro+IA, COP con TRM conservadora):
-  100/mes → típico 9.424 (7.9 % del plan, 15.7 % del extra sobre Pro) · ronda pesada 19.302 (16.1 %) · techo 31.606 (26.3 %)
-  150/mes → típico 14.136 (11.8 % del plan, 23.6 % del extra sobre Pro) · ronda pesada 28.954 (24.1 %) · techo 47.409 (39.5 %)
-  200/mes → típico 18.848 (15.7 % del plan, 31.4 % del extra sobre Pro) · ronda pesada 38.605 (32.2 %) · techo 63.212 (52.7 %)
+  100/mes → típico 9.424 (7.9 % del plan, 15.7 % del extra sobre Pro) · ronda pesada 19.302 (16.1 %) · techo D 26.825 (22.4 %) · techo E 37.203 (31.0 %)
+  150/mes → típico 14.136 (11.8 % del plan, 23.6 % del extra sobre Pro) · ronda pesada 28.954 (24.1 %) · techo D 40.237 (33.5 %) · techo E 55.805 (46.5 %)
+  200/mes → típico 18.848 (15.7 % del plan, 31.4 % del extra sobre Pro) · ronda pesada 38.605 (32.2 %) · techo D 53.650 (44.7 %) · techo E 74.407 (62.0 %)
 
-Prueba gratis con 20 análisis: típico COP 1.885 · techo COP 6.321
+Tope máximo con costo ≤ 15 % del plan (COP 18.000):
+  típico (A): 191 análisis/mes (COP 94 c/u → 17.999 al mes)
+  ronda pesada: 93 análisis/mes (COP 193 c/u → 17.951 al mes)
+  techo de una ronda (D): 67 análisis/mes (COP 268 c/u → 17.973 al mes)
+  techo con la regla del tope (E): 48 análisis/mes (COP 372 c/u → 17.858 al mes)
+
+Prueba gratis con 20 análisis: típico COP 1.885 · techo D COP 5.365 · techo E COP 7.441

@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   X, Camera, RotateCcw, Check, Sparkles, EyeOff,
-  User, ArrowRight, ChevronDown, Loader2, AlertCircle, SwitchCamera, Image as ImageIcon,
+  User, ArrowRight, ChevronDown, Loader2, AlertCircle, SwitchCamera, Image as ImageIcon, Pencil,
 } from 'lucide-react';
 import {
   EstadoCabelloFoto, AnguloCaptura, CaptureMetadata,
@@ -15,17 +15,17 @@ import {
   obtenerMetadataDispositivo, obtenerUbicacionAproximada, detectarFlash,
   validarFotosSonDeCabello, type HairPhotoValidationResult,
 } from '@/lib/captureQuality';
-import { analizarCabello, HairAnalysisResult } from '@/lib/hairAnalysis';
+import { analizarCabello, HairAnalysisResult, IANoDisponibleError } from '@/lib/hairAnalysis';
 import { Btn, Chip } from '@/components/v2';
 import { vibracionSutil, vibracionConfirmacion, vibracionError, sonidoCaptura, sonidoScoreAlto } from '@/lib/haptics';
 import { getProfile } from '@/lib/profile';
 
 // localStorage key del aviso "fotos a IA externa". Sube la versión cuando
 // cambie el copy para que el banner vuelva a aparecer en clientes ya vistos.
-const AI_DISCLAIMER_KEY = 'velli_ai_disclaimer_v1';
+const AI_DISCLAIMER_KEY = 'velli_ai_disclaimer_v2';
 
 // ── Tipos internos ─────────────────────────────────────────────────────────
-type FlowStep = 'estado' | 'camera' | 'score' | 'gallery' | 'analyzing' | 'result' | 'error';
+type FlowStep = 'estado' | 'camera' | 'score' | 'gallery' | 'analyzing' | 'result' | 'error' | 'sin_ia';
 
 interface CapturedPhoto {
   dataUrl: string;
@@ -53,6 +53,9 @@ interface Props {
     fotoUrls: string[]
   ) => void;
   onCancel: () => void;
+  // Lleva directo al formulario manual cuando la IA no está disponible.
+  // Sin él, se usa onCancel.
+  onManual?: () => void;
 }
 
 // ── Color del indicador de distancia ──────────────────────────────────────
@@ -130,7 +133,7 @@ function TargetingCorners() {
 // ═══════════════════════════════════════════════════════════════════════════
 // Componente principal
 // ═══════════════════════════════════════════════════════════════════════════
-export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Props) {
+export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onManual }: Props) {
   const [flowStep, setFlowStep] = useState<FlowStep>('estado');
   const [estadoCabello, setEstadoCabello] = useState<EstadoCabelloFoto | null>(null);
   const [anguloIndex, setAnguloIndex] = useState(0);
@@ -143,9 +146,12 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
   const [lightResult, setLightResult] = useState<LightResult | null>(null);
   const [focusResult, setFocusResult] = useState<FocusResult | null>(null);
   const [distanceResult, setDistanceResult] = useState<DistanceResult | null>(null);
-  // BUG-2: resultado de validación GPT-4o "es realmente cabello".
+  // BUG-2: resultado de validación con IA "es realmente cabello".
   // Sólo se llena si score < 80 y se ejecutó la 2ª capa.
   const [hairValidation, setHairValidation] = useState<HairPhotoValidationResult | null>(null);
+  // La IA no pudo analizar (D2: sin respaldo). volverA es el paso al que
+  // regresa "Intentar de nuevo".
+  const [sinIA, setSinIA] = useState<{ error: IANoDisponibleError; volverA: 'score' | 'gallery' } | null>(null);
 
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const facingModeRef = useRef<'environment' | 'user'>('environment');
@@ -371,13 +377,13 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
     setError(null);
 
     try {
-      // BUG-2: 2ª capa de validación GPT-4o sólo cuando score < 80
+      // BUG-2: 2ª capa de validación con IA sólo cuando score < 80
       const fotoUrls = fotos.map((f) => f.dataUrl);
       const score = scoreResult?.total ?? 0;
       if (score < 80) {
-        console.log('[BUG-2] score', score, '< 80 — ejecutando validación GPT-4o de cabello');
+        console.log('[BUG-2] score', score, '< 80 — ejecutando validación de cabello con IA');
         const validation = await validarFotosSonDeCabello(fotoUrls);
-        console.log('[BUG-2] validación GPT-4o:', validation);
+        console.log('[BUG-2] validación con IA:', validation);
         setHairValidation(validation);
 
         if (validation.blocked) {
@@ -398,6 +404,11 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
       setAnalysisResult(result);
       setFlowStep('result');
     } catch (e: unknown) {
+      if (e instanceof IANoDisponibleError) {
+        setSinIA({ error: e, volverA: 'score' });
+        setFlowStep('sin_ia');
+        return;
+      }
       const msg = e instanceof Error ? e.message : 'Error al analizar el cabello';
       setError(msg);
       setFlowStep('score');
@@ -428,7 +439,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
       })),
       dispositivo,
       ubicacion,
-      // BUG-2: incluye el resultado de la validación GPT-4o si se ejecutó
+      // BUG-2: incluye el resultado de la validación con IA si se ejecutó
       hairPhotoValidation: hairValidation ?? undefined,
     };
   }, [estadoCabello, scoreResult, fotos, hairValidation, permiteUbicacion]);
@@ -500,11 +511,11 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
     setFlowStep('analyzing');
 
     try {
-      // BUG-2: para fotos subidas (sin score nativo), SIEMPRE validamos con GPT-4o
+      // BUG-2: para fotos subidas (sin score nativo), SIEMPRE validamos con IA
       // — no tenemos métricas de calidad que justifiquen saltarse la validación.
-      console.log('[BUG-2] fotos subidas — validando con GPT-4o (no hay score nativo)');
+      console.log('[BUG-2] fotos subidas — validando con IA (no hay score nativo)');
       const validation = await validarFotosSonDeCabello(photos);
-      console.log('[BUG-2] validación GPT-4o (gallery):', validation);
+      console.log('[BUG-2] validación con IA (gallery):', validation);
       setHairValidation(validation);
 
       if (validation.blocked) {
@@ -520,6 +531,11 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
       setAnalysisResult(result);
       setFlowStep('result');
     } catch (err) {
+      if (err instanceof IANoDisponibleError) {
+        setSinIA({ error: err, volverA: 'gallery' });
+        setFlowStep('sin_ia');
+        return;
+      }
       const msg = err instanceof Error ? err.message : 'Error al analizar las fotos';
       setError(msg);
       setFlowStep('error');
@@ -1470,7 +1486,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
             )}
           </div>
 
-          {/* BUG-2: warning si la validación GPT-4o detectó fotos no-cabello */}
+          {/* BUG-2: warning si la validación con IA detectó fotos no-cabello */}
           {hairValidation?.warning && (
             <div
               style={{
@@ -1692,6 +1708,84 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
               />
               <RotateCcw size={13} /> Cambiar fotos
             </label>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ SIN IA · seguir en manual (D2) ═══════════════════════════════ */}
+      {flowStep === 'sin_ia' && sinIA && (
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            maxWidth: 768,
+            margin: '0 auto',
+            width: '100%',
+            padding: '60px 20px 28px',
+            gap: 18,
+          }}
+        >
+          <div>
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 16,
+                background: 'rgba(138, 90, 46, 0.08)',
+                border: '1px solid rgba(138, 90, 46, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 14,
+              }}
+            >
+              <AlertCircle size={26} style={{ color: 'var(--secondary-deep)' }} />
+            </div>
+            <div className="v-caps">Cámara IA · sin análisis</div>
+            <h2
+              style={{
+                margin: '4px 0 6px',
+                fontFamily: 'var(--font-serif)',
+                fontSize: 24,
+                letterSpacing: '-0.02em',
+                lineHeight: 1.05,
+                color: 'var(--text-main)',
+              }}
+            >
+              IA <em style={{ color: 'var(--secondary-deep)' }}>no disponible</em>
+            </h2>
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              {sinIA.error.message} Puedes seguir con el diagnóstico manual: eliges el patrón de
+              rizo y los atributos paso a paso.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 'auto' }}>
+            <Btn
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={onManual ?? onCancel}
+              icon={<Pencil size={14} />}
+            >
+              Seguir con selección manual
+            </Btn>
+            {sinIA.error.motivo !== 'limite_hora' && (
+              <Btn
+                variant="outline"
+                size="lg"
+                fullWidth
+                onClick={() => {
+                  setFlowStep(sinIA.volverA);
+                  setSinIA(null);
+                }}
+                icon={<RotateCcw size={14} />}
+              >
+                Intentar de nuevo
+              </Btn>
+            )}
           </div>
         </div>
       )}
@@ -1920,8 +2014,8 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel }: Pro
                 color: 'var(--text-secondary)',
               }}
             >
-              Las fotos se envían a servicios de inteligencia artificial externos
-              (Anthropic y OpenAI) para sugerir el tipo de rizo. Evita incluir el
+              Las fotos se envían a un servicio de inteligencia artificial externo
+              (Anthropic) para sugerir el tipo de rizo. Evita incluir el
               rostro de tu clienta cuando sea posible.
             </p>
             <Btn

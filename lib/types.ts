@@ -185,7 +185,7 @@ export interface CaptureMetadata {
     latApprox?: number;
     lonApprox?: number;
   };
-  // BUG-2: validación GPT-4o "es realmente foto de cabello".
+  // BUG-2: validación con IA "es realmente foto de cabello".
   // Sólo se llena cuando qualityScore < 80 y se ejecuta la segunda capa.
   hairPhotoValidation?: {
     validas: number;

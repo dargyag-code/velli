@@ -589,6 +589,7 @@ export default function PasoCabello({
         onComplete={handleCameraComplete}
         onCorrectAI={handleCorrectAI}
         onCancel={() => setMode('choose')}
+        onManual={() => setMode('form')}
       />
     );
   }

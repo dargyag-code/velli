@@ -353,7 +353,7 @@ export function calcularScoreCaptura(
   return { total, desglose: { luz: luzScore, distancia: distanciaScore, enfoque: enfoqueScore, angulos: angulosScore }, nivel, mensaje, aceptarCaptura };
 }
 
-// ── Validación GPT-4o "es realmente foto de cabello" (segunda capa) ───────
+// ── Validación con IA "es realmente foto de cabello" (segunda capa) ───────
 // BUG-2: cuando score < 80, llamamos a /api/validate-hair-photo para verificar
 // que las fotos realmente muestran cabello (no rostro completo, no pared, no
 // cualquier objeto). Resultado: { sí|no por foto, breakdown }.

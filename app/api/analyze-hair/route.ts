@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import { EstadoCabelloFoto, AnguloCaptura } from '@/lib/types';
 import { HairAnalysisResult } from '@/lib/hairAnalysis';
 import { componerPromptsAnalisis, PromptsAnalisis } from '@/lib/kb/promptsServidor';
@@ -11,8 +12,13 @@ import { analyzeLimiter, checkRateLimit } from '@/lib/api/rateLimit';
 const MAX_FOTOS = 5;
 const MAX_FOTO_CHARS = 1_000_000;
 
-const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+
+// Sin respaldo de otro proveedor (decisión D2, docs/velli-bi/01-costo-ia.md):
+// si Claude falla, la estilista sigue con el diagnóstico manual. La cámara
+// arma su propio aviso según el status (lib/hairAnalysis.ts); este texto
+// cubre a las versiones de la app que muestran `error` tal cual.
+const IA_NO_DISPONIBLE = 'La IA no está disponible en este momento. Sigue con el diagnóstico manual.';
 
 interface AnalyzeContext {
   estadoCabello: EstadoCabelloFoto;
@@ -22,7 +28,7 @@ interface AnalyzeContext {
   prompts: PromptsAnalisis;
 }
 
-// ── Utilidades de parseo compartidas ──────────────────────────────────────
+// ── Utilidades de parseo ──────────────────────────────────────────────────
 
 function extractJSON(rawText: string): unknown {
   const cleanText = rawText
@@ -90,70 +96,6 @@ async function analyzeWithClaude(
   return extractJSON(rawText) as HairAnalysisResult;
 }
 
-// ── OpenAI GPT-4o ─────────────────────────────────────────────────────────
-
-async function analyzeWithOpenAI(
-  fotos: string[],
-  context: AnalyzeContext
-): Promise<HairAnalysisResult> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error('OPENAI_API_KEY no configurada');
-
-  const content: unknown[] = [];
-  fotos.forEach((foto, index) => {
-    const dataUrl = foto.startsWith('data:') ? foto : `data:image/webp;base64,${foto}`;
-    content.push({ type: 'image_url', image_url: { url: dataUrl } });
-    content.push({
-      type: 'text',
-      text: `[Foto ${index + 1}: ángulo ${context.angulos[index] ?? 'desconocido'}]`,
-    });
-  });
-  content.push({ type: 'text', text: context.prompts.usuario });
-
-  const res = await fetch(OPENAI_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      max_tokens: 1500,
-      messages: [
-        { role: 'system', content: context.prompts.sistema },
-        { role: 'user', content },
-      ],
-    }),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text().catch(() => '');
-    throw new Error(`OpenAI respondió ${res.status}: ${errText}`);
-  }
-
-  const json = await res.json();
-  const rawText: string = json?.choices?.[0]?.message?.content ?? '';
-  return extractJSON(rawText) as HairAnalysisResult;
-}
-
-// ── Orquestador con fallback ──────────────────────────────────────────────
-
-async function analyzeHair(
-  fotos: string[],
-  context: AnalyzeContext
-): Promise<HairAnalysisResult> {
-  if (process.env.ANTHROPIC_API_KEY) {
-    try {
-      console.log('[analyze-hair] Using Claude');
-      return await analyzeWithClaude(fotos, context);
-    } catch (error) {
-      console.error('[analyze-hair] Claude failed, falling back to OpenAI:', error);
-    }
-  }
-  console.log('[analyze-hair] Using OpenAI');
-  return await analyzeWithOpenAI(fotos, context);
-}
-
 // ── Route handler ─────────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
@@ -171,11 +113,9 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY) {
-    return Response.json(
-      { error: 'Ningún proveedor de IA configurado en el servidor (ANTHROPIC_API_KEY o OPENAI_API_KEY)' },
-      { status: 500 }
-    );
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error('[analyze-hair] ANTHROPIC_API_KEY no configurada');
+    return Response.json({ error: IA_NO_DISPONIBLE }, { status: 500 });
   }
 
   // 3. Parseo y validación de payload
@@ -232,10 +172,12 @@ export async function POST(request: Request) {
       estadoCabello,
       typeof tipoEstimado === 'string' ? tipoEstimado : undefined
     );
-    const result = await analyzeHair(fotos, { estadoCabello, angulos, prompts });
+    const result = await analyzeWithClaude(fotos, { estadoCabello, angulos, prompts });
     return Response.json(result);
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : 'Error al analizar el cabello';
-    return Response.json({ error: msg }, { status: 502 });
+    // El detalle del proveedor queda en el log y en Sentry, no en la pantalla.
+    console.error('[analyze-hair] Claude falló:', e);
+    Sentry.captureException(e, { tags: { area: 'ia', endpoint: 'analyze-hair' } });
+    return Response.json({ error: IA_NO_DISPONIBLE }, { status: 502 });
   }
 }

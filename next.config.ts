@@ -4,7 +4,7 @@ import type { NextConfig } from "next";
 // app usa estilos inline editorial intensivos y Next inyecta scripts inline
 // para hidratación. img-src incluye data: y blob: para previsualización de
 // fotos del wizard, y supabase para signed URLs. connect-src cubre supabase
-// (cliente browser → DB/storage) + Anthropic/OpenAI (route handlers, no
+// (cliente browser → DB/storage) + Anthropic (route handlers, no
 // estrictamente necesario desde el browser pero se incluye para consistencia).
 //
 // Solo en desarrollo (next dev) se relaja: React requiere eval() para
@@ -20,7 +20,7 @@ const CSP = [
   "img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in",
   // Sentry: solo el ingest de errores (browser → envelope endpoint). No se
   // toca ninguna otra directiva — la política sigue igual de estricta.
-  `connect-src 'self'${isDev ? ' ws: wss:' : ''} https://*.supabase.co https://*.supabase.in https://api.anthropic.com https://api.openai.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io`,
+  `connect-src 'self'${isDev ? ' ws: wss:' : ''} https://*.supabase.co https://*.supabase.in https://api.anthropic.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io`,
   "font-src 'self' data:",
   "frame-ancestors 'none'",
   "base-uri 'self'",

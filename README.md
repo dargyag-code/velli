@@ -6,7 +6,7 @@ del salón. PWA mobile-first.
 
 **Stack:** Next.js 16 (Turbopack) · React 19 · TypeScript · Tailwind 4 ·
 Supabase (Auth, Postgres con RLS, Storage) · Bold (suscripciones prepago) ·
-Claude Sonnet con fallback GPT-4o (análisis capilar).
+Claude Sonnet (análisis capilar; si falla, diagnóstico manual).
 
 ## Desarrollo
 
