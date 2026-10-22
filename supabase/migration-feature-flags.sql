@@ -1,6 +1,7 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 -- MIGRACIÓN: feature flags por salón (Velli BI · Fase 1 · Etapa 1)
--- Estado: PENDIENTE — NO aplicada. La aplica Vanessa en el SQL Editor.
+-- Estado: APLICADA en producción el 2026-10-22 (la corrió Vanessa; la columna
+-- se verificó por lectura). Sigue en supabase/ hasta regenerar schema.sql.
 --
 -- profiles.feature_flags guarda los overrides de un salón sobre los flags
 -- del entorno (registro en lib/flags/registro.ts). Precedencia:

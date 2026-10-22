@@ -13,7 +13,7 @@
 //      cabina) derivan SIEMPRE a dermatólogo con los bloqueos A-06, y las
 //      señales que el salón sí atiende (tracción temprana, rotura) NO
 //      derivan.
-//   4. Correcciones VERBATIM de la validación de Keila (C-08 y A-02).
+//   4. Correcciones VERBATIM de la validación técnica (C-08 y A-02).
 // ══════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from 'vitest';
@@ -265,7 +265,7 @@ describe('fase 2: módulo transversal de canas', () => {
     expect(res.notasAdicionales.join(' ')).toContain('no arrancar las canas');
   });
 
-  it('C-08 · canicie prematura → texto VERBATIM de la validación de Keila, sin derivación', () => {
+  it('C-08 · canicie prematura → texto VERBATIM de la validación técnica, sin derivación', () => {
     const res = evaluarDiagnostico(
       KB,
       perfil({
@@ -403,7 +403,7 @@ describe('fase 2: seguridad — banderas nuevas', () => {
     expect(res.tratamientoPrincipal).toBe('Derivación a dermatólogo');
   });
 
-  it('A-02 · tracción temprana SIN fibrosis: el salón actúa — NO deriva, copy VERBATIM de Keila', () => {
+  it('A-02 · tracción temprana SIN fibrosis: el salón actúa — NO deriva, copy VERBATIM de la validación técnica', () => {
     const res = evaluarDiagnostico(
       KB,
       perfil({ tipoRizoPrincipal: '4B', perfilExtendido: { senalesCaida: ['traccion_sienes'] } })

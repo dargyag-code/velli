@@ -1,12 +1,12 @@
 // ══════════════════════════════════════════════════════════════════════════
-// Política lingüística del visagismo (validación de Keila §5.1, PR-01).
+// Política lingüística del visagismo (validación técnica §5.1, PR-01).
 //
 // "Queda prohibido el uso de términos punitivos o de corrección. Las salidas
 // de la app utilizarán exclusivamente los términos: Equilibrar, Destacar,
 // Enmarcar, Celebrar."
 //
 // Nota: la Entrega 5 (PR-01) lista TRES verbos — equilibra, destaca,
-// enmarca. Keila añade CELEBRAR ("mantener y potenciar los ángulos naturales
+// enmarca. La validación añade CELEBRAR ("mantener y potenciar los ángulos naturales
 // si la clienta manifiesta que no desea suavizarlos"). Manda su versión.
 //
 // Ningún rostro tiene defectos: el visagismo es una caja de herramientas de

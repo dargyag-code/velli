@@ -1,9 +1,10 @@
 # Calculadora de colorimetría (Sprint C)
 
-Fuentes: `docs/conocimiento/Velli_Fase3_Colorimetria_BORRADOR_v0.1.docx` (la
-Entrega 3 — §7 es la especificación funcional, §2–§6 el contenido) y la
-`VALIDACIÓN KEILA MORENO.docx`. **Las reglas de Keila mandan sobre la
-Entrega 3** donde difieran.
+Fuentes: `Velli_Fase3_Colorimetria_BORRADOR_v0.1.docx` (la Entrega 3 — §7 es
+la especificación funcional, §2–§6 el contenido) y la validación técnica
+firmada de agosto de 2026. **Las reglas de la validación mandan sobre la
+Entrega 3** donde difieran. La entrega salió del repo el 2026-10-22; el
+original está en el OneDrive del proyecto (`Documentos/conocimiento`).
 
 Migración: `supabase/migration-colorimetria.sql` (idempotente). **Ya está en
 producción**: lo verifiqué por lectura el 2026-10-19 (`servicios_color`
@@ -19,9 +20,9 @@ Tests: `tests/colorimetria.test.ts` y `tests/colorimetria.integracion.test.ts`.
 
 ---
 
-## Divergencias resueltas a favor de Keila
+## Divergencias resueltas a favor de la validación técnica
 
-| Tema | Entrega 3 | Keila (manda) |
+| Tema | Entrega 3 | Validación (manda) |
 |---|---|---|
 | Tabla de fondos | §3.2 agrupa niveles 1–3 como "Rojo" | §4.1 desglosa: nivel 1 es **"Rojo profundo"**, 2 y 3 "Rojo" |
 | Denominaciones | No las incluye | Añade la **columna latinoamericana** (`.7`, `.13`, `.1`, `.2`…) |
@@ -29,8 +30,8 @@ Tests: `tests/colorimetria.test.ts` y `tests/colorimetria.integracion.test.ts`.
 | CO-09 | "validar el protocolo exacto" | **Texto verbatim** obligatorio en pantalla |
 
 Los textos verbatim viven en `lib/color/reglas.ts` (`CO09_PROTOCOLO_VERBATIM`)
-y `tramoCanas()`. **No se reescriben sin validación de Keila** — hay tests que
-los comparan carácter a carácter.
+y `tramoCanas()`. **No se reescriben sin una decisión de producto** — hay tests
+que los comparan carácter a carácter.
 
 ---
 
@@ -38,7 +39,7 @@ los comparan carácter a carácter.
 
 | Capa | Archivo | Qué hace |
 |---|---|---|
-| Tablas universales | `lib/color/tablas.ts` | Escala 1–10 de Keila, fondos, neutralizantes, denominación LatAm, rueda, reflejos, oxidantes |
+| Tablas universales | `lib/color/tablas.ts` | Escala 1–10 de la validación, fondos, neutralizantes, denominación LatAm, rueda, reflejos, oxidantes |
 | Reglas de oro | `lib/color/reglas.ts` | CO-01…CO-10 como funciones puras + guardarraíles |
 | Motor | `lib/color/calculadora.ts` | Orquesta en el orden exacto de §7.2 |
 | Integración | `lib/color/integracion.ts` | Marcas del salón, precarga del diagnóstico, prerrequisitos legales |
@@ -51,7 +52,7 @@ los comparan carácter a carácter.
 1. **Guardarraíles** — si algo bloquea, no se muestra fórmula, se muestra el camino previo.
 2. **Vía del proceso** — CO-01 decide tinte vs. decapado/decoloración.
 3. **Distancia → volumen** — CO-03, el mínimo que cubre.
-4. **Fondo → neutralización** — CO-04 sobre la tabla de Keila.
+4. **Fondo → neutralización** — CO-04 sobre la tabla 4.1 de la validación.
 5. **Ajustes del diagnóstico** — CO-05 canas, CO-07 porosidad, CO-06 pre-pigmentación.
 6. **Viabilidad** — CO-10, plan por etapas si no cabe en una sesión.
 
@@ -61,7 +62,7 @@ los comparan carácter a carácter.
 - **Bandera médica activa o cuero cabelludo lesionado** → bloqueo total (A-06).
 - **Henna o sales metálicas** (registradas **o dudosas**) → bloqueo de peróxidos hasta prueba de mechón registrada, con el texto CO-09 verbatim en pantalla.
 
-### Nivel de autoridad (Keila, respuesta 6)
+### Nivel de autoridad (validación técnica, respuesta 6)
 
 > «Velli orienta la formulación y el diseño; el estilista decide y ejecuta.»
 
@@ -107,9 +108,9 @@ La verificación de que "la calculadora está viva". Cubiertos en
    multi-sesión**, jamás fórmula directa.
 
 > **Matiz del caso 2**: los 20 vol salen del estándar de cobertura de cana
-> (10 vol solo deposita), **no** del candado de CO-05, que Keila fijó por
-> encima del 75 %. Por eso `volumenBloqueado` es `false` a 70 % y `true` a
-> 80 %. Si Keila quiere que el candado empiece antes, es un cambio de un
+> (10 vol solo deposita), **no** del candado de CO-05, que la validación fijó
+> por encima del 75 %. Por eso `volumenBloqueado` es `false` a 70 % y `true`
+> a 80 %. Si se decide que el candado empiece antes, es un cambio de un
 > número en `tramoCanas()`.
 
 ---
@@ -125,11 +126,20 @@ Estado verificado en producción por lectura el 2026-10-19:
    (`{"series":[],"alturas":[]}`), así que la fórmula sale siempre
    «orientativa», con 60 g por tubo. Cargar 1 o 2 cartas completas usando
    `ESQUEMA_CARTA_MARCA` como guía.
-4. **Desajuste de datos.** El asistente guarda las canas como
-   `perfil_extendido.estadoCanas`, por rangos. La calculadora lee
-   `perfil_extendido.porcentajeCanas`, un número que nada escribe. Por eso
-   CO-05 (fracción de tubo y candado de 20 vol) nunca se activa con
-   diagnósticos reales. La propuesta, que no toca las reglas, está en
-   `docs/velli-bi/02-diseno-cotizador.md`.
-4. Preguntas abiertas de la Entrega 3 §9 que siguen sin decidir: qué marcas
+4. **Hecho el 2026-10-22 (R5): las canas del asistente llegan a CO-05.**
+   Antes la calculadora leía `perfil_extendido.porcentajeCanas`, un número
+   que nada escribe, y CO-05 nunca se activaba con diagnósticos reales.
+   Ahora `porcentajeCanasDesdePerfil()` (`lib/color/integracion.ts`) traduce
+   el tramo de `estadoCanas` a un porcentaje dentro del tramo correcto de
+   CO-05: sin canas 0, menos del 25 % → 12, 25–50 % → 37. «Más del 50 %»
+   abarca dos tramos de CO-05 (1/2 tubo, o 3/4 con 20 vol), así que no se
+   adivina: la calculadora pide un toque («Entre 50 y 75 %» → 62, «Más del
+   75 %» → 87) y no muestra guía ni fórmula hasta tenerlo. Un porcentaje
+   numérico guardado sigue mandando. CO-05 no cambió; pruebas en
+   `tests/colorimetria.integracion.test.ts`. El asistente sigue ofreciendo
+   «Más del 50 %» porque tres reglas del motor leen ese valor (ver
+   `docs/velli-bi/02-diseno-cotizador.md` §1.1). El consumo extra de
+   producto del estándar (+15 % y +20 % de gramos) y la prepigmentación
+   viven en la capa del cotizador.
+5. Preguntas abiertas de la Entrega 3 §9 que siguen sin decidir: qué marcas
    soportar primero, y si la Entrega 4 (catálogo de cortes) arranca ya.

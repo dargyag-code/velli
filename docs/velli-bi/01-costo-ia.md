@@ -127,7 +127,7 @@ La ronda pesada es 1 validación y 1 análisis con 5 fotos grandes y salidas lar
    - **Una foto grande de galería sube a 4.759 tokens, tres veces más**, porque ese modelo trabaja en alta resolución. Habría que reducir las fotos en el teléfono antes de enviarlas.
    - Además razona por defecto, lo que sube los tokens de salida.
 
-   Cambiar de modelo exige probarlo con llamadas reales, que cuestan, y validar la calidad del diagnóstico con Keila. **Es tu decisión, no una recomendación.**
+   Cambiar de modelo exige probarlo con llamadas reales, que cuestan, y validar la calidad del diagnóstico. **Es tu decisión, no una recomendación.**
 5. **Reducir las fotos de galería** a 1.568 px en el lado largo, en el teléfono, antes de enviarlas. Hoy no cambia el costo con Sonnet 4.6, porque la API ya las reduce. Sí baja el peso de la petición y protege el costo si algún día se cambia de modelo.
 
 ## 8. Decisiones que necesito
@@ -161,6 +161,6 @@ El tope más alto cuyo costo no pasa de COP 18.000 al mes, según la lectura:
 - La cámara muestra «IA no disponible» con el motivo: sin conexión, la IA no respondió o el límite por hora. Ofrece «Seguir con selección manual», que abre el formulario manual del paso del cabello, e «Intentar de nuevo», salvo con el límite por hora. Las fotos de ese intento no se guardan, igual que con «Llenar manualmente sin cámara».
 - El aviso de privacidad de la cámara nombra solo a Anthropic. La clave sube a `velli_ai_disclaimer_v2`, así que el aviso vuelve a salir una vez en cada dispositivo.
 - OpenAI sale de la CSP y del `.env.local.example`. Pruebas: `tests/ia.sin-respaldo.test.ts`.
+- Los textos legales (`app/legal/privacidad` y `app/legal/terminos`) nombran solo a Anthropic desde el 2026-10-22 (R4).
 - **Pendiente, fuera del código:**
-  - Los textos legales (`app/legal/privacidad` y `app/legal/terminos`) siguen nombrando solo a OpenAI GPT-4o y deben pasar a nombrar a Anthropic. Esto va con Keila (R4).
   - Tras desplegar, la variable `OPENAI_API_KEY` de Vercel queda sin uso. Se puede borrar allí y revocar la llave en OpenAI.

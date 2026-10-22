@@ -1,4 +1,5 @@
 import BannerPlaceholder from '@/components/legal/BannerPlaceholder';
+import CorreoSoporte from '@/components/legal/CorreoSoporte';
 
 const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 
@@ -12,7 +13,7 @@ export default function PrivacidadPage() {
       <h1 className="text-2xl text-[#2D5A27] mb-1" style={serif}>
         Política de privacidad
       </h1>
-      <p className="text-xs text-[#999999] mb-6">Última actualización: abril 2026</p>
+      <p className="text-xs text-[#999999] mb-6">Última actualización: octubre 2026</p>
 
       <BannerPlaceholder />
 
@@ -22,9 +23,10 @@ export default function PrivacidadPage() {
             1. Quiénes somos
           </h2>
           <p>
-            Velli Pro es una aplicación profesional para estilistas. Esta política explica qué
-            datos recopilamos, cómo los usamos y qué derechos tienes sobre ellos según la Ley
-            Estatutaria 1581 de 2012 de Colombia (Habeas Data) y normas equivalentes.
+            Velli Pro es una herramienta de estimación administrativa y financiera para salones de
+            belleza. Esta política explica qué datos recopilamos, cómo los usamos y qué derechos
+            tienes sobre ellos según la Ley Estatutaria 1581 de 2012 de Colombia (Habeas Data) y
+            normas equivalentes.
           </p>
         </section>
 
@@ -56,21 +58,27 @@ export default function PrivacidadPage() {
           </h2>
           <p>
             Usamos los datos exclusivamente para prestarte el servicio: mostrar tu información,
-            generar diagnósticos capilares, guardar el historial de tus clientas y permitirte
-            exportar backups. Los datos se almacenan cifrados en servidores gestionados por
-            Supabase. <strong>No los vendemos ni los compartimos con anunciantes.</strong>
+            generar el diagnóstico orientativo y las estimaciones del salón, guardar el historial de
+            tus clientas y permitirte exportar backups. Los datos se almacenan cifrados en
+            servidores gestionados por Supabase. <strong>No los vendemos ni los compartimos con
+            anunciantes.</strong>
           </p>
         </section>
 
         <section>
           <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
-            4. Inteligencia Artificial (OpenAI)
+            4. Inteligencia artificial (Anthropic)
           </h2>
           <p>
-            El análisis con cámara envía la fotografía a la API de OpenAI (GPT-4o) para producir
-            el diagnóstico. OpenAI, según su política vigente para clientes de API, no utiliza
-            estos datos para entrenar modelos. La fotografía se guarda en tu almacenamiento
-            privado dentro de Velli Pro; tú decides si conservarla o eliminarla.
+            El análisis con IA envía las fotografías del cabello a la API de Anthropic (modelos
+            Claude), que actúa como proveedor de ese procesamiento, para comprobar que muestran
+            cabello y producir el análisis. Según sus condiciones comerciales vigentes para la API,
+            Anthropic no utiliza estos datos para entrenar sus modelos. La fotografía se guarda en tu
+            almacenamiento privado dentro de Velli Pro; tú decides si conservarla o eliminarla.
+          </p>
+          <p className="mt-2">
+            Supabase (almacenamiento) y Anthropic (IA) pueden procesar los datos en servidores
+            ubicados fuera de Colombia.
           </p>
         </section>
 
@@ -113,11 +121,8 @@ export default function PrivacidadPage() {
               todos los datos</em>. La acción es irreversible.
             </li>
             <li>
-              <strong>Tu cuenta completa:</strong> escríbenos a{' '}
-              <a href="mailto:soporte@velli.app" className="text-[#2D5A27] font-semibold hover:underline">
-                soporte@velli.app
-              </a>{' '}
-              desde el email registrado y la eliminamos en un plazo máximo de 15 días hábiles.
+              <strong>Tu cuenta completa:</strong> escríbenos a <CorreoSoporte /> desde el email
+              registrado y la eliminamos en un plazo máximo de 15 días hábiles.
             </li>
           </ul>
         </section>
@@ -138,16 +143,12 @@ export default function PrivacidadPage() {
             9. Contacto
           </h2>
           <p>
-            Para ejercer tus derechos o resolver dudas escríbenos a{' '}
-            <a href="mailto:soporte@velli.app" className="text-[#2D5A27] font-semibold hover:underline">
-              soporte@velli.app
-            </a>
-            .
+            Para ejercer tus derechos o resolver dudas escríbenos a <CorreoSoporte />.
           </p>
         </section>
 
         <p className="text-xs text-[#999999] italic border-t border-[#F0F0F0] pt-4 mt-2">
-          Este documento es una plantilla inicial pendiente de revisión legal.
+          Borrador de trabajo: puede cambiar antes de la versión definitiva.
         </p>
       </div>
     </article>

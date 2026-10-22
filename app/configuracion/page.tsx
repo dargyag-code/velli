@@ -23,6 +23,9 @@ import { uploadFoto } from '@/lib/storage';
 import { showToast } from '@/lib/toast';
 import { friendlyError } from '@/lib/errors';
 import { getInitials } from '@/lib/utils';
+import { enlaceSoporte } from '@/lib/sitio';
+
+const MAILTO_SOPORTE = enlaceSoporte('Soporte Velli Pro');
 
 // ─── Página de Configuración (Ajustes / Tu cuenta) ────────────────────────
 // Layout editorial alineado a Mejoras.html → SettingsScreen:
@@ -56,7 +59,7 @@ export default function ConfiguracionPage() {
   const [logoError, setLogoError] = useState(false);
 
   // Bloque que la agenda reserva para "día de lavado tipo 4" e "instalación
-  // de peinado protector" (validación Keila 6.P7): 2–4 h por salón.
+  // de peinado protector" (validación técnica 6.P7): 2–4 h por salón.
   const [bloqueoTipo4, setBloqueoTipo4] = useState(180);
   const [savingBloqueo, setSavingBloqueo] = useState(false);
 
@@ -589,7 +592,7 @@ export default function ConfiguracionPage() {
             sub="Bloques de agenda"
             onClick={() => router.push('/agenda')}
           />
-          {/* Bloque reservado para servicios tipo 4 (Keila 6.P7) */}
+          {/* Bloque reservado para servicios tipo 4 (validación técnica 6.P7) */}
           <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-soft)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
               <Clock size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />
@@ -770,12 +773,15 @@ export default function ConfiguracionPage() {
 
         {/* ── 04 Soporte ────────────────────────────────────────────── */}
         <SectionEditorial num="04" eyebrow="Soporte">
-          <RowEditorial
-            icon={<Phone size={16} />}
-            title="Centro de ayuda"
-            sub="Tutoriales y contacto"
-            onClick={() => { window.location.href = 'mailto:soporte@velli.app?subject=Soporte%20Velli%20Pro'; }}
-          />
+          {/* Sin NEXT_PUBLIC_SUPPORT_EMAIL no hay a dónde escribir: la fila se oculta. */}
+          {MAILTO_SOPORTE && (
+            <RowEditorial
+              icon={<Phone size={16} />}
+              title="Centro de ayuda"
+              sub="Tutoriales y contacto"
+              onClick={() => { window.location.href = MAILTO_SOPORTE; }}
+            />
+          )}
           <RowEditorial
             icon={<Database size={16} />}
             title="Versión de la app"

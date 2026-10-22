@@ -43,7 +43,7 @@ function WizardContent() {
   const [consulta, setConsulta] = useState<Consulta | null>(null);
   const [clienta, setClienta] = useState<Clienta | null>(null);
 
-  // GATING DURO de cámara (validación Keila 6.P3): las firmas vigentes de la
+  // GATING DURO de cámara (validación técnica 6.P3): las firmas vigentes de la
   // clienta gobiernan si la cámara del wizard y las fotos de servicios
   // químicos se activan. Sin clienta registrada no hay firma posible → gate
   // cerrado (fail-closed).

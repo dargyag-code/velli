@@ -2,16 +2,16 @@
 // Tablas universales de colorimetría — la física del color, estable entre
 // marcas. Todo lo que depende del fabricante vive en kb_marcas.carta.
 //
-// FUENTE: seccion 4.1 de la VALIDACIÓN firmada de Keila Moreno (escala
+// FUENTE: sección 4.1 de la VALIDACIÓN técnica firmada (escala
 // homologada para Latinoamérica). Donde la Entrega 3 §3.2 difiere, MANDA
-// Keila — dos divergencias reales:
-//   1. La Entrega 3 agrupa los niveles 1–3 como "Rojo"; Keila desglosa el
+// la validación — dos divergencias reales:
+//   1. La Entrega 3 agrupa los niveles 1–3 como "Rojo"; la validación desglosa el
 //      nivel 1 como "Rojo profundo" y deja 2 y 3 como "Rojo".
-//   2. Keila añade la columna de denominación común latinoamericana (la
+//   2. La validación añade la columna de denominación común latinoamericana (la
 //      notación con la que la estilista pide el tubo en cabina).
 //
 // El resto (pares de neutralización, notación de reflejos y oxidantes) sale
-// de la Entrega 3 §3.3–3.5, que Keila no corrigió.
+// de la Entrega 3 §3.3–3.5, que la validación no corrigió.
 // ══════════════════════════════════════════════════════════════════════════
 
 export type NivelTono = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
@@ -20,7 +20,7 @@ export const NIVELES: NivelTono[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 export interface FilaAltura {
   nivel: NivelTono;
-  /** Nombre técnico de la altura (Keila 4.1, columna 2). */
+  /** Nombre técnico de la altura (validación 4.1, columna 2). */
   nombre: string;
   /** Pigmento residual que aflora al aclarar hasta este nivel. */
   fondoAclaracion: string;
@@ -30,7 +30,7 @@ export interface FilaAltura {
   denominacionLatam: string;
 }
 
-// Tabla 4.1 de Keila, VERBATIM. No editar sin su validación.
+// Tabla 4.1 de la validación técnica, VERBATIM. No editar sin una decisión de producto.
 export const TABLA_ALTURAS: readonly FilaAltura[] = [
   { nivel: 1,  nombre: 'Negro',              fondoAclaracion: 'Rojo profundo',        neutralizante: 'Verde / Mate',                        denominacionLatam: '.7 / .13' },
   { nivel: 2,  nombre: 'Moreno muy oscuro',  fondoAclaracion: 'Rojo',                 neutralizante: 'Verde / Mate',                        denominacionLatam: '.7' },

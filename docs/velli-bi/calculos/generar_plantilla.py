@@ -4,10 +4,14 @@
 #
 # Mismo modelo que docs/velli-bi/02-diseno-cotizador.md:
 #   precio = redondeo((base + Σ suma) × (1 + Σ porcentaje))
-#   costo  = gramos base × factor largo × factor densidad × $/g tinte
-#            + ml oxidante × $/ml + insumos fijos
+#   costo  = gramos base × factor largo × factor densidad × factor canas
+#            × $/g tinte + ml oxidante × $/ml + insumos fijos
 # Los valores de ejemplo reproducen el ejemplo del documento (§3): precio
-# $182.000, margen $42.435.
+# $182.000, margen $32.870.
+#
+# Variables con los estándares de Velli del 2026-10-22 (02-diseno §1.1):
+# largo por referencia física, estado de la fibra en tres niveles y canas
+# en cuatro tramos, con consumo extra de producto desde el 50 %.
 #
 # Uso: python docs/velli-bi/calculos/generar_plantilla.py <salida.xlsx>
 # ══════════════════════════════════════════════════════════════════════════
@@ -142,6 +146,13 @@ filas = [
     ('txt', '• ¿El dueño piensa los ajustes como porcentaje, como suma fija o ambos?'),
     ('txt', '• ¿Cuánto se separa cada estilista del precio de la hoja?'),
     ('txt', '• ¿Los gramos que gasta el salón en color se parecen a los factores de la hoja Consumo?'),
+    ('sub', 'Estándares de Velli (se pueden ajustar con el salón)'),
+    ('txt', 'Largo: corto (mentón), medio (hombros o clavícula), largo (media espalda o tira del brasier), '
+            'extra largo (cintura o más).'),
+    ('txt', 'Estado de la fibra: sana o virgen (sin recargo); procesada o porosa (sugerir un tratamiento sellante); '
+            'sensibilizada o muy dañada (prueba de mechón y aditivo protector Plex obligatorios en servicios químicos).'),
+    ('txt', 'Canas: 0–25 %, 25–50 %, 50–75 % (+15 % de producto por saturación) y 75–100 % '
+            '(+20 % de producto y técnica de prepigmentación).'),
     ('sub', 'Privacidad'),
     ('txt', 'En Registro escribe solo las iniciales de la clienta. No anotes datos de salud capilar ni del diagnóstico.'),
     ('sub', 'Fuente del modelo'),
@@ -177,7 +188,7 @@ for tipo, texto in filas:
 # ══════════════════════════════════════════════════════════════════════════
 ws = hoja(
     'Servicios', 'Servicios del salón',
-    'Precio base = lo que cobra el salón con cabello corto, densidad media, fibra sana y sin canas. '
+    'Precio base = lo que cobra el salón con cabello corto, densidad media, fibra sana y hasta 25 % de canas. '
     'Las columnas «Ajusta por…» dicen qué variables cambian el precio de ese servicio.',
     [30, 16, 14, 11, 11, 11, 11, 12, 12, 13, 11, 34],
 )
@@ -234,27 +245,28 @@ SERV = lambda col: f'Servicios!${col}${SERV_INI}:${col}${SERV_FIN}'
 ws = hoja(
     'Ajustes', 'Ajustes por variable',
     'Cuánto sube el precio según cada variable. Puedes usar suma fija, porcentaje o ambos: '
-    'precio = (base + sumas) × (1 + porcentajes). El valor de referencia (corto, media, sano, sin canas) siempre es 0.',
+    'precio = (base + sumas) × (1 + porcentajes). El valor de referencia (corto, media, sana, 0–25 % de canas) siempre es 0.',
     [20, 16, 58, 14, 14],
 )
 encabezado(ws, 4, ['Variable', 'Valor', 'Cómo reconocerlo', 'Suma ($)', 'Porcentaje (%)'])
 AJ_INI = 5
 ajustes = [
     ('Largo', 'Corto', 'Hasta el mentón (referencia)', 0, 0, True),
-    ('Largo', 'Medio', 'Hasta los hombros', 0, 0.20, False),
-    ('Largo', 'Largo', 'Hasta los omóplatos', 0, 0.40, False),
+    ('Largo', 'Medio', 'Hasta los hombros o la clavícula', 0, 0.20, False),
+    ('Largo', 'Largo', 'Hasta la media espalda o la tira del brasier', 0, 0.40, False),
     ('Largo', 'Extra largo', 'Hasta la cintura o más', 0, 0.60, False),
     ('Densidad', 'Baja', 'Se ve el cuero cabelludo a través del cabello', 0, 0, False),
     ('Densidad', 'Media', 'Se ve en parte (referencia)', 0, 0, True),
     ('Densidad', 'Alta', 'No se ve el cuero cabelludo', 0, 0.15, False),
-    ('Estado de la fibra', 'Sano', 'Puntas sanas, sin daño, buena elasticidad (referencia)', 0, 0, True),
-    ('Estado de la fibra', 'Sensibilizado', 'Puntas abiertas leves, daño mecánico o térmico, o elasticidad media', 10000, 0, False),
-    ('Estado de la fibra', 'Comprometido', 'Puntas abiertas severas, daño químico o elasticidad baja', 20000, 0, False),
-    ('Canas', 'Sin canas', 'Referencia', 0, 0, True),
-    ('Canas', 'Menos del 25 %', 'Canas sueltas', 0, 0, False),
+    ('Estado de la fibra', 'Sana / virgen', 'Sin química previa ni daño, buena elasticidad (referencia, sin recargo)', 0, 0, True),
+    ('Estado de la fibra', 'Procesada / porosa',
+     'Química previa (tinte, decoloración, alisado), porosidad alta o daño leve. Sugerir un tratamiento sellante', 10000, 0, False),
+    ('Estado de la fibra', 'Sensibilizada / muy dañada',
+     'Elasticidad baja, puntas abiertas severas o daño químico. En químicos: prueba de mechón y aditivo Plex obligatorios', 20000, 0, False),
+    ('Canas', '0–25 %', 'Sin canas o canas sueltas (referencia)', 0, 0, True),
     ('Canas', '25–50 %', 'Hasta la mitad', 10000, 0, False),
-    ('Canas', '50–75 %', 'Más de la mitad', 15000, 0, False),
-    ('Canas', 'Más del 75 %', 'Casi todo cano', 25000, 0, False),
+    ('Canas', '50–75 %', 'Más de la mitad. +15 % de producto por saturación', 15000, 0, False),
+    ('Canas', '75–100 %', 'Casi todo cano. +20 % de producto y técnica de prepigmentación', 25000, 0, False),
 ]
 for k, (var, val, guia, suma, pct, ref) in enumerate(ajustes):
     fila = AJ_INI + k
@@ -273,12 +285,13 @@ for k, (var, val, guia, suma, pct, ref) in enumerate(ajustes):
         entrada(ws.cell(row=fila, column=5), pct, PCT)
 AJ_FIN = AJ_INI + len(ajustes) - 1
 ws['D6'].comment = Comment('Valores de ejemplo, no recomendados: reemplázalos con los del salón.', 'Velli')
-ws['C12'].comment = Comment('Regla propuesta por Velli para clasificar la fibra; la valida Keila (docs/velli-bi/02, §1.1).', 'Velli')
+ws['C12'].comment = Comment('Estándar de Velli para clasificar la fibra (docs/velli-bi/02, §1.1). '
+                            'Ajústalo si el salón usa otro criterio.', 'Velli')
 ws.freeze_panes = 'A5'
 RANGO_LARGO = f'Ajustes!$B${AJ_INI}:$B${AJ_INI + 3}'
 RANGO_DENS = f'Ajustes!$B${AJ_INI + 4}:$B${AJ_INI + 6}'
 RANGO_ESTADO = f'Ajustes!$B${AJ_INI + 7}:$B${AJ_INI + 9}'
-RANGO_CANAS = f'Ajustes!$B${AJ_INI + 10}:$B${AJ_INI + 14}'
+RANGO_CANAS = f'Ajustes!$B${AJ_INI + 10}:$B${AJ_INI + 13}'
 AJ = lambda col: f'Ajustes!${col}${AJ_INI}:${col}${AJ_FIN}'
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -314,7 +327,7 @@ PROD = lambda col: f'Productos!${col}${PROD_INI}:${col}${PROD_FIN}'
 ws = hoja(
     'Consumo', 'Consumo de producto en servicios de color',
     'La calculadora de color de Velli formula un tubo (60 g por defecto). Aquí el salón dice cuánto más gasta '
-    'según el largo y la densidad. Pregúntale a la estilista que más color hace.',
+    'según el largo, la densidad y las canas. Pregúntale a la estilista que más color hace.',
     [44, 16, 18],
 )
 ws['A4'] = 'Oxidante por cada gramo de tinte (1:1,5 → 1,5)'
@@ -323,7 +336,8 @@ entrada(ws['B4'], 1.5, FACTOR)
 ws['B4'].comment = Comment('Valor de partida (orientativo, igual al de la calculadora sin carta de marca). Confírmalo en la carta técnica.', 'Velli')
 encabezado(ws, 6, ['Variable', 'Valor', 'Factor de consumo'])
 factores = [('Largo', 0, 1.0), ('Largo', 1, 1.5), ('Largo', 2, 2.0), ('Largo', 3, 3.0),
-            ('Densidad', 4, 0.8), ('Densidad', 5, 1.0), ('Densidad', 6, 1.3)]
+            ('Densidad', 4, 0.8), ('Densidad', 5, 1.0), ('Densidad', 6, 1.3),
+            ('Canas', 10, 1.0), ('Canas', 11, 1.0), ('Canas', 12, 1.15), ('Canas', 13, 1.20)]
 CONS_INI = 7
 for k, (var, desfase, factor) in enumerate(factores):
     fila = CONS_INI + k
@@ -334,6 +348,8 @@ for k, (var, desfase, factor) in enumerate(factores):
     entrada(ws.cell(row=fila, column=3), factor, FACTOR)
 CONS_FIN = CONS_INI + len(factores) - 1
 ws['C7'].comment = Comment('Factores de partida propuestos por Velli, no medidos. Ajústalos con el salón: 2 = el doble de tinte que un cabello corto.', 'Velli')
+ws[f'C{CONS_INI + 9}'].comment = Comment('Estándar de Velli: con 50–75 % de canas se gasta 15 % más de producto por '
+                                        'saturación; con 75–100 %, 20 % más.', 'Velli')
 CONS = lambda col: f'Consumo!${col}${CONS_INI}:${col}${CONS_FIN}'
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -386,11 +402,26 @@ ws = hoja(
     'Elige el servicio y las variables. La hoja calcula el precio, el costo de producto, la comisión y el margen.',
     [38, 26, 50],
 )
+# Avisos del estándar. Las dos condiciones de la fibra se excluyen entre sí,
+# así que solo hace falta un espacio antes de la prepigmentación (sin TRIM,
+# que no se comporta igual en todos los evaluadores).
+_categoria = f'INDEX({SERV("B")},MAX(1,$B$14))'
+_quimico = f'OR({_categoria}="color",{_categoria}="decoloración",{_categoria}="alisado")'
+_sensibilizada = f'AND($B$7="Sensibilizada / muy dañada",{_quimico})'
+_procesada = '$B$7="Procesada / porosa"'
+_prepigmentar = 'AND($B$8="75–100 %",B23="Sí")'
+AVISOS = (
+    f'=IF($B$14=0,"",'
+    f'IF({_sensibilizada},"Obligatorio: prueba de mechón y aditivo protector Plex.","")'
+    f'&IF({_procesada},"Sugerir un tratamiento sellante.","")'
+    f'&IF(AND(OR({_sensibilizada},{_procesada}),{_prepigmentar})," ","")'
+    f'&IF({_prepigmentar},"Técnica de prepigmentación.",""))'
+)
 entradas_sim = [
     (4, 'Servicio', 'Ejemplo · Tinte completo', f'={SERV("A")}'),
     (5, 'Largo', 'Medio', f'={RANGO_LARGO}'),
     (6, 'Densidad', 'Alta', f'={RANGO_DENS}'),
-    (7, 'Estado de la fibra', 'Sano', f'={RANGO_ESTADO}'),
+    (7, 'Estado de la fibra', 'Sana / virgen', f'={RANGO_ESTADO}'),
     (8, 'Canas', '50–75 %', f'={RANGO_CANAS}'),
     (9, 'Estilista que atiende', 'Ejemplo · Caro', f'={RANGO_ESTILISTAS}'),
     (10, 'Tinte que se usa', 'Ejemplo · Tinte 60 g', f'={PROD("A")}'),
@@ -412,32 +443,36 @@ calculos = [
     (18, 'f', 'Precio sin redondear', '=(B15+B16)*(1+B17)', COP),
     (19, 'total', 'Precio de la cotización', f'=IF($B$14=0,0,{precio("$B$14", "$B$5", "$B$6", "$B$7", "$B$8")})', COP),
     (20, 'f', 'Válida hasta', '=TODAY()+Servicios!$B$6', FECHA),
+    (21, 'f', 'Avisos del estándar', AVISOS, None),
     (22, 'sub', 'Costo de producto (servicios con fórmula de color)', None, None),
     (23, 'f', '¿Usa fórmula de color?', f'=IF($B$14=0,"",INDEX({SERV("H")},MAX(1,$B$14)))', None),
     (24, 'f', 'Gramos de tinte base', f'=IF($B$14=0,0,INDEX({SERV("I")},MAX(1,$B$14)))', GRAMOS),
     (25, 'f', 'Factor por largo', f'=SUMIFS({CONS("C")},{CONS("A")},"Largo",{CONS("B")},$B$5)', FACTOR),
     (26, 'f', 'Factor por densidad', f'=SUMIFS({CONS("C")},{CONS("A")},"Densidad",{CONS("B")},$B$6)', FACTOR),
-    (27, 'f', 'Gramos de tinte estimados', '=IF(B23="Sí",B24*B25*B26,0)', GRAMOS),
-    (28, 'f', 'Costo del tinte', f'=B27*IFERROR(INDEX({PROD("G")},MATCH($B$10,{PROD("A")},0)),0)', COP),
-    (29, 'f', 'Mililitros de oxidante', '=B27*Consumo!$B$4', GRAMOS),
-    (30, 'f', 'Costo del oxidante', f'=B29*IFERROR(INDEX({PROD("G")},MATCH($B$11,{PROD("A")},0)),0)', COP),
-    (31, 'f', 'Insumos fijos', f'=IF($B$14=0,0,IF(ISNUMBER(INDEX({SERV("J")},MAX(1,$B$14))),INDEX({SERV("J")},MAX(1,$B$14)),0))', COP),
-    (32, 'total', 'Costo total de producto', '=B28+B30+B31', COP),
+    (27, 'f', 'Factor por canas', f'=SUMIFS({CONS("C")},{CONS("A")},"Canas",{CONS("B")},$B$8)', FACTOR),
+    (28, 'f', 'Gramos de tinte estimados', '=IF(B23="Sí",B24*B25*B26*B27,0)', GRAMOS),
+    (29, 'f', 'Costo del tinte', f'=B28*IFERROR(INDEX({PROD("G")},MATCH($B$10,{PROD("A")},0)),0)', COP),
+    (30, 'f', 'Mililitros de oxidante', '=B28*Consumo!$B$4', GRAMOS),
+    (31, 'f', 'Costo del oxidante', f'=B30*IFERROR(INDEX({PROD("G")},MATCH($B$11,{PROD("A")},0)),0)', COP),
+    (32, 'f', 'Insumos fijos', f'=IF($B$14=0,0,IF(ISNUMBER(INDEX({SERV("J")},MAX(1,$B$14))),INDEX({SERV("J")},MAX(1,$B$14)),0))', COP),
+    (33, 'total', 'Costo total de producto', '=B29+B31+B32', COP),
     (34, 'sub', 'Comisión y margen', None, None),
     (35, 'f', 'Fila de la estilista (dato interno)', f'=IFERROR(MATCH($B$9,{COM("A")},0),0)', '0'),
     (36, 'f', '% de comisión',
      f'=IF($B$35=0,0,IF(AND(OR(INDEX({SERV("B")},MAX(1,$B$14))="color",INDEX({SERV("B")},MAX(1,$B$14))="decoloración"),'
      f'ISNUMBER(INDEX({COM("C")},MAX(1,$B$35)))),INDEX({COM("C")},MAX(1,$B$35)),INDEX({COM("B")},MAX(1,$B$35))))', PCT),
     (37, 'f', 'Se calcula sobre', f'=IF($B$35=0,"Precio",IF(INDEX({COM("D")},MAX(1,$B$35))="","Precio",INDEX({COM("D")},MAX(1,$B$35))))', None),
-    (38, 'f', 'Comisión', '=B36*IF(B37="Precio menos producto",B19-B32,B19)', COP),
-    (39, 'total', 'Margen del salón', '=B19-B32-B38', COP),
+    (38, 'f', 'Comisión', '=B36*IF(B37="Precio menos producto",B19-B33,B19)', COP),
+    (39, 'total', 'Margen del salón', '=B19-B33-B38', COP),
     (40, 'f', 'Margen (%)', '=IF(B19>0,B39/B19,0)', PCT),
 ]
 explicaciones = {
     16: 'Sumas fijas de Ajustes, solo de las variables que aplican a este servicio.',
     17: 'Porcentajes de Ajustes, solo de las variables que aplican a este servicio.',
     19: 'Redondeado al múltiplo de Servicios › Redondeo.',
-    27: 'Gramos base × factor por largo × factor por densidad.',
+    21: 'Del estándar de Velli: estado de la fibra y canas. La prueba de mechón aplica a servicios químicos.',
+    27: 'Estándar: 50–75 % de canas suma 15 % de producto; 75–100 %, 20 %.',
+    28: 'Gramos base × factor por largo × factor por densidad × factor por canas.',
     36: 'En color o decoloración usa el % de color si existe; si no, el general.',
     39: 'Precio − costo de producto − comisión.',
 }
@@ -471,7 +506,7 @@ encabezado(ws, 4, ['Fecha', 'Estilista', 'Clienta (iniciales)', 'Servicio', 'Lar
 REG_INI, REG_FIN = 5, 104
 for i in range(REG_INI, REG_FIN + 1):
     ejemplo_fila = i == REG_INI
-    valores = ([date.today(), 'Ejemplo · Caro', 'L. M.', 'Ejemplo · Tinte completo', 'Medio', 'Alta', 'Sano',
+    valores = ([date.today(), 'Ejemplo · Caro', 'L. M.', 'Ejemplo · Tinte completo', 'Medio', 'Alta', 'Sana / virgen',
                 '50–75 %'] if ejemplo_fila else [None] * 8)
     for col, v in enumerate(valores, start=1):
         entrada(ws.cell(row=i, column=col), v, None, ejemplo=ejemplo_fila)

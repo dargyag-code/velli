@@ -20,7 +20,7 @@ interface Props {
   errors: Record<string, string>;
   onExpressReady?: () => void;
   autoCamera?: boolean;
-  // GATING DURO (validación Keila 6.P3): estado del consentimiento de
+  // GATING DURO (validación técnica 6.P3): estado del consentimiento de
   // imágenes de la clienta. Sin gate explícito se asume BLOQUEADA
   // (fail-closed) — el wizard siempre lo pasa desde app/diagnostico.
   camaraGate?: EstadoCamara;
@@ -567,7 +567,7 @@ export default function PasoCabello({
   // Si correctingMode está activo, NUNCA renderizamos la cámara aunque mode
   // accidentalmente vuelva a 'camera' (e.g. autoCamera reseteo, remount, etc).
   if (showCamera) {
-    // GATING DURO (Keila 6.P3): sin consentimiento de imágenes vigente de la
+    // GATING DURO (validación técnica 6.P3): sin consentimiento de imágenes vigente de la
     // clienta, la cámara NO se activa (las fotos incluyen cuero cabelludo →
     // módulo de alopecia → datos sensibles). Fail-closed si no llegó el gate.
     const gate: EstadoCamara = camaraGate ?? { permitida: false, motivo: 'sin_clienta' };

@@ -48,6 +48,37 @@ export function cartaDesdeMarca(marca: MarcaKBRow | undefined): CartaMarca | und
   };
 }
 
+// ── R5 · Canas: del tramo del asistente al porcentaje de CO-05 ────────────
+// El asistente guarda las canas por tramos (perfil_extendido.estadoCanas) y
+// CO-05 pide un porcentaje. Cada tramo se traduce a un valor representativo,
+// lejos de los bordes de CO-05 (25, 50 y 75 %). «Más del 50 %» abarca dos
+// tramos de CO-05, así que no se adivina: la estilista lo precisa en la
+// calculadora. Los tramos 50–75 y 75–100 son los del estándar de Velli.
+
+export const PORCENTAJE_CANAS_POR_TRAMO = {
+  sin_canas: 0,
+  menos_25: 12,
+  entre_25_50: 37,
+  entre_50_75: 62,
+  mas_75: 87,
+} as const;
+
+export type TramoCanasAsistente = keyof typeof PORCENTAJE_CANAS_POR_TRAMO;
+
+/** Porcentaje de canas para CO-05; un número guardado manda sobre el tramo. */
+export function porcentajeCanasDesdePerfil(perfil: Record<string, unknown>): {
+  porcentaje?: number;
+  porPrecisar: boolean;
+} {
+  const numero = perfil['porcentajeCanas'];
+  if (typeof numero === 'number') return { porcentaje: numero, porPrecisar: false };
+  const tramo = perfil['estadoCanas'];
+  if (typeof tramo === 'string' && tramo in PORCENTAJE_CANAS_POR_TRAMO) {
+    return { porcentaje: PORCENTAJE_CANAS_POR_TRAMO[tramo as TramoCanasAsistente], porPrecisar: false };
+  }
+  return { porPrecisar: tramo === 'mas_50' };
+}
+
 // ── CO-02 · Precarga del diagnóstico vigente ──────────────────────────────
 
 /**
@@ -78,7 +109,7 @@ export function diagnosticoDesdeConsulta(
         ? 'dudoso'
         : 'no';
 
-  const canasPerfil = perfil['porcentajeCanas'];
+  const canas = porcentajeCanasDesdePerfil(perfil);
 
   return {
     porosidad: consulta.porosidad,
@@ -89,7 +120,8 @@ export function diagnosticoDesdeConsulta(
     ),
     hennaOMetales,
     pruebaMechonSuperada: perfil['pruebaMechonSuperada'] === true,
-    porcentajeCanas: typeof canasPerfil === 'number' ? canasPerfil : undefined,
+    porcentajeCanas: canas.porcentaje,
+    ...(canas.porPrecisar ? { canasPorPrecisar: true } : {}),
     canasResistentes: perfil['canasResistentes'] === true,
     historialDecoloracion: textoIncluye(quimicos, 'decolor', 'mecha'),
     // La bandera médica vive en el resultado del diagnóstico: si el plan

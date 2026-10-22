@@ -17,6 +17,7 @@ import { Clienta, Consulta } from '@/lib/types';
 import { formatDate, getRizoLabel } from '@/lib/utils';
 import { showToast } from '@/lib/toast';
 import { resolveFotoUrl, resolveFotoUrls } from '@/lib/storage';
+import { enlaceWhatsApp } from '@/lib/whatsapp';
 import { useFlags } from '@/lib/flags/useFlags';
 
 type Tab = 'info' | 'historial' | 'galeria';
@@ -427,8 +428,12 @@ export default function ClientaPage() {
 
   const handleWhatsApp = () => {
     if (!clienta?.telefono) return;
-    const tel = clienta.telefono.replace(/\D/g, '');
-    window.open(`https://wa.me/${tel}`, '_blank');
+    const url = enlaceWhatsApp(clienta.telefono);
+    if (!url) {
+      showToast('Ese teléfono no sirve para WhatsApp. Revisa que tenga 10 dígitos.', 'error');
+      return;
+    }
+    window.open(url, '_blank');
   };
 
   // ═══ LOADING ════════════════════════════════════════════════════════════
@@ -1145,7 +1150,7 @@ export default function ClientaPage() {
                   </article>
                 )}
 
-                {/* Consentimientos + seguridad química (validación Keila) */}
+                {/* Consentimientos + seguridad química (validación técnica) */}
                 <SeguridadLegal clienta={clienta} onClientaChange={setClienta} />
 
                 {/* Sin consultas */}

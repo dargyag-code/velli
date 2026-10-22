@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import CorreoSoporte from '@/components/legal/CorreoSoporte';
 
 const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 
@@ -34,10 +35,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
       <main className="max-w-2xl mx-auto px-4 py-6">
         {children}
         <p className="text-center text-[11px] text-[#999999] mt-8 pb-4">
-          ¿Dudas o correcciones?{' '}
-          <a href="mailto:soporte@velli.app" className="text-[#2D5A27] font-semibold hover:underline">
-            soporte@velli.app
-          </a>
+          ¿Dudas o correcciones? <CorreoSoporte />
         </p>
       </main>
     </div>

@@ -27,14 +27,17 @@ scripts/generar-seed-kb-sql.mjs       Seed TS → migración SQL (npm run kb:sql
 supabase/migration-knowledge-base.sql Migración generada (DDL + RLS + seed)
 tests/diagnostico.regresion.test.ts   Definición de terminado (ver abajo)
 tests/diagnostico.fase2.test.ts       Perfiles dorados + seguridad Fase 2
-docs/conocimiento/                    Documentos fuente (Entregas + validación)
 ```
+
+Los documentos fuente (Entregas y validación técnica) salieron del repo el
+2026-10-22: los originales están en el OneDrive del proyecto
+(`Documentos/conocimiento`) y siguen en el historial de git.
 
 ## Fase 2 (Sprint B) — contenido cargado en borrador
 
-Transcripción fiel de los documentos de `docs/conocimiento/` (Entrega 1:
+Transcripción fiel de los documentos fuente (Entrega 1:
 liso y ondulado; Entrega 2: canas y alopecia; Entrega 4: complementos
-tipos 3–4) con las correcciones de la **validación de Keila** aplicadas
+tipos 3–4) con las correcciones de la **validación técnica** aplicadas
 verbatim (C-08 canicie prematura y el copy oficial de A-02 tracción).
 
 - **Todo en estado `borrador`**: producción no cambia hasta publicar desde
@@ -47,7 +50,8 @@ verbatim (C-08 canicie prematura y el copy oficial de A-02 tracción).
   CAN-1/CAN-2 (canas) matchean por condición y componen sobre el tipo base.
 - **Módulos transversales** (canas C-01–C-08, alopecia A-01–A-06): se suman
   al diagnóstico del tipo base sin reemplazarlo — patrón + porosidad +
-  cana + alopecia en una única ruta de servicio (decisión P.7 de Keila).
+  cana + alopecia en una única ruta de servicio (decisión P.7 de la
+  validación técnica).
 - **A-06 (regla negativa)**: bloqueos permanentes del motor. Bandera médica
   activa ⇒ el evaluador devuelve SIEMPRE derivación construida en código y
   la regla `derivacion.f2.a06_bloqueos` suma los cinco bloqueos al PDF.
@@ -121,9 +125,9 @@ sigue hardcodeado e idéntico).
 La migración y el patch de `flujo.liso` se aplicaron en prod, la exposición
 Data API y las RLS quedaron verificadas, `supabase/schema.sql` se regeneró
 desde prod (con las tablas `kb_*`) y ambos archivos se movieron a
-`supabase/_archive/`. El wizard usa el camino por datos con las reglas
-publicadas del Sprint A; la Fase 2 sigue en borrador hasta publicarla con
-Keila desde el panel `/conocimiento`.
+`supabase/_archive/`. El wizard usa el camino por datos. La Fase 2 se
+publicó por bloques desde el panel `/conocimiento` el mismo 2026-08-04: hoy
+no quedan borradores.
 
 ## Cómo expandir (Fase 2 / Fase 3)
 

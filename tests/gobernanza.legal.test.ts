@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════════
-// Capa legal y de gobernanza — validación firmada de Keila Moreno.
+// Capa legal y de gobernanza — validación técnica firmada.
 //
 // Cubre los TRES bloqueos que el documento exige, en sus dos capas:
 //   1. Gobernanza (6.P2): el rol salon NO puede escribir reglas base ni

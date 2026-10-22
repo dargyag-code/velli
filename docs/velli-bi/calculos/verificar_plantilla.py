@@ -1,7 +1,7 @@
 # Uso, fuera del repo (pycel no es dependencia del proyecto):
 #   python -m venv venv && venv/Scripts/pip install pycel openpyxl
 #   venv/Scripts/python verificar_plantilla.py <plantilla-precios.xlsx> <copia-de-prueba.xlsx>
-# Salida guardada de la corrida del 2026-10-19: verificar_plantilla_salida.txt
+# Salida guardada de la corrida del 2026-10-22: verificar_plantilla_salida.txt
 #
 # Verifica la plantilla con pycel (evaluador de fórmulas de Excel en Python).
 # pycel evalúa las dos ramas de IF, a diferencia de Excel/LibreOffice/Google
@@ -9,6 +9,7 @@
 # vacías del Registro tienen exactamente la misma fórmula (salvo el número
 # de fila). Escenario 1: el ejemplo del archivo. Escenario 2: una copia con
 # tres casos más (corte sin fórmula, otra estilista, diferencias fuera de 5 %).
+# Escenario 3: los avisos del estándar con fibra sensibilizada.
 import re
 import sys
 from datetime import date
@@ -16,6 +17,7 @@ from openpyxl import load_workbook
 from pycel import ExcelCompiler
 
 ruta, copia = sys.argv[1], sys.argv[2]
+copia_avisos = re.sub(r'\.xlsx$', '', copia) + '-avisos.xlsx'
 fallas = 0
 
 def revisar(xl, esperado, titulo):
@@ -57,18 +59,23 @@ def errores_en_filas_con_datos(ruta_xlsx, xl):
         print('  ERROR', e)
 
 # ── Escenario 1: el archivo tal como se entrega ─────────────────────────────
+# Gramos = 60 × 1,5 (medio) × 1,3 (alta) × 1,15 (canas 50–75 %) = 134,55.
 xl = ExcelCompiler(filename=ruta)
 errores_en_filas_con_datos(ruta, xl)
+gramos1 = 60 * 1.5 * 1.3 * 1.15
+costo1 = gramos1 * 500 + gramos1 * 1.5 * 30 + 3000
 revisar(xl, {
     'Simulador!B15': 120000, 'Simulador!B16': 15000, 'Simulador!B17': 0.35, 'Simulador!B19': 182000,
-    'Simulador!B27': 117, 'Simulador!B28': 58500, 'Simulador!B29': 175.5, 'Simulador!B30': 5265,
-    'Simulador!B31': 3000, 'Simulador!B32': 66765, 'Simulador!B36': 0.40, 'Simulador!B38': 72800,
-    'Simulador!B39': 42435, 'Simulador!B40': 42435 / 182000,
+    'Simulador!B21': '', 'Simulador!B27': 1.15, 'Simulador!B28': gramos1, 'Simulador!B29': gramos1 * 500,
+    'Simulador!B30': gramos1 * 1.5, 'Simulador!B31': gramos1 * 1.5 * 30, 'Simulador!B32': 3000,
+    'Simulador!B33': costo1, 'Simulador!B36': 0.40, 'Simulador!B38': 72800,
+    'Simulador!B39': 182000 - costo1 - 72800, 'Simulador!B40': (182000 - costo1 - 72800) / 182000,
     'Registro!I5': 182000, 'Registro!K5': 8000, 'Registro!L5': 190000 / 182000 - 1, 'Registro!P5': 1,
     'Resumen!B4': 1, 'Resumen!B5': 1, 'Resumen!B6': 190000 / 182000 - 1,
     'Resumen!A9': 'Ejemplo · Caro', 'Resumen!B9': 1, 'Resumen!D9': 0, 'Resumen!A10': '',
     'Productos!G5': 500, 'Productos!G6': 30, 'Consumo!B7': 'Corto', 'Consumo!B13': 'Alta',
-}, 'Escenario 1: ejemplo del documento de diseño (precio 182.000, margen 42.435)')
+    'Consumo!B14': '0–25 %', 'Consumo!B17': '75–100 %', 'Consumo!C16': 1.15, 'Consumo!C17': 1.2,
+}, 'Escenario 1: ejemplo del documento de diseño (precio 182.000, margen 32.870)')
 
 # ── Escenario 2: copia con más casos ────────────────────────────────────────
 wb = load_workbook(ruta)
@@ -82,9 +89,9 @@ for col, v in zip('ABCD', ['Dani', 0.35, 0.30, 'Precio menos producto']):
     c[f'{col}6'] = v
 r = wb['Registro']
 casos = [
-    (6, ['Dani', 'A. P.', 'Corte', 'Extra largo', 'Baja', 'Comprometido', 'Sin canas'], 60000),
-    (7, ['Ejemplo · Caro', 'M. R.', 'Color y mechas', 'Largo', 'Media', 'Sensibilizado', 'Más del 75 %'], 259000),
-    (8, ['Dani', 'S. T.', 'Ejemplo · Tinte completo', 'Corto', 'Media', 'Sano', 'Sin canas'], 130000),
+    (6, ['Dani', 'A. P.', 'Corte', 'Extra largo', 'Baja', 'Sensibilizada / muy dañada', '0–25 %'], 60000),
+    (7, ['Ejemplo · Caro', 'M. R.', 'Color y mechas', 'Largo', 'Media', 'Procesada / porosa', '75–100 %'], 259000),
+    (8, ['Dani', 'S. T.', 'Ejemplo · Tinte completo', 'Corto', 'Media', 'Sana / virgen', '0–25 %'], 130000),
 ]
 for fila, datos, cobrado in casos:
     r[f'A{fila}'] = date.today()
@@ -92,24 +99,41 @@ for fila, datos, cobrado in casos:
         r[f'{col}{fila}'] = v
     r[f'J{fila}'] = cobrado
 sim = wb['Simulador']
-for celda, v in {'B4': 'Color y mechas', 'B5': 'Largo', 'B6': 'Media', 'B7': 'Sensibilizado',
-                 'B8': 'Más del 75 %', 'B9': 'Dani'}.items():
+for celda, v in {'B4': 'Color y mechas', 'B5': 'Largo', 'B6': 'Media', 'B7': 'Procesada / porosa',
+                 'B8': '75–100 %', 'B9': 'Dani'}.items():
     sim[celda] = v
 wb.save(copia)
 
+# Gramos = 90 × 2,0 (largo) × 1,0 (media) × 1,2 (canas 75–100 %) = 216.
 xl2 = ExcelCompiler(filename=copia)
 errores_en_filas_con_datos(copia, xl2)
+gramos2 = 90 * 2.0 * 1.0 * 1.2
+costo2 = gramos2 * 500 + gramos2 * 1.5 * 30 + 5000
 revisar(xl2, {
     'Registro!I6': 64000, 'Registro!L6': 60000 / 64000 - 1, 'Registro!P6': 0,
     'Registro!I7': 259000, 'Registro!K7': 0, 'Registro!P7': 1,
     'Registro!I8': 120000, 'Registro!K8': 10000, 'Registro!P8': 0,
-    'Simulador!B19': 259000, 'Simulador!B27': 180, 'Simulador!B28': 90000, 'Simulador!B30': 8100,
-    'Simulador!B32': 103100, 'Simulador!B36': 0.30, 'Simulador!B37': 'Precio menos producto',
-    'Simulador!B38': 0.30 * (259000 - 103100), 'Simulador!B39': 259000 - 103100 - 0.30 * (259000 - 103100),
+    'Simulador!B19': 259000, 'Simulador!B21': 'Sugerir un tratamiento sellante. Técnica de prepigmentación.',
+    'Simulador!B27': 1.2, 'Simulador!B28': gramos2, 'Simulador!B29': gramos2 * 500,
+    'Simulador!B31': gramos2 * 1.5 * 30, 'Simulador!B33': costo2, 'Simulador!B36': 0.30,
+    'Simulador!B37': 'Precio menos producto',
+    'Simulador!B38': 0.30 * (259000 - costo2), 'Simulador!B39': 259000 - costo2 - 0.30 * (259000 - costo2),
     'Resumen!B4': 4, 'Resumen!B5': 0.5, 'Resumen!B6': 639000 / 625000 - 1,
     'Resumen!B9': 2, 'Resumen!C9': 449000 / 441000 - 1, 'Resumen!D9': 0,
     'Resumen!A10': 'Dani', 'Resumen!B10': 2, 'Resumen!C10': 190000 / 184000 - 1, 'Resumen!D10': 2,
 }, 'Escenario 2: corte sin fórmula, otra estilista con % de color sobre precio menos producto')
+
+# ── Escenario 3: fibra sensibilizada en un servicio químico ─────────────────
+# El tinte de ejemplo no ajusta el precio por estado de la fibra: el precio
+# no cambia, pero el aviso obligatorio aparece.
+wb = load_workbook(ruta)
+wb['Simulador']['B7'] = 'Sensibilizada / muy dañada'
+wb.save(copia_avisos)
+xl3 = ExcelCompiler(filename=copia_avisos)
+revisar(xl3, {
+    'Simulador!B19': 182000,
+    'Simulador!B21': 'Obligatorio: prueba de mechón y aditivo protector Plex.',
+}, 'Escenario 3: aviso obligatorio con fibra sensibilizada')
 
 # ── Las 100 filas del Registro tienen la misma fórmula ──────────────────────
 wb = load_workbook(ruta)

@@ -1,6 +1,6 @@
 // ══════════════════════════════════════════════════════════════════════════
 // Catálogo semilla de 16 cortes (Entrega 5 §5–§6), como CATÁLOGO ÚNICO
-// indexado por atributos arquitectónicos — decisión de Keila (respuesta 5)
+// indexado por atributos arquitectónicos — decisión de la validación técnica (respuesta 5)
 // que manda sobre las "secciones" por género de la Entrega 5. La etiqueta de
 // género es un filtro de búsqueda opcional, jamás una barrera.
 //
@@ -8,7 +8,7 @@
 // (equilibrar / destacar / enmarcar / celebrar). tests/cortes.test.ts audita
 // que ninguna salida contenga términos vetados.
 //
-// W-07 lleva el nombre que fijó Keila (validación §5.2): "Corte
+// W-07 lleva el nombre que fijó la validación técnica (§5.2): "Corte
 // Arquitectónico Velli en Seco" — la Entrega 5 lo dejaba como pregunta
 // abierta ("¿Corte Velli por rizo?").
 // ══════════════════════════════════════════════════════════════════════════
@@ -240,7 +240,7 @@ export const FICHAS_CORTE: FichaCorte[] = [
     cicloSemanas: [10, 12],
     mantenimiento: 'Cada 10 a 12 semanas o por forma; entre cortes, el cronograma de definición sostiene la silueta.',
     tecnicaClave: 'Jamás cortar este perfil mojado y estirado: calcula la caída tridimensional hebra por hebra sobre el rizo formado.',
-    notasInternas: 'Nombre fijado por Keila (validación §5.2). Servicio de mayor valor técnico de la app para rizado y afro.',
+    notasInternas: 'Nombre fijado en la validación técnica (§5.2). Servicio de mayor valor técnico de la app para rizado y afro.',
   },
   {
     clave: 'W-08',

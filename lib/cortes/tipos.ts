@@ -1,8 +1,8 @@
 // ══════════════════════════════════════════════════════════════════════════
-// Módulo de cortes — tipos (Entrega 5, con las respuestas 4 y 5 de Keila
+// Módulo de cortes — tipos (Entrega 5, con las respuestas 4 y 5 de la validación técnica
 // mandando sobre la entrega donde difieren).
 //
-// Decisión de Keila (respuesta 5) que MANDA sobre la Entrega 5: el catálogo
+// Decisión de la validación técnica (respuesta 5) que MANDA sobre la Entrega 5: el catálogo
 // es ÚNICO e indexado por atributos ARQUITECTÓNICOS (largo, capas, densidad,
 // textura). La Entrega 5 lo estructuraba en "sección mujeres" y "sección
 // hombres"; aquí el género es solo una etiqueta de filtro opcional, nunca
@@ -27,7 +27,7 @@ export interface GuiaFormaRostro {
   vector: string;
 }
 
-// ── Índice arquitectónico (Keila, respuesta 5) ────────────────────────────
+// ── Índice arquitectónico (validación técnica, respuesta 5) ────────────────────────────
 
 export type LargoCorte = 'muy_corto' | 'corto' | 'medio' | 'largo' | 'muy_largo';
 export type CapasCorte = 'sin_capas' | 'minimas' | 'moderadas' | 'abundantes';

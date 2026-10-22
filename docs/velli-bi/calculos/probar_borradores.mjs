@@ -12,7 +12,7 @@
 // Uso, fuera del repo (PGlite no es dependencia del proyecto):
 //   npm init -y && npm install @electric-sql/pglite
 //   node probar_borradores.mjs <ruta del repo velli-pro>
-// Salida guardada de la corrida del 2026-10-19: probar_borradores_salida.txt
+// Salida guardada de la corrida del 2026-10-22: probar_borradores_salida.txt
 // ══════════════════════════════════════════════════════════════════════════
 
 import { PGlite } from '@electric-sql/pglite';
@@ -282,6 +282,9 @@ await prueba('cupo del mes: A lleva 1 análisis; B no ve el de A', async () => {
   const [s] = await como('service_role', null, () => q(`select public.ia_analisis_del_mes($1) n`, [A]));
   return a.n === 1 && b.n === 0 && s.n === 1;
 });
+await esperaError('solo se acepta Anthropic como proveedor (sin respaldo de OpenAI)', /uso_ia_proveedor_check/, () =>
+  como('service_role', null, () => db.query(
+    `insert into public.uso_ia (user_id, ruta, proveedor, modelo, fotos, ok) values ($1, 'analizar', 'openai', 'gpt-4o', 3, true)`, [A])));
 await esperaError('una cuenta no borra su uso para recuperar cupo', /permission denied/, () =>
   como('authenticated', A, () => db.query(`delete from public.uso_ia where user_id = $1`, [A])));
 

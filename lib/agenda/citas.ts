@@ -2,7 +2,7 @@
 // Citas de servicio (tabla public.citas) + pruebas de sensibilidad.
 //
 // La tabla citas existía sin uso (la agenda solo mostraba
-// consultas.proxima_cita); los bloqueos de la validación de Keila viven
+// consultas.proxima_cita); los bloqueos de la validación técnica viven
 // aquí: el trigger citas_guard_legal fuerza en la DB el bloque tipo 4, los
 // solapes y los requisitos de confirmación (parche 48 h + consentimiento
 // químico). Este módulo expone el CRUD y deja que la UI muestre los motivos

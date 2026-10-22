@@ -29,7 +29,7 @@ const PRINCIPIOS: { clave: string; titulo: string; texto: string; nota?: string 
     texto:
       'La heurística clásica usa el óvalo como punto de equilibrio visual. Es una herramienta de proporción, no un estándar de belleza. El lenguaje de salida nunca describe el rostro como algo a intervenir: dice que el corte equilibra, destaca, enmarca o celebra. La clienta puede declarar qué quiere destacar, y eso pesa más que la heurística.',
     nota:
-      'Vocabulario cerrado por Keila (validación §5.1): equilibrar, destacar, enmarcar y celebrar. La Entrega 5 listaba solo los tres primeros. tests/cortes.test.ts audita cada salida.',
+      'Vocabulario cerrado en la validación técnica (§5.1): equilibrar, destacar, enmarcar y celebrar. La Entrega 5 listaba solo los tres primeros. tests/cortes.test.ts audita cada salida.',
   },
   {
     clave: 'PR-02',
@@ -60,7 +60,7 @@ const PRINCIPIOS: { clave: string; titulo: string; texto: string; nota?: string 
     titulo: 'El mantenimiento es parte del corte',
     texto:
       'Un fade impecable exige retoque cada 2 a 3 semanas; un pixie, cada 4 a 6. Recomendar un corte que la persona no va a mantener es recomendar un corte que se verá distinto la mayor parte del tiempo. La clienta declara su tolerancia y la matriz filtra con honestidad. Al confirmar la ejecución, el retoque se pre-agenda según el ciclo de vida de la ficha.',
-    nota: 'Keila (validación §5.2) fija la recurrencia comercial: el ciclo de vida en semanas vive en la ficha y abre la ventana de preventa de la agenda.',
+    nota: 'La validación técnica (§5.2) fija la recurrencia comercial: el ciclo de vida en semanas vive en la ficha y abre la ventana de preventa de la agenda.',
   },
 ];
 
@@ -93,7 +93,7 @@ const REGLAS_VOCABULARIO: ReglaKB[] = Object.entries(GLOSARIO_VERBOS).map(
     salida: { texto: `${verbo}: ${definicion}` },
     estado: BORRADOR,
     notasInternas:
-      'Validación de Keila §5.1 · política lingüística. Los cuatro términos son los ÚNICOS permitidos en las salidas.',
+      'Validación técnica §5.1 · política lingüística. Los cuatro términos son los ÚNICOS permitidos en las salidas.',
   })
 );
 
@@ -149,7 +149,7 @@ export const DIMENSIONES_CORTES: DimensionKB[] = [
 // ── 4. Flujo del wizard que captura ese dato ──────────────────────────────
 // El wizard renderiza desde kb_flujos, no desde kb_dimensiones. Las
 // preguntas se DERIVAN de las dimensiones para que no puedan driftear: si
-// Keila ajusta una etiqueta o una opción en la dimensión, la pregunta la
+// el equipo ajusta una etiqueta o una opción en la dimensión, la pregunta la
 // hereda.
 //
 // Las tres son OPCIONALES a propósito. El dato es una observación de cabina

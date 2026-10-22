@@ -58,6 +58,13 @@ interface Props {
   onManual?: () => void;
 }
 
+// ── Motivo en la galería cuando la IA no ve cabello en ninguna foto ───────
+function mensajeFotosSinCabello(cantidad: number): string {
+  return cantidad === 1
+    ? 'La IA no encontró cabello en la foto. Toca «Cambiar fotos» y elige una donde el cabello se vea de cerca, con buena luz y enfocado.'
+    : `La IA no encontró cabello en ninguna de las ${cantidad} fotos. Toca «Cambiar fotos» y elige imágenes donde el cabello se vea de cerca, con buena luz y enfocado.`;
+}
+
 // ── Color del indicador de distancia ──────────────────────────────────────
 function colorDistancia(status: DistanceResult['status'] | null): string {
   if (!status) return 'rgba(232, 194, 144, 0.4)';
@@ -519,7 +526,9 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
       setHairValidation(validation);
 
       if (validation.blocked) {
-        setError(validation.message);
+        // La galería no mostraba ningún motivo: la estilista volvía a ver sus
+        // fotos sin saber por qué no se analizaron.
+        setError(mensajeFotosSinCabello(photos.length));
         setFlowStep('gallery');
         vibracionError();
         return;
@@ -1668,6 +1677,24 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
               </div>
             ))}
           </div>
+
+          {error && (
+            <div
+              role="alert"
+              style={{
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'rgba(142, 45, 45, 0.08)',
+                border: '1px solid rgba(142, 45, 45, 0.2)',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 10,
+              }}
+            >
+              <AlertCircle size={16} style={{ color: 'var(--danger)', flexShrink: 0, marginTop: 1 }} />
+              <p style={{ margin: 0, fontSize: 13, color: 'var(--danger)', lineHeight: 1.45 }}>{error}</p>
+            </div>
+          )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 'auto' }}>
             <Btn

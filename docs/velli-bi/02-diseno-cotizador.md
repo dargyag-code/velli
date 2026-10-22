@@ -4,8 +4,9 @@
 - **Rama:** `velli-bi/fase-1`
 - **Alcance:** diseño. **No se aplicó nada.**
   - Borradores de migración: `supabase/borradores/velli-bi-cotizador.sql` y `velli-bi-uso-ia.sql`.
-  - Se probaron en un Postgres en memoria (PGlite 0.5.10, PostgreSQL 18.6) junto con las dos migraciones de la Etapa 1: **50 de 50 pruebas en verde** (`calculos/probar_borradores_salida.txt`).
+  - Se probaron en un Postgres en memoria (PGlite 0.5.10, PostgreSQL 18.6) junto con las dos migraciones de la Etapa 1: **51 de 51 pruebas en verde** (la 51, del 2026-10-22, comprueba que `uso_ia` solo acepta Anthropic) (`calculos/probar_borradores_salida.txt`).
   - Plantilla para probar en papel: `plantilla-precios.xlsx`.
+- **Actualizado el 2026-10-22:** las variables usan estándares configurables de Velli, sin validación externa (§1.1), y el dominio sale de `NEXT_PUBLIC_APP_URL` (§4).
 
 ## Resumen
 
@@ -59,23 +60,39 @@
 
 ### 1.1 Variables de precio
 
-El catálogo vive **en código** (`lib/cotizador/variables.ts`, por construir), porque la lectura desde el diagnóstico también es código. Las plantillas guardan los ajustes por variable en `jsonb`: **una variable nueva no exige migración**. Si más adelante Keila quiere editar los tramos desde el panel, el catálogo pasa a una tabla `kb_*`, con la misma gobernanza de la base de conocimiento.
+El catálogo vive **en código** (`lib/cotizador/variables.ts`, por construir), porque la lectura desde el diagnóstico también es código. Las plantillas guardan los ajustes por variable en `jsonb`: **una variable nueva no exige migración**. Si más adelante hace falta editar los tramos desde el panel, el catálogo pasa a una tabla `kb_*`, con la misma gobernanza de la base de conocimiento.
+
+**Estándares de Velli (decididos el 2026-10-22).** Velli no depende de una validación externa: las tres variables de abajo usan estándares de la industria en Colombia, configurables. Los valores por defecto viven en el catálogo de código y cada salón decide cuánto cobra por cada uno en su plantilla.
 
 | Variable | Valores | De dónde sale en el diagnóstico | Si falta |
 |---|---|---|---|
-| `largo` | `corto` (hasta el mentón) · `medio` (hasta los hombros) · `largo` (hasta los omóplatos) · `extra_largo` (cintura o más) | **No existe hoy** (salvo tipo 4, en cm). Dimensión nueva `largoActual` en un flujo transversal `flujo.cotizacion`: es contenido de la base de conocimiento, sin migración (P6) | El cotizador la pregunta: 1 toque |
+| `largo` | `corto` (mentón) · `medio` (hombros o clavícula) · `largo` (media espalda o tira del brasier) · `extra_largo` (cintura o más) | **No existe hoy** (salvo tipo 4, en cm). Dimensión nueva `largoActual` en un flujo transversal `flujo.cotizacion`: es contenido de la base de conocimiento, sin migración (P6) | El cotizador la pregunta: 1 toque |
 | `densidad` | `baja` · `media` · `alta` | `consultas.densidad`, del asistente o sugerida por la IA | 1 toque |
-| `estado` | `sano` · `sensibilizado` · `comprometido` | Derivada (regla propuesta, abajo) | 1 toque |
-| `canas` | `sin` · `menos_25` · `25_50` · `50_75` · `mas_75` | `perfil_extendido.estadoCanas` (P7) | 1 toque |
+| `estado` | `sana` (sana o virgen) · `procesada` (procesada o porosa) · `sensibilizada` (sensibilizada o muy dañada) | Derivada (regla abajo) | 1 toque |
+| `canas` | `0_25` · `25_50` · `50_75` · `75_100` | `perfil_extendido.estadoCanas` (tramos abajo) | 1 toque |
 
-**Regla propuesta para el estado de la fibra.** La valida Keila. Es una clasificación para el precio, no una regla de diagnóstico:
-- **comprometido:** elasticidad baja, o puntas «abiertas severas», o daño químico;
-- **sensibilizado:** elasticidad media, o puntas «abiertas leves», o daño mecánico o térmico;
-- **sano:** ninguna de las anteriores, siempre que al menos uno de los tres datos exista. Si no existe ninguno, el estado queda «sin dato» y se pregunta.
+**Estado de la fibra.** Es una clasificación para el precio y para los avisos del cotizador, no una regla de diagnóstico. Gana el nivel más alto que se cumpla:
 
-Limitación: `consultas.nivel_dano` guarda solo el primer tipo de daño marcado.
+| Nivel | Cómo se lee del diagnóstico | Qué hace el cotizador |
+|---|---|---|
+| **Sana / virgen** | Sin química previa, elasticidad buena y puntas sanas | Sin recargo |
+| **Procesada / porosa** | Química previa (tinte, decoloración o alisado), porosidad alta, elasticidad media, puntas «abiertas leves» o daño mecánico o térmico | Sugiere un tratamiento sellante, que la estilista puede sumar a la cotización |
+| **Sensibilizada / muy dañada** | Elasticidad baja, puntas «abiertas severas» o daño químico | En servicios químicos, alerta obligatoria: prueba de mechón y aditivo protector Plex. El aditivo entra como insumo del costo |
 
-**Canas.** Hoy el asistente ofrece «Más del 50 %», que no distingue entre 50–75 % y más de 75 %. CO-05 sí los separa: cambia la fracción de tubo y el candado de 20 volúmenes. La propuesta (P7, la valida Keila) es dividir esa opción en dos dentro de la dimensión `estadoCanas`. Es contenido, no código. Las consultas viejas con `mas_50` piden un toque: «¿Más del 75 %?».
+- Si no existe ninguno de los datos, el estado queda «sin dato» y se pregunta.
+- La alerta se suma a los guardarraíles que ya existen (A-06, y elasticidad baja ante una decoloración), que siguen bloqueando como hoy.
+- Limitación: `consultas.nivel_dano` guarda solo el primer tipo de daño marcado.
+
+**Canas.** Cuatro tramos, los mismos de CO-05: 0–25 %, 25–50 %, 50–75 % y 75–100 %. El asistente ofrece «Más del 50 %», que no distingue entre 50–75 % y 75–100 %. La división se hace con un toque donde se necesita: en la calculadora de color (hecho el 2026-10-22, R5) y, cuando exista, en el cotizador. No se divide la opción del asistente porque tres reglas del motor leen `mas_50` (`hecho.f2.tiene_canas`, `hecho.f2.canas_25_mas` y `nota.f2.c04`), y esas reglas no se cambian para servir al cotizador. Dividirla en el asistente exigiría cambiar esas tres condiciones o agregar preguntas condicionales al asistente; es una decisión aparte. La regla CO-05 no cambia.
+
+| Tramo | En el costo | En la cotización |
+|---|---|---|
+| 0–25 % | Sin consumo extra | — |
+| 25–50 % | Sin consumo extra | — |
+| 50–75 % | +15 % de gramos de producto, por saturación | — |
+| 75–100 % | +20 % de gramos de producto | Sugiere la técnica de prepigmentación |
+
+Las consultas guardan `sin_canas` o `menos_25` (pasan a 0–25 %), `entre_25_50` (25–50 %) o `mas_50`; esta última pide un toque: «Entre 50 y 75 %» o «Más del 75 %».
 
 ### 1.2 Fórmula del precio
 
@@ -105,7 +122,7 @@ Cada salón decide si sus ajustes son porcentajes, sumas o ambos. La hoja de pap
   - lo enviado no se edita;
   - una cotización cobrada no vuelve atrás ni se borra; solo los borradores se borran;
   - borrar una clienta conserva lo cobrado.
-- **Requisito previo:** aplicar `migration-proteger-perfil.sql` (R17). Sin ella, una cuenta puede hacerse corporativa.
+- **Requisito previo, cumplido:** `migration-proteger-perfil.sql` (R17) está aplicada en producción (confirmado el 2026-10-22). Sin ella, una cuenta podía hacerse corporativa.
 
 ### 1.4 Lo que queda listo para los módulos 2, 3 y 4
 
@@ -173,8 +190,8 @@ La colorimetría **no cambia sus reglas** (CO-01 a CO-10). El cotizador lee su r
    costo total      = tinte + oxidante + consumo.insumos_fijos
    ```
    - La proporción sale de la carta de la marca (`proporcionEstandar`, por ejemplo «1:1,5»). Sin carta, se usa 1,5 marcado como orientativo.
-3. **Factor de consumo.** La calculadora siempre devuelve un tubo, 60 g por defecto (R6). El factor por largo y densidad vive en la plantilla del salón (`consumo.factor`), es decir, en la capa del cotizador y no en las reglas de color. Ejemplo: medio 1,5 × alta 1,3 = 1,95 tubos.
-4. **Canas: el adaptador que falta (R5).** `diagnosticoDesdeConsulta()` hoy lee `perfil_extendido.porcentajeCanas`, que nada escribe. El adaptador traduce `estadoCanas` a un porcentaje representativo del tramo (por ejemplo, `50_75` → 62). **Importante:** esto no toca CO-05, pero hará que CO-05 empiece a aplicarse por primera vez con diagnósticos reales. Es un cambio de comportamiento de la calculadora y **debe validarlo Keila** antes.
+3. **Factor de consumo.** La calculadora siempre devuelve un tubo, 60 g por defecto (R6). El factor por largo, densidad y canas vive en la plantilla del salón (`consumo.factor`), es decir, en la capa del cotizador y no en las reglas de color. Por defecto, canas 50–75 % multiplica por 1,15 y 75–100 % por 1,20 (§1.1). Ejemplo: medio 1,5 × alta 1,3 × canas 50–75 % 1,15 = 2,24 tubos.
+4. **Canas: el adaptador (R5, hecho el 2026-10-22).** `diagnosticoDesdeConsulta()` leía `perfil_extendido.porcentajeCanas`, que nada escribe. Ahora `porcentajeCanasDesdePerfil()` traduce `estadoCanas` a un porcentaje representativo del tramo (`entre_25_50` → 37; tras el toque, 50–75 % → 62 y 75–100 % → 87). Esto no toca CO-05, pero hace que CO-05 se aplique por primera vez con diagnósticos reales: es un cambio de comportamiento de la calculadora, decidido el 2026-10-22 junto con los tramos. El cotizador reutiliza el mismo adaptador y el mismo toque.
 5. **Copia del costo.** La cotización guarda cada producto con sus gramos y su precio unitario de ese momento (`costo_detalle`). Si el tinte sube, el margen histórico no cambia.
 6. **Comisión.** Gana la regla más específica: estilista y servicio > estilista > servicio > salón. Se calcula sobre el precio o sobre precio − producto, según la regla, y también se copia.
 
@@ -183,11 +200,13 @@ La colorimetría **no cambia sus reglas** (CO-01 a CO-10). El cotizador lee su r
 | Concepto | Cálculo | COP |
 |---|---|---|
 | Precio | (120.000 + 15.000) × 1,35, redondeado | 182.000 |
-| Tinte | 60 g × 1,5 × 1,3 = 117 g × $500/g | −58.500 |
-| Oxidante | 117 g × 1,5 = 175,5 ml × $30/ml | −5.265 |
+| Tinte | 60 g × 1,5 × 1,3 × 1,15 = 134,55 g × $500/g | −67.275 |
+| Oxidante | 134,55 g × 1,5 = 201,8 ml × $30/ml | −6.055 |
 | Insumos fijos | | −3.000 |
 | Comisión | 40 % del precio | −72.800 |
-| **Margen** | | **42.435 (23 %)** |
+| **Margen** | | **32.870 (18 %)** |
+
+El «+15.000» del precio es un ajuste que decide el salón; el ×1,15 de los gramos es el consumo extra del estándar de canas. Son cosas distintas.
 
 ## 4. Link de WhatsApp y página pública
 
@@ -202,7 +221,7 @@ La colorimetría **no cambia sus reglas** (CO-01 a CO-10). El cotizador lee su r
 
 **Página `/c/<token>`:**
 - **Muestra:** el nombre del salón (con su color), el servicio, el precio en COP y la vigencia («Válida hasta…» o «Vencida: pide una cotización nueva»).
-- **Pie:** en Básico y Pro, «Cotización hecha con Velli · velli.app»; en Pro+IA, sin pie.
+- **Pie:** en Básico y Pro, «Cotización hecha con Velli · {dominio}», con el dominio de `NEXT_PUBLIC_APP_URL` (`lib/sitio.ts`; hoy `velli-three.vercel.app`, porque Velli no tiene dominio propio); en Pro+IA, sin pie.
 - **No muestra:** el nombre de la clienta, nada del diagnóstico, fotos, datos de salud capilar ni el logo. El logo está en un bucket privado; firmarlo queda para una versión 2.
 - **Técnica:**
   - componente de servidor dinámico que llama a `cotizacion_publica()` con la llave anónima;
@@ -211,7 +230,7 @@ La colorimetría **no cambia sus reglas** (CO-01 a CO-10). El cotizador lee su r
   - `robots: noindex` y `Cache-Control: no-store`;
   - límite por IP con Upstash, para que nadie la recorra a fuerza bruta;
   - Open Graph «Cotización · {salón}», que es lo que muestra la vista previa de WhatsApp. La marca Velli aparece ahí solo en Básico y Pro.
-- **Legal (P13).** Texto provisional, lo redacta Keila: «Precio para el servicio descrito, válido hasta la fecha indicada. Puede cambiar si al momento del servicio el cabello requiere un trabajo distinto». El link no sale sin el texto final y sin la actualización de Privacidad, que hoy no menciona links públicos (R4).
+- **Legal (P13).** Texto provisional, lo redacta Vanessa: «Precio para el servicio descrito, válido hasta la fecha indicada. Puede cambiar si al momento del servicio el cabello requiere un trabajo distinto». El link no sale sin el texto final y sin una actualización de Privacidad que mencione los links públicos (R4). Desde el 2026-10-22 los Términos ya dicen que Velli estima y que el profesional del salón responde por el diagnóstico presencial, las pruebas y la aplicación química.
 
 ## 5. Plantilla para probar en papel (`plantilla-precios.xlsx`)
 
@@ -222,29 +241,30 @@ Es el mismo modelo de este documento, para usar en una visita con el dueño. Se 
 - **Servicios:** viene con los 8 sugeridos del onboarding, más el precio base y qué variables afectan a cada servicio.
 - **Ajustes:** suma o porcentaje por cada valor de cada variable.
 - **Productos:** precio de compra; el costo por gramo se calcula solo.
-- **Consumo:** factores por largo y densidad, y proporción de oxidante.
+- **Consumo:** factores por largo, densidad y canas, y proporción de oxidante.
 - **Comisiones.**
-- **Simulador:** precio, costo, comisión y margen de un caso.
+- **Simulador:** precio, costo, comisión y margen de un caso, con los avisos del estándar (prueba de mechón y Plex, tratamiento sellante, prepigmentación).
 - **Registro:** una semana de casos reales; compara el precio de la hoja con lo cobrado.
 - **Resumen:** cuántos casos coinciden (±5 %) y la diferencia de cada estilista.
 
 **Formato:**
 - Las celdas a llenar van en amarillo con texto azul; las fórmulas, en negro; los datos traídos de otra hoja, en verde.
 - Hay listas desplegables y está listo para imprimir en horizontal.
-- Los valores de ejemplo reproducen el ejemplo de la sección 3: precio $182.000, margen $42.435.
+- Los valores de ejemplo reproducen el ejemplo de la sección 3: precio $182.000, margen $32.870.
 
-**Cómo se verificó.** En este equipo no hay LibreOffice para recalcular, así que las fórmulas se evaluaron con `pycel` en dos escenarios:
+**Cómo se verificó.** En este equipo no hay LibreOffice para recalcular, así que las fórmulas se evaluaron con `pycel` en tres escenarios:
 - el archivo tal cual;
-- una copia con un corte sin fórmula de color y otra estilista con comisión de color sobre precio menos producto.
+- una copia con un corte sin fórmula de color y otra estilista con comisión de color sobre precio menos producto;
+- el ejemplo con fibra sensibilizada, para ver el aviso obligatorio.
 
-Resultado: 0 errores en las 215 fórmulas con datos y 57 de 57 valores esperados. Las 100 filas del Registro tienen la misma fórmula. Script y salida: `calculos/verificar_plantilla.py` y `calculos/verificar_plantilla_salida.txt`. El archivo pide recalcular al abrirse (`fullCalcOnLoad`), así que Excel y Google Sheets muestran los valores de inmediato.
+Resultado (2026-10-22, con los estándares nuevos): 0 errores en las 227 fórmulas con datos y 67 de 67 valores esperados. Las 100 filas del Registro tienen la misma fórmula. Script y salida: `calculos/verificar_plantilla.py` y `calculos/verificar_plantilla_salida.txt`. El archivo pide recalcular al abrirse (`fullCalcOnLoad`), así que Excel y Google Sheets muestran los valores de inmediato.
 
 ## 6. Orden de implementación (cuando se apruebe)
 
-1. Aplicar `migration-proteger-perfil.sql` (urgente) y `migration-feature-flags.sql`.
+1. Aplicar `migration-proteger-perfil.sql` y `migration-feature-flags.sql` (hecho; las dos confirmadas el 2026-10-22).
 2. Regenerar `schema.sql` (con colorimetría y cortes) y archivar las migraciones aplicadas (R10).
 3. **Probar en papel** con 3 salones usando `plantilla-precios.xlsx`. Antes de construir la interfaz, eso dice si las variables y la forma de los ajustes sirven.
-4. Keila valida los tramos de largo, la regla del estado de la fibra, la división de las canas y los textos legales.
+4. Hecho el 2026-10-22: los tramos de largo, el estado de la fibra y la división de las canas quedan como estándares configurables de Velli (§1.1), sin validación externa. Los textos legales los redacta Vanessa.
 5. Aplicar el borrador del cotizador, revisado con lo aprendido en papel. **Hoy no hay base de staging:** recomiendo crear un proyecto Supabase de pruebas para aplicarlo primero allí.
 6. Construir:
    - `lib/cotizador` (variables, precio, costo y comisión como funciones puras, con pruebas);
@@ -258,8 +278,8 @@ Resultado: 0 errores en las 215 fórmulas con datos y 57 de 57 valores esperados
 
 | # | Decisión | Mi recomendación |
 |---|---|---|
-| E1 | Variables: tramos de largo, regla del estado de la fibra y canas divididas en dos | Que Keila las valide con la prueba en papel |
+| E1 | Variables: tramos de largo, regla del estado de la fibra y canas divididas en dos | **Decidida el 2026-10-22:** estándares configurables (§1.1). La prueba en papel dice si los salones los usan así |
 | E2 | Ajustes por porcentaje, por suma o ambos | Dejar ambos en la prueba y decidir según lo que usen los 3 salones |
-| E3 | Texto del mensaje de WhatsApp y textos legales de la página | Keila |
+| E3 | Texto del mensaje de WhatsApp y textos legales de la página | Vanessa |
 | E4 | Base de staging antes de aplicar el borrador | Sí |
 | E5 | Botón central: «Cotizar» y «Nuevo diagnóstico» | Sí, cuando exista el cotizador |

@@ -16,7 +16,7 @@ export interface Clienta {
   tipoRizoPrincipal?: string;
   ultimaVisita?: string;
   totalVisitas: number;
-  // Seguridad química (validación Keila 6.P7): con cualquiera de las dos
+  // Seguridad química (validación técnica 6.P7): con cualquiera de las dos
   // banderas activas, los servicios de color NO se confirman sin una prueba
   // de sensibilidad negativa dentro de la ventana de 48 h.
   nuevaEnColor?: boolean;

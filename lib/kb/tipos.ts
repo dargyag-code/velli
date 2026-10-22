@@ -48,7 +48,7 @@ export type SegmentoRegla =
   | 'intervalo'             // primera
   | 'config'                // valores fijos (disclaimer)
   // Segmentos de REFERENCIA: contenido consultable desde el panel que el
-  // evaluador de diagnóstico IGNORA por completo. Existen para que Keila
+  // evaluador de diagnóstico IGNORA por completo. Existen para que el equipo
   // revise y versione material que no forma parte del plan de la clienta.
   // NO reutilizar 'config' para esto: su campo disclaimerProductos SÍ se
   // inyecta en el resultado del diagnóstico.

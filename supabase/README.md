@@ -70,17 +70,22 @@ y ambos se movieron a `_archive/`. Ver `CONOCIMIENTO.md` en la raíz.
 - El contenido de Fase 2 (Sprint B) quedó cargado en estado **borrador**:
   se revisa y publica desde el panel `/conocimiento`.
 
-## Velli BI: migraciones pendientes y desfases (octubre 2026)
+## Velli BI: migraciones de octubre 2026 y desfases
 
-Ninguna de estas se ha aplicado. Las aplica Vanessa en el SQL Editor, en
-este orden:
+Las dos están aplicadas en producción desde el 2026-10-22. Siguen en
+`supabase/` porque `schema.sql` todavía no las refleja: primero se regenera y
+después se archivan.
 
-1. **`migration-proteger-perfil.sql` (prioridad ALTA).** Hoy una cuenta con
-   sesión puede cambiar su propio `profiles.rol` a `corporativo` y escribir
+1. **`migration-proteger-perfil.sql`: APLICADA.** Vanessa lo confirmó el
+   2026-10-22: `pg_trigger` muestra `profiles_guard_campos_protegidos`. Queda
+   en `supabase/` hasta regenerar `schema.sql`, que todavía no trae el
+   trigger; después se archiva. Antes de aplicarla, una cuenta con
+   sesión podía cambiar su propio `profiles.rol` a `corporativo` y escribir
    en la librería global. El trigger cierra `rol`, `es_fundadora` y
    `feature_flags` a las sesiones de usuario. Ver R17 en
    `docs/velli-bi/00-auditoria.md`.
-2. **`migration-feature-flags.sql`.** Agrega `profiles.feature_flags`, los
+2. **`migration-feature-flags.sql`: APLICADA** el 2026-10-22 (verificado por
+   lectura: los 6 perfiles tienen `{}`). Agrega `profiles.feature_flags`, los
    overrides de flags por salón de `lib/flags`. El código funciona sin ella:
    usa los valores del entorno. Trae la misma guardia que la anterior, así
    que el orden da igual.
@@ -95,10 +100,11 @@ todavía.**
 
 El diseño está en `docs/velli-bi/02-diseno-cotizador.md`. Se probaron con las
 dos migraciones de arriba en un Postgres en memoria (PGlite), nunca contra
-producción: 50 de 50 en verde
+producción: 51 de 51 en verde
 (`docs/velli-bi/calculos/probar_borradores.mjs`). Antes de aplicarlos hacen
-falta la prueba en papel, la validación de Keila y, de preferencia, una base de
-staging.
+falta la prueba en papel y, de preferencia, una base de staging. Las variables
+del cotizador usan los estándares configurables del 2026-10-22, sin
+validación externa.
 
 Desfase conocido. `migration-colorimetria.sql` y `migration-cortes.sql` ya
 están aplicadas en producción: el 2026-10-19 verifiqué por lectura que
@@ -109,7 +115,7 @@ primero, una base nueva montada desde `schema.sql` quedaría sin esas tablas.
 
 ## Capa legal y de gobernanza: migración APLICADA y archivada
 
-`migration-legal-gobernanza.sql` implementa la validación firmada de Keila
+`migration-legal-gobernanza.sql` implementa la validación técnica firmada
 (roles corporativo/salon, cartas de marca `kb_marcas` + `salon_marcas_activas`,
 consentimientos versionados por clienta, pruebas de sensibilidad y el trigger
 `citas_guard_legal` de la agenda). Ver `GOBERNANZA.md` en la raíz.

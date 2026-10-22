@@ -3,7 +3,7 @@
 //
 // La verificación que define "la calculadora está viva" son los tres casos
 // pedagógicos de la Entrega 3 §8, al final de este archivo. Antes van los
-// guardarraíles y las reglas duras de Keila, que MANDAN sobre la Entrega 3.
+// guardarraíles y las reglas duras de la validación técnica, que MANDAN sobre la Entrega 3.
 // ══════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from 'vitest';
@@ -27,9 +27,9 @@ function calcular(dx: Partial<DiagnosticoColor>, sesion: EntradaSesion) {
   return calcularColor({ diagnostico: { ...DX_SANO, ...dx }, sesion });
 }
 
-// ═══ Tablas universales · versión de Keila ════════════════════════════════
+// ═══ Tablas universales · versión de la validación técnica ════════════════════════════════
 
-describe('tabla de alturas: manda la sección 4.1 de Keila', () => {
+describe('tabla de alturas: manda la sección 4.1 de la validación técnica', () => {
   it('cubre la escala completa 1–10 con la columna latinoamericana', () => {
     expect(TABLA_ALTURAS).toHaveLength(10);
     for (const fila of TABLA_ALTURAS) {
@@ -37,13 +37,13 @@ describe('tabla de alturas: manda la sección 4.1 de Keila', () => {
     }
   });
 
-  it('nivel 1 es "Rojo profundo" (Keila), no agrupado 1-3 como la Entrega 3', () => {
+  it('nivel 1 es "Rojo profundo" (validación técnica), no agrupado 1-3 como la Entrega 3', () => {
     expect(filaAltura(1).fondoAclaracion).toBe('Rojo profundo');
     expect(filaAltura(2).fondoAclaracion).toBe('Rojo');
     expect(filaAltura(3).fondoAclaracion).toBe('Rojo');
   });
 
-  it('reproduce los fondos y neutralizantes de Keila verbatim', () => {
+  it('reproduce los fondos y neutralizantes de la validación técnica verbatim', () => {
     expect(filaAltura(6).fondoAclaracion).toBe('Anaranjado');
     expect(filaAltura(6).neutralizante).toBe('Azul (Ceniza)');
     expect(filaAltura(6).denominacionLatam).toBe('.1');
@@ -149,7 +149,7 @@ describe('guardarraíles: elasticidad, banderas médicas y henna', () => {
   });
 });
 
-// ═══ CO-05 · Cobertura de canas por tramos (regla dura de Keila) ══════════
+// ═══ CO-05 · Cobertura de canas por tramos (regla dura de la validación técnica) ══════════
 
 describe('CO-05: tramos de canas y candado de 20 volúmenes', () => {
   it('por debajo de 25 % no impone base natural', () => {
@@ -325,7 +325,7 @@ describe('CO-10: plan multi-sesión por etapas', () => {
 
 // ═══ Autoridad: razonamiento visible + fórmula editable ══════════════════
 
-describe('nivel de autoridad (Keila, respuesta 6)', () => {
+describe('nivel de autoridad (validación técnica, respuesta 6)', () => {
   it('la salida expone el porqué junto a la fórmula sugerida', () => {
     const r = calcular({}, {
       nivelNatural: 6, pigmentoArtificial: false, nivelObjetivo: 8, temperatura: 'frio',

@@ -1,25 +1,25 @@
 // ══════════════════════════════════════════════════════════════════════════
 // Reglas de oro de formulación CO-01 … CO-10.
 //
-// Donde la VALIDACIÓN de Keila fija un detalle, MANDA su versión sobre la
+// Donde la VALIDACIÓN técnica fija un detalle, MANDA su versión sobre la
 // Entrega 3 — el caso grande es CO-05: la Entrega 3 dejaba la proporción
-// exacta "a las cartas técnicas"; Keila la cerró por tramos y añadió el
+// exacta "a las cartas técnicas"; la validación la cerró por tramos y añadió el
 // candado de 20 volúmenes por encima del 75 % de canas.
 //
-// Los textos marcados VERBATIM son de Keila y no se reescriben.
+// Los textos marcados VERBATIM son de la validación y no se reescriben.
 // ══════════════════════════════════════════════════════════════════════════
 
 import type { DiagnosticoColor, Bloqueo, Advertencia } from './tipos';
 import type { NivelTono, Volumen } from './tablas';
 
 // ── CO-09 · Protocolo de incompatibilidad por henna y metales ─────────────
-// VERBATIM de la validación firmada de Keila (sección 4.2, CO-09). Este
+// VERBATIM de la validación técnica firmada (sección 4.2, CO-09). Este
 // texto se muestra en pantalla tal cual ante sospecha o registro dudoso.
 export const CO09_PROTOCOLO_VERBATIM =
   'Realizar prueba de mechón en la nuca baja con polvo decolorante y peróxido de 20 volúmenes por 30 minutos. Si el cabello genera elevación térmica al tacto, emite olor azufrado, vira hacia tonos verdosos/azulados o pierde elasticidad, el servicio químico queda terminantemente suspendido';
 
 // ── CO-05 · Cobertura de canas ────────────────────────────────────────────
-// Keila cerró los tramos: de 25 a 50 % → 1/4 de tubo de serie natural
+// La validación cerró los tramos: de 25 a 50 % → 1/4 de tubo de serie natural
 // obligatorio; de 50 a 75 % → 1/2 tubo; más de 75 % → 3/4 o tubo completo Y
 // oxidante bloqueado exclusivamente a 20 volúmenes para garantizar el
 // depósito molecular de pigmento.
@@ -62,7 +62,7 @@ export function tramoCanas(porcentaje: number | undefined): TramoCanas | null {
   };
 }
 
-// ── Guardarraíles (Entrega 3 §2, con las reglas de Keila) ─────────────────
+// ── Guardarraíles (Entrega 3 §2, con las reglas de la validación) ─────────────────
 
 /**
  * Evalúa los bloqueos duros ANTES de cualquier cálculo. Si devuelve alguno,

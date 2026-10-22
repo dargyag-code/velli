@@ -2,18 +2,19 @@
 // Seed canónico — FASE 2: liso (tipo 1), ondulado (tipo 2), módulos
 // transversales de canas y alopecia, y complementos de tipos 3–4.
 //
-// Fuentes (docs/conocimiento/):
+// Fuentes (fuera del repo desde el 2026-10-22; los originales están en el
+// OneDrive del proyecto, Documentos/conocimiento):
 //   · Entrega 1 — Velli_Fase2_Liso_Ondulado_BORRADOR_v0.1.docx
 //   · Entrega 2 — Velli_Fase2_Canas_Alopecia_BORRADOR_v0.1.docx
 //   · Entrega 4 — Velli_Base_Conocimiento_Entrega4_Tipos3y4_BORRADOR_v0.1.docx
-//   · VALIDACIÓN KEILA MORENO.docx — sus correcciones MANDAN sobre los
+//   · Documento de validación técnica — sus correcciones MANDAN sobre los
 //     borradores (C-08 y A-02 llevan texto VERBATIM del documento).
 //
 // TODO el contenido de este archivo entra en estado BORRADOR: se revisa con
 // la vista previa del panel /conocimiento y se publica desde ahí. Mientras
 // no se publique, producción no cambia (el loader solo lee 'publicada').
 //
-// Arquitectura transversal (validada por Keila, P.7 Entrega 2): canas y
+// Arquitectura transversal (validación técnica, P.7 Entrega 2): canas y
 // alopecia NO son tipos de cabello — son módulos que se suman al
 // diagnóstico del tipo base. El motor procesa patrón + porosidad + cana +
 // alopecia simultáneamente para una única ruta de servicio.
@@ -318,7 +319,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 2 · A-06 (regla negativa del motor). Validación Keila: "Regla Negativa Inmutable A-06 ... Es nuestro blindaje legal regional". Se implementa como bandera que suma los bloqueos a toda derivación activa; la imposibilidad de generar plan cosmético la fuerza el evaluador en código (no configurable por datos). Si se agrega una señal médica nueva desde el panel, incluirla también en esta condición.',
+      'Entrega 2 · A-06 (regla negativa del motor). Validación técnica: "Regla Negativa Inmutable A-06 ... Es nuestro blindaje legal regional". Se implementa como bandera que suma los bloqueos a toda derivación activa; la imposibilidad de generar plan cosmético la fuerza el evaluador en código (no configurable por datos). Si se agrega una señal médica nueva desde el panel, incluirla también en esta condición.',
   },
 
   // ═══ TRATAMIENTO PRINCIPAL (primera que matchea) ══════════════════════
@@ -775,7 +776,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
     },
     salida: { texto: 'Módulo canas: matización y brillo (CAN-1)' },
     notasInternas:
-      'Entrega 2 · C-02: el módulo de canas se SUMA al diagnóstico base sin reemplazarlo (arquitectura transversal validada por Keila).',
+      'Entrega 2 · C-02: el módulo de canas se SUMA al diagnóstico base sin reemplazarlo (arquitectura transversal de la validación técnica).',
   },
   {
     clave: 'adicional.f2.can2',
@@ -859,7 +860,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 1 · REGLA L-01 (raíz grasa, hebra sana). Pregunta abierta para Keila: ¿lavado diario suave o interdiario para este perfil?',
+      'Entrega 1 · REGLA L-01 (raíz grasa, hebra sana). Pregunta abierta: ¿lavado diario suave o interdiario para este perfil?',
   },
   {
     clave: 'nota.f2.l02',
@@ -925,7 +926,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 1 · REGLA L-04 (elasticidad baja). Nota para Keila pendiente: cómo comunicar el corte progresivo a la clienta.',
+      'Entrega 1 · REGLA L-04 (elasticidad baja). Nota pendiente: cómo comunicar el corte progresivo a la clienta.',
   },
   {
     clave: 'nota.f2.l05',
@@ -965,7 +966,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 1 · REGLA L-06. Pregunta de fondo para Keila: postura oficial de Velli/KEYSHOP frente a keratinas y alisados.',
+      'Entrega 1 · REGLA L-06. Pregunta de fondo: postura oficial de Velli/KEYSHOP frente a keratinas y alisados.',
   },
   {
     clave: 'nota.f2.l07',
@@ -1114,7 +1115,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 1 · REGLA O-03 (2C con frizz alto en clima húmedo — caso Villavicencio). Frontera 2C↔3A: criterio de enrutamiento validado por Keila — patrón en mojado sin producto (S sin resorte → tipo 2; resorte → motor de rizos) y objetivo como desempate.',
+      'Entrega 1 · REGLA O-03 (2C con frizz alto en clima húmedo — caso Villavicencio). Frontera 2C↔3A: criterio de enrutamiento de la validación técnica — patrón en mojado sin producto (S sin resorte → tipo 2; resorte → motor de rizos) y objetivo como desempate.',
   },
   {
     clave: 'nota.f2.o04',
@@ -1251,12 +1252,12 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 1 · REGLA O-10 (quiere más rizo). El mensaje "su mejor versión" quedó sugerido en el borrador para validación de redacción de Keila.',
+      'Entrega 1 · REGLA O-10 (quiere más rizo). El mensaje "su mejor versión" quedó sugerido en el borrador, pendiente de validar su redacción.',
   },
 
   // ═══ NOTAS — Entrega 2: módulo canas (prios 240–249) ══════════════════
   // Módulo TRANSVERSAL: se suma al diagnóstico del tipo base sin
-  // reemplazarlo, en cualquier tipo 1–4 (arquitectura validada por Keila).
+  // reemplazarlo, en cualquier tipo 1–4 (arquitectura de la validación técnica).
   {
     clave: 'nota.f2.c01',
     segmento: 'nota',
@@ -1275,7 +1276,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 2 · REGLA C-01. Validación Keila: mito de arrancar la cana validado para el módulo educativo de la app.',
+      'Entrega 2 · REGLA C-01. Validación técnica: mito de arrancar la cana validado para el módulo educativo de la app.',
   },
   {
     clave: 'nota.f2.c02',
@@ -1296,7 +1297,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 2 · REGLA C-02 + reglas del cronograma CAN-1. Pregunta para Keila: ¿hay matizador violeta en el catálogo KEYSHOP?',
+      'Entrega 2 · REGLA C-02 + reglas del cronograma CAN-1. Pregunta abierta: ¿hay matizador violeta en el catálogo KEYSHOP?',
   },
   {
     clave: 'nota.f2.c03',
@@ -1315,7 +1316,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 2 · REGLA C-03. Validación Keila: la cana se identifica como hebra con alteración estructural; refuerzo localizado transversal según el servicio.',
+      'Entrega 2 · REGLA C-03. Validación técnica: la cana se identifica como hebra con alteración estructural; refuerzo localizado transversal según el servicio.',
   },
   {
     clave: 'nota.f2.c04',
@@ -1350,7 +1351,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 2 · REGLA C-05 + CAN-2. Pregunta para Keila: ¿KEYSHOP ejecuta las técnicas de color de transición o se alía con colorista hasta Fase 3?',
+      'Entrega 2 · REGLA C-05 + CAN-2. Pregunta abierta: ¿KEYSHOP ejecuta las técnicas de color de transición o se alía con colorista hasta Fase 3?',
   },
   {
     clave: 'nota.f2.c06',
@@ -1405,7 +1406,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 2 · REGLA C-08 (canicie prematura). CORRECCIÓN DE KEILA APLICADA: el primer texto es VERBATIM del documento de validación (reemplaza la redacción del borrador; se elimina del PDF cualquier palabra que induzca a la hipocondría).',
+      'Entrega 2 · REGLA C-08 (canicie prematura). CORRECCIÓN DE LA VALIDACIÓN TÉCNICA APLICADA: el primer texto es VERBATIM del documento de validación (reemplaza la redacción del borrador; se elimina del PDF cualquier palabra que induzca a la hipocondría).',
   },
 
   // ═══ NOTAS — Entrega 2: acompañamiento de alopecia (prios 250–259) ════
@@ -1430,7 +1431,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 2 · REGLA A-01. Línea jurídica validada por Keila (guion de derivación aprobado palabra por palabra).',
+      'Entrega 2 · REGLA A-01. Línea jurídica de la validación técnica (guion de derivación aprobado palabra por palabra).',
   },
   {
     clave: 'nota.f2.a02',
@@ -1451,7 +1452,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 2 · REGLA A-02. CORRECCIÓN DE KEILA APLICADA: el primer texto es el copy oficial VERBATIM del documento de validación. Aprobada con máxima prioridad para la prevención en salones. Si hay zonas lisas y brillantes, gana la derivación (fibrosis).',
+      'Entrega 2 · REGLA A-02. CORRECCIÓN DE LA VALIDACIÓN TÉCNICA APLICADA: el primer texto es el copy oficial VERBATIM del documento de validación. Aprobada con máxima prioridad para la prevención en salones. Si hay zonas lisas y brillantes, gana la derivación (fibrosis).',
   },
   {
     clave: 'nota.f2.a03',
@@ -1497,7 +1498,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 2 · REGLA A-05. Pregunta para Keila: ¿incorporamos fibras/densificadores al catálogo KEYSHOP?',
+      'Entrega 2 · REGLA A-05. Pregunta abierta: ¿incorporamos fibras/densificadores al catálogo KEYSHOP?',
   },
 
   // ═══ NOTAS — Entrega 4: complementos tipos 3–4 (prios 260–279) ════════
@@ -1523,7 +1524,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 4 · REGLA R3-01 · FUSIONAR: se conservan del motor las frecuencias (cronograma de rizos intacto) y de aquí solo el principio de capas ligeras. Validación Keila: "prohibiendo mantecas densas para evitar el colapso del volumen".',
+      'Entrega 4 · REGLA R3-01 · FUSIONAR: se conservan del motor las frecuencias (cronograma de rizos intacto) y de aquí solo el principio de capas ligeras. Validación técnica: "prohibiendo mantecas densas para evitar el colapso del volumen".',
   },
   {
     clave: 'nota.f2.r302',
@@ -1559,7 +1560,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 4 · REGLA T4-01 · NUEVA (el motor no registra encogimiento). Validación Keila: "El software exigirá al estilista registrar dos medidas de longitud en el Pasaporte Capilar... la única vía científica para demostrar la tasa de crecimiento real". Dimensiones: largoNaturalCm / largoEstiradoCm.',
+      'Entrega 4 · REGLA T4-01 · NUEVA (el motor no registra encogimiento). Validación técnica: "El software exigirá al estilista registrar dos medidas de longitud en el Pasaporte Capilar... la única vía científica para demostrar la tasa de crecimiento real". Dimensiones: largoNaturalCm / largoEstiradoCm.',
   },
   {
     clave: 'nota.f2.t402',
@@ -1751,7 +1752,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
 
   // ═══ PRODUCTOS (categorías, no marcas — todas las que matchean) ═══════
   // Los productos se nombran por categoría; el mapeo al catálogo KEYSHOP
-  // es parte de la validación de Keila (pregunta abierta n.º 1, Entrega 1).
+  // es parte de la validación técnica (pregunta abierta n.º 1, Entrega 1).
   {
     clave: 'producto.f2.eq1',
     segmento: 'producto_resumen',
@@ -2040,7 +2041,7 @@ export const REGLAS_FASE2: ReglaKB[] = [
       ],
     },
     notasInternas:
-      'Entrega 4 §4 · protocolo de referencia, validación Keila: "Introducción obligatoria en la app del Protocolo de Día de Lavado Tipo 4". Nota de producto pendiente: duración extendida automática en agenda para servicios tipo 4 (2–4 h).',
+      'Entrega 4 §4 · protocolo de referencia, validación técnica: "Introducción obligatoria en la app del Protocolo de Día de Lavado Tipo 4". Nota de producto pendiente: duración extendida automática en agenda para servicios tipo 4 (2–4 h).',
   },
   {
     clave: 'casa.f2.eq1_evitar',

@@ -1,7 +1,8 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 -- MIGRACIÓN: proteger los campos de privilegio de profiles
--- Estado: PENDIENTE — NO aplicada. La aplica Vanessa en el SQL Editor.
--- Prioridad: ALTA — aplicar antes de abrir la beta a salones.
+-- Estado: APLICADA en producción. Vanessa lo confirmó el 2026-10-22: pg_trigger
+-- muestra profiles_guard_campos_protegidos junto a set_updated_at_profiles.
+-- Sigue en supabase/ hasta regenerar schema.sql; después se archiva.
 --
 -- Problema (docs/velli-bi/00-auditoria.md, R17): `authenticated` tiene
 -- GRANT ALL sobre profiles y la policy "Users can update own profile" solo

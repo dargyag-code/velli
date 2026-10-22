@@ -479,7 +479,7 @@ export default function AgendaPage() {
           </div>
         )}
 
-        {/* Citas de servicio con bloqueos de seguridad (validación Keila) */}
+        {/* Citas de servicio con bloqueos de seguridad (validación técnica) */}
         {!loading && <CitasServicio bloqueoTipo4Minutos={bloqueoTipo4} />}
 
         {/* CTA nueva consulta */}

@@ -2,7 +2,7 @@
 // Cuerpos de los consentimientos informados por clienta.
 //
 // CONTENIDO PLACEHOLDER: borradores de trabajo basados en el Paquete Legal.
-// Los textos definitivos los entrega Keila Moreno; al publicarlos, subir la
+// Al publicar los textos definitivos, subir la
 // versión en lib/legal.ts + public.legal_versiones y retirar el banner de
 // cada página (app/legal/consentimiento-*).
 //

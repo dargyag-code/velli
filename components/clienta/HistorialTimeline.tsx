@@ -6,6 +6,7 @@ import { Clienta, Consulta, SatisfaccionNivel } from '@/lib/types';
 import { formatDate, getTratamientoBg, getTratamientoTextColor, getTratamientoBorderColor, getRizoLabel } from '@/lib/utils';
 import { generateConsultaPDF } from '@/lib/pdfGenerator';
 import { updateConsulta } from '@/lib/db';
+import { enlaceWhatsApp } from '@/lib/whatsapp';
 
 interface Props {
   consultas: Consulta[];
@@ -43,8 +44,7 @@ function buildWhatsAppUrl(clienta: Clienta, consulta: Consulta): string {
     `_Inteligencia capilar a tu alcance_ 🌿`,
   ].filter((l) => l !== null).join('\n');
 
-  const tel = clienta.telefono.replace(/\D/g, '');
-  return `https://wa.me/${tel}?text=${encodeURIComponent(lines)}`;
+  return enlaceWhatsApp(clienta.telefono, lines);
 }
 
 function ConsultaItem({ consulta, clienta, index }: { consulta: Consulta; clienta: Clienta; index: number }) {

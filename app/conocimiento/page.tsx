@@ -1,6 +1,6 @@
 'use client';
 // ══════════════════════════════════════════════════════════════════════════
-// Panel de conocimiento — gobernanza por rol (validación Keila 6.P2).
+// Panel de conocimiento — gobernanza por rol (validación técnica 6.P2).
 //
 // rol 'corporativo': administra la librería global — CRUD de reglas de
 // diagnóstico, flujos de wizard, prompts de IA y cartas técnicas de marca,

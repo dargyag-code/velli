@@ -1,8 +1,10 @@
 # Módulo de cortes — matriz de recomendación
 
-Fuentes: `docs/conocimiento/Velli_Base_Conocimiento_Entrega5_Cortes_BORRADOR_v0.1.docx`
-(fichas y la lógica de su §7) y la `VALIDACIÓN KEILA MORENO.docx`. **Las
-respuestas 4 y 5 de Keila mandan sobre la entrega** donde difieran.
+Fuentes: `Velli_Base_Conocimiento_Entrega5_Cortes_BORRADOR_v0.1.docx` (fichas y
+la lógica de su §7) y la validación técnica firmada de agosto de 2026. **Sus
+respuestas 4 y 5 mandan sobre la entrega** donde difieran. La entrega salió
+del repo el 2026-10-22; el original está en el OneDrive del proyecto
+(`Documentos/conocimiento`).
 
 Migración: `supabase/migration-cortes.sql` (idempotente). **Ya está en
 producción**: lo verifiqué por lectura el 2026-10-19 (`kb_cortes` con 16
@@ -19,9 +21,9 @@ Tests: `tests/cortes.test.ts` y `tests/cortes.integracion.test.ts`.
 
 ---
 
-## Divergencias resueltas a favor de Keila
+## Divergencias resueltas a favor de la validación técnica
 
-| Tema | Entrega 5 | Keila (manda) |
+| Tema | Entrega 5 | Validación (manda) |
 |---|---|---|
 | Estructura del catálogo | §5 y §6 lo parten en "sección mujeres" y "sección hombres" | **Catálogo único** indexado por atributos arquitectónicos (largo, capas, densidad, textura); el género es **filtro de búsqueda opcional** (respuesta 5) |
 | Vocabulario | PR-01 lista **tres** verbos: equilibra, destaca, enmarca | **Cuatro**: añade **celebrar** (§5.1) |
@@ -123,5 +125,5 @@ Estado de los pendientes, verificado en producción por lectura el 2026-10-19:
 4. Hecho (commit `ba8fba3`): `flujo.crecimiento` está publicado. Con el
    módulo congelado, el asistente lo oculta.
 5. Preguntas abiertas de la Entrega 5 §8 sin decidir: si se abren las
-   barberías como segmento comercial, validación del mapeo rostro × corte
-   contra la escuela de Keila, y la ruta de fotos del catálogo.
+   barberías como segmento comercial, cómo validar el mapeo rostro × corte, y
+   la ruta de fotos del catálogo. El módulo está congelado: no bloquean nada.

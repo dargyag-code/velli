@@ -1,7 +1,7 @@
 'use client';
-// Modal de firma digital de consentimientos por clienta (validación Keila
-// 6.P3): muestra el documento completo (placeholder hasta el texto definitivo
-// de Keila), exige el nombre completo tecleado + checkbox, y registra la
+// Modal de firma digital de consentimientos por clienta (validación técnica
+// 6.P3): muestra el documento completo (placeholder hasta el texto
+// definitivo), exige el nombre completo tecleado + checkbox, y registra la
 // firma con timestamp y versión en consentimientos_clienta.
 // Se usa desde la ficha de la clienta y desde el gate de cámara del wizard.
 

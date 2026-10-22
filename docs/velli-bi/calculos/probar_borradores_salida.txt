@@ -45,8 +45,9 @@ OK    · un porcentaje no pasa de 100
 OK    · una cuenta no escribe su propio uso de IA
 OK    · el servidor (service_role) registra el uso
 OK    · cupo del mes: A lleva 1 análisis; B no ve el de A
+OK    · solo se acepta Anthropic como proveedor (sin respaldo de OpenAI)
 OK    · una cuenta no borra su uso para recuperar cupo
 OK    · con el plan vencido no se crea configuración nueva
 OK    · con el plan vencido se sigue leyendo
 
-50/50 OK
+51/51 OK

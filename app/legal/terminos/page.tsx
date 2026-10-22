@@ -1,4 +1,5 @@
 import BannerPlaceholder from '@/components/legal/BannerPlaceholder';
+import CorreoSoporte from '@/components/legal/CorreoSoporte';
 
 const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 
@@ -12,7 +13,7 @@ export default function TerminosPage() {
       <h1 className="text-2xl text-[#2D5A27] mb-1" style={serif}>
         Términos de uso
       </h1>
-      <p className="text-xs text-[#999999] mb-6">Última actualización: abril 2026</p>
+      <p className="text-xs text-[#999999] mb-6">Última actualización: octubre 2026</p>
 
       <BannerPlaceholder />
 
@@ -22,16 +23,40 @@ export default function TerminosPage() {
             1. Propósito del servicio
           </h2>
           <p>
-            Velli Pro es una aplicación profesional dirigida a estilistas que ofrece herramientas
-            para registrar clientas, realizar diagnósticos capilares con apoyo de inteligencia
-            artificial, agendar citas y generar planes de tratamiento. El uso está limitado a
-            fines profesionales legítimos del sector de belleza capilar.
+            Velli Pro es una <strong>herramienta de estimación administrativa y financiera</strong>{' '}
+            para salones de belleza. Ayuda a organizar las clientas y los servicios del salón y a
+            estimar fórmulas, cantidades de producto, precios y costos. Para alimentar esas
+            estimaciones incluye un diagnóstico capilar orientativo, con apoyo opcional de
+            inteligencia artificial. El uso está limitado a fines profesionales legítimos del sector
+            de belleza capilar.
           </p>
         </section>
 
         <section>
           <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
-            2. Cuentas y responsabilidad
+            2. Estimaciones y responsabilidad del profesional
+          </h2>
+          <p>
+            Todo lo que Velli Pro calcula o sugiere (el diagnóstico orientativo, el análisis con
+            IA, los planes sugeridos, las fórmulas de color, las cantidades de producto, los precios
+            y los costos) es una estimación de apoyo, hecha con la información que registra el
+            salón. No es un concepto técnico, médico ni dermatológico, y no garantiza un resultado.
+          </p>
+          <p className="mt-2">
+            <strong>
+              El diagnóstico presencial del cabello y del cuero cabelludo, la prueba de alergia
+              (sensibilidad), la prueba de mechón y la aplicación de cualquier servicio químico son
+              responsabilidad exclusiva del profesional del salón
+            </strong>{' '}
+            que atiende a la clienta, igual que la elección de los productos. Ante señales de una
+            condición del cuero cabelludo o de salud, el profesional debe remitir a la clienta a un
+            médico.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+            3. Cuentas y responsabilidad
           </h2>
           <p>
             Al crear una cuenta declaras que la información suministrada es veraz y que eres la
@@ -42,7 +67,7 @@ export default function TerminosPage() {
 
         <section>
           <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
-            3. Información de las clientas
+            4. Información de las clientas
           </h2>
           <p>
             Al registrar a una clienta te comprometes a contar con su consentimiento para procesar
@@ -55,20 +80,21 @@ export default function TerminosPage() {
 
         <section>
           <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
-            4. Uso de Inteligencia Artificial
+            5. Uso de inteligencia artificial
           </h2>
           <p>
-            El análisis de cabello mediante cámara utiliza modelos de lenguaje visual provistos
-            por OpenAI (GPT-4o). Las fotografías enviadas se procesan únicamente para generar el
-            diagnóstico y no se utilizan para entrenar modelos públicos. Los resultados son una
-            ayuda profesional: <strong>no reemplazan el criterio clínico ni tricológico</strong> de
-            la estilista.
+            El análisis del cabello con fotos (de la cámara o de la galería) usa modelos de
+            inteligencia artificial de Anthropic (Claude). Las fotografías se envían a Anthropic
+            solo para comprobar que muestran cabello y para generar el análisis; según sus
+            condiciones comerciales vigentes, Anthropic no las usa para entrenar sus modelos. Si la
+            IA no está disponible, el diagnóstico se hace de forma manual. Los resultados son una
+            ayuda: <strong>no reemplazan el criterio del profesional</strong>.
           </p>
         </section>
 
         <section>
           <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
-            5. Uso aceptable
+            6. Uso aceptable
           </h2>
           <p>No está permitido usar Velli Pro para:</p>
           <ul className="list-disc pl-5 mt-2 flex flex-col gap-1">
@@ -81,19 +107,21 @@ export default function TerminosPage() {
 
         <section>
           <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
-            6. Disponibilidad y limitación de responsabilidad
+            7. Disponibilidad y limitación de responsabilidad
           </h2>
           <p>
             Velli Pro se ofrece “tal cual”. Hacemos nuestro mejor esfuerzo por mantener el servicio
             disponible, pero no garantizamos ausencia total de errores o interrupciones. En la
             máxima medida permitida por la ley, no seremos responsables por daños indirectos,
-            lucro cesante o pérdida de datos derivados del uso o imposibilidad de uso del servicio.
+            lucro cesante o pérdida de datos derivados del uso o imposibilidad de uso del servicio,
+            ni por el resultado de los servicios prestados en el salón o de las decisiones técnicas
+            o comerciales tomadas con base en las estimaciones.
           </p>
         </section>
 
         <section>
           <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
-            7. Cambios
+            8. Cambios
           </h2>
           <p>
             Podemos actualizar estos términos para reflejar mejoras o cambios legales. Si el cambio
@@ -103,19 +131,15 @@ export default function TerminosPage() {
 
         <section>
           <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
-            8. Contacto
+            9. Contacto
           </h2>
           <p>
-            Para cualquier asunto relacionado con estos términos escríbenos a{' '}
-            <a href="mailto:soporte@velli.app" className="text-[#2D5A27] font-semibold hover:underline">
-              soporte@velli.app
-            </a>
-            .
+            Para cualquier asunto relacionado con estos términos escríbenos a <CorreoSoporte />.
           </p>
         </section>
 
         <p className="text-xs text-[#999999] italic border-t border-[#F0F0F0] pt-4 mt-2">
-          Este documento es una plantilla inicial pendiente de revisión legal.
+          Borrador de trabajo: puede cambiar antes de la versión definitiva.
         </p>
       </div>
     </article>

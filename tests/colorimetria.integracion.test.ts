@@ -9,7 +9,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { calcularColor } from '../lib/color/calculadora';
-import { diagnosticoDesdeConsulta } from '../lib/color/integracion';
+import { diagnosticoDesdeConsulta, PORCENTAJE_CANAS_POR_TRAMO } from '../lib/color/integracion';
 import { evaluarConfirmacionCita, traducirErrorAgenda } from '../lib/agenda/reglas';
 import { CO09_PROTOCOLO_VERBATIM, tramoCanas } from '../lib/color/reglas';
 import { REGLAS_COLORIMETRIA, ESQUEMA_CARTA_MARCA } from '../lib/kb/seed/colorimetria';
@@ -165,6 +165,58 @@ describe('CO-02: la calculadora no se abre en blanco', () => {
   });
 });
 
+// ═══ R5 · Las canas del asistente llegan a CO-05 ═════════════════════════
+// Antes la calculadora leía perfil_extendido.porcentajeCanas, que nada
+// escribe, y CO-05 nunca se activaba con diagnósticos reales.
+
+describe('R5: el % de canas del asistente llega a CO-05', () => {
+  const conCanas = (perfilExtendido: Record<string, unknown>) =>
+    diagnosticoDesdeConsulta(consultaBase({ perfilExtendido }));
+  const cobertura = { nivelNatural: 6 as const, pigmentoArtificial: false, nivelObjetivo: 6 as const, temperatura: 'neutro' as const };
+
+  it('cada tramo del asistente cae en el tramo correcto de CO-05', () => {
+    const casos: [string, number | null][] = [
+      ['sin_canas', null], ['menos_25', null], ['entre_25_50', 0.25],
+    ];
+    for (const [estadoCanas, fraccion] of casos) {
+      const dx = conCanas({ estadoCanas });
+      expect(dx.canasPorPrecisar).toBeUndefined();
+      expect(tramoCanas(dx.porcentajeCanas)?.fraccionBaseNatural ?? null).toBe(fraccion);
+    }
+  });
+
+  it('los tramos 50–75 y 75–100 del estándar dan 1/2 tubo, y 3/4 con 20 vol', () => {
+    expect(tramoCanas(PORCENTAJE_CANAS_POR_TRAMO.entre_50_75)).toMatchObject({
+      fraccionBaseNatural: 0.5, bloqueaVeinteVol: false,
+    });
+    expect(tramoCanas(PORCENTAJE_CANAS_POR_TRAMO.mas_75)).toMatchObject({
+      fraccionBaseNatural: 0.75, bloqueaVeinteVol: true,
+    });
+  });
+
+  it('«más del 50 %» no se adivina: queda por precisar', () => {
+    const dx = conCanas({ estadoCanas: 'mas_50' });
+    expect(dx.porcentajeCanas).toBeUndefined();
+    expect(dx.canasPorPrecisar).toBe(true);
+  });
+
+  it('un porcentaje numérico guardado manda sobre el tramo', () => {
+    expect(conCanas({ estadoCanas: 'entre_25_50', porcentajeCanas: 80 }).porcentajeCanas).toBe(80);
+  });
+
+  it('con un diagnóstico real, CO-05 entra en la guía de razonamiento', () => {
+    const r = calcularColor({ diagnostico: conCanas({ estadoCanas: 'entre_25_50' }), sesion: cobertura });
+    expect(r.guia?.pasos.map((p) => p.regla)).toContain('CO-05');
+  });
+
+  it('al elegir «más del 75 %» el oxidante queda bloqueado a 20 vol', () => {
+    const dx = { ...conCanas({ estadoCanas: 'mas_50' }), porcentajeCanas: PORCENTAJE_CANAS_POR_TRAMO.mas_75 };
+    const r = calcularColor({ diagnostico: dx, sesion: cobertura });
+    expect(r.formula?.volumenBloqueado).toBe(true);
+    expect(r.formula?.volumen).toBe(20);
+  });
+});
+
 // ═══ Seed de la KB ═══════════════════════════════════════════════════════
 
 describe('seed de colorimetría: en borrador y sin drift del motor', () => {
@@ -180,7 +232,7 @@ describe('seed de colorimetría: en borrador y sin drift del motor', () => {
     expect(new Set(claves).size).toBe(claves.length);
   });
 
-  it('hay una regla por nivel de la tabla de Keila', () => {
+  it('hay una regla por nivel de la tabla 4.1', () => {
     for (const fila of TABLA_ALTURAS) {
       const regla = REGLAS_COLORIMETRIA.find((r) => r.clave === `color.altura.${fila.nivel}`);
       expect(regla, `falta color.altura.${fila.nivel}`).toBeDefined();
@@ -215,7 +267,7 @@ describe('seed de colorimetría: en borrador y sin drift del motor', () => {
     expect((regla.salida as { texto: string }).texto).toContain(CO09_PROTOCOLO_VERBATIM);
   });
 
-  it('CO-05 lleva los tres tramos de Keila con el candado de 20 vol', () => {
+  it('CO-05 lleva los tres tramos de la validación con el candado de 20 vol', () => {
     const texto = (
       REGLAS_COLORIMETRIA.find((r) => r.clave === 'color.regla.co-05')!.salida as { texto: string }
     ).texto;

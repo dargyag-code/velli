@@ -2,7 +2,7 @@
 // Siluetas vectoriales PROPIAS — 7 formas de rostro + esquema geométrico por
 // corte.
 //
-// Decisión de Keila (respuesta 4, con peso jurídico): la app NO consume
+// Decisión de la validación técnica (respuesta 4, con peso jurídico): la app NO consume
 // imágenes extraídas de buscadores de internet. Estas siluetas son
 // geometría dibujada aquí mismo (paths SVG escritos a mano), sin fuente
 // externa, sin dependencias y sin derechos de terceros.

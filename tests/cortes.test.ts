@@ -1,10 +1,11 @@
 // ══════════════════════════════════════════════════════════════════════════
 // Módulo de cortes — matriz de recomendación (Entrega 5, con las respuestas
-// 4 y 5 de Keila mandando sobre la entrega).
+// 4 y 5 de la validación técnica mandando sobre la entrega).
 //
 // El test más importante de este archivo es el de LENGUAJE: audita que
 // ninguna salida de la matriz contenga términos punitivos o de corrección.
-// Es la política lingüística de Keila (§5.1) y, en sus palabras, "aquí se
+// Es la política lingüística de la validación técnica (§5.1) y, en palabras del
+// documento, "aquí se
 // juega la diferencia entre una app que empodera y una que acompleja".
 // ══════════════════════════════════════════════════════════════════════════
 
@@ -30,7 +31,7 @@ const SESION_BASE: EntradaSesionCorte = {
   toleranciaMantenimiento: 'media',
 };
 
-// ═══ Catálogo: decisión de Keila (respuesta 5) ═══════════════════════════
+// ═══ Catálogo: decisión de la validación técnica (respuesta 5) ═══════════════════════════
 
 describe('catálogo único indexado por atributos arquitectónicos', () => {
   it('tiene las 16 fichas semilla (W-01..W-08, M-01..M-08)', () => {
@@ -81,7 +82,7 @@ describe('catálogo único indexado por atributos arquitectónicos', () => {
     expect(claves).toContain('W-03');
   });
 
-  it('W-07 lleva el nombre que fijó Keila', () => {
+  it('W-07 lleva el nombre que fijó la validación técnica', () => {
     expect(fichaPorClave('W-07')!.nombre).toBe('Corte Arquitectónico Velli en Seco');
   });
 
@@ -275,10 +276,10 @@ describe('puntuación por rostro: favorece +2 / neutro +1 / precaución 0', () =
   });
 });
 
-// ═══ LENGUAJE · política lingüística de Keila (§5.1) ════════════════════
+// ═══ LENGUAJE · política lingüística de la validación técnica (§5.1) ════════════════════
 
 describe('lenguaje: equilibrar, destacar, enmarcar, celebrar — nunca corregir', () => {
-  it('los cuatro verbos permitidos son los de Keila, no los tres de la Entrega 5', () => {
+  it('los cuatro verbos permitidos son los de la validación técnica, no los tres de la Entrega 5', () => {
     expect([...VERBOS_PERMITIDOS]).toEqual([
       'equilibrar', 'destacar', 'enmarcar', 'celebrar',
     ]);

@@ -7,6 +7,7 @@ import {
 import { Consulta, Clienta, WizardData } from '@/lib/types';
 import { getTratamientoColor, getTratamientoBg, getTratamientoTextColor, formatDate, addWeeks, todayISO, getRizoLabel } from '@/lib/utils';
 import { getTratamientoPrincipalExplicacion } from '@/lib/diagnosticEngine';
+import { enlaceWhatsApp } from '@/lib/whatsapp';
 import { RizoPattern } from '../wizard/RizoPatterns';
 import Button from '../ui/Button';
 
@@ -80,17 +81,15 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
 
   const handleWhatsApp = () => {
     const nombre = clienta?.nombre || 'clienta';
-    const msg = encodeURIComponent(
+    const msg =
       `Hola ${nombre}! 🌸 Aquí tu resumen de diagnóstico capilar de Velli — Inteligencia capilar a tu alcance:\n\n` +
       `✨ Tipo de cabello: ${getRizoLabel(consulta.tipoRizoPrincipal)}\n` +
       `💧 Porosidad: ${consulta.porosidad}\n` +
       `⚖️ Balance: ${consulta.balanceHP}\n\n` +
       `🎯 Tratamiento: ${resultado.tratamientoPrincipal}\n\n` +
       `📅 Próxima cita sugerida: ${formatDate(proximaCita)}\n\n` +
-      `Con amor por tu cabello — Velli Pro, Inteligencia capilar a tu alcance 💚`
-    );
-    const tel = clienta?.telefono?.replace(/\D/g, '') || '';
-    window.open(`https://wa.me/${tel}?text=${msg}`, '_blank');
+      `Con amor por tu cabello — Velli Pro, Inteligencia capilar a tu alcance 💚`;
+    window.open(enlaceWhatsApp(clienta?.telefono, msg), '_blank');
   };
 
   return (

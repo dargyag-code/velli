@@ -20,6 +20,11 @@ export interface DiagnosticoColor {
   pruebaMechonSuperada?: boolean;
   /** Porcentaje de canas 0–100. */
   porcentajeCanas?: number;
+  /**
+   * El diagnóstico dice «más del 50 %» sin precisar: abarca dos tramos de
+   * CO-05 (1/2 tubo, o 3/4 con 20 vol), así que la estilista elige uno.
+   */
+  canasPorPrecisar?: boolean;
   /** Canas marcadas como resistentes en el diagnóstico. */
   canasResistentes?: boolean;
   /** Historial de decoloración previa (para CO-06). */
@@ -55,7 +60,7 @@ export interface Bloqueo {
   mensaje: string;
   /** Camino previo que la calculadora propone en lugar de la fórmula. */
   caminoPrevio: string;
-  /** Texto que debe mostrarse VERBATIM (protocolo validado por Keila). */
+  /** Texto que debe mostrarse VERBATIM (protocolo de la validación técnica). */
   textoVerbatim?: string;
   /** Semanas de bloqueo antes de reevaluar (REP-1/REP-2 → 4 semanas). */
   reevaluarEnSemanas?: number;
@@ -82,13 +87,13 @@ export interface GuiaRazonamiento {
   fondoEsperado: string;
   accionSobreFondo: 'neutralizar' | 'aprovechar' | 'equilibrar';
   neutralizacion: string;
-  /** Denominación latinoamericana del reflejo (columna de Keila 4.1). */
+  /** Denominación latinoamericana del reflejo (columna 4.1 de la validación). */
   denominacionLatam: string;
   /** Pasos en orden, con su regla de origen (CO-xx). */
   pasos: { regla: string; texto: string }[];
 }
 
-/** §7.3 · Fórmula esquemática. 100% EDITABLE por la estilista (Keila, resp. 6). */
+/** §7.3 · Fórmula esquemática. 100% EDITABLE por la estilista (validación técnica, resp. 6). */
 export interface FormulaSugerida {
   /** Componentes de la mezcla en gramos. */
   componentes: { descripcion: string; gramos: number; notaRegla?: string }[];

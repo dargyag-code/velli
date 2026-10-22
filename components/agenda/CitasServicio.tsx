@@ -1,6 +1,6 @@
 'use client';
 // ══════════════════════════════════════════════════════════════════════════
-// Citas de servicio de la agenda (validación Keila 6.P7).
+// Citas de servicio de la agenda (validación técnica 6.P7).
 //
 // Bloqueos que se aplican aquí (la DB los refuerza con citas_guard_legal):
 //   a) Confirmar un servicio de color con clienta "nueva en color" o "cambio

@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════════
-// Consentimientos digitales por clienta (validación Keila, sección 6.P3).
+// Consentimientos digitales por clienta (validación técnica, sección 6.P3).
 //
 // Firma digital = nombre completo tecleado + checkbox de aceptación +
 // timestamp + versión aceptada, guardada por clienta en su historial

@@ -21,6 +21,7 @@ import {
 import { getProfile, type Profile } from '@/lib/profile';
 import { Clienta, Consulta } from '@/lib/types';
 import { formatDate, getRizoLabel } from '@/lib/utils';
+import { enlaceWhatsApp } from '@/lib/whatsapp';
 
 const SPARK_LINES = {
   green: '0,15 14,11 28,13 42,7 56,9 70,5 85,8 100,2',
@@ -424,10 +425,12 @@ export default function Dashboard() {
                 />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
                   {inactivas.map((c) => {
-                    const tel = c.telefono?.replace(/\D/g, '');
-                    const msg = encodeURIComponent(
-                      `Hola ${c.nombre}! 🌿 Han pasado ${c.diasInactiva} días desde tu última visita en Velli Pro. ¿Agendamos tu próxima consulta?`
-                    );
+                    const whatsapp = c.telefono
+                      ? enlaceWhatsApp(
+                          c.telefono,
+                          `Hola ${c.nombre}! 🌿 Han pasado ${c.diasInactiva} días desde tu última visita en Velli Pro. ¿Agendamos tu próxima consulta?`
+                        )
+                      : null;
                     return (
                       <article
                         key={c.id}
@@ -474,9 +477,9 @@ export default function Dashboard() {
                             Sin visitas hace {c.diasInactiva} días
                           </p>
                         </div>
-                        {tel && (
+                        {whatsapp && (
                           <a
-                            href={`https://wa.me/${tel}?text=${msg}`}
+                            href={whatsapp}
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{ flexShrink: 0, textDecoration: 'none' }}

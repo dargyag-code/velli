@@ -2,10 +2,10 @@
 // ══════════════════════════════════════════════════════════════════════════
 // Matriz de recomendación de cortes (Entrega 5 §7). Plan Pro.
 //
-// Política lingüística de Keila (§5.1): toda salida usa exclusivamente
+// Política lingüística de la validación técnica (§5.1): toda salida usa exclusivamente
 // equilibrar, destacar, enmarcar y celebrar. Ningún rostro tiene defectos.
 //
-// Imágenes: siluetas vectoriales propias (respuesta 4 de Keila). Las fotos
+// Imágenes: siluetas vectoriales propias (validación técnica, respuesta 4). Las fotos
 // reales se pueblan del antes/después del salón, y ese registro pasa por el
 // gating de consentimiento de imágenes ya implementado.
 // ══════════════════════════════════════════════════════════════════════════

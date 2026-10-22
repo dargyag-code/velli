@@ -1,6 +1,6 @@
 'use client';
 // ══════════════════════════════════════════════════════════════════════════
-// Ficha de la clienta · capa legal y de seguridad química (validación Keila).
+// Ficha de la clienta · capa legal y de seguridad química (validación técnica).
 //
 // 1) Consentimientos digitales versionados (6.P3): firma = nombre completo
 //    tecleado + checkbox + timestamp + versión. Sin consentimiento_imagenes

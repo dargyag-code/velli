@@ -46,7 +46,7 @@ export const PLANES: Record<PlanId, PlanDef> = {
     tagline: 'Para empezar con tus primeras clientas',
     beneficios: [
       'Hasta 50 clientas',
-      'Diagnósticos ilimitados con IA capilar',
+      'Diagnóstico capilar guiado',
       'Agenda y historial por clienta',
       'PDF de resultados para tus clientas',
     ],
@@ -70,7 +70,6 @@ export const PLANES: Record<PlanId, PlanDef> = {
       'Todo lo del plan Básico',
       'Calculadora de colorimetría',
       'Reportes de tu negocio',
-      'Exportación a Excel',
       'Personalización de marca',
     ],
     features: {

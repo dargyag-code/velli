@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { DM_Serif_Display, DM_Sans, JetBrains_Mono } from 'next/font/google';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
 import ToastHost from '@/components/ui/ToastHost';
+import { APP_URL } from '@/lib/sitio';
 import './globals.css';
 
 const dmSerifDisplay = DM_Serif_Display({
@@ -26,10 +27,10 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://velli.app';
-
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+  // Base de las URLs relativas de Open Graph y Twitter (vista previa en
+  // WhatsApp y redes): sale de NEXT_PUBLIC_APP_URL, ver lib/sitio.ts.
+  metadataBase: new URL(APP_URL),
   title: 'Velli Pro — Inteligencia capilar a tu alcance',
   description:
     'Velli Pro es la herramienta profesional para estilistas: diagnóstico capilar con IA, planes de tratamiento personalizados e historial de clientas para todo tipo de cabello (1A–4C).',

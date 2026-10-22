@@ -1,11 +1,12 @@
 # Capa legal y de gobernanza
 
-Implementa las tres correcciones de la **validación firmada de Keila Moreno**
-(`docs/conocimiento/VALIDACIÓN KEILA MORENO.docx`, sección 6): gobernanza de
-la librería global (P.2), consentimientos digitales de datos sensibles (P.3)
-y bloqueos preventivos de agenda (P.7).
+Implementa las tres correcciones de la **validación técnica firmada** de
+agosto de 2026 (sección 6): gobernanza de la librería global (P.2),
+consentimientos digitales de datos sensibles (P.3) y bloqueos preventivos de
+agenda (P.7).
 
-Migración: `supabase/migration-legal-gobernanza.sql` (idempotente).
+Migración: `supabase/_archive/migration-legal-gobernanza.sql` (idempotente;
+aplicada en producción y archivada).
 Tests: `tests/gobernanza.legal.test.ts`.
 
 > El motor de diagnóstico no se tocó: `tests/diagnostico.regresion.test.ts` y
@@ -58,7 +59,8 @@ por cuenta.
 
 **Los dos textos son PLACEHOLDER** (borradores del Paquete Legal) y llevan el
 banner de documento provisional, tanto en la página como en el modal de firma.
-Los definitivos los entrega Keila.
+Los definitivos los redacta Vanessa; al publicarlos se sube la versión en
+`lib/legal.ts` y en `legal_versiones`.
 
 **Firma digital** = nombre completo tecleado (≥ 5 caracteres, CHECK en DB) +
 checkbox de aceptación (`CHECK (aceptado)`) + timestamp + versión aceptada.

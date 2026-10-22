@@ -4,6 +4,7 @@ import { formatDate, getTratamientoBg, getTratamientoTextColor } from './utils';
 import { resolveFotoUrl } from './storage';
 import { buildRecomendacionProductos } from './diagnosticEngine';
 import { getProfile, updateProfile } from './profile';
+import { APP_HOST } from './sitio';
 
 // ── Editorial palette (alineado a Mejoras.html · A4 · forest + gold) ──────
 // FOREST_DEFAULT es el acento Velli; dentro de generateConsultaPDF se
@@ -201,7 +202,7 @@ export async function generateConsultaPDF(clienta: Clienta, consulta: Consulta):
     doc.setFontSize(7);
     setTextColor(TEXT_FAINT);
     doc.setFont('courier', 'normal');
-    const right = `· velli.app · ${folio} · página ${pageNo}${totalHint ? ` de ${totalHint}` : ''} ·`;
+    const right = `· ${APP_HOST} · ${folio} · página ${pageNo}${totalHint ? ` de ${totalHint}` : ''} ·`;
     doc.text(right, pageW - margin, fy + 0, { align: 'right', baseline: 'middle' });
   };
 

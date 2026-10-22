@@ -2,7 +2,7 @@
 // ══════════════════════════════════════════════════════════════════════════
 // Calculadora de colorimetría (Sprint C · Entrega 3 §7). Plan Pro.
 //
-// Principio rector con peso jurídico (Keila, respuesta 6):
+// Principio rector con peso jurídico (validación técnica, respuesta 6):
 //   "Velli orienta la formulación y el diseño; el estilista decide y ejecuta"
 // Por eso la pantalla muestra SIEMPRE la Guía de Razonamiento Técnico (el
 // porqué) junto a una Fórmula Sugerida 100 % editable en gramos y volúmenes
@@ -30,6 +30,7 @@ import {
   cargarDiagnosticoVigente, cartaDesdeMarca, marcasDelSalon,
   prerrequisitosDecoloracion,
 } from '@/lib/color/integracion';
+import SelectorTramoCanas from '@/components/color/SelectorTramoCanas';
 import { registrarServicioColor } from '@/lib/color/registro';
 import { useFlags } from '@/lib/flags/useFlags';
 import { NIVELES, filaAltura, type NivelTono, type Temperatura, type Volumen } from '@/lib/color/tablas';
@@ -66,6 +67,7 @@ function CalculadoraContent() {
   const [nivelObjetivo, setNivelObjetivo] = useState<NivelTono>(8);
   const [temperatura, setTemperatura] = useState<Temperatura>('frio');
   const [marcaId, setMarcaId] = useState('');
+  const [canasAltas, setCanasAltas] = useState<number | null>(null);
 
   // Fórmula editable + confirmación
   const [formulaEditada, setFormulaEditada] = useState<FormulaSugerida | null>(null);
@@ -93,6 +95,7 @@ function CalculadoraContent() {
         ]);
         setClienta(cl ?? null);
         setDiagnostico(dx.diagnostico);
+        setCanasAltas(null);
         setMarcas(ms);
         setConsentimientos(cs);
         if (cl) setBloqueosLegales(await prerrequisitosDecoloracion(cl).catch(() => []));
@@ -107,10 +110,21 @@ function CalculadoraContent() {
     [marcas, marcaId]
   );
 
+  // Sin el tramo elegido no se calcula la cobertura: la guía y la fórmula
+  // esperan, para no mostrar una fórmula sin CO-05 a una cabeza con canas.
+  const faltaPrecisarCanas = !!diagnostico.canasPorPrecisar && canasAltas === null;
+  const diagnosticoEfectivo: DiagnosticoColor = useMemo(
+    () =>
+      diagnostico.canasPorPrecisar && canasAltas !== null
+        ? { ...diagnostico, porcentajeCanas: canasAltas }
+        : diagnostico,
+    [diagnostico, canasAltas]
+  );
+
   const resultado: ResultadoCalculadora = useMemo(
     () =>
       calcularColor({
-        diagnostico,
+        diagnostico: diagnosticoEfectivo,
         sesion: {
           nivelNatural,
           nivelActualLargos: pigmentoArtificial ? nivelLargos : undefined,
@@ -126,7 +140,7 @@ function CalculadoraContent() {
           ? bloqueosLegales
           : [],
       }),
-    [diagnostico, nivelNatural, nivelLargos, pigmentoArtificial, nivelObjetivo,
+    [diagnosticoEfectivo, nivelNatural, nivelLargos, pigmentoArtificial, nivelObjetivo,
      temperatura, marcaId, carta, bloqueosLegales]
   );
 
@@ -242,6 +256,10 @@ function CalculadoraContent() {
           </div>
         )}
 
+        {diagnostico.canasPorPrecisar && (
+          <SelectorTramoCanas valor={canasAltas} onChange={setCanasAltas} />
+        )}
+
         <div style={{ marginBottom: 12 }}>
           <span className="v-caps">Temperatura del objetivo</span>
           <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
@@ -342,7 +360,7 @@ function CalculadoraContent() {
       )}
 
       {/* ── Guía de razonamiento técnico ────────────────────────────────── */}
-      {resultado.guia && (
+      {!faltaPrecisarCanas && resultado.guia && (
         <section className="v-card" style={{ padding: 14, marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <Sparkles size={14} style={{ color: 'var(--primary)' }} />
@@ -409,7 +427,7 @@ function CalculadoraContent() {
       )}
 
       {/* ── Plan multi-sesión (CO-10) ───────────────────────────────────── */}
-      {resultado.planMultiSesion && (
+      {!faltaPrecisarCanas && resultado.planMultiSesion && (
         <section className="v-card" style={{ padding: 14, marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <Layers size={14} style={{ color: 'var(--secondary-deep)' }} />
@@ -454,7 +472,7 @@ function CalculadoraContent() {
       )}
 
       {/* ── Fórmula sugerida, 100 % editable ────────────────────────────── */}
-      {formulaEditada && (
+      {!faltaPrecisarCanas && formulaEditada && (
         <section className="v-card" style={{ padding: 14, marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
             <div className="v-caps">Fórmula sugerida</div>
@@ -557,7 +575,7 @@ function CalculadoraContent() {
       </section>
 
       {/* ── Confirmación y registro ─────────────────────────────────────── */}
-      {!hayBloqueos && formulaEditada && (
+      {!hayBloqueos && !faltaPrecisarCanas && formulaEditada && (
         <section className="v-card" style={{ padding: 14, marginBottom: 24 }}>
           <div className="v-caps" style={{ marginBottom: 10 }}>Registrar el servicio</div>
           <div style={{ marginBottom: 10 }}>

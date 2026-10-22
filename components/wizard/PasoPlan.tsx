@@ -31,7 +31,7 @@ interface Props {
   ) => Promise<string>;
   saving: boolean;
   editMode?: boolean;
-  // GATING DURO (Keila 6.P3): las fotos antes/después de una consulta con
+  // GATING DURO (validación técnica 6.P3): las fotos antes/después de una consulta con
   // procesos químicos son registro fotográfico de servicio químico → exigen
   // consentimiento de imágenes vigente. Fail-closed si no llega el gate.
   imagenesGate?: EstadoCamara;
@@ -137,7 +137,7 @@ export default function PasoPlan({
 
   // Registro fotográfico de servicio químico: la consulta declara procesos
   // químicos en juego → las fotos antes/después exigen consentimiento de
-  // imágenes vigente (Keila 6.P3). Sin químicos, las fotos siguen libres.
+  // imágenes vigente (validación técnica 6.P3). Sin químicos, las fotos siguen libres.
   const esRegistroQuimico = (wizardData.quimicos ?? []).some(
     (q) => q && q.toLowerCase() !== 'ninguno'
   );

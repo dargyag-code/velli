@@ -3,7 +3,7 @@
 //   1. Guardarraíles  2. Vía del proceso  3. Distancia/volumen
 //   4. Fondo/neutralización  5. Ajustes del diagnóstico  6. Viabilidad
 //
-// Principio rector, con peso jurídico (Keila, respuesta 6): "Velli orienta
+// Principio rector, con peso jurídico (validación técnica, respuesta 6): "Velli orienta
 // la formulación y el diseño; el estilista decide y ejecuta". Esta función
 // devuelve razonamiento + fórmula SUGERIDA; la UI la deja 100 % editable en
 // gramos y volúmenes antes de confirmar.

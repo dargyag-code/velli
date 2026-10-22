@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════════
-// Reglas puras de la agenda (validación Keila, sección 6.P7). Sin I/O: se
+// Reglas puras de la agenda (validación técnica, sección 6.P7). Sin I/O: se
 // testean en tests/gobernanza.legal.test.ts. El refuerzo REAL vive en la DB
 // (trigger citas_guard_legal, supabase/migration-legal-gobernanza.sql) —
 // estas funciones dan la misma respuesta en el cliente para bloquear la UI

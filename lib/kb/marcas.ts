@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════
 // Librería global de marcas (cartas técnicas) + selección por salón.
 //
-// Gobernanza (validación Keila, sección 6.P2):
+// Gobernanza (validación técnica, sección 6.P2):
 // - kb_marcas la administra SOLO el nivel corporativo (RLS con
 //   es_cuenta_corporativa()); el resto de cuentas solo lee las publicadas.
 // - El rol salon selecciona cuáles marcas publicadas están activas en su

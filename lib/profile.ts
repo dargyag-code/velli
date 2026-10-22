@@ -36,7 +36,7 @@ export interface Profile {
   // gobernanza el gating real es `rol` — es_fundadora queda como flag
   // histórico mapeado a rol corporativo por la migración legal-gobernanza.
   esFundadora: boolean;
-  // ── Gobernanza (validación Keila 6.P2) ──
+  // ── Gobernanza (validación técnica 6.P2) ──
   // 'corporativo': administra la librería global (reglas base, cartas de
   // marca, fichas de corte). 'salon' (default): NO edita la librería; solo
   // selecciona qué marcas publicadas están activas en su inventario.

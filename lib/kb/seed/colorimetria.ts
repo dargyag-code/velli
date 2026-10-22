@@ -29,7 +29,7 @@ import { CO09_PROTOCOLO_VERBATIM, tramoCanas } from '../../color/reglas';
 const BORRADOR = 'borrador' as const;
 
 // ── Tablas universales como datos ─────────────────────────────────────────
-// Una fila por nivel para que Keila pueda ajustar un nivel suelto desde el
+// Una fila por nivel para que el equipo pueda ajustar un nivel suelto desde el
 // panel sin tocar los demás.
 
 const REGLAS_ALTURAS: ReglaKB[] = TABLA_ALTURAS.map((fila) => ({
@@ -42,7 +42,7 @@ const REGLAS_ALTURAS: ReglaKB[] = TABLA_ALTURAS.map((fila) => ({
   },
   estado: BORRADOR,
   notasInternas:
-    'Tabla 4.1 de la VALIDACIÓN de Keila (escala homologada LatAm). Manda sobre la Entrega 3 §3.2 donde difieran.',
+    'Tabla 4.1 de la VALIDACIÓN técnica (escala homologada LatAm). Manda sobre la Entrega 3 §3.2 donde difieran.',
 }));
 
 const REGLAS_NEUTRALIZACION: ReglaKB[] = PARES_NEUTRALIZACION.map((par, i) => ({
@@ -93,7 +93,7 @@ const REGLAS_OXIDANTES: ReglaKB[] = OXIDANTES.map((o, i) => ({
 }));
 
 // ── Reglas de oro CO-01 … CO-10 ───────────────────────────────────────────
-// El texto es el principio y cómo lo aplica el motor. Las que Keila cerró
+// El texto es el principio y cómo lo aplica el motor. Las que la validación cerró
 // con detalle (CO-05, CO-09) llevan su redacción literal.
 
 interface DefinicionCO {
@@ -109,7 +109,7 @@ const CO: DefinicionCO[] = [
     titulo: 'El tinte no aclara tinte',
     texto:
       'La coloración por oxidación aclara pigmento NATURAL, nunca pigmento ARTIFICIAL ya depositado. Si el nivel objetivo es mayor al actual en una zona con pigmento artificial, la calculadora bloquea la opción de tinte directo y exige una ruta de extracción, decapado o decoloración controlada.',
-    nota: 'Redacción de Keila (validación 4.2). Implementado en decidirVia().',
+    nota: 'Redacción de la validación técnica (4.2). Implementado en decidirVia().',
   },
   {
     clave: 'CO-02',
@@ -139,7 +139,7 @@ const CO: DefinicionCO[] = [
       `· ${tramoCanas(90)!.descripcion}`,
     ].join('\n'),
     nota:
-      'VERBATIM de Keila (validación 4.2 CO-05). Cierra los tramos que la Entrega 3 dejaba abiertos e impone el candado de 20 vol por encima del 75 %.',
+      'VERBATIM de la validación técnica (4.2 CO-05). Cierra los tramos que la Entrega 3 dejaba abiertos e impone el candado de 20 vol por encima del 75 %.',
   },
   {
     clave: 'CO-06',
@@ -164,14 +164,14 @@ const CO: DefinicionCO[] = [
     titulo: 'Protocolo de incompatibilidad por henna y metales',
     texto: CO09_PROTOCOLO_VERBATIM,
     nota:
-      'VERBATIM de Keila (validación 4.2 CO-09). Se muestra en pantalla tal cual ante cualquier sospecha o registro dudoso. NO reescribir.',
+      'VERBATIM de la validación técnica (4.2 CO-09). Se muestra en pantalla tal cual ante cualquier sospecha o registro dudoso. NO reescribir.',
   },
   {
     clave: 'CO-10',
     titulo: 'La sesión honestidad técnica',
     texto:
       'Cuando la distancia entre la base actual y el objetivo supera los límites de seguridad de una sola sesión, el motor no genera una fórmula directa: diseña un Plan Multi-Sesión por Etapas, estimando los fondos intermedios, agendando tratamientos reconstructores intermedios e insertando los hitos visuales en el Pasaporte Capilar.',
-    nota: 'Redacción de Keila (validación 4.2 CO-10).',
+    nota: 'Redacción de la validación técnica (4.2 CO-10).',
   },
 ];
 

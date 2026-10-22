@@ -9,8 +9,8 @@
 --    referencia el evaluador los ignora por completo.
 --
 -- 2) kb_cortes: catálogo ÚNICO indexado por atributos arquitectónicos
---    (largo, capas, densidad, textura), decisión de Keila (respuesta 5) que
---    manda sobre las secciones por género de la Entrega 5. La etiqueta de
+--    (largo, capas, densidad, textura), decisión de la validación técnica
+--    (respuesta 5) que manda sobre las secciones por género de la Entrega 5. La etiqueta de
 --    género es solo un filtro de búsqueda opcional. Misma gobernanza que
 --    kb_marcas: escritura solo del rol corporativo.
 --
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS public.kb_cortes (
   clave text NOT NULL,
   locale text DEFAULT 'es' NOT NULL,
   nombre text NOT NULL,
-  -- Índice arquitectónico (Keila, respuesta 5): estos cuatro atributos son
+  -- Índice arquitectónico (validación técnica, respuesta 5): estos cuatro atributos son
   -- los ejes reales del buscador; el género NO lo es.
   largo text NOT NULL,
   capas text NOT NULL,

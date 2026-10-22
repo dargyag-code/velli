@@ -86,7 +86,7 @@ export const DIMENSIONES: DimensionKB[] = [
 
   // ── Fase 2 (Sprint B) — dimensiones nuevas, en BORRADOR ─────────────────
   // Fuentes: Entrega 1 (liso/ondulado), Entrega 2 (canas/alopecia),
-  // Entrega 4 (tipos 3–4) y la validación de Keila. Se publican desde el
+  // Entrega 4 (tipos 3–4) y la validación técnica. Se publican desde el
   // panel junto con las reglas y flujos que las usan.
   {
     clave: 'grasaRaiz',
@@ -262,7 +262,7 @@ export const DIMENSIONES: DimensionKB[] = [
     clave: 'aparicionCanas',
     etiqueta: 'Aparición de las canas',
     descripcion:
-      'La canicie temprana súbita activa el mensaje sereno validado por Keila (C-08). NO es bandera roja.',
+      'La canicie temprana súbita activa el mensaje sereno de la validación técnica (C-08). NO es bandera roja.',
     tipo: 'opcion',
     estado: 'borrador',
     opciones: [

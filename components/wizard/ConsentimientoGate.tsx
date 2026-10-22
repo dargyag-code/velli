@@ -1,6 +1,6 @@
 'use client';
 // ══════════════════════════════════════════════════════════════════════════
-// GATING DURO de cámara (validación Keila 6.P3): pantalla de bloqueo que se
+// GATING DURO de cámara (validación técnica 6.P3): pantalla de bloqueo que se
 // muestra EN LUGAR de CameraCapture cuando la clienta no tiene el
 // consentimiento de imágenes vigente. Las fotos del wizard incluyen cuero
 // cabelludo (módulo transversal de alopecia) → datos sensibles de salud.

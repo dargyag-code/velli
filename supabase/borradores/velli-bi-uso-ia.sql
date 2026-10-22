@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS public.uso_ia (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   ruta text NOT NULL CHECK (ruta IN ('analizar', 'validar')),
-  proveedor text NOT NULL CHECK (proveedor IN ('anthropic', 'openai')),
+  -- Solo Anthropic: el respaldo de OpenAI se retiró el 2026-10-22 (D2).
+  proveedor text NOT NULL CHECK (proveedor IN ('anthropic')),
   modelo text NOT NULL,
   fotos smallint NOT NULL CHECK (fotos BETWEEN 0 AND 10),
   tokens_entrada integer CHECK (tokens_entrada IS NULL OR tokens_entrada >= 0),
