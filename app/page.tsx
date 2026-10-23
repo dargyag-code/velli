@@ -22,6 +22,8 @@ import { getProfile, type Profile } from '@/lib/profile';
 import { Clienta, Consulta } from '@/lib/types';
 import { formatDate, getRizoLabel } from '@/lib/utils';
 import { enlaceWhatsApp } from '@/lib/whatsapp';
+import { flagsActivos } from '@/lib/flags';
+import ListaPorCobrar from '@/components/cotizador/ListaPorCobrar';
 
 const SPARK_LINES = {
   green: '0,15 14,11 28,13 42,7 56,9 70,5 85,8 100,2',
@@ -416,6 +418,9 @@ export default function Dashboard() {
             )}
 
             {/* ── Alertas inteligentes ─────────────────────────────────── */}
+            {!loading && flagsActivos(profile?.featureFlags).cotizador && (
+              <ListaPorCobrar clientas={clientas} />
+            )}
             {!loading && (inactivas.length > 0 || borradores.length > 0) && (
               <>
                 <SectionLabel

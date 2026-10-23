@@ -466,6 +466,7 @@ export async function actualizarServicioSalon(
     duracionMinutos?: number | null;
     orden?: number;
     activo?: boolean;
+    perfilExtendido?: Record<string, unknown>;
   },
   client?: SupabaseClient
 ): Promise<ServicioSalon> {
@@ -477,6 +478,7 @@ export async function actualizarServicioSalon(
   if (patch.duracionMinutos !== undefined) updateObj.duracion_minutos = patch.duracionMinutos;
   if (patch.orden !== undefined) updateObj.orden = patch.orden;
   if (patch.activo !== undefined) updateObj.activo = patch.activo;
+  if (patch.perfilExtendido !== undefined) updateObj.perfil_extendido = patch.perfilExtendido;
 
   const { data, error } = await supabase
     .from('servicios_salon')
@@ -743,6 +745,18 @@ export async function crearReglaComision(
 
 // ── 6. Cotizaciones y lectura pública ──────────────────────────────────────
 
+export async function cerrarReglaComision(
+  id: string,
+  client?: SupabaseClient
+): Promise<void> {
+  const supabase = obtenerClienteAutenticado(client);
+  const { error } = await supabase
+    .from('comisiones')
+    .update({ vigente_hasta: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw error;
+}
+
 export interface CrearCotizacionInput {
   clientaId?: string | null;
   consultaId?: string | null;
@@ -878,6 +892,10 @@ export async function confirmarCobroCotizacion(
     precioCobrado: number;
     estilistaId?: string | null;
     estilistaNombre?: string | null;
+    costoProductoEstimado?: number | null;
+    costoDetalle?: CostoDetalleInmutable | null;
+    comisionEstimada?: number | null;
+    comisionDetalle?: ComisionDetalleInmutable | null;
   },
   client?: SupabaseClient
 ): Promise<Cotizacion> {
@@ -889,6 +907,16 @@ export async function confirmarCobroCotizacion(
   };
   if (opciones.estilistaId !== undefined) patch.estilista_id = opciones.estilistaId;
   if (opciones.estilistaNombre !== undefined) patch.estilista_nombre = opciones.estilistaNombre;
+  if (opciones.costoProductoEstimado !== undefined) {
+    patch.costo_producto_estimado =
+      opciones.costoProductoEstimado != null ? Math.round(opciones.costoProductoEstimado) : null;
+  }
+  if (opciones.costoDetalle !== undefined) patch.costo_detalle = opciones.costoDetalle;
+  if (opciones.comisionEstimada !== undefined) {
+    patch.comision_estimada =
+      opciones.comisionEstimada != null ? Math.round(opciones.comisionEstimada) : null;
+  }
+  if (opciones.comisionDetalle !== undefined) patch.comision_detalle = opciones.comisionDetalle;
 
   const { data, error } = await supabase
     .from('cotizaciones')

@@ -16,6 +16,8 @@ import { Btn, Chip, type ChipTone } from '@/components/v2';
 import { vibracionConfirmacion, vibracionSutil } from '@/lib/haptics';
 import type { EstadoCamara } from '@/lib/consentimientos';
 import ModalFirmaConsentimiento from '@/components/legal/ModalFirmaConsentimiento';
+import { useFlags } from '@/lib/flags/useFlags';
+import HojaCotizar from '@/components/cotizador/HojaCotizar';
 
 interface Props {
   consulta: Consulta;
@@ -134,6 +136,8 @@ export default function PasoPlan({
   const [estrellas, setEstrellas] = useState<number>(0);
   const [savedOverlay, setSavedOverlay] = useState<{ tipo: 'express' | 'completo'; clientaId: string } | null>(null);
   const [firmandoImagenes, setFirmandoImagenes] = useState(false);
+  const [cotizadorAbierto, setCotizadorAbierto] = useState(false);
+  const flags = useFlags();
 
   // Registro fotográfico de servicio químico: la consulta declara procesos
   // químicos en juego → las fotos antes/después exigen consentimiento de
@@ -793,6 +797,27 @@ export default function PasoPlan({
         </SectionCard>
 
         {/* ═══ Botones de guardar ══════════════════════════════════════════ */}
+        {flags.cotizador && clienta && (
+          <div style={{ marginTop: 8 }}>
+            <Btn
+              variant="gold"
+              size="lg"
+              fullWidth
+              onClick={() => setCotizadorAbierto(true)}
+              icon={<Sparkles size={15} />}
+            >
+              Cotizar servicio
+            </Btn>
+          </div>
+        )}
+        {flags.cotizador && (
+          <HojaCotizar
+            open={cotizadorAbierto}
+            onClose={() => setCotizadorAbierto(false)}
+            clienta={clienta}
+            consulta={consulta}
+          />
+        )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
           {tieneDetalles ? (
             <Btn

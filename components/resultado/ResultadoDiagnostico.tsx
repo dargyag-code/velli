@@ -10,6 +10,8 @@ import { getTratamientoPrincipalExplicacion } from '@/lib/diagnosticEngine';
 import { enlaceWhatsApp } from '@/lib/whatsapp';
 import { RizoPattern } from '../wizard/RizoPatterns';
 import Button from '../ui/Button';
+import { useFlags } from '@/lib/flags/useFlags';
+import HojaCotizar from '@/components/cotizador/HojaCotizar';
 
 interface Props {
   consulta: Consulta;
@@ -73,6 +75,8 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
   );
   const [notas, setNotas] = useState(consulta.notasEstilista || '');
   const [saved, setSaved] = useState(false);
+  const [cotizadorAbierto, setCotizadorAbierto] = useState(false);
+  const flags = useFlags();
 
   const handleSave = async () => {
     await onSave(proximaCita, notas);
@@ -384,6 +388,25 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
       </div>
 
       {/* Action buttons */}
+      {flags.cotizador && clienta && (
+        <div>
+          <Button
+            variant="secondary"
+            size="lg"
+            fullWidth
+            onClick={() => setCotizadorAbierto(true)}
+            icon={<Sparkles size={16} />}
+          >
+            Cotizar servicio
+          </Button>
+          <HojaCotizar
+            open={cotizadorAbierto}
+            onClose={() => setCotizadorAbierto(false)}
+            clienta={clienta}
+            consulta={consulta}
+          />
+        </div>
+      )}
       <div className="flex flex-col gap-3 pb-6">
         {saved ? (
           <div className="flex items-center justify-center gap-2 bg-green-50 border border-green-200 rounded-2xl p-4">

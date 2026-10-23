@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Edit3, Calendar, Database, Download, Upload, Trash2,
   Heart, FileText, Shield, Phone, ChevronRight, Check,
-  AlertCircle, LogOut, CreditCard, Palette, BookOpen, Clock,
+  AlertCircle, LogOut, CreditCard, Palette, BookOpen, Clock, Calculator,
 } from 'lucide-react';
 import { BottomNavV2 } from '@/components/v2';
 import {
@@ -24,6 +24,7 @@ import { showToast } from '@/lib/toast';
 import { friendlyError } from '@/lib/errors';
 import { getInitials } from '@/lib/utils';
 import { enlaceSoporte } from '@/lib/sitio';
+import { flagsActivos } from '@/lib/flags';
 
 const MAILTO_SOPORTE = enlaceSoporte('Soporte Velli Pro');
 
@@ -592,6 +593,14 @@ export default function ConfiguracionPage() {
             sub="Bloques de agenda"
             onClick={() => router.push('/agenda')}
           />
+          {flagsActivos(profile?.featureFlags).cotizador && (
+            <RowEditorial
+              icon={<Calculator size={16} />}
+              title="Precios, productos y comisiones"
+              sub="Plantillas de cotización, inventario ($/g) y simulador de margen"
+              onClick={() => router.push('/configuracion/precios')}
+            />
+          )}
           {/* Bloque reservado para servicios tipo 4 (validación técnica 6.P7) */}
           <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-soft)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>

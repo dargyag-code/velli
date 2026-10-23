@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   Phone, MessageCircle, Trash2, Plus, Calendar, Hash,
   Pencil, Check, X, RotateCcw, Image as ImageIcon, ArrowLeft,
-  MoreHorizontal, Heart, ChevronRight, Palette, Scissors,
+  MoreHorizontal, Heart, ChevronRight, Palette, Scissors, Sparkles,
 } from 'lucide-react';
 import { Btn, Chip, type ChipTone } from '@/components/v2';
 import Modal from '@/components/ui/Modal';
@@ -19,6 +19,8 @@ import { showToast } from '@/lib/toast';
 import { resolveFotoUrl, resolveFotoUrls } from '@/lib/storage';
 import { enlaceWhatsApp } from '@/lib/whatsapp';
 import { useFlags } from '@/lib/flags/useFlags';
+import HojaCotizar from '@/components/cotizador/HojaCotizar';
+import ListaPorCobrar from '@/components/cotizador/ListaPorCobrar';
 
 type Tab = 'info' | 'historial' | 'galeria';
 
@@ -321,6 +323,8 @@ export default function ClientaPage() {
   const [tab, setTab] = useState<Tab>('info');
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [cotizadorAbierto, setCotizadorAbierto] = useState(false);
+  const [cotizacionesRefresh, setCotizacionesRefresh] = useState(0);
 
   // Edit mode
   const [editing, setEditing] = useState(false);
@@ -780,6 +784,24 @@ export default function ClientaPage() {
                 Nueva consulta
               </Btn>
             </Link>
+            {flags.cotizador && (
+              <div style={{ flex: 1, minWidth: 150 }}>
+                <Btn
+                  variant="gold"
+                  size="md"
+                  fullWidth
+                  icon={<Sparkles size={14} />}
+                  onClick={() => setCotizadorAbierto(true)}
+                >
+                  Cotizar
+                </Btn>
+              </div>
+            )}
+            <Link href={`/diagnostico?clientaId=${clienta.id}`} style={{ display: 'none' }}>
+              <Btn variant="primary" size="md" fullWidth icon={<Plus size={14} />}>
+                Nueva consulta
+              </Btn>
+            </Link>
             <Link href={`/color?clientaId=${clienta.id}`} style={{ textDecoration: 'none', flex: 1, minWidth: 150 }}>
               <Btn variant="soft" size="md" fullWidth icon={<Palette size={14} />}>
                 Color
@@ -965,6 +987,13 @@ export default function ClientaPage() {
         ) : (
           <>
             {/* ── Tabs ───────────────────────────────────────────────────── */}
+            {flags.cotizador && (
+              <ListaPorCobrar
+                clientaId={clienta.id}
+                clientaNombre={clienta.nombre}
+                refreshKey={cotizacionesRefresh}
+              />
+            )}
             <div
               style={{
                 display: 'flex',
@@ -1181,7 +1210,11 @@ export default function ClientaPage() {
             )}
 
             {tab === 'historial' && (
-              <HistorialTimeline consultas={consultas} clienta={clienta} />
+              <HistorialTimeline
+                consultas={consultas}
+                clienta={clienta}
+                onCotizacionCreada={() => setCotizacionesRefresh((k) => k + 1)}
+              />
             )}
 
             {tab === 'galeria' && <GaleriaTab consultas={consultas} />}
@@ -1190,6 +1223,15 @@ export default function ClientaPage() {
       </main>
 
       {/* Delete modal */}
+      {flags.cotizador && (
+        <HojaCotizar
+          open={cotizadorAbierto}
+          onClose={() => setCotizadorAbierto(false)}
+          clienta={clienta}
+          consulta={ultimaConsulta ?? null}
+          onCotizacionCreada={() => setCotizacionesRefresh((k) => k + 1)}
+        />
+      )}
       <Modal open={showDelete} onClose={() => setShowDelete(false)} title="Eliminar clienta">
         <p style={{ margin: 0, fontSize: 14, color: 'var(--text-main)', lineHeight: 1.5 }}>
           Esto borrará toda la información de <strong>{clienta.nombre}</strong> y su historial

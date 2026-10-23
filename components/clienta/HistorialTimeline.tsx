@@ -1,16 +1,19 @@
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, ChevronUp, Calendar, Star, FileText, Download, MessageCircle, Pencil } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calendar, Star, FileText, Download, MessageCircle, Pencil, Sparkles } from 'lucide-react';
 import { Clienta, Consulta, SatisfaccionNivel } from '@/lib/types';
 import { formatDate, getTratamientoBg, getTratamientoTextColor, getTratamientoBorderColor, getRizoLabel } from '@/lib/utils';
 import { generateConsultaPDF } from '@/lib/pdfGenerator';
 import { updateConsulta } from '@/lib/db';
 import { enlaceWhatsApp } from '@/lib/whatsapp';
+import { useFlags } from '@/lib/flags/useFlags';
+import HojaCotizar from '@/components/cotizador/HojaCotizar';
 
 interface Props {
   consultas: Consulta[];
   clienta: Clienta;
+  onCotizacionCreada?: () => void;
 }
 
 const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
@@ -47,7 +50,20 @@ function buildWhatsAppUrl(clienta: Clienta, consulta: Consulta): string {
   return enlaceWhatsApp(clienta.telefono, lines);
 }
 
-function ConsultaItem({ consulta, clienta, index }: { consulta: Consulta; clienta: Clienta; index: number }) {
+function ConsultaItem({
+  consulta,
+  clienta,
+  index,
+  cotizadorActivo,
+  onCotizar,
+}: {
+  consulta: Consulta;
+  clienta: Clienta;
+  onCotizacionCreada?: () => void;
+  index: number;
+  cotizadorActivo?: boolean;
+  onCotizar?: (consulta: Consulta) => void;
+}) {
   const [expanded, setExpanded] = useState(index === 0);
   const [downloading, setDownloading] = useState(false);
 
@@ -225,6 +241,18 @@ function ConsultaItem({ consulta, clienta, index }: { consulta: Consulta; client
             </div>
 
             {/* Acciones */}
+            {cotizadorActivo && onCotizar && (
+              <div className="mb-1">
+                <button
+                  type="button"
+                  onClick={() => onCotizar(consulta)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#C9956B] bg-[#FBF4EC] text-xs font-semibold text-[#8A5A2E] hover:bg-[#C9956B] hover:text-white active:scale-95 transition-all"
+                >
+                  <Sparkles size={12} />
+                  Cotizar
+                </button>
+              </div>
+            )}
             <div className="flex gap-2 flex-wrap">
               <Link
                 href={`/diagnostico?edit=${consulta.id}`}
@@ -263,7 +291,9 @@ function ConsultaItem({ consulta, clienta, index }: { consulta: Consulta; client
   );
 }
 
-export default function HistorialTimeline({ consultas, clienta }: Props) {
+export default function HistorialTimeline({ consultas, clienta, onCotizacionCreada }: Props) {
+  const flags = useFlags();
+  const [consultaACotizar, setConsultaACotizar] = useState<Consulta | null>(null);
   if (!consultas.length) {
     return (
       <div className="text-center py-10">
@@ -279,7 +309,25 @@ export default function HistorialTimeline({ consultas, clienta }: Props) {
   return (
     <div className="relative">
       {[...consultas].reverse().map((c, i) => (
-        <ConsultaItem key={c.id} consulta={c} clienta={clienta} index={i} />
+        <ConsultaItem
+          key={c.id}
+          consulta={c}
+          clienta={clienta}
+          index={i}
+          cotizadorActivo={flags.cotizador}
+          onCotizar={(cons) => setConsultaACotizar(cons)}
+        />
+      ))}
+      {flags.cotizador && (
+        <HojaCotizar
+          open={!!consultaACotizar}
+          onClose={() => setConsultaACotizar(null)}
+          clienta={clienta}
+          consulta={consultaACotizar}
+          onCotizacionCreada={() => onCotizacionCreada?.()}
+        />
+      )}
+      {([] as null[]).map((_, idx) => (<React.Fragment key={idx} />
       ))}
     </div>
   );

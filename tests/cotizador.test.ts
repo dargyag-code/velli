@@ -22,6 +22,7 @@ import {
   derivarVariablesDesdeConsulta,
   esUuidValido,
   evaluarAvisosEstandar,
+  evaluarBloqueoServicioCotizador,
   extraerIpDesdeHeaders,
   formatearFechaVigencia,
   formatearPrecioCop,
@@ -764,3 +765,49 @@ describe('lib/cotizador · 5. Mensaje de WhatsApp, ruta pública /c/[token], SW 
     expect(updateSpy).toHaveBeenCalledTimes(3);
   });
 });
+
+describe('lib/cotizador · 7. Guardarraíles legales en el cotizador (§2.1)', () => {
+  it('bloquea decoloración ante elasticidad baja pero permite corte y tratamiento', () => {
+    const dxElasticidadBaja = { elasticidad: 'baja' as const };
+    const bloqueoDeco = evaluarBloqueoServicioCotizador(
+      { categoria: 'decoloracion', usaFormulaColor: true },
+      dxElasticidadBaja
+    );
+    expect(bloqueoDeco?.codigo).toBe('elasticidad_baja');
+
+    const bloqueoCorte = evaluarBloqueoServicioCotizador(
+      { categoria: 'corte', usaFormulaColor: false },
+      dxElasticidadBaja
+    );
+    expect(bloqueoCorte).toBeNull();
+
+    const bloqueoTratamiento = evaluarBloqueoServicioCotizador(
+      { categoria: 'tratamiento', usaFormulaColor: false },
+      dxElasticidadBaja
+    );
+    expect(bloqueoTratamiento).toBeNull();
+  });
+
+  it('bloquea cualquier servicio químico ante bandera médica o cuero cabelludo lesionado', () => {
+    const dxBandera = { banderaMedicaActiva: true };
+    expect(
+      evaluarBloqueoServicioCotizador({ categoria: 'color', usaFormulaColor: true }, dxBandera)?.codigo
+    ).toBe('bandera_medica');
+    expect(
+      evaluarBloqueoServicioCotizador({ categoria: 'alisado', usaFormulaColor: false }, dxBandera)?.codigo
+    ).toBe('bandera_medica');
+
+    const dxHenna = { hennaOMetales: 'si' as const, pruebaMechonSuperada: false };
+    expect(
+      evaluarBloqueoServicioCotizador({ categoria: 'color', usaFormulaColor: true }, dxHenna)?.codigo
+    ).toBe('henna_metales');
+    // Si superó prueba de mechón, el guardarraíl de henna se levanta
+    expect(
+      evaluarBloqueoServicioCotizador(
+        { categoria: 'color', usaFormulaColor: true },
+        { hennaOMetales: 'si', pruebaMechonSuperada: true }
+      )
+    ).toBeNull();
+  });
+});
+

@@ -5,6 +5,8 @@
 // ══════════════════════════════════════════════════════════════════════════
 
 import type { Consulta } from '@/lib/types';
+import { evaluarGuardarrailes } from '@/lib/color/reglas';
+import type { Bloqueo, DiagnosticoColor } from '@/lib/color/tipos';
 
 export type ValorLargo = 'corto' | 'medio' | 'largo' | 'extra_largo';
 export type ValorDensidad = 'baja' | 'media' | 'alta';
@@ -378,3 +380,49 @@ export function evaluarAvisosEstandar(entrada: {
 export function textoAvisosEstandar(avisos: readonly AvisoEstandar[]): string {
   return avisos.map((a) => a.mensaje).join(' ');
 }
+
+// ── Guardarraíles legales en el cotizador (§2.1) ──────────────────────────
+
+/**
+ * Evalúa si un servicio está bloqueado por los guardarraíles legales y de
+ * salud de la fibra (`evaluarGuardarrailes()`, A-06 / bandera médica).
+ * Reutiliza `evaluarGuardarrailes` sin modificarlo.
+ */
+export function evaluarBloqueoServicioCotizador(
+  servicio: { categoria?: CategoriaServicio | string; usaFormulaColor?: boolean },
+  dx: DiagnosticoColor
+): Bloqueo | null {
+  if (!esServicioQuimico(servicio.categoria, servicio.usaFormulaColor)) {
+    return null;
+  }
+  const bloqueos = evaluarGuardarrailes(dx);
+  if (bloqueos.length === 0) return null;
+
+  const norm = servicio.categoria ? normalizarTexto(servicio.categoria) : '';
+
+  if (norm === 'decoloracion') {
+    return bloqueos[0] ?? null;
+  }
+
+  if (norm === 'alisado') {
+    return (
+      bloqueos.find(
+        (b) =>
+          b.codigo === 'bandera_medica' ||
+          b.codigo === 'cuero_lesionado' ||
+          b.codigo === 'elasticidad_baja'
+      ) ?? null
+    );
+  }
+
+  // Servicios de color o con fórmula química (peróxido):
+  return (
+    bloqueos.find(
+      (b) =>
+        b.codigo === 'bandera_medica' ||
+        b.codigo === 'cuero_lesionado' ||
+        b.codigo === 'henna_metales'
+    ) ?? null
+  );
+}
+
