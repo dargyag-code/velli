@@ -15,6 +15,7 @@ export type Entorno = 'production' | 'preview' | 'development' | 'test';
 export const ENTORNOS: readonly Entorno[] = ['production', 'preview', 'development', 'test'];
 
 export type FlagId =
+  | 'cotizador'
   | 'cortes'
   | 'ia_facial'
   | 'app_clientas'
@@ -46,6 +47,19 @@ const APAGADO: Record<Entorno, boolean> = {
 };
 
 export const FLAGS: Record<FlagId, DefinicionFlag> = {
+  cotizador: {
+    id: 'cotizador',
+    nombre: 'Cotizador y precios',
+    estado: 'activo',
+    descripcion:
+      'Módulo 1 de Velli BI: plantilla de precios versionada, cotización en 3 toques por WhatsApp y confirmación de cobro. Apagado por defecto en producción hasta aplicar la migración SQL.',
+    porDefecto: {
+      production: false,
+      preview: true,
+      development: true,
+      test: false,
+    },
+  },
   cortes: {
     id: 'cortes',
     nombre: 'Corte por forma de rostro',

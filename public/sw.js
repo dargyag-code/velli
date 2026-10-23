@@ -3,7 +3,7 @@
 // así que cambiar este string limpia el caché viejo en TODOS los
 // dispositivos que ya tenían el SW instalado (necesario para que el
 // shell viejo no tape rutas nuevas como /planes y /planes/confirmacion).
-const CACHE_NAME = 'velli-v5-2026-06-11';
+const CACHE_NAME = 'velli-v6-2026-10-23';
 const OFFLINE_URL = '/offline.html';
 const STATIC_ASSETS = [
   OFFLINE_URL,
@@ -45,9 +45,10 @@ self.addEventListener('activate', (event) => {
 //   - Resto (imágenes, fonts): cache-first con actualización en background.
 //
 // Invariantes del handler:
-//   - Todo lo que NO sea GET y todo lo que vaya a /api/ se ignora por
+//   - Todo lo que NO sea GET y todo lo que vaya a /api/ o /c/ se ignora por
 //     completo (return sin respondWith → el browser lo maneja nativo).
-//     Crítico: el checkout y el webhook de Bold jamás pasan por el SW.
+//     Crítico: el checkout, el webhook de Bold y los enlaces públicos de
+//     cotización (/c/<token>, R16) jamás pasan ni se guardan en el SW.
 //   - Cada camino que llama respondWith() resuelve SIEMPRE a un Response
 //     válido, incluido el catch — un `undefined` aquí produce
 //     "Failed to convert value to 'Response'" y rompe la navegación.
@@ -60,6 +61,8 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/api/')) return;
   if (url.pathname.startsWith('/_next/data/')) return;
+  // R16: excluir la ruta pública de cotizaciones (/c/<token>) del caché del SW.
+  if (url.pathname === '/c' || url.pathname.startsWith('/c/')) return;
 
   const isNavigation =
     request.mode === 'navigate' ||

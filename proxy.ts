@@ -28,7 +28,8 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
   const isAuthRoute = path.startsWith('/auth');
-  const isPublicRoute = isAuthRoute || path.startsWith('/legal');
+  const isPublicQuoteRoute = path === '/c' || path.startsWith('/c/');
+  const isPublicRoute = isAuthRoute || path.startsWith('/legal') || isPublicQuoteRoute;
   // /auth/reset-password necesita una sesión de recuperación activa: no debe
   // redirigirse a / aunque el usuario ya esté "autenticado" por el token de
   // recuperación.

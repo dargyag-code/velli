@@ -71,6 +71,28 @@ export function checkoutLimiter(): Ratelimit | null {
   return _checkoutLimiter;
 }
 
+let _cotizacionPublicaLimiter: Ratelimit | null | undefined;
+
+/**
+ * Límite por IP para la ruta pública `/c/[token]` (§4 de 02-diseno-cotizador.md),
+ * para impedir el recorrido por fuerza bruta de tokens.
+ */
+export function cotizacionPublicaLimiter(): Ratelimit | null {
+  if (_cotizacionPublicaLimiter !== undefined) return _cotizacionPublicaLimiter;
+  const redis = getRedis();
+  if (!redis) {
+    _cotizacionPublicaLimiter = null;
+    return null;
+  }
+  _cotizacionPublicaLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(60, '1 h'),
+    prefix: 'velli:rl:cotizacion_publica',
+    analytics: false,
+  });
+  return _cotizacionPublicaLimiter;
+}
+
 // ── checkRateLimit ─────────────────────────────────────────────────────────
 export interface RateLimitResult {
   ok: boolean;

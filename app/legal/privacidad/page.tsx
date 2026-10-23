@@ -46,6 +46,11 @@ export default function PrivacidadPage() {
               tratamientos, notas profesionales, fechas de citas y resultado del análisis IA.
             </li>
             <li>
+              <strong>De cotizaciones y operación del salón:</strong> servicios, plantillas de
+              precios, estilistas, productos con sus precios de compra, comisiones, valores
+              cotizados y valores cobrados.
+            </li>
+            <li>
               <strong>Técnicos:</strong> sesión autenticada y registros mínimos para mantener la
               app funcionando de forma segura.
             </li>
@@ -54,7 +59,7 @@ export default function PrivacidadPage() {
 
         <section>
           <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
-            3. Cómo usamos los datos
+            3. Cómo usamos los datos y enlaces públicos de cotización
           </h2>
           <p>
             Usamos los datos exclusivamente para prestarte el servicio: mostrar tu información,
@@ -62,6 +67,14 @@ export default function PrivacidadPage() {
             tus clientas y permitirte exportar backups. Los datos se almacenan cifrados en
             servidores gestionados por Supabase. <strong>No los vendemos ni los compartimos con
             anunciantes.</strong>
+          </p>
+          <p className="mt-2">
+            <strong>Enlaces públicos de cotización (<code>/c/&lt;token&gt;</code>):</strong> al
+            generar y enviar una cotización se crea un enlace único con un identificador aleatorio
+            que puedes compartir con tu clienta (por ejemplo, por WhatsApp). Esa página pública
+            muestra <strong>exclusivamente</strong> el nombre del salón, el servicio cotizado, el
+            valor en COP y la fecha de vigencia, <strong>sin exponer en ningún caso el nombre de la
+            clienta, fotografías ni datos del diagnóstico o de salud capilar</strong>.
           </p>
         </section>
 

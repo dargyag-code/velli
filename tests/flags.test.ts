@@ -33,7 +33,15 @@ describe('registro de flags', () => {
     }
   });
 
-  it('refleja las decisiones de la Etapa 0', () => {
+  it('refleja las decisiones de la Etapa 0 y el flag cotizador de la Etapa 3', () => {
+    expect(FLAGS.cotizador.estado).toBe('activo');
+    expect(evaluarFlag('cotizador', { entorno: 'production' })).toBe(false);
+    expect(evaluarFlag('cotizador', { entorno: 'preview' })).toBe(true);
+    expect(evaluarFlag('cotizador', { entorno: 'development' })).toBe(true);
+    expect(
+      evaluarFlag('cotizador', { entorno: 'production', salonOverrides: { cotizador: true } })
+    ).toBe(true);
+
     expect(FLAGS.cortes.estado).toBe('congelado');
     expect(FLAGS.ia_facial.estado).toBe('congelado');
     expect(FLAGS.app_clientas.estado).toBe('congelado');
@@ -108,7 +116,7 @@ describe('parsearFlagsEntorno (NEXT_PUBLIC_VELLI_FLAGS)', () => {
   });
 
   it('ignora ids desconocidos y valores que no entiende', () => {
-    expect(parsearFlagsEntorno('cotizador=on,cortes=quizas,=on,cortes,,')).toEqual({});
+    expect(parsearFlagsEntorno('desconocido=on,cortes=quizas,=on,cortes,,')).toEqual({});
   });
 
   it('vacío o ausente → sin overrides', () => {

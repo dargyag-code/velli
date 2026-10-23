@@ -1,19 +1,39 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   AJUSTES_EJEMPLO_PLANTILLA,
   CATALOGO_VARIABLES,
   FACTORES_CONSUMO_DEFECTO,
+  TEXTO_LEGAL_COTIZACION_PUBLICA,
+  anularCotizacion,
+  armarEnlaceWhatsAppCotizacion,
+  armarMensajeWhatsAppCotizacion,
   calcularComisionYMargen,
   calcularCostoProducto,
   calcularPrecioCotizacion,
+  confirmarCobroCotizacion,
+  construirMetadataCotizacion,
+  corregirCobroCotizacion,
+  crearCotizacion,
   derivarCanasDesdePerfil,
   derivarEstadoFibra,
   derivarVariablesDesdeConsulta,
+  esUuidValido,
   evaluarAvisosEstandar,
+  extraerIpDesdeHeaders,
+  formatearFechaVigencia,
+  formatearPrecioCop,
+  inferirCategoriaServicio,
+  normalizarColorSalon,
+  obtenerCotizacionPublica,
   parsearProporcionOxidante,
+  publicarPlantillaPrecio,
   redondearPrecio,
   seleccionarReglaComision,
   textoAvisosEstandar,
+  urlPublicaCotizacion,
   type ReglaComision,
 } from '@/lib/cotizador';
 
@@ -535,5 +555,212 @@ describe('lib/cotizador · 4. Alerta de margen bajo y protección de rentabilida
     expect(parsearProporcionOxidante('1:1,5')).toBe(1.5);
     expect(parsearProporcionOxidante('1:2')).toBe(2);
     expect(parsearProporcionOxidante(undefined)).toBe(1.5);
+  });
+});
+
+describe('lib/cotizador · 5. Mensaje de WhatsApp, ruta pública /c/[token], SW (R16), proxy y capa de datos', () => {
+  const token = '550e8400-e29b-41d4-a716-446655440000';
+
+  it('arma el mensaje y link wa.me según §4 sin exponer ningún dato clínico ni del diagnóstico', () => {
+    expect(formatearPrecioCop(182000)).toBe('$182.000');
+    expect(formatearFechaVigencia('2026-11-07')).toBe('07/11/2026');
+    expect(urlPublicaCotizacion(token, 'https://velli-three.vercel.app/')).toBe(
+      `https://velli-three.vercel.app/c/${token}`
+    );
+
+    const texto = armarMensajeWhatsAppCotizacion({
+      nombreClienta: 'Laura',
+      servicioNombre: 'Tinte completo',
+      salonNombre: 'Salón Verde',
+      precio: 182000,
+      vigenciaHasta: '2026-11-07',
+      tokenPublico: token,
+      appUrl: 'https://velli-three.vercel.app',
+    });
+
+    expect(texto).toBe(
+      `Hola Laura, te comparto la cotización de *Tinte completo* en Salón Verde: *$182.000*. Válida hasta el 07/11/2026. https://velli-three.vercel.app/c/${token}`
+    );
+    expect(texto).not.toMatch(/porosidad|elasticidad|rizo|alopecia|canas|densidad/i);
+
+    const enlace = armarEnlaceWhatsAppCotizacion({
+      nombreClienta: 'Laura',
+      telefonoClienta: '300 123 4567',
+      servicioNombre: 'Tinte completo',
+      salonNombre: 'Salón Verde',
+      precio: 182000,
+      vigenciaHasta: '2026-11-07',
+      tokenPublico: token,
+    });
+    expect(enlace.urlWhatsApp).toContain('https://wa.me/573001234567?text=');
+    expect(decodeURIComponent(enlace.urlWhatsApp.split('?text=')[1])).toBe(enlace.mensaje);
+  });
+
+  it('excluye /c/ del caché en public/sw.js (R16), abre /c/ en proxy.ts y declara /c/<token> en textos legales (R4, P13)', () => {
+    const raiz = path.resolve(__dirname, '..');
+    const sw = readFileSync(path.join(raiz, 'public/sw.js'), 'utf8');
+    const proxy = readFileSync(path.join(raiz, 'proxy.ts'), 'utf8');
+    const privacidad = readFileSync(path.join(raiz, 'app/legal/privacidad/page.tsx'), 'utf8');
+    const terminos = readFileSync(path.join(raiz, 'app/legal/terminos/page.tsx'), 'utf8');
+
+    expect(sw).toMatch(/url\.pathname\s*===\s*'\/c'\s*\|\|\s*url\.pathname\.startsWith\('\/c\/'\)/);
+    expect(proxy).toMatch(/path\s*===\s*'\/c'\s*\|\|\s*path\.startsWith\('\/c\/'\)/);
+    expect(privacidad).toMatch(/\/c\/&lt;token&gt;|\/c\/<token>/);
+    expect(privacidad).toMatch(/sin exponer en ningún caso el nombre de la\s+clienta, fotografías ni datos/i);
+    expect(terminos).toMatch(/estimaciones vigentes hasta la fecha indicada/i);
+    expect(TEXTO_LEGAL_COTIZACION_PUBLICA).toBe(
+      'Precio para el servicio descrito, válido hasta la fecha indicada. Puede cambiar si al momento del servicio el cabello requiere un trabajo distinto.'
+    );
+  });
+
+  it('valida formato UUID antes de consultar la RPC `cotizacion_publica` y mapea la respuesta', async () => {
+    expect(esUuidValido(token)).toBe(true);
+    expect(esUuidValido('no-es-uuid')).toBe(false);
+    expect(esUuidValido('')).toBe(false);
+    expect(esUuidValido(null)).toBe(false);
+
+    const rpcMock = vi.fn(async () => ({
+      data: [
+        {
+          salon: 'Salón Esmeralda',
+          color_salon: '#1E4D2B',
+          servicio: 'Tinte completo',
+          precio: 182000,
+          moneda: 'COP',
+          vigencia_hasta: '2026-11-07',
+          vigente: true,
+          con_marca_velli: true,
+        },
+      ],
+      error: null,
+    }));
+
+    // Con token inválido NO llama a la base de datos
+    const invalida = await obtenerCotizacionPublica('token-invalido', { rpc: rpcMock } as unknown as Pick<SupabaseClient, 'rpc'>);
+    expect(invalida).toBeNull();
+    expect(rpcMock).not.toHaveBeenCalled();
+
+    // Con UUID válido llama a la RPC y mapea camelCase
+    const valida = await obtenerCotizacionPublica(token, { rpc: rpcMock } as unknown as Pick<SupabaseClient, 'rpc'>);
+    expect(rpcMock).toHaveBeenCalledWith('cotizacion_publica', { p_token: token });
+    expect(valida).toEqual({
+      salon: 'Salón Esmeralda',
+      colorSalon: '#1E4D2B',
+      servicio: 'Tinte completo',
+      precio: 182000,
+      moneda: 'COP',
+      vigenciaHasta: '2026-11-07',
+      vigente: true,
+      conMarcaVelli: true,
+    });
+  });
+
+  it('genera metadatos OpenGraph con `Cotización · {salón}` y muestra marca Velli solo si `conMarcaVelli` es true', () => {
+    const metaConMarca = construirMetadataCotizacion({
+      salon: 'Salón Esmeralda',
+      servicio: 'Tinte completo',
+      precio: 182000,
+      moneda: 'COP',
+      vigenciaHasta: '2026-11-07',
+      vigente: true,
+      conMarcaVelli: true,
+    });
+    expect(metaConMarca.title).toBe('Cotización · Salón Esmeralda');
+    expect(metaConMarca.description).toContain('Cotización hecha con Velli');
+    expect((metaConMarca.openGraph as { siteName?: string })?.siteName).toBe('Velli');
+    expect((metaConMarca.robots as { index?: boolean })?.index).toBe(false);
+
+    const metaSinMarca = construirMetadataCotizacion({
+      salon: 'Salón Esmeralda',
+      servicio: 'Tinte completo',
+      precio: 182000,
+      moneda: 'COP',
+      vigenciaHasta: '2026-11-07',
+      vigente: true,
+      conMarcaVelli: false,
+    });
+    expect(metaSinMarca.title).toBe('Cotización · Salón Esmeralda');
+    expect(metaSinMarca.description).not.toMatch(/Velli/i);
+    expect((metaSinMarca.openGraph as { siteName?: string })?.siteName).toBe('Salón Esmeralda');
+
+    expect(normalizarColorSalon('#123abc')).toBe('#123abc');
+    expect(normalizarColorSalon('javascript:alert(1)')).toBe('#2D5A27');
+    expect(
+      extraerIpDesdeHeaders({
+        get: (k) => (k === 'x-forwarded-for' ? '190.1.2.3, 10.0.0.1' : null),
+      })
+    ).toBe('190.1.2.3');
+  });
+
+  it('opera la capa de datos: inferencia de servicios, validación de motivo al ajustar precio y ciclo de cobro/anulación', async () => {
+    expect(inferirCategoriaServicio('Color y mechas')).toEqual({
+      categoria: 'color',
+      usaFormulaColor: true,
+    });
+    expect(inferirCategoriaServicio('Corte')).toEqual({
+      categoria: 'corte',
+      usaFormulaColor: false,
+    });
+
+    // Si precioCotizado != precioCalculado sin motivo -> rechaza antes de ir a DB
+    await expect(
+      crearCotizacion({
+        servicioNombre: 'Tinte completo',
+        precioCalculado: 182000,
+        precioCotizado: 160000,
+        ajusteManualMotivo: '  ',
+        vigenciaHasta: '2026-11-07',
+      })
+    ).rejects.toThrow(/MOTIVO_REQUERIDO/);
+
+    // Mock de cliente Supabase para verificar llamadas de publicar plantilla, cobro, corrección y anulación
+    const filaMock = {
+      id: 'cot-1',
+      user_id: 'user-1',
+      servicio_nombre: 'Tinte completo',
+      variables: {},
+      precio_calculado: 182000,
+      precio_cotizado: 182000,
+      vigencia_hasta: '2026-11-07',
+      estado: 'cobrada',
+      precio_cobrado: 182000,
+      diferencia_cobro: 0,
+      con_marca_velli: true,
+      token_publico: token,
+      perfil_extendido: {},
+      created_at: '2026-10-23T10:00:00Z',
+      updated_at: '2026-10-23T10:05:00Z',
+    };
+
+    const updateSpy = vi.fn(() => ({
+      eq: () => ({
+        select: () => ({
+          single: async () => ({ data: filaMock, error: null }),
+        }),
+      }),
+    }));
+
+    const clientMock = {
+      rpc: vi.fn(async () => ({ data: 'plantilla-v2', error: null })),
+      from: vi.fn(() => ({ update: updateSpy })),
+    } as unknown as SupabaseClient;
+
+    const idPlantilla = await publicarPlantillaPrecio(
+      { servicioId: 'srv-1', precioBase: 120000 },
+      clientMock
+    );
+    expect(idPlantilla).toBe('plantilla-v2');
+
+    const cobrada = await confirmarCobroCotizacion(
+      'cot-1',
+      { precioCobrado: 182000 },
+      clientMock
+    );
+    expect(cobrada.estado).toBe('cobrada');
+    expect(cobrada.precioCobrado).toBe(182000);
+
+    await corregirCobroCotizacion('cot-1', 190000, clientMock);
+    await anularCotizacion('cot-1', clientMock);
+    expect(updateSpy).toHaveBeenCalledTimes(3);
   });
 });

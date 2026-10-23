@@ -34,13 +34,19 @@ export default function TerminosPage() {
 
         <section>
           <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
-            2. Estimaciones y responsabilidad del profesional
+            2. Estimaciones, cotizaciones y responsabilidad del profesional
           </h2>
           <p>
             Todo lo que Velli Pro calcula o sugiere (el diagnóstico orientativo, el análisis con
             IA, los planes sugeridos, las fórmulas de color, las cantidades de producto, los precios
             y los costos) es una estimación de apoyo, hecha con la información que registra el
             salón. No es un concepto técnico, médico ni dermatológico, y no garantiza un resultado.
+          </p>
+          <p className="mt-2">
+            Los valores cotizados y compartidos mediante los enlaces de cotización son{' '}
+            <strong>estimaciones vigentes hasta la fecha indicada</strong> y pueden variar si al
+            momento de la atención presencial el cabello presenta condiciones distintas o requiere
+            procesos o productos adicionales.
           </p>
           <p className="mt-2">
             <strong>
