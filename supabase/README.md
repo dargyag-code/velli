@@ -90,8 +90,9 @@ después se archivan.
    usa los valores del entorno. Trae la misma guardia que la anterior, así
    que el orden da igual.
 
-**Borradores de diseño (Etapa 3), en `supabase/borradores/`: NO se aplican
-todavía.**
+**Migraciones de Etapa 2/3, APLICADAS el 2026-10-23 (en `supabase/` hasta regenerar `schema.sql`):**
+3. **`velli-bi-cotizador.sql`: APLICADA** el 2026-10-23 (verificadas por lectura las 7 tablas: `estilistas`, `servicios_salon`, `plantillas_precio`, `productos_salon`, `comisiones`, `cotizaciones` y `cotizacion_eventos`, junto con el override `feature_flags = '{"cotizador": true}'` en el perfil principal).
+4. **`velli-bi-uso-ia.sql`: APLICADA** el 2026-10-23 (verificada por lectura la tabla `uso_ia` y la función `ia_analisis_del_mes`).
 - `velli-bi-cotizador.sql`: estilistas, servicios, plantillas de precio
   versionadas, productos, comisiones, cotizaciones, su bitácora y el link
   público.

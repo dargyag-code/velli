@@ -274,6 +274,7 @@ Vanessa construye Velli sola. Desde esta fecha:
   - Enlace público `/c/[token]` (`app/c/[token]/page.tsx`), exclusión en `public/sw.js` (R16), cierre legal de P13/R4 en `app/legal/privacidad` y `app/legal/terminos`, y flag `cotizador` en `lib/flags/registro.ts`.
   - Interfaz del cotizador: `HojaCotizar.tsx`, `ListaPorCobrar.tsx`, `app/configuracion/precios/page.tsx`, menú central en `BottomNavV2.tsx`, `ChecklistInicio.tsx` (P2) y estructura de planes en `lib/subscription/plans.ts`.
   - Control de cupo y registro de consumo de IA en `lib/ia/uso.ts` (tope de 150 análisis/mes en Pro+IA, 20 en prueba gratis, aviso al 80 % y máximo 2 validaciones por análisis) integrado en `/api/analyze-hair`, `/api/validate-hair-photo` y `CameraCapture.tsx`.
+  - **Migraciones aplicadas en producción el 2026-10-23:** `supabase/velli-bi-uso-ia.sql` y `supabase/velli-bi-cotizador.sql` (verificadas por lectura las 8 tablas `uso_ia`, `estilistas`, `servicios_salon`, `plantillas_precio`, `productos_salon`, `comisiones`, `cotizaciones` y `cotizacion_eventos`, y activado `feature_flags = '{"cotizador": true}'` en el perfil principal).
 
 **Sigue pendiente:**
 - Todo lo de producción: las llaves de Bold (R18), quitar el nombre de las 40 notas internas de la base de conocimiento y el despliegue de esta rama. Las dos migraciones de perfiles (R17 y feature flags) ya están aplicadas.

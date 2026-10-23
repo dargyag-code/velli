@@ -134,7 +134,7 @@ La ronda pesada es 1 validación y 1 análisis con 5 fotos grandes y salidas lar
 
 | # | Decisión | Mi recomendación | Estado |
 |---|---|---|---|
-| D1 | Tope de Pro+IA y de la prueba gratis | **150 análisis al mes** con aviso al 80 %, y **20** en la prueba gratis | **Aprobada** el 2026-10-22 e **implementada en código** el 2026-10-23 (`lib/ia/uso.ts`, rutas `/api/analyze-hair` y `/api/validate-hair-photo`, `CameraCapture.tsx` y `tests/ia.uso.test.ts`; pendiente aplicar migración `velli-bi-uso-ia.sql` en Supabase) |
+| D1 | Tope de Pro+IA y de la prueba gratis | **150 análisis al mes** con aviso al 80 %, y **20** en la prueba gratis | **Aprobada** el 2026-10-22 e **implementada y aplicada en producción** el 2026-10-23 (`lib/ia/uso.ts`, rutas `/api/analyze-hair` y `/api/validate-hair-photo`, `CameraCapture.tsx`, `tests/ia.uso.test.ts` y migración `supabase/velli-bi-uso-ia.sql`) |
 | D2 | El respaldo GPT-4o se apaga el 14-ene-2027 | Quitar el respaldo de OpenAI. Si Claude falla, la estilista sigue con el diagnóstico manual, que ya existe. Así queda un solo proveedor que declarar en la política de privacidad (R4). La alternativa sería migrar a `gpt-6-luna`: precio desconocido, y habría que probar la calidad y actualizar los textos legales. | **Aprobada** el 2026-10-19 y **aplicada** el 2026-10-22 (ver abajo) |
 | D3 | Abaratar la validación (palanca 1) | Sí, después de que exista el registro de `usage` para medir el antes y el después | Sin decidir |
 | D4 | Cambiar de modelo | No por ahora. Primero registrar consumo real | Sin decidir |

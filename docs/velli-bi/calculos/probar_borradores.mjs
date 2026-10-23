@@ -16,11 +16,20 @@
 // ══════════════════════════════════════════════════════════════════════════
 
 import { PGlite } from '@electric-sql/pglite';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 const repo = process.argv[2];
-const leer = (rel) => readFileSync(path.join(repo, rel), 'utf8');
+const leer = (rel) => {
+  const rutaDirecta = path.join(repo, rel);
+  if (existsSync(rutaDirecta)) return readFileSync(rutaDirecta, 'utf8');
+  const base = path.basename(rel);
+  for (const dir of ['supabase', 'supabase/borradores', 'supabase/_archive']) {
+    const candidata = path.join(repo, dir, base);
+    if (existsSync(candidata)) return readFileSync(candidata, 'utf8');
+  }
+  return readFileSync(rutaDirecta, 'utf8');
+};
 const db = new PGlite();
 
 const A = '00000000-0000-4000-8000-00000000000a';

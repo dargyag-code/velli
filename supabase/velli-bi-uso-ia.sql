@@ -1,18 +1,21 @@
 -- ═══════════════════════════════════════════════════════════════════════════
--- BORRADOR — NO APLICAR. Velli BI · Etapa 2/3: registro de uso de la IA.
+-- MIGRACIÓN: registro de uso de la IA (Velli BI · Fase 1 · Etapa 2/3)
+-- Estado: APLICADA en producción el 2026-10-23 (la corrió Vanessa; tabla
+-- `uso_ia` y función `ia_analisis_del_mes` verificadas por lectura). Sigue en
+-- supabase/ hasta regenerar schema.sql.
 -- Propuesta y números: docs/velli-bi/01-costo-ia.md (§6).
 --
 -- Cada llamada a /api/analyze-hair y /api/validate-hair-photo deja una fila
 -- con los tokens que reporta el proveedor (campo `usage`). Sirve para dos
--- cosas: medir el costo real (hoy no se guarda nada) y hacer cumplir el tope
--- mensual de Pro+IA en el SERVIDOR.
+-- cosas: medir el costo real y hacer cumplir el tope mensual de Pro+IA en el
+-- SERVIDOR.
 --
 -- Quién escribe: la ruta del servidor con service_role (lib/supabase/admin).
 -- Las cuentas solo leen lo suyo: no pueden borrar filas para "recuperar"
 -- cupo ni inflar las de otro salón.
 --
 -- Idempotente. No escribe datos. Probado en PGlite
--- (docs/velli-bi/calculos/probar_borradores.mjs), nunca contra producción.
+-- (docs/velli-bi/calculos/probar_borradores.mjs).
 -- ═══════════════════════════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS public.uso_ia (

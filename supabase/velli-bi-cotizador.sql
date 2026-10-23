@@ -1,5 +1,8 @@
 -- ═══════════════════════════════════════════════════════════════════════════
--- BORRADOR — NO APLICAR. Velli BI · Fase 1 · Etapa 3: modelo del cotizador.
+-- MIGRACIÓN: modelo del cotizador y rentabilidad (Velli BI · Fase 1 · Etapa 3)
+-- Estado: APLICADA en producción el 2026-10-23 (la corrió Vanessa; las 7
+-- tablas del cotizador se verificaron por lectura). Sigue en supabase/ hasta
+-- regenerar schema.sql.
 -- Diseño y decisiones: docs/velli-bi/02-diseno-cotizador.md
 --
 -- Módulo 1 (cotizador) completo y lo que el módulo 2 (rentabilidad) necesita
@@ -20,7 +23,7 @@
 -- - Montos en COP enteros. Fechas timestamptz. Enumeraciones como text+CHECK.
 -- - Idempotente: re-ejecutable sin efectos dobles. No escribe datos.
 -- - Probado en un Postgres en memoria (PGlite) con las pruebas de
---   docs/velli-bi/calculos/probar_borradores.mjs. Nunca contra producción.
+--   docs/velli-bi/calculos/probar_borradores.mjs.
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- ── 0. Tenencia ───────────────────────────────────────────────────────────

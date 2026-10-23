@@ -7,7 +7,7 @@
   - Se probaron en un Postgres en memoria (PGlite 0.5.10, PostgreSQL 18.6) junto con las dos migraciones de la Etapa 1: **51 de 51 pruebas en verde** (la 51, del 2026-10-22, comprueba que `uso_ia` solo acepta Anthropic) (`calculos/probar_borradores_salida.txt`).
   - Plantilla para probar en papel: `plantilla-precios.xlsx`.
 - **Actualizado el 2026-10-22:** las variables usan estándares configurables de Velli, sin validación externa (§1.1), y el dominio sale de `NEXT_PUBLIC_APP_URL` (§4).
-- **Actualizado el 2026-10-23:** todo el código de la Fase 1 (`lib/cotizador/`, `/c/[token]`, `HojaCotizar`, `ListaPorCobrar`, `/configuracion/precios`, `BottomNavV2`, `ChecklistInicio`, `plans.ts` y `lib/ia/uso.ts`) quedó implementado y verificado con **14 suites / 340 pruebas en verde**. Pendiente únicamente aplicar las migraciones `supabase/borradores/velli-bi-uso-ia.sql` y `supabase/borradores/velli-bi-cotizador.sql` en Supabase.
+- **Actualizado el 2026-10-23:** todo el código de la Fase 1 (`lib/cotizador/`, `/c/[token]`, `HojaCotizar`, `ListaPorCobrar`, `/configuracion/precios`, `BottomNavV2`, `ChecklistInicio`, `plans.ts` y `lib/ia/uso.ts`) quedó implementado y verificado con **14 suites / 340 pruebas en verde**, y las migraciones `supabase/velli-bi-uso-ia.sql` y `supabase/velli-bi-cotizador.sql` ya fueron aplicadas en producción (verificadas las 8 tablas y `feature_flags = '{"cotizador": true}'` en el perfil principal).
 
 ## Resumen
 
