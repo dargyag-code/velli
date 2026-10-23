@@ -27,6 +27,14 @@ Reglas para cualquier cambio:
   estado, % de canas); la colorimetría da el costo (gramos de la fórmula
   final ÷ presentación × precio de compra). Sus reglas no se cambian para
   servir al cotizador: se adapta en la capa del cotizador.
+- Sin validación externa (decisión del 2026-10-22): estándares configurables
+  de Velli para largo (`corto`, `medio`, `largo`, `extra_largo`), estado de
+  la fibra (`sana`, `procesada`, `sensibilizada`) y canas en 4 tramos
+  (`0_25`, `25_50`, `50_75` con +15 % de gramos, `75_100` con +20 % de gramos
+  y prepigmentación).
+- Dominio y soporte centralizados en `lib/sitio.ts` (`NEXT_PUBLIC_APP_URL` y
+  `NEXT_PUBLIC_SUPPORT_EMAIL`). No poner dominios ni correos de soporte fijos
+  en el código, PDF, metadatos ni textos legales.
 - Congelado = flag apagado en `lib/flags/registro.ts` y oculto en la
   interfaz. NUNCA se borra código, datos, tablas, roles ni políticas RLS.
   Congelados: corte por forma de rostro (`lib/cortes/preagenda.ts` se
@@ -42,5 +50,8 @@ Reglas para cualquier cambio:
 - El link público de cotización muestra SOLO servicio, precio y vigencia:
   nada del diagnóstico, ni fotos, ni datos de salud capilar.
 - Producción: verificar solo leyendo. Las migraciones se dejan como borrador
-  en `supabase/` y las aplica Vanessa a mano.
+  en `supabase/` y las aplica Vanessa a mano. (`migration-proteger-perfil.sql`
+  y `migration-feature-flags.sql` ya están aplicadas en producción, el
+  respaldo GPT-4o ya fue eliminado y la rama ya fue desplegada en `main` en
+  el commit `183137c`).
 - Documentos de esta dirección: `docs/velli-bi/`.
