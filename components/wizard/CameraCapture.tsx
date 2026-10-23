@@ -197,6 +197,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const processingRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const validacionesEnCapturaRef = useRef(0);
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
 
   // ── Cámara ────────────────────────────────────────────────────────────
@@ -387,7 +388,8 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
       // BUG-2: 2ª capa de validación con IA sólo cuando score < 80
       const fotoUrls = fotos.map((f) => f.dataUrl);
       const score = scoreResult?.total ?? 0;
-      if (score < 80) {
+      if (score < 80 && validacionesEnCapturaRef.current < 2) {
+        validacionesEnCapturaRef.current += 1;
         console.log('[BUG-2] score', score, '< 80 — ejecutando validación de cabello con IA');
         const validation = await validarFotosSonDeCabello(fotoUrls);
         console.log('[BUG-2] validación con IA:', validation);
@@ -408,6 +410,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
         estadoCabello,
         fotos.map((f) => f.angulo)
       );
+      validacionesEnCapturaRef.current = 0;
       setAnalysisResult(result);
       setFlowStep('result');
     } catch (e: unknown) {
@@ -521,7 +524,22 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
       // BUG-2: para fotos subidas (sin score nativo), SIEMPRE validamos con IA
       // — no tenemos métricas de calidad que justifiquen saltarse la validación.
       console.log('[BUG-2] fotos subidas — validando con IA (no hay score nativo)');
-      const validation = await validarFotosSonDeCabello(photos);
+      if (validacionesEnCapturaRef.current < 2) {
+        validacionesEnCapturaRef.current += 1;
+        console.log('[BUG-2] fotos subidas — validando con IA (no hay score nativo)');
+        const validation = await validarFotosSonDeCabello(photos);
+        console.log('[BUG-2] validación con IA (gallery):', validation);
+        setHairValidation(validation);
+
+        if (validation.blocked) {
+          setError(mensajeFotosSinCabello(photos.length));
+          setFlowStep('gallery');
+          vibracionError();
+          return;
+        }
+      }
+      if (false) {
+        const validation = await validarFotosSonDeCabello(photos);
       console.log('[BUG-2] validación con IA (gallery):', validation);
       setHairValidation(validation);
 
@@ -534,9 +552,12 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
         return;
       }
 
+      }
       const angulos: AnguloCaptura[] = (['frontal', 'lateral', 'corona'] as AnguloCaptura[]).slice(0, photos.length);
       const estado: EstadoCabelloFoto = estadoCabello || 'seco_natural';
       const result = await analizarCabello(photos, estado, angulos);
+      validacionesEnCapturaRef.current = 0;
+      validacionesEnCapturaRef.current = 0;
       setAnalysisResult(result);
       setFlowStep('result');
     } catch (err) {
@@ -1495,6 +1516,29 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
             )}
           </div>
 
+          {/* Aviso no intrusivo al alcanzar el 80 % del cupo de IA (D1) */}
+          {analysisResult.avisoOchentaPorCiento && typeof analysisResult.restantes === 'number' && (
+            <div
+              role="status"
+              style={{
+                margin: '0 20px 14px',
+                padding: '10px 14px',
+                borderRadius: 12,
+                background: 'var(--secondary-pale)',
+                border: '1px solid rgba(138, 90, 46, 0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                fontSize: 12.5,
+                color: 'var(--secondary-deep)',
+                fontWeight: 600,
+              }}
+            >
+              <Sparkles size={14} style={{ flexShrink: 0 }} />
+              <span>Te quedan {analysisResult.restantes} análisis con IA este mes</span>
+            </div>
+          )}
+
           {/* BUG-2: warning si la validación con IA detectó fotos no-cabello */}
           {hairValidation?.warning && (
             <div
@@ -1799,7 +1843,9 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
             >
               Seguir con selección manual
             </Btn>
-            {sinIA.error.motivo !== 'limite_hora' && (
+            {sinIA.error.motivo !== 'limite_hora' &&
+              sinIA.error.motivo !== 'plan_sin_ia' &&
+              sinIA.error.motivo !== 'tope_ia_alcanzado' && (
               <Btn
                 variant="outline"
                 size="lg"

@@ -9,6 +9,7 @@
 import * as Sentry from '@sentry/nextjs';
 import { requireUser } from '@/lib/api/auth';
 import { validateLimiter, checkRateLimit } from '@/lib/api/rateLimit';
+import { MODELO_CLAUDE_IA, registrarUsoIA, verificarCupoIA } from '@/lib/ia/uso';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const VALIDACION_NO_DISPONIBLE = 'La validación con IA no está disponible en este momento.';
@@ -45,6 +46,12 @@ interface ValidationItem {
   isHair: boolean;
 }
 
+interface ClaudeValidationResponse {
+  perFoto: ValidationItem[];
+  tokensEntrada: number | null;
+  tokensSalida: number | null;
+}
+
 function parseDataUrl(dataUrl: string): { mediaType: string; data: string } {
   const m = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
   if (m) return { mediaType: m[1], data: m[2] };
@@ -59,7 +66,10 @@ function extractJSON(rawText: string): unknown {
 }
 
 // ── Claude ─────────────────────────────────────────────────────────────
-async function validarConClaude(fotos: string[]): Promise<ValidationItem[]> {
+async function validarConClaude(
+  fotos: string[],
+  onUsage?: (tokensEntrada: number | null, tokensSalida: number | null) => void
+): Promise<ClaudeValidationResponse> {
   const apiKey = process.env.ANTHROPIC_API_KEY!;
   const content: unknown[] = [];
   fotos.forEach((foto, index) => {
@@ -77,7 +87,7 @@ async function validarConClaude(fotos: string[]): Promise<ValidationItem[]> {
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
+      model: MODELO_CLAUDE_IA,
       max_tokens: 400,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content }],
@@ -89,9 +99,19 @@ async function validarConClaude(fotos: string[]): Promise<ValidationItem[]> {
     throw new Error(`Anthropic respondió ${res.status}: ${errText}`);
   }
   const json = await res.json();
+  const tokensEntrada =
+    typeof json?.usage?.input_tokens === 'number' ? json.usage.input_tokens : null;
+  const tokensSalida =
+    typeof json?.usage?.output_tokens === 'number' ? json.usage.output_tokens : null;
+  onUsage?.(tokensEntrada, tokensSalida);
+
   const rawText: string = json?.content?.[0]?.text ?? '';
   const parsed = extractJSON(rawText) as { perFoto: ValidationItem[] };
-  return parsed.perFoto ?? [];
+  return {
+    perFoto: parsed.perFoto ?? [],
+    tokensEntrada,
+    tokensSalida,
+  };
 }
 
 export async function POST(request: Request) {
@@ -147,8 +167,47 @@ export async function POST(request: Request) {
     }
   }
 
+  // 5. Verificar cupo de IA y máximo 2 validaciones por análisis (D1, §6)
+  const cupo = await verificarCupoIA(auth.user.id, {
+    supabase: auth.supabase,
+    ruta: 'validar',
+  });
+  if (!cupo.permitido) {
+    const status = cupo.codigo === 'PLAN_SIN_IA' ? 403 : 429;
+    return Response.json(
+      {
+        error: cupo.mensaje ?? VALIDACION_NO_DISPONIBLE,
+        codigo: cupo.codigo ?? 'TOPE_IA_ALCANZADO',
+        motivo: cupo.motivo,
+        usados: cupo.usados,
+        tope: cupo.tope,
+        restantes: cupo.restantes,
+      },
+      { status }
+    );
+  }
+
+  let ultimoTokensEntrada: number | null = null;
+  let ultimoTokensSalida: number | null = null;
+
   try {
-    const perFoto = await validarConClaude(fotos);
+    const { perFoto, tokensEntrada, tokensSalida } = await validarConClaude(
+      fotos,
+      (tIn, tOut) => {
+        ultimoTokensEntrada = tIn;
+        ultimoTokensSalida = tOut;
+      }
+    );
+
+    await registrarUsoIA({
+      userId: auth.user.id,
+      ruta: 'validar',
+      modelo: MODELO_CLAUDE_IA,
+      fotos: fotos.length,
+      tokensEntrada,
+      tokensSalida,
+      ok: true,
+    });
 
     // Sanitizar: si la IA omitió alguna foto, asumimos isHair=true para no bloquear injustamente
     const normalized: ValidationItem[] = fotos.map((_, i) => {
@@ -180,6 +239,15 @@ export async function POST(request: Request) {
       message,
     });
   } catch (e: unknown) {
+    await registrarUsoIA({
+      userId: auth.user.id,
+      ruta: 'validar',
+      modelo: MODELO_CLAUDE_IA,
+      fotos: fotos.length,
+      tokensEntrada: ultimoTokensEntrada,
+      tokensSalida: ultimoTokensSalida,
+      ok: false,
+    });
     console.error('[validate-hair-photo] Claude falló:', e);
     Sentry.captureException(e, { tags: { area: 'ia', endpoint: 'validate-hair-photo' } });
     return Response.json({ error: VALIDACION_NO_DISPONIBLE }, { status: 502 });

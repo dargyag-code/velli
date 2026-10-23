@@ -46,6 +46,11 @@ export function featuresEfectivas(sub: SuscripcionEfectiva | null): PlanFeatures
     marcaPersonalizada: false,
     calculadoraColor: false,
     iaFacial: false,
+    cotizador: true,
+    rentabilidad: false,
+    diagnosticoIA: false,
+    topeAnalisisIAMensual: 0,
+    cotizacionSinMarca: false,
   };
   if (!sub) return sinPlan;
 

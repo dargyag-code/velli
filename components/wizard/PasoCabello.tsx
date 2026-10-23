@@ -253,6 +253,7 @@ export default function PasoCabello({
   const [iaCampos, setIaCampos] = useState<IACampos>(new Set());
   const [expressReady, setExpressReady] = useState(false);
   const [showDetalle, setShowDetalle] = useState(false);
+  const [avisoRestantesIA, setAvisoRestantesIA] = useState<number | null>(null);
 
   // ── BUG-1: lock anti-cámara durante corrección de IA ──────────────────
   // Una vez que correctingMode = true, la cámara NUNCA se vuelve a abrir
@@ -339,6 +340,9 @@ export default function PasoCabello({
     // BUG-1 LOG · NOTA: este log mostrará el `mode` *stale* del closure (React state es asíncrono).
     // La verdad sobre el valor real está en el siguiente log de render.
     console.log('[BUG-1] mode después de setMode(form) (stale closure):', mode);
+    if (analysisResult.avisoOchentaPorCiento && typeof analysisResult.restantes === 'number') {
+      setAvisoRestantesIA(analysisResult.restantes);
+    }
     setIaCampos(camposIA);
     setExpressReady(false);
     onChange(patch);
@@ -384,6 +388,9 @@ export default function PasoCabello({
     }
 
     onChange(patch);
+    if (analysisResult.avisoOchentaPorCiento && typeof analysisResult.restantes === 'number') {
+      setAvisoRestantesIA(analysisResult.restantes);
+    }
     setIaCampos(camposIA);
 
     const isExpress =
@@ -598,6 +605,26 @@ export default function PasoCabello({
   return (
     <>
       <div className="step-enter" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        {avisoRestantesIA !== null && (
+          <div
+            role="status"
+            style={{
+              padding: '10px 14px',
+              borderRadius: 12,
+              background: 'var(--secondary-pale)',
+              border: '1px solid rgba(138, 90, 46, 0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              fontSize: 12.5,
+              color: 'var(--secondary-deep)',
+              fontWeight: 600,
+            }}
+          >
+            <Sparkles size={14} style={{ flexShrink: 0 }} />
+            <span>Te quedan {avisoRestantesIA} análisis con IA este mes</span>
+          </div>
+        )}
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 }}>
           <div style={{ minWidth: 0 }}>

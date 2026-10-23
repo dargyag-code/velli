@@ -1,13 +1,15 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Store, UserPlus, Sparkles, FileDown, Check, ChevronRight, X } from 'lucide-react';
+import { Store, UserPlus, Sparkles, FileDown, Calculator, Send, Check, ChevronRight, X } from 'lucide-react';
 import { updateProfile, type Profile } from '@/lib/profile';
+import { flagsActivos } from '@/lib/flags';
+import { listarCotizacionesPorCobrar, listarPlantillasVigentes } from '@/lib/cotizador/db';
 
 // ─── Checklist de inicio del Dashboard ──────────────────────────────────────
-// Tarjeta persistente para cuentas nuevas: 4 ítems que se marcan solos al
+// Tarjeta persistente para cuentas nuevas: ítems que se marcan solos al
 // cumplirse, cada uno enlaza directo a su acción. Desaparece DEFINITIVAMENTE
-// (flag checklist_descartada en el perfil) al completarse los 4 o al
+// (flag checklist_descartada en el perfil) al completarse todos o al
 // descartarla con la X. Las cuentas existentes nunca la ven: la migración
 // las backfillea con checklist_descartada = true.
 
@@ -15,24 +17,85 @@ interface Props {
   profile: Profile;
   tieneClientas: boolean;
   tieneConsultas: boolean;
+  tienePlantillaPrecios?: boolean;
+  tieneCotizaciones?: boolean;
   /** El padre la oculta de inmediato al descartar. */
   onDismissed: () => void;
 }
 
-export default function ChecklistInicio({ profile, tieneClientas, tieneConsultas, onDismissed }: Props) {
+export default function ChecklistInicio({
+  profile,
+  tieneClientas,
+  tieneConsultas,
+  tienePlantillaPrecios,
+  tieneCotizaciones,
+  onDismissed,
+}: Props) {
   const [dismissing, setDismissing] = useState(false);
   const persistedRef = useRef(false);
 
+  const cotizadorActivo = flagsActivos(profile.featureFlags).cotizador;
+  const [plantillaDetectada, setPlantillaDetectada] = useState(Boolean(tienePlantillaPrecios));
+  const [cotizacionDetectada, setCotizacionDetectada] = useState(Boolean(tieneCotizaciones));
+  const [cotizadorVerificado, setCotizadorVerificado] = useState(!cotizadorActivo);
+
+  useEffect(() => {
+    if (!cotizadorActivo) {
+      setCotizadorVerificado(true);
+      return;
+    }
+    if (typeof tienePlantillaPrecios === 'boolean' && typeof tieneCotizaciones === 'boolean') {
+      setPlantillaDetectada(tienePlantillaPrecios);
+      setCotizacionDetectada(tieneCotizaciones);
+      setCotizadorVerificado(true);
+      return;
+    }
+
+    let activo = true;
+    Promise.all([
+      listarPlantillasVigentes().catch(() => []),
+      listarCotizacionesPorCobrar().catch(() => []),
+    ]).then(([plantillas, cotizaciones]) => {
+      if (!activo) return;
+      if (typeof tienePlantillaPrecios !== 'boolean') {
+        setPlantillaDetectada(plantillas.length > 0);
+      }
+      if (typeof tieneCotizaciones !== 'boolean') {
+        setCotizacionDetectada(cotizaciones.length > 0);
+      }
+      setCotizadorVerificado(true);
+    });
+
+    return () => {
+      activo = false;
+    };
+  }, [cotizadorActivo, tienePlantillaPrecios, tieneCotizaciones]);
+
   const perfilCompleto = !!(profile.nombreSalon && profile.ciudad && profile.telefono);
+  const tienePlantillaEfectiva =
+    typeof tienePlantillaPrecios === 'boolean' ? tienePlantillaPrecios : plantillaDetectada;
+  const tieneCotizacionEfectiva =
+    typeof tieneCotizaciones === 'boolean' ? tieneCotizaciones : cotizacionDetectada;
 
   const items = [
     {
       done: perfilCompleto,
       icon: <Store size={15} />,
       titulo: 'Completa el perfil de tu salón',
-      sub: 'Nombre, ciudad y WhatsApp para tus PDF',
+      sub: 'Nombre, ciudad y WhatsApp para tus PDF y cotizaciones',
       href: '/configuracion',
     },
+    ...(cotizadorActivo
+      ? [
+          {
+            done: tienePlantillaEfectiva,
+            icon: <Calculator size={15} />,
+            titulo: 'Arma tu plantilla de precios',
+            sub: 'Configura tu base y ajustes por largo, densidad o estado',
+            href: '/configuracion/precios',
+          },
+        ]
+      : []),
     {
       done: tieneClientas,
       icon: <UserPlus size={15} />,
@@ -47,20 +110,32 @@ export default function ChecklistInicio({ profile, tieneClientas, tieneConsultas
       sub: 'Con IA o wizard manual, en minutos',
       href: '/diagnostico',
     },
-    {
-      done: profile.primerPdfDescargado,
-      icon: <FileDown size={15} />,
-      titulo: 'Descarga tu primer PDF',
-      sub: 'El informe que entregas a tu clienta',
-      href: tieneConsultas ? '/clientas' : '/diagnostico',
-    },
+    ...(cotizadorActivo
+      ? [
+          {
+            done: tieneCotizacionEfectiva,
+            icon: <Send size={15} />,
+            titulo: 'Envía tu primera cotización',
+            sub: 'Cotiza en 3 toques y compártela por WhatsApp',
+            href: tieneClientas ? '/clientas' : '/clientas/nueva',
+          },
+        ]
+      : [
+          {
+            done: profile.primerPdfDescargado,
+            icon: <FileDown size={15} />,
+            titulo: 'Descarga tu primer PDF',
+            sub: 'El informe que entregas a tu clienta',
+            href: tieneConsultas ? '/clientas' : '/diagnostico',
+          },
+        ]),
   ];
 
   const hechos = items.filter((i) => i.done).length;
-  const completa = hechos === items.length;
+  const completa = cotizadorVerificado && hechos === items.length;
 
-  // Al completarse los 4, persistir el flag una sola vez: la tarjeta celebra
-  // esta sesión y no vuelve a aparecer.
+  // Al completarse todos los pasos, persistir el flag una sola vez: la tarjeta
+  // celebra esta sesión y no vuelve a aparecer.
   useEffect(() => {
     if (completa && !persistedRef.current) {
       persistedRef.current = true;

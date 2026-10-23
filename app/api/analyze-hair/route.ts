@@ -4,6 +4,7 @@ import { HairAnalysisResult } from '@/lib/hairAnalysis';
 import { componerPromptsAnalisis, PromptsAnalisis } from '@/lib/kb/promptsServidor';
 import { requireUser } from '@/lib/api/auth';
 import { analyzeLimiter, checkRateLimit } from '@/lib/api/rateLimit';
+import { MODELO_CLAUDE_IA, registrarUsoIA, verificarCupoIA } from '@/lib/ia/uso';
 
 // ── Límites de payload ────────────────────────────────────────────────────
 // 1M chars en base64 ≈ 750KB de binario. 5 fotos × 1M ≈ 5MB JSON, justo por
@@ -26,6 +27,12 @@ interface AnalyzeContext {
   // Prompts compuestos desde la knowledge base (kb_prompts publicados) con
   // fallback al contenido hardcodeado — ver lib/kb/promptsServidor.ts.
   prompts: PromptsAnalisis;
+}
+
+interface ClaudeAnalyzeResponse {
+  result: HairAnalysisResult;
+  tokensEntrada: number | null;
+  tokensSalida: number | null;
 }
 
 // ── Utilidades de parseo ──────────────────────────────────────────────────
@@ -52,8 +59,9 @@ function parseDataUrl(dataUrl: string): { mediaType: string; data: string } {
 
 async function analyzeWithClaude(
   fotos: string[],
-  context: AnalyzeContext
-): Promise<HairAnalysisResult> {
+  context: AnalyzeContext,
+  onUsage?: (tokensEntrada: number | null, tokensSalida: number | null) => void
+): Promise<ClaudeAnalyzeResponse> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY no configurada');
 
@@ -79,7 +87,7 @@ async function analyzeWithClaude(
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
+      model: MODELO_CLAUDE_IA,
       max_tokens: 1500,
       system: context.prompts.sistema,
       messages: [{ role: 'user', content }],
@@ -92,8 +100,15 @@ async function analyzeWithClaude(
   }
 
   const json = await res.json();
+  const tokensEntrada =
+    typeof json?.usage?.input_tokens === 'number' ? json.usage.input_tokens : null;
+  const tokensSalida =
+    typeof json?.usage?.output_tokens === 'number' ? json.usage.output_tokens : null;
+  onUsage?.(tokensEntrada, tokensSalida);
+
   const rawText: string = json?.content?.[0]?.text ?? '';
-  return extractJSON(rawText) as HairAnalysisResult;
+  const result = extractJSON(rawText) as HairAnalysisResult;
+  return { result, tokensEntrada, tokensSalida };
 }
 
 // ── Route handler ─────────────────────────────────────────────────────────
@@ -164,6 +179,29 @@ export async function POST(request: Request) {
     }
   }
 
+  // 5. Verificar cupo de IA por plan y tope mensual / prueba gratis (D1, P3)
+  const cupo = await verificarCupoIA(auth.user.id, {
+    supabase: auth.supabase,
+    ruta: 'analizar',
+  });
+  if (!cupo.permitido) {
+    const status = cupo.codigo === 'PLAN_SIN_IA' ? 403 : 429;
+    return Response.json(
+      {
+        error: cupo.mensaje ?? IA_NO_DISPONIBLE,
+        codigo: cupo.codigo ?? 'TOPE_IA_ALCANZADO',
+        motivo: cupo.motivo,
+        usados: cupo.usados,
+        tope: cupo.tope,
+        restantes: cupo.restantes,
+      },
+      { status }
+    );
+  }
+
+  let ultimoTokensEntrada: number | null = null;
+  let ultimoTokensSalida: number | null = null;
+
   try {
     // Prompt compuesto desde la knowledge base (sin redeploy al publicar);
     // fallback automático al contenido hardcodeado si la KB no responde.
@@ -172,9 +210,44 @@ export async function POST(request: Request) {
       estadoCabello,
       typeof tipoEstimado === 'string' ? tipoEstimado : undefined
     );
-    const result = await analyzeWithClaude(fotos, { estadoCabello, angulos, prompts });
+    const { result, tokensEntrada, tokensSalida } = await analyzeWithClaude(
+      fotos,
+      { estadoCabello, angulos, prompts },
+      (tIn, tOut) => {
+        ultimoTokensEntrada = tIn;
+        ultimoTokensSalida = tOut;
+      }
+    );
+
+    await registrarUsoIA({
+      userId: auth.user.id,
+      ruta: 'analizar',
+      modelo: MODELO_CLAUDE_IA,
+      fotos: fotos.length,
+      tokensEntrada,
+      tokensSalida,
+      ok: true,
+    });
+
+    if (cupo.medido) {
+      return Response.json({
+        ...result,
+        restantes: cupo.restantes,
+        avisoOchentaPorCiento: cupo.avisoOchentaPorCiento,
+      });
+    }
+
     return Response.json(result);
   } catch (e: unknown) {
+    await registrarUsoIA({
+      userId: auth.user.id,
+      ruta: 'analizar',
+      modelo: MODELO_CLAUDE_IA,
+      fotos: fotos.length,
+      tokensEntrada: ultimoTokensEntrada,
+      tokensSalida: ultimoTokensSalida,
+      ok: false,
+    });
     // El detalle del proveedor queda en el log y en Sentry, no en la pantalla.
     console.error('[analyze-hair] Claude falló:', e);
     Sentry.captureException(e, { tags: { area: 'ia', endpoint: 'analyze-hair' } });

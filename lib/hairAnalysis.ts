@@ -9,6 +9,9 @@ export interface HairAnalysisResult {
   porosidad?: 'baja' | 'media' | 'alta';
   densidad?: 'baja' | 'media' | 'alta';
   danoVisible?: 'ninguno' | 'leve' | 'moderado' | 'severo';
+  // Información de cupo IA (D1 / P3)
+  restantes?: number;
+  avisoOchentaPorCiento?: boolean;
 }
 
 const CONTEXTO_ESTADO: Record<EstadoCabelloFoto, string> = {
@@ -47,15 +50,26 @@ Reglas:
 // cuando la IA no puede responder, la cámara ofrece seguir con el diagnóstico
 // manual en vez de mostrar el error técnico. `message` es la causa, en
 // palabras de la estilista.
-export type MotivoSinIA = 'sin_conexion' | 'sin_respuesta' | 'limite_hora';
+export type MotivoSinIA =
+  | 'sin_conexion'
+  | 'sin_respuesta'
+  | 'limite_hora'
+  | 'plan_sin_ia'
+  | 'tope_ia_alcanzado';
 
 export class IANoDisponibleError extends Error {
   readonly motivo: MotivoSinIA;
+  readonly codigo?: 'PLAN_SIN_IA' | 'TOPE_IA_ALCANZADO';
 
-  constructor(motivo: MotivoSinIA, message: string) {
+  constructor(
+    motivo: MotivoSinIA,
+    message: string,
+    codigo?: 'PLAN_SIN_IA' | 'TOPE_IA_ALCANZADO'
+  ) {
     super(message);
     this.name = 'IANoDisponibleError';
     this.motivo = motivo;
+    this.codigo = codigo;
   }
 }
 
@@ -85,6 +99,14 @@ export async function analizarCabello(
   }
 
   if (response.status === 429) {
+    const err429 = await response.json().catch(() => ({}));
+    if (err429?.codigo === 'TOPE_IA_ALCANZADO') {
+      throw new IANoDisponibleError(
+        'tope_ia_alcanzado',
+        err429.error || 'Alcanzaste el tope de análisis con IA de este mes.',
+        'TOPE_IA_ALCANZADO'
+      );
+    }
     throw new IANoDisponibleError('limite_hora', mensajeLimiteHora(response.headers.get('Retry-After')));
   }
   // 5xx: Claude falló, falta la llave o la función se agotó (504 sin JSON).
@@ -93,6 +115,20 @@ export async function analizarCabello(
   }
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
+    if (err?.codigo === 'PLAN_SIN_IA') {
+      throw new IANoDisponibleError(
+        'plan_sin_ia',
+        err.error || 'Tu plan actual no incluye análisis con IA por foto.',
+        'PLAN_SIN_IA'
+      );
+    }
+    if (err?.codigo === 'TOPE_IA_ALCANZADO') {
+      throw new IANoDisponibleError(
+        'tope_ia_alcanzado',
+        err.error || 'Alcanzaste el tope de análisis con IA de este mes.',
+        'TOPE_IA_ALCANZADO'
+      );
+    }
     throw new Error(err.error || `Error ${response.status} del servidor`);
   }
 

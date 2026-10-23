@@ -269,6 +269,11 @@ Vanessa construye Velli sola. Desde esta fecha:
 - La galería de la cámara muestra el motivo cuando la IA no encuentra cabello en las fotos.
 - `supabase/borradores/velli-bi-uso-ia.sql` solo acepta `anthropic` como proveedor.
 - R5: el % de canas del asistente llega a la calculadora de color (`porcentajeCanasDesdePerfil()` en `lib/color/integracion.ts`). Con «más del 50 %», la calculadora pide un toque, «Entre 50 y 75 %» o «Más del 75 %», y no muestra guía ni fórmula hasta tenerlo. La opción del asistente no se dividió: tres reglas del motor leen `mas_50` (`02-diseno-cotizador.md` §1.1).
+- **Implementado el 2026-10-23 (Fase 1 completa en código, 340 pruebas en verde):**
+  - Motor y capa de datos del cotizador en `lib/cotizador/` (`variables.ts`, `precio.ts`, `costo.ts`, `comision.ts`, `whatsapp.ts`, `db.ts`).
+  - Enlace público `/c/[token]` (`app/c/[token]/page.tsx`), exclusión en `public/sw.js` (R16), cierre legal de P13/R4 en `app/legal/privacidad` y `app/legal/terminos`, y flag `cotizador` en `lib/flags/registro.ts`.
+  - Interfaz del cotizador: `HojaCotizar.tsx`, `ListaPorCobrar.tsx`, `app/configuracion/precios/page.tsx`, menú central en `BottomNavV2.tsx`, `ChecklistInicio.tsx` (P2) y estructura de planes en `lib/subscription/plans.ts`.
+  - Control de cupo y registro de consumo de IA en `lib/ia/uso.ts` (tope de 150 análisis/mes en Pro+IA, 20 en prueba gratis, aviso al 80 % y máximo 2 validaciones por análisis) integrado en `/api/analyze-hair`, `/api/validate-hair-photo` y `CameraCapture.tsx`.
 
 **Sigue pendiente:**
 - Todo lo de producción: las llaves de Bold (R18), quitar el nombre de las 40 notas internas de la base de conocimiento y el despliegue de esta rama. Las dos migraciones de perfiles (R17 y feature flags) ya están aplicadas.

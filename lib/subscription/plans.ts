@@ -21,6 +21,16 @@ export interface PlanFeatures {
   /** IA facial (Pro+IA). Llega después: además del plan, exige el feature
    *  flag global NEXT_PUBLIC_FEATURE_IA_FACIAL=true para encenderse. */
   iaFacial: boolean;
+  /** Cotizador en 3 toques y plantillas de precio (todos los planes). */
+  cotizador: boolean;
+  /** Rentabilidad: costos de producto, comisiones y margen por servicio (Pro+). */
+  rentabilidad: boolean;
+  /** Diagnóstico capilar con IA por foto (Pro+IA, hasta 150/mes; 20 en prueba gratis). */
+  diagnosticoIA: boolean;
+  /** Tope mensual de análisis con IA en plan pagado (150 en Pro+IA). */
+  topeAnalisisIAMensual: number;
+  /** Cotización pública (/c/[token]) sin sello de marca Velli (Pro+IA). */
+  cotizacionSinMarca: boolean;
 }
 
 export interface PlanDef {
@@ -46,8 +56,9 @@ export const PLANES: Record<PlanId, PlanDef> = {
     tagline: 'Para empezar con tus primeras clientas',
     beneficios: [
       'Hasta 50 clientas',
-      'Diagnóstico capilar guiado',
-      'Agenda y historial por clienta',
+      'Cotizador en 3 toques por WhatsApp',
+      'Diagnóstico capilar guiado (manual)',
+      'Agenda e historial por clienta',
       'PDF de resultados para tus clientas',
     ],
     features: {
@@ -57,6 +68,11 @@ export const PLANES: Record<PlanId, PlanDef> = {
       marcaPersonalizada: false,
       calculadoraColor: false,
       iaFacial: false,
+      cotizador: true,
+      rentabilidad: false,
+      diagnosticoIA: false,
+      topeAnalisisIAMensual: 0,
+      cotizacionSinMarca: false,
     },
   },
   pro: {
@@ -68,8 +84,9 @@ export const PLANES: Record<PlanId, PlanDef> = {
     beneficios: [
       'Clientas ilimitadas',
       'Todo lo del plan Básico',
+      'Cotizador + rentabilidad (costos, comisiones y margen)',
       'Calculadora de colorimetría',
-      'Reportes de tu negocio',
+      'Reportes de tu negocio y exportación a Excel',
       'Personalización de marca',
     ],
     features: {
@@ -79,6 +96,11 @@ export const PLANES: Record<PlanId, PlanDef> = {
       marcaPersonalizada: true,
       calculadoraColor: true,
       iaFacial: false,
+      cotizador: true,
+      rentabilidad: true,
+      diagnosticoIA: false,
+      topeAnalisisIAMensual: 0,
+      cotizacionSinMarca: false,
     },
   },
   pro_ia: {
@@ -86,11 +108,10 @@ export const PLANES: Record<PlanId, PlanDef> = {
     nombre: 'Pro + IA',
     precioCop: 120_000,
     tagline: 'La experiencia Velli completa',
-    // La IA facial salió de esta lista al congelar el corte por rostro
-    // (flag `cortes` / `ia_facial`). Los beneficios nuevos de Pro+IA
-    // (diagnóstico con tope, cotización sin marca) entran cuando existan.
     beneficios: [
       'Todo lo del plan Pro',
+      'Hasta 150 diagnósticos con IA al mes',
+      'Cotización pública sin marca Velli',
       'Acceso anticipado a nuevas funciones de IA',
     ],
     features: {
@@ -100,6 +121,11 @@ export const PLANES: Record<PlanId, PlanDef> = {
       marcaPersonalizada: true,
       calculadoraColor: true,
       iaFacial: true,
+      cotizador: true,
+      rentabilidad: true,
+      diagnosticoIA: true,
+      topeAnalisisIAMensual: 150,
+      cotizacionSinMarca: true,
     },
   },
 };
