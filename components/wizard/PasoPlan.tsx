@@ -17,7 +17,6 @@ import { vibracionConfirmacion, vibracionSutil } from '@/lib/haptics';
 import type { EstadoCamara } from '@/lib/consentimientos';
 import ModalFirmaConsentimiento from '@/components/legal/ModalFirmaConsentimiento';
 import { useFlags } from '@/lib/flags/useFlags';
-import HojaCotizar from '@/components/cotizador/HojaCotizar';
 
 interface Props {
   consulta: Consulta;
@@ -136,7 +135,6 @@ export default function PasoPlan({
   const [estrellas, setEstrellas] = useState<number>(0);
   const [savedOverlay, setSavedOverlay] = useState<{ tipo: 'express' | 'completo'; clientaId: string } | null>(null);
   const [firmandoImagenes, setFirmandoImagenes] = useState(false);
-  const [cotizadorAbierto, setCotizadorAbierto] = useState(false);
   const flags = useFlags();
 
   // Registro fotográfico de servicio químico: la consulta declara procesos
@@ -206,7 +204,7 @@ export default function PasoPlan({
           position: 'relative',
           padding: '24px 18px 28px',
           overflow: 'hidden',
-          background: 'linear-gradient(180deg, #14241A 0%, #25401E 60%, #2D5A27 100%)',
+          background: 'linear-gradient(180deg, var(--primary-deep) 0%, var(--primary-mid) 60%, var(--primary) 100%)',
           color: '#F5EDDC',
         }}
       >
@@ -803,20 +801,12 @@ export default function PasoPlan({
               variant="gold"
               size="lg"
               fullWidth
-              onClick={() => setCotizadorAbierto(true)}
+              onClick={() => router.push(`/?clientaId=${clienta.id}`)}
               icon={<Sparkles size={15} />}
             >
               Cotizar servicio
             </Btn>
           </div>
-        )}
-        {flags.cotizador && (
-          <HojaCotizar
-            open={cotizadorAbierto}
-            onClose={() => setCotizadorAbierto(false)}
-            clienta={clienta}
-            consulta={consulta}
-          />
         )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
           {tieneDetalles ? (
@@ -890,7 +880,7 @@ export default function PasoPlan({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'rgba(20, 36, 26, 0.94)',
+            background: 'rgba(31, 5, 15, 0.94)',
             backdropFilter: 'blur(10px)',
           }}
         >
@@ -1042,7 +1032,7 @@ function FotoSlot({
               width: 24,
               height: 24,
               borderRadius: '50%',
-              background: 'rgba(20, 36, 26, 0.7)',
+              background: 'rgba(31, 5, 15, 0.7)',
               border: 'none',
               display: 'flex',
               alignItems: 'center',

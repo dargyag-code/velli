@@ -45,8 +45,8 @@ export default function CheckboxGroup({
                 transition-all duration-200
                 ${
                   isSelected
-                    ? 'border-[#2D5A27] bg-[#EEF5ED] text-[#2D5A27]'
-                    : 'border-[#E5E5E5] bg-white text-[#2D2D2D] hover:border-[#90B98A] hover:bg-[#F0F5EF]'
+                    ? 'border-[var(--primary)] bg-[var(--primary-light)] text-[var(--primary)]'
+                    : 'border-[#E5E5E5] bg-white text-[#2D2D2D] hover:border-[var(--primary-line)] hover:bg-[var(--primary-pale)]'
                 }
               `}
             >
@@ -54,7 +54,7 @@ export default function CheckboxGroup({
                 className={`
                   flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center
                   transition-all duration-200
-                  ${isSelected ? 'bg-[#2D5A27] border-[#2D5A27]' : 'border-[#CCCCCC]'}
+                  ${isSelected ? 'bg-[var(--primary)] border-[var(--primary)]' : 'border-[#CCCCCC]'}
                 `}
               >
                 {isSelected && <Check size={12} className="text-white" strokeWidth={3} />}

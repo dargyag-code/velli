@@ -38,7 +38,7 @@ const DANO_OPTIONS = [
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="flex flex-col gap-3">
     <h3
-      className="text-sm font-bold text-[#2D5A27] border-b border-[#E5E5E5] pb-2"
+      className="text-sm font-bold text-[var(--primary)] border-b border-[#E5E5E5] pb-2"
       style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
     >
       {title}
@@ -99,7 +99,7 @@ export default function StepCueroCabelludo({ data, onChange, errors }: Props) {
                         : opt.includes('leves')
                         ? 'border-[#C97A4C] bg-orange-50 text-[#C97A4C]'
                         : 'border-[#2D8E5B] bg-green-50 text-[#2D8E5B]'
-                      : 'border-[#E5E5E5] bg-white text-[#2D2D2D] hover:border-[#90B98A]'
+                      : 'border-[#E5E5E5] bg-white text-[#2D2D2D] hover:border-[var(--primary-line)]'
                   }
                 `}
               >

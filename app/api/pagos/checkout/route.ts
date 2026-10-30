@@ -4,7 +4,7 @@ import { requireUser } from '@/lib/api/auth';
 import { checkoutLimiter, checkRateLimit } from '@/lib/api/rateLimit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getPaymentProvider } from '@/lib/payments';
-import { PLANES, esPlanId } from '@/lib/subscription/plans';
+import { PLANES, PLAN_IDS_COMERCIALES, esPlanId } from '@/lib/subscription/plans';
 
 // ── POST /api/pagos/checkout ───────────────────────────────────────────────
 // Crea el payment (pending) y el link de pago hospedado del proveedor.
@@ -33,8 +33,8 @@ export async function POST(req: Request) {
   }
 
   const plan = (body as { plan?: unknown })?.plan;
-  if (!esPlanId(plan)) {
-    return Response.json({ error: 'Plan desconocido' }, { status: 400 });
+  if (!esPlanId(plan) || !PLAN_IDS_COMERCIALES.includes(plan)) {
+    return Response.json({ error: 'Plan no disponible actualmente' }, { status: 400 });
   }
   const def = PLANES[plan];
 

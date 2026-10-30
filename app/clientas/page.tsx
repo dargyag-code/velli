@@ -1,9 +1,15 @@
 'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Users, Plus, Search, Filter, SlidersHorizontal, ChevronRight } from 'lucide-react';
+import { Users, Plus, Search, Filter, SlidersHorizontal, ChevronRight, Sparkles } from 'lucide-react';
 import {
-  BottomNavV2, Btn, Chip, AvatarV2, toneFromTipoRizo, SettingsIconButton,
+  BottomNavV2,
+  Btn,
+  Chip,
+  AvatarV2,
+  toneFromTipoRizo,
+  SettingsIconButton,
 } from '@/components/v2';
 import { getAllClientas } from '@/lib/db';
 import { Clienta } from '@/lib/types';
@@ -29,7 +35,9 @@ export default function ClientasPage() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const filtered = clientas
     .filter((c) => {
@@ -48,7 +56,6 @@ export default function ClientasPage() {
       return 0;
     });
 
-  // Counts por tipo
   const counts = {
     todas: clientas.length,
     '1': clientas.filter((c) => c.tipoRizoPrincipal?.startsWith('1')).length,
@@ -66,43 +73,55 @@ export default function ClientasPage() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', position: 'relative' }}>
-      {/* Sticky header */}
+    <div className="min-h-screen bg-[#FAF7F5] text-[#1C1518] relative">
+      {/* Sticky header en Velvet Studio (#FAF7F5 / #EFE8E4 / #3B0D1E) */}
       <header
         style={{
           position: 'sticky',
           top: 0,
           zIndex: 40,
-          padding: '54px 16px 14px',
-          background: 'rgba(242, 235, 221, 0.92)',
+          padding: '50px 16px 14px',
+          background: 'rgba(250, 247, 245, 0.94)',
           backdropFilter: 'blur(14px)',
           WebkitBackdropFilter: 'blur(14px)',
-          borderBottom: '1px solid var(--border-soft)',
+          borderBottom: '1px solid #EFE8E4',
         }}
       >
         <div style={{ maxWidth: 768, margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 14, gap: 12 }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              marginBottom: 14,
+              gap: 12,
+            }}
+          >
             <div style={{ minWidth: 0 }}>
-              <div className="v-caps">Personas a tu cuidado</div>
+              <div className="v-caps" style={{ color: '#6E1E3A' }}>
+                Directorio CRM · Retención BI
+              </div>
               <h1
                 style={{
                   margin: '2px 0 0',
                   fontFamily: 'var(--font-serif)',
                   fontSize: 28,
                   letterSpacing: '-0.02em',
-                  color: 'var(--text-main)',
+                  color: '#1C1518',
                   lineHeight: 1.05,
                 }}
               >
                 Clientas{' '}
                 {!loading && (
-                  <em style={{ color: 'var(--secondary-deep)' }}>· {clientas.length}</em>
+                  <em style={{ color: '#6E1E3A' }}>· {clientas.length}</em>
                 )}
               </h1>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-              <Link href="/clientas/nueva">
-                <Btn size="sm" variant="dark" icon={<Plus size={12} />}>Nueva</Btn>
+              <Link href="/clientas/nueva" className="no-underline">
+                <Btn size="sm" variant="primary" icon={<Plus size={12} />}>
+                  Nueva
+                </Btn>
               </Link>
               <SettingsIconButton />
             </div>
@@ -115,24 +134,24 @@ export default function ClientasPage() {
               alignItems: 'center',
               gap: 10,
               padding: '10px 14px',
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border)',
+              background: '#FFFFFF',
+              border: '1px solid #EFE8E4',
               borderRadius: 999,
               boxShadow: 'var(--shadow-xs)',
             }}
           >
-            <Search size={15} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
+            <Search size={15} style={{ color: '#96888C', flexShrink: 0 }} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por nombre, tipo de rizo, notas…"
+              placeholder="Buscar clienta por nombre…"
               style={{
                 flex: 1,
                 border: 'none',
                 background: 'transparent',
                 outline: 'none',
                 fontSize: 13,
-                color: 'var(--text-main)',
+                color: '#1C1518',
                 fontFamily: 'var(--font-sans)',
               }}
             />
@@ -143,7 +162,7 @@ export default function ClientasPage() {
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: showFilters || sort !== 'ultima' ? 'var(--primary)' : 'var(--text-tertiary)',
+                color: showFilters || sort !== 'ultima' ? '#3B0D1E' : '#96888C',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 4,
@@ -178,9 +197,9 @@ export default function ClientasPage() {
                     fontSize: 11,
                     fontWeight: 600,
                     fontFamily: 'var(--font-sans)',
-                    background: active ? 'var(--primary-deep)' : 'transparent',
-                    color: active ? '#F5EDDC' : 'var(--text-secondary)',
-                    border: active ? 'none' : '1px solid var(--border)',
+                    background: active ? '#3B0D1E' : '#FFFFFF',
+                    color: active ? '#FAF7F5' : '#6E6266',
+                    border: active ? '1px solid #3B0D1E' : '1px solid #EFE8E4',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
                   }}
@@ -196,10 +215,19 @@ export default function ClientasPage() {
       {/* Filter drawer */}
       {showFilters && (
         <section
-          className="v-card"
-          style={{ margin: '14px 16px 0', padding: 14, maxWidth: 736, marginLeft: 'auto', marginRight: 'auto' }}
+          className="bg-white rounded-2xl border border-[#EFE8E4]"
+          style={{
+            margin: '14px 16px 0',
+            padding: 14,
+            maxWidth: 736,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            boxShadow: 'var(--shadow-xs)',
+          }}
         >
-          <div className="v-caps" style={{ marginBottom: 8 }}>Ordenar por</div>
+          <div className="v-caps" style={{ marginBottom: 8 }}>
+            Ordenar por
+          </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {[
               { key: 'ultima', label: 'Última visita' },
@@ -218,9 +246,9 @@ export default function ClientasPage() {
                     fontSize: 11.5,
                     fontWeight: 600,
                     fontFamily: 'var(--font-sans)',
-                    background: active ? 'var(--primary-pale)' : 'var(--bg-card)',
-                    color: active ? 'var(--primary)' : 'var(--text-secondary)',
-                    border: `1px solid ${active ? 'rgba(45, 90, 39, 0.3)' : 'var(--border-soft)'}`,
+                    background: active ? '#F7ECEF' : '#FAF7F5',
+                    color: active ? '#3B0D1E' : '#6E6266',
+                    border: `1px solid ${active ? '#DFC5CE' : '#EFE8E4'}`,
                     cursor: 'pointer',
                   }}
                 >
@@ -250,7 +278,11 @@ export default function ClientasPage() {
         >
           <span className="v-num">
             {filtered.length} {filtered.length === 1 ? 'clienta' : 'clientas'}
-            {sort === 'ultima' ? ' · ordenadas por última visita' : sort === 'nombre' ? ' · A-Z' : ' · más visitas'}
+            {sort === 'ultima'
+              ? ' · ordenadas por última visita'
+              : sort === 'nombre'
+                ? ' · A-Z'
+                : ' · más visitas'}
           </span>
           <button
             type="button"
@@ -261,7 +293,7 @@ export default function ClientasPage() {
               display: 'flex',
               alignItems: 'center',
               gap: 4,
-              color: 'var(--text-secondary)',
+              color: '#6E6266',
               fontSize: 11,
               fontWeight: 600,
               cursor: 'pointer',
@@ -283,9 +315,9 @@ export default function ClientasPage() {
             style={{
               textAlign: 'center',
               padding: '48px 20px',
-              background: 'var(--bg-card)',
-              borderRadius: 18,
-              border: '1px solid var(--border-soft)',
+              background: '#FFFFFF',
+              borderRadius: 20,
+              border: '1px solid #EFE8E4',
               boxShadow: 'var(--shadow-xs)',
             }}
           >
@@ -294,45 +326,52 @@ export default function ClientasPage() {
                 width: 56,
                 height: 56,
                 borderRadius: '50%',
-                background: 'var(--primary-pale)',
+                background: '#F7ECEF',
                 margin: '0 auto 14px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <Users size={24} style={{ color: 'var(--primary)' }} />
+              <Users size={24} style={{ color: '#3B0D1E' }} />
             </div>
             <p
               style={{
                 margin: 0,
                 fontFamily: 'var(--font-serif)',
                 fontSize: 17,
-                color: 'var(--text-main)',
+                color: '#1C1518',
                 letterSpacing: '-0.01em',
               }}
             >
-              {search || filterRizo !== 'todas' ? 'Sin resultados' : 'Aún no tienes clientas'}
+              {search || filterRizo !== 'todas' ? 'Sin resultados' : 'Aún no tienes clientas registradas'}
             </p>
             <p
               style={{
-                margin: '4px auto 14px',
-                maxWidth: 300,
-                fontSize: 12,
-                color: 'var(--text-tertiary)',
+                margin: '6px auto 16px',
+                maxWidth: 320,
+                fontSize: 12.5,
+                color: '#6E6266',
                 lineHeight: 1.5,
               }}
             >
               {search || filterRizo !== 'todas'
-                ? 'Prueba con otros filtros'
-                : 'Este es tu fichero profesional: cada clienta con su ficha, su historia y sus diagnósticos. Empieza creando la primera.'}
+                ? 'Prueba ajustando tu búsqueda o cambiando el filtro activo.'
+                : 'Cada clienta conserva sus cotizaciones, cierres en silla, diagnósticos y consentimientos digitales.'}
             </p>
             {!search && filterRizo === 'todas' && (
-              <Link href="/clientas/nueva">
-                <Btn variant="primary" size="md" icon={<Plus size={14} />}>
-                  Crea tu primera clienta
-                </Btn>
-              </Link>
+              <div className="flex flex-wrap justify-center gap-2.5">
+                <Link href="/clientas/nueva" className="no-underline">
+                  <Btn variant="primary" size="md" icon={<Plus size={14} />}>
+                    Registrar clienta
+                  </Btn>
+                </Link>
+                <Link href="/" className="no-underline">
+                  <Btn variant="outline" size="md" icon={<Sparkles size={14} />}>
+                    Ir a Cotizar
+                  </Btn>
+                </Link>
+              </div>
             )}
           </div>
         ) : (
@@ -348,11 +387,11 @@ export default function ClientasPage() {
                 >
                   <article
                     style={{
-                      background: 'var(--bg-card)',
-                      borderRadius: 16,
+                      background: '#FFFFFF',
+                      borderRadius: 18,
                       padding: 14,
                       boxShadow: 'var(--shadow-xs)',
-                      border: '1px solid var(--border-soft)',
+                      border: '1px solid #EFE8E4',
                       display: 'flex',
                       gap: 12,
                       alignItems: 'center',
@@ -373,7 +412,7 @@ export default function ClientasPage() {
                             margin: 0,
                             fontFamily: 'var(--font-serif)',
                             fontSize: 16,
-                            color: 'var(--text-main)',
+                            color: '#1C1518',
                             letterSpacing: '-0.005em',
                             lineHeight: 1.2,
                             overflow: 'hidden',
@@ -404,7 +443,7 @@ export default function ClientasPage() {
                           </Chip>
                         )}
                         {c.edad > 0 && (
-                          <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
+                          <span style={{ fontSize: 11, color: '#96888C' }}>
                             · {c.edad} años
                           </span>
                         )}
@@ -419,7 +458,7 @@ export default function ClientasPage() {
                         )}
                       </div>
                     </div>
-                    <ChevronRight size={15} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
+                    <ChevronRight size={15} style={{ color: '#96888C', flexShrink: 0 }} />
                   </article>
                 </Link>
               );

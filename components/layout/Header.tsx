@@ -39,7 +39,7 @@ export default function Header({ showBack, title, rightAction }: HeaderProps) {
         <div className="flex items-center gap-3 max-w-2xl mx-auto">
           <Link
             href={pathname.startsWith('/clientas/') ? '/clientas' : '/'}
-            className="p-2 rounded-xl hover:bg-[#EEF5ED] transition-colors text-[#2D5A27]"
+            className="p-2 rounded-xl hover:bg-[var(--primary-light)] transition-colors text-[var(--primary)]"
           >
             <ArrowLeft size={20} />
           </Link>
@@ -62,8 +62,8 @@ export default function Header({ showBack, title, rightAction }: HeaderProps) {
     <header
       className="sticky top-0 z-40"
       style={{
-        background: 'linear-gradient(135deg, #1A2E1A 0%, #2D5A27 100%)',
-        boxShadow: '0 2px 16px rgba(26,46,26,0.28)',
+        background: 'linear-gradient(135deg, var(--primary-deep) 0%, var(--primary) 100%)',
+        boxShadow: '0 2px 16px rgba(31, 5, 15,0.28)',
       }}
     >
       <div className="max-w-2xl mx-auto px-4 py-5 flex items-center justify-between">

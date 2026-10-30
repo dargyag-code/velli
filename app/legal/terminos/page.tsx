@@ -10,7 +10,7 @@ export const metadata = {
 export default function TerminosPage() {
   return (
     <article className="bg-white rounded-2xl border border-[#E5E5E5] p-6">
-      <h1 className="text-2xl text-[#2D5A27] mb-1" style={serif}>
+      <h1 className="text-2xl text-[var(--primary)] mb-1" style={serif}>
         Términos de uso
       </h1>
       <p className="text-xs text-[#999999] mb-6">Última actualización: octubre 2026</p>
@@ -19,7 +19,7 @@ export default function TerminosPage() {
 
       <div className="flex flex-col gap-5 text-sm text-[#2D2D2D] leading-relaxed">
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             1. Propósito del servicio
           </h2>
           <p>
@@ -33,7 +33,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             2. Estimaciones, cotizaciones y responsabilidad del profesional
           </h2>
           <p>
@@ -61,7 +61,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             3. Cuentas y responsabilidad
           </h2>
           <p>
@@ -72,7 +72,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             4. Información de las clientas
           </h2>
           <p>
@@ -85,7 +85,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             5. Uso de inteligencia artificial
           </h2>
           <p>
@@ -99,7 +99,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             6. Uso aceptable
           </h2>
           <p>No está permitido usar Velli Pro para:</p>
@@ -112,7 +112,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             7. Disponibilidad y limitación de responsabilidad
           </h2>
           <p>
@@ -126,7 +126,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             8. Cambios
           </h2>
           <p>
@@ -136,7 +136,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             9. Contacto
           </h2>
           <p>

@@ -46,7 +46,7 @@ export default function SelectorTramoCanas({
                 fontWeight: 600, fontFamily: 'var(--font-sans)', cursor: 'pointer',
                 background: on ? 'var(--primary-pale)' : 'var(--bg-card)',
                 color: on ? 'var(--primary)' : 'var(--text-secondary)',
-                border: `1px solid ${on ? 'rgba(45, 90, 39, 0.3)' : 'var(--border-soft)'}`,
+                border: `1px solid ${on ? 'rgba(59, 13, 30, 0.3)' : 'var(--border-soft)'}`,
               }}
             >
               {label}

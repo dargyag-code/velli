@@ -51,7 +51,7 @@ export default function StepBarV2({ currentStep, totalSteps, stepLabels }: StepB
                     width: 32,
                     height: 32,
                     borderRadius: '50%',
-                    background: done || cur ? 'linear-gradient(180deg, #3D7A35, #2D5A27)' : 'transparent',
+                    background: done || cur ? 'linear-gradient(180deg, var(--primary-hover), var(--primary))' : 'transparent',
                     border: !done && !cur ? '1px dashed var(--border-strong)' : 'none',
                     color: done || cur ? '#fff' : 'var(--text-tertiary)',
                     display: 'flex',

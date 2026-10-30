@@ -117,8 +117,8 @@ function HelpTooltip({ text, open, onClose }: { text: string; open: boolean; onC
           <X size={16} className="text-gray-500" />
         </button>
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 bg-[#EEF5ED] rounded-full flex items-center justify-center">
-            <HelpCircle size={18} className="text-[#2D5A27]" />
+          <div className="w-8 h-8 bg-[var(--primary-light)] rounded-full flex items-center justify-center">
+            <HelpCircle size={18} className="text-[var(--primary)]" />
           </div>
           <p className="font-bold text-[#2D2D2D] text-sm" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             ¿Cómo hacer la prueba?
@@ -161,9 +161,9 @@ export default function StepDiagnostico({ data, onChange, errors }: Props) {
               <button
                 type="button"
                 onClick={() => setOpenHelp(test.key)}
-                className="p-1 rounded-full bg-[#EEF5ED] hover:bg-[#E8D9F5] transition-colors"
+                className="p-1 rounded-full bg-[var(--primary-light)] hover:bg-[#E8D9F5] transition-colors"
               >
-                <HelpCircle size={15} className="text-[#2D5A27]" />
+                <HelpCircle size={15} className="text-[var(--primary)]" />
               </button>
               {errors[test.key] && (
                 <span className="text-xs text-[#8E2D2D] ml-auto">{errors[test.key]}</span>
@@ -184,7 +184,7 @@ export default function StepDiagnostico({ data, onChange, errors }: Props) {
                       text-left p-3.5 rounded-2xl border-2 transition-all duration-200
                       ${isSelected
                         ? 'shadow-md scale-[1.01]'
-                        : 'border-[#E5E5E5] bg-white hover:border-[#90B98A] hover:bg-[#F0F5EF]'
+                        : 'border-[#E5E5E5] bg-white hover:border-[var(--primary-line)] hover:bg-[var(--primary-pale)]'
                       }
                     `}
                     style={

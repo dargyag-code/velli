@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  ArrowLeft, Edit3, Calendar, Database, Download, Upload, Trash2,
+  ArrowLeft, Edit3, Database, Download, Upload, Trash2,
   Heart, FileText, Shield, Phone, ChevronRight, Check,
-  AlertCircle, LogOut, CreditCard, Palette, BookOpen, Clock, Calculator,
+  AlertCircle, LogOut, CreditCard, Palette, Clock, Calculator,
 } from 'lucide-react';
 import { BottomNavV2 } from '@/components/v2';
 import {
@@ -55,7 +55,6 @@ export default function ConfiguracionPage() {
   const [editingMarca, setEditingMarca] = useState(false);
   const [marcaLogoPreview, setMarcaLogoPreview] = useState<string | null>(null); // dataURL nueva
   const [marcaLogoActual, setMarcaLogoActual] = useState<string | null>(null);   // URL guardada
-  const [marcaColor, setMarcaColor] = useState(COLOR_VELLI);
   const [savingMarca, setSavingMarca] = useState(false);
   const [logoError, setLogoError] = useState(false);
 
@@ -89,7 +88,6 @@ export default function ConfiguracionPage() {
           setCiudad(p.ciudad ?? '');
           setPermiteUbicacion(!!p.permiteUbicacion);
           setMarcaLogoActual(p.logoUrl ?? null);
-          setMarcaColor(p.colorPrimario ?? COLOR_VELLI);
           setBloqueoTipo4(p.bloqueoTipo4Minutos ?? 180);
         }
       })
@@ -141,7 +139,7 @@ export default function ConfiguracionPage() {
       if (marcaLogoPreview) {
         logoUrl = await uploadFoto(marcaLogoPreview, 'branding/logo');
       }
-      const updated = await updateProfile({ logoUrl, colorPrimario: marcaColor });
+      const updated = await updateProfile({ logoUrl, colorPrimario: COLOR_VELLI });
       setProfile(updated);
       setMarcaLogoActual(updated.logoUrl ?? null);
       setMarcaLogoPreview(null);
@@ -160,7 +158,6 @@ export default function ConfiguracionPage() {
     if (savingMarca) return;
     setMarcaLogoPreview(null);
     setMarcaLogoActual(profile?.logoUrl ?? null);
-    setMarcaColor(profile?.colorPrimario ?? COLOR_VELLI);
     setEditingMarca(false);
   };
 
@@ -205,13 +202,13 @@ export default function ConfiguracionPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `velli-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `velli-respaldo-salon-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast('Backup descargado', 'success');
+      showToast('Respaldo de datos del salón descargado', 'success');
     } catch (e) {
       console.error('[backup.export]', e);
-      showToast('No se pudo crear el backup', 'error');
+      showToast('No se pudo generar el respaldo de datos', 'error');
     } finally {
       setExportLoading(false);
     }
@@ -242,7 +239,7 @@ export default function ConfiguracionPage() {
         });
         setTimeout(() => setImportMsg(null), 4000);
       } catch {
-        setImportMsg({ type: 'error', text: 'Error al leer el archivo. Verifica que sea un backup válido.' });
+        setImportMsg({ type: 'error', text: 'Error al leer el archivo. Verifica que sea un respaldo válido del salón.' });
         setTimeout(() => setImportMsg(null), 4000);
       }
     };
@@ -275,7 +272,7 @@ export default function ConfiguracionPage() {
   };
 
   const profileName = profile?.nombre || 'Tu nombre';
-  const profileSub = profile?.nombreSalon || 'Velli — Inteligencia capilar a tu alcance';
+  const profileSub = profile?.nombreSalon || 'Velli Business Intelligence';
   const initials = profile?.nombre ? getInitials(profile.nombre) : '?';
 
   return (
@@ -352,8 +349,8 @@ export default function ConfiguracionPage() {
                   width: 48,
                   height: 48,
                   borderRadius: '50%',
-                  background: '#FBF4EC',
-                  color: '#8A5A2E',
+                  background: '#F7ECEF',
+                  color: '#3B0D1E',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -396,7 +393,7 @@ export default function ConfiguracionPage() {
                 gap: 6,
                 padding: '4px 10px',
                 borderRadius: 999,
-                background: '#EEF5ED',
+                background: 'var(--primary-light)',
                 color: 'var(--primary)',
                 fontFamily: 'var(--font-sans)',
                 fontWeight: 600,
@@ -431,7 +428,7 @@ export default function ConfiguracionPage() {
           ) : editingProfile ? (
             <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
               <FieldEditorial label="Nombre" value={nombre} onChange={setNombre} placeholder="Tu nombre" />
-              <FieldEditorial label="Nombre del salón" value={nombreSalon} onChange={setNombreSalon} placeholder="Velli — Inteligencia capilar a tu alcance" />
+              <FieldEditorial label="Nombre del salón" value={nombreSalon} onChange={setNombreSalon} placeholder="Ej. Atelier Camila Studio" />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 <FieldEditorial label="Teléfono" value={telefono} onChange={setTelefono} placeholder="+57 ..." />
                 <FieldEditorial label="Ciudad" value={ciudad} onChange={setCiudad} placeholder="Bogotá" />
@@ -502,8 +499,6 @@ export default function ConfiguracionPage() {
                     setMarcaLogoActual(null);
                   }
                 }}
-                color={marcaColor}
-                onColor={setMarcaColor}
                 nombreSalon={profile?.nombreSalon}
               />
               <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
@@ -552,7 +547,7 @@ export default function ConfiguracionPage() {
             <RowEditorial
               icon={<Palette size={16} />}
               title="Tu marca"
-              sub="Logo y color que visten tus PDF"
+              sub="Logotipo oficial de tu salón"
               onClick={() => setEditingMarca(true)}
               rightEl={
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
@@ -572,32 +567,16 @@ export default function ConfiguracionPage() {
                       }}
                     />
                   )}
-                  <span
-                    aria-hidden
-                    style={{
-                      width: 14,
-                      height: 14,
-                      borderRadius: '50%',
-                      background: marcaColor,
-                      border: '1px solid rgba(0,0,0,0.08)',
-                    }}
-                  />
                   <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
                 </span>
               }
             />
           )}
-          <RowEditorial
-            icon={<Calendar size={16} />}
-            title="Horario y disponibilidad"
-            sub="Bloques de agenda"
-            onClick={() => router.push('/agenda')}
-          />
-          {flagsActivos(profile?.featureFlags).cotizador && (
+          {(flagsActivos(profile?.featureFlags).cotizador || true) && (
             <RowEditorial
               icon={<Calculator size={16} />}
-              title="Precios, productos y comisiones"
-              sub="Plantillas de cotización, inventario ($/g) y simulador de margen"
+              title="Menú de servicios, química y comisiones"
+              sub="Tarifas por servicio, costos de química ($/g y $/ml) y liquidación"
               onClick={() => router.push('/configuracion/precios')}
             />
           )}
@@ -631,7 +610,7 @@ export default function ConfiguracionPage() {
                       fontFamily: 'var(--font-sans)',
                       background: on ? 'var(--primary-pale)' : 'var(--bg-card)',
                       color: on ? 'var(--primary)' : 'var(--text-secondary)',
-                      border: `1px solid ${on ? 'rgba(45, 90, 39, 0.3)' : 'var(--border-soft)'}`,
+                      border: `1px solid ${on ? 'rgba(59, 13, 30, 0.3)' : 'var(--border-soft)'}`,
                       cursor: savingBloqueo ? 'not-allowed' : 'pointer',
                     }}
                   >
@@ -664,29 +643,14 @@ export default function ConfiguracionPage() {
               </span>
             }
           />
-          {profile?.rol === 'corporativo' ? (
-            <RowEditorial
-              icon={<BookOpen size={16} />}
-              title="Panel de conocimiento"
-              sub="Reglas, flujos, prompts y cartas de marca (nivel corporativo)"
-              onClick={() => router.push('/conocimiento')}
-            />
-          ) : (
-            <RowEditorial
-              icon={<BookOpen size={16} />}
-              title="Marcas de tu salón"
-              sub="Elige qué marcas de la librería tienes en tu inventario"
-              onClick={() => router.push('/conocimiento')}
-            />
-          )}
         </SectionEditorial>
 
         {/* ── 02 Backup y datos ─────────────────────────────────────── */}
-        <SectionEditorial num="02" eyebrow="Backup y datos">
+        <SectionEditorial num="02" eyebrow="Respaldo y datos del salón">
           <RowEditorial
             icon={<Download size={16} />}
-            title="Exportar backup"
-            sub="Descarga clientas y consultas como JSON"
+            title="Descargar respaldo de datos del salón"
+            sub="Guarda una copia segura de las clientas e historial de tu salón"
             onClick={handleExport}
             rightEl={exportLoading ? (
               <span
@@ -703,8 +667,8 @@ export default function ConfiguracionPage() {
           />
           <RowEditorial
             icon={<Upload size={16} />}
-            title="Importar backup"
-            sub="Restaura un JSON anterior (no borra existentes)"
+            title="Restaurar respaldo de datos del salón"
+            sub="Recupera una copia previa sin borrar los registros actuales"
             onClick={handleImport}
           />
           <RowEditorial
@@ -763,7 +727,7 @@ export default function ConfiguracionPage() {
           <RowEditorial
             icon={<FileText size={16} />}
             title="Términos y condiciones"
-            sub="Uso de la plataforma Velli Pro"
+            sub="Uso de la plataforma Velli Business Intelligence"
             onClick={() => router.push('/legal/terminos')}
           />
           <RowEditorial
@@ -800,60 +764,19 @@ export default function ConfiguracionPage() {
 
         {/* ── Acerca de Velli (hero editorial) ──────────────────────── */}
         <div style={{ padding: '14px 6px 4px' }}>
-          <div className="v-card" style={{ padding: '22px 18px', textAlign: 'center' }}>
-            <div
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: 13,
-                background: 'linear-gradient(160deg, #2D5A27 0%, #14241A 100%)',
-                margin: '0 auto 12px',
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 8px 22px rgba(20,36,26,0.18)',
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontStyle: 'italic',
-                  fontSize: 38,
-                  color: '#E8C290',
-                  lineHeight: 1,
-                }}
-              >
-                V
-              </span>
-              <span
-                style={{
-                  position: 'absolute',
-                  bottom: 12,
-                  right: 14,
-                  width: 4,
-                  height: 4,
-                  borderRadius: '50%',
-                  background: '#E8C290',
-                }}
-              />
+          <div className="bg-white rounded-3xl border border-[#EFE8E4] p-6 text-center shadow-[0_8px_24px_-10px_rgba(59,13,30,0.06)]">
+            <div className="w-14 h-14 rounded-2xl bg-[#3B0D1E] mx-auto mb-3 flex items-center justify-center shadow-md">
+              <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19.2 33.5C13.2 29.8 7.5 21.8 9.2 13.8C10.5 7.8 16.5 7.2 19.2 14.5C20.2 17.2 20.2 27.5 19.2 33.5Z" fill="#FAF7F5" />
+                <path d="M20.8 33.5C26.8 29.8 32.5 21.8 30.8 13.8C29.5 7.8 23.5 7.2 20.8 14.5C19.8 17.2 19.8 27.5 20.8 33.5Z" fill="#E8CFC8" fillOpacity="0.88" />
+                <circle cx="20" cy="6.5" r="2.5" fill="#D97757" />
+              </svg>
             </div>
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: 17, color: 'var(--text-main)' }}>
-              Velli <span style={{ fontStyle: 'italic', color: 'var(--secondary-deep)' }}>Pro</span>
-              <span style={{ color: 'var(--text-tertiary)', fontFamily: 'var(--font-sans)', fontWeight: 400, fontSize: 12, marginLeft: 6 }}>
-                v1.0
-              </span>
+            <div className="text-lg font-bold text-[#1C1518] font-brand tracking-tight">
+              velli <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6E1E3A] ml-1">Business Intelligence</span>
             </div>
-            <p
-              style={{
-                margin: '8px auto 0',
-                maxWidth: 320,
-                fontSize: 12,
-                color: 'var(--text-secondary)',
-                lineHeight: 1.5,
-              }}
-            >
-              Diagnóstico capilar profesional con IA y planes de tratamiento personalizados para todo tipo de cabello.
+            <p className="text-xs text-[#6E6266] mt-2 max-w-xs mx-auto leading-relaxed">
+              Cotización capilar sin báscula, cierre financiero en un toque y rentabilidad real por servicio.
             </p>
           </div>
         </div>
@@ -938,7 +861,7 @@ export default function ConfiguracionPage() {
           icon={<Trash2 size={22} />}
           eyebrow="Atención,"
           title={<>¿Borrar <span style={{ fontStyle: 'italic', color: '#B23A3A' }}>todo</span>?</>}
-          description="Se eliminarán todas tus clientas y consultas. No se puede deshacer. Exporta un backup antes si quieres conservarlas."
+          description="Se eliminarán todas tus clientas y consultas. No se puede deshacer. Descarga un respaldo de datos del salón antes si deseas conservarlas."
           confirmLabel="Sí, borrar todo"
           onCancel={() => setShowClearConfirm(false)}
           onConfirm={handleClearAll}

@@ -77,13 +77,13 @@ export default function StepTipoRizo({ data, onChange, errors }: Props) {
       <button
         type="button"
         onClick={() => setShowCamera(true)}
-        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border-2 border-dashed border-[#2D5A27] bg-[#F0F5EF] hover:bg-[#EEF5ED] active:scale-[0.98] transition-all duration-200"
+        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border-2 border-dashed border-[var(--primary)] bg-[var(--primary-pale)] hover:bg-[var(--primary-light)] active:scale-[0.98] transition-all duration-200"
       >
-        <div className="w-10 h-10 rounded-xl bg-[#2D5A27] flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-[var(--primary)] flex items-center justify-center shrink-0">
           <Camera size={20} className="text-white" />
         </div>
         <div className="text-left">
-          <p className="text-sm font-bold text-[#2D5A27]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+          <p className="text-sm font-bold text-[var(--primary)]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             Analizar con cámara IA
           </p>
           <p className="text-xs text-[#7A9B76]">3 fotos guiadas · diagnóstico automático</p>
@@ -122,13 +122,13 @@ export default function StepTipoRizo({ data, onChange, errors }: Props) {
                     transition-all duration-200 text-center
                     ${
                       isPrimary
-                        ? 'border-[#2D5A27] bg-[#EEF5ED] shadow-md shadow-green-100'
-                        : 'border-[#E5E5E5] bg-white hover:border-[#90B98A] hover:bg-[#F0F5EF]'
+                        ? 'border-[var(--primary)] bg-[var(--primary-light)] shadow-md shadow-green-100'
+                        : 'border-[#E5E5E5] bg-white hover:border-[var(--primary-line)] hover:bg-[var(--primary-pale)]'
                     }
                   `}
                 >
                   {isPrimary && (
-                    <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#2D5A27] rounded-full flex items-center justify-center">
+                    <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[var(--primary)] rounded-full flex items-center justify-center">
                       <Check size={11} className="text-white" strokeWidth={3} />
                     </div>
                   )}

@@ -1,0 +1,57 @@
+import type { MetadataRoute } from 'next';
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: 'Velli Business Intelligence',
+    short_name: 'Velli BI',
+    description:
+      'Cotización capilar sin báscula, cierre financiero en un toque y rentabilidad real para salones.',
+    start_url: '/',
+    display: 'standalone',
+    background_color: '#FAF7F5',
+    theme_color: '#3B0D1E',
+    orientation: 'portrait',
+    lang: 'es-CO',
+    categories: ['business', 'finance', 'productivity'],
+    icons: [
+      {
+        src: '/icon.svg',
+        sizes: 'any',
+        type: 'image/svg+xml',
+        purpose: 'any',
+      },
+      {
+        src: '/icons/icon-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icons/icon-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+    ],
+    shortcuts: [
+      {
+        name: 'Cotizar en silla',
+        short_name: 'Cotizar',
+        description: 'Iniciar diagnóstico y cotización sin báscula',
+        url: '/',
+      },
+      {
+        name: 'Por Cobrar',
+        short_name: 'Por Cobrar',
+        description: 'Cerrar servicios pendientes en un toque',
+        url: '/?tab=cierre',
+      },
+      {
+        name: 'Métricas BI',
+        short_name: 'Métricas',
+        description: 'Ver utilidad neta y liquidación de especialistas',
+        url: '/reportes',
+      },
+    ],
+  };
+}

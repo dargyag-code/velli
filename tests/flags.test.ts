@@ -220,10 +220,10 @@ describe('planes', () => {
     expect(features.iaFacial).toBe(false);
   });
 
-  it('los precios no cambiaron', () => {
+  it('los precios reflejan Studio BI ($89.000) y Salón Pro + IA ($149.000)', () => {
     expect(PLANES.basico.precioCop).toBe(25_000);
-    expect(PLANES.pro.precioCop).toBe(60_000);
-    expect(PLANES.pro_ia.precioCop).toBe(120_000);
+    expect(PLANES.pro.precioCop).toBe(89_000);
+    expect(PLANES.pro_ia.precioCop).toBe(149_000);
   });
 });
 

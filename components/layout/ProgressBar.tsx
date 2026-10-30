@@ -33,7 +33,7 @@ export default function ProgressBar({ currentStep, totalSteps, stepLabels }: Pro
                     height: 2,
                     borderRadius: 2,
                     background: i <= currentStep
-                      ? 'linear-gradient(90deg, #2D5A27, #3D7A35)'
+                      ? 'linear-gradient(90deg, var(--primary), var(--primary-hover))'
                       : '#E5E5E5',
                   }}
                 />
@@ -42,8 +42,8 @@ export default function ProgressBar({ currentStep, totalSteps, stepLabels }: Pro
                 className={`
                   w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
                   text-xs font-bold transition-all duration-300
-                  ${isDone ? 'bg-[#2D5A27] text-white shadow-sm'
-                    : isCurrent ? 'bg-[#2D5A27] text-white pulse-ring'
+                  ${isDone ? 'bg-[var(--primary)] text-white shadow-sm'
+                    : isCurrent ? 'bg-[var(--primary)] text-white pulse-ring'
                     : 'bg-white text-[#AAAAAA] border-2 border-dashed border-[#CCCCCC]'}
                 `}
                 style={serif}
@@ -62,7 +62,7 @@ export default function ProgressBar({ currentStep, totalSteps, stepLabels }: Pro
         <p className="text-xs text-[#999999]" style={serif}>
           Paso {currentStep + 1} de {totalSteps + 1}
         </p>
-        <p className="text-sm font-bold text-[#2D5A27]" style={serif}>
+        <p className="text-sm font-bold text-[var(--primary)]" style={serif}>
           {labels[currentStep]}
         </p>
       </div>
@@ -73,7 +73,7 @@ export default function ProgressBar({ currentStep, totalSteps, stepLabels }: Pro
           className="h-full rounded-full transition-all duration-500"
           style={{
             width: `${pct}%`,
-            background: 'linear-gradient(90deg, #2D5A27, #C9956B)',
+            background: 'linear-gradient(90deg, var(--primary), #C9956B)',
           }}
         />
       </div>

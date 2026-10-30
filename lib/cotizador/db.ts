@@ -743,6 +743,111 @@ export async function crearReglaComision(
   return rowToComision(data as Record<string, unknown>);
 }
 
+let sembrandoBaseFinancieraLock: Promise<{
+  productos: ProductoSalon[];
+  estilistas: EstilistaSalon[];
+  comisiones: ComisionSalon[];
+}> | null = null;
+
+/**
+ * Evita el «Margen Falso del 100%» en salones recién creados sembrando:
+ * - 2 insumos base del mercado colombiano (`Decolorante / Tinte Estándar` a $320 COP/g y
+ *   `Peróxido / Revelador Estándar` a $95 COP/ml) si `productos_salon` está vacío.
+ * - 1 especialista inicial (`Especialista Principal`) si `estilistas` está vacío.
+ * - 1 regla general de comisión (`35%` sobre precio menos producto) si `comisiones` está vacío.
+ */
+export async function sembrarBaseFinancieraSalon(client?: SupabaseClient): Promise<{
+  productos: ProductoSalon[];
+  estilistas: EstilistaSalon[];
+  comisiones: ComisionSalon[];
+}> {
+  const ejecutar = async () => {
+    const supabase = obtenerClienteAutenticado(client);
+    const userId = await requerirUserId(supabase);
+
+    let [prodsTodos, estsTodas, comsVigentes] = await Promise.all([
+      listarProductosSalon({ soloActivos: false, client: supabase }),
+      listarEstilistas({ soloActivas: false, client: supabase }),
+      listarComisionesVigentes(supabase),
+    ]);
+
+    if (prodsTodos.length === 0) {
+      const { data, error } = await supabase
+        .from('productos_salon')
+        .insert([
+          {
+            user_id: userId,
+            nombre: 'Decolorante / Tinte Estándar',
+            tipo: 'tinte',
+            presentacion_cantidad: 60,
+            unidad: 'g',
+            precio_compra: 19_200, // $320 COP / g
+            activo: true,
+          },
+          {
+            user_id: userId,
+            nombre: 'Peróxido / Revelador Estándar',
+            tipo: 'oxidante',
+            presentacion_cantidad: 1_000,
+            unidad: 'ml',
+            precio_compra: 95_000, // $95 COP / ml
+            activo: true,
+          },
+        ])
+        .select('*');
+      if (!error && data) {
+        prodsTodos = data.map((r) => rowToProducto(r as Record<string, unknown>));
+      } else if (error && !esTablaInexistente(error)) {
+        throw error;
+      }
+    }
+
+    if (estsTodas.length === 0) {
+      try {
+        const creada = await crearEstilista(
+          { nombre: 'Especialista Principal', activo: true },
+          supabase
+        );
+        estsTodas = [creada];
+      } catch (err) {
+        if (!esTablaInexistente(err as { code?: string })) throw err;
+      }
+    }
+
+    if (comsVigentes.length === 0) {
+      try {
+        const regla = await crearReglaComision(
+          {
+            estilistaId: null,
+            servicioId: null,
+            tipo: 'porcentaje',
+            valor: 35,
+            base: 'precio_menos_producto',
+          },
+          supabase
+        );
+        comsVigentes = [regla];
+      } catch (err) {
+        if (!esTablaInexistente(err as { code?: string })) throw err;
+      }
+    }
+
+    return {
+      productos: prodsTodos.filter((p) => p.activo),
+      estilistas: estsTodas.filter((e) => e.activo),
+      comisiones: comsVigentes,
+    };
+  };
+
+  if (client) return ejecutar();
+  if (!sembrandoBaseFinancieraLock) {
+    sembrandoBaseFinancieraLock = ejecutar().finally(() => {
+      sembrandoBaseFinancieraLock = null;
+    });
+  }
+  return sembrandoBaseFinancieraLock;
+}
+
 // ── 6. Cotizaciones y lectura pública ──────────────────────────────────────
 
 export async function cerrarReglaComision(
@@ -847,6 +952,24 @@ export async function enviarCotizacion(
   return rowToCotizacion(data as Record<string, unknown>);
 }
 
+/** Lista las cotizaciones del salón filtradas por estado (para Dashboard Ejecutivo BI). */
+export async function listarCotizacionesSalon(opciones?: {
+  estados?: readonly EstadoCotizacion[];
+  client?: SupabaseClient;
+}): Promise<Cotizacion[]> {
+  const supabase = obtenerClienteAutenticado(opciones?.client);
+  let query = supabase.from('cotizaciones').select('*').order('created_at', { ascending: false });
+  if (opciones?.estados && opciones.estados.length > 0) {
+    query = query.in('estado', [...opciones.estados]);
+  }
+  const { data, error } = await query;
+  if (error) {
+    if (esTablaInexistente(error)) return [];
+    throw error;
+  }
+  return (data ?? []).map((r) => rowToCotizacion(r as Record<string, unknown>));
+}
+
 /** Lista las cotizaciones en estado `'enviada'` («Por cobrar», §2.2). */
 export async function listarCotizacionesPorCobrar(
   client?: SupabaseClient
@@ -927,6 +1050,8 @@ export async function confirmarCobroCotizacion(
   if (error) throw error;
   return rowToCotizacion(data as Record<string, unknown>);
 }
+
+export const registrarCobroCotizacion = confirmarCobroCotizacion;
 
 /** Corrige el valor cobrado de una cotización ya cobrada (queda en `cotizacion_eventos`). */
 export async function corregirCobroCotizacion(

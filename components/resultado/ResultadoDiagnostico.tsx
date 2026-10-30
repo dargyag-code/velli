@@ -11,7 +11,7 @@ import { enlaceWhatsApp } from '@/lib/whatsapp';
 import { RizoPattern } from '../wizard/RizoPatterns';
 import Button from '../ui/Button';
 import { useFlags } from '@/lib/flags/useFlags';
-import HojaCotizar from '@/components/cotizador/HojaCotizar';
+import Link from 'next/link';
 
 interface Props {
   consulta: Consulta;
@@ -56,7 +56,7 @@ const CronogramaCard = ({ semana, tratamiento }: { semana: string; tratamiento: 
 
 const SectionTitle = ({ icon, title }: { icon: React.ReactNode; title: string }) => (
   <div className="flex items-center gap-2 mb-3">
-    <div className="w-8 h-8 bg-[#EEF5ED] rounded-xl flex items-center justify-center text-[#2D5A27]">
+    <div className="w-8 h-8 bg-[var(--primary-light)] rounded-xl flex items-center justify-center text-[var(--primary)]">
       {icon}
     </div>
     <h3
@@ -75,7 +75,6 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
   );
   const [notas, setNotas] = useState(consulta.notasEstilista || '');
   const [saved, setSaved] = useState(false);
-  const [cotizadorAbierto, setCotizadorAbierto] = useState(false);
   const flags = useFlags();
 
   const handleSave = async () => {
@@ -99,7 +98,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
   return (
     <div className="flex flex-col gap-5 step-enter">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#2D5A27] to-[#3D7A35] rounded-3xl p-5 text-white">
+      <div className="bg-gradient-to-br from-[var(--primary)] to-[var(--primary-hover)] rounded-3xl p-5 text-white">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles size={18} className="text-[#C9956B]" />
           <span className="text-sm font-semibold text-[#B8D4B5]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
@@ -115,7 +114,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
       </div>
 
       {/* 1. Resumen del diagnóstico */}
-      <div className="bg-[#EEF5ED] rounded-3xl p-4">
+      <div className="bg-[var(--primary-light)] rounded-3xl p-4">
         <SectionTitle icon={<Star size={16} />} title="Diagnóstico" />
 
         {/* Rizo type */}
@@ -124,7 +123,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
             <RizoPattern tipo={consulta.tipoRizoPrincipal} />
           </div>
           <div>
-            <p className="text-2xl font-extrabold text-[#2D5A27]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+            <p className="text-2xl font-extrabold text-[var(--primary)]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
               {consulta.tipoRizoPrincipal}
             </p>
             <p className="text-sm text-[#666666]">{getRizoLabel(consulta.tipoRizoPrincipal)}</p>
@@ -143,7 +142,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
               <p className="text-xs text-[#999999] mb-0.5" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
                 {label}
               </p>
-              <p className="text-sm font-bold text-[#2D5A27] capitalize" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+              <p className="text-sm font-bold text-[var(--primary)] capitalize" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
                 {value}
               </p>
             </div>
@@ -182,7 +181,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
               {consulta.problemas.map((p) => (
                 <span
                   key={p}
-                  className="text-xs bg-white text-[#2D5A27] px-2 py-1 rounded-full border border-[#90B98A]"
+                  className="text-xs bg-white text-[var(--primary)] px-2 py-1 rounded-full border border-[var(--primary-line)]"
                 >
                   {p}
                 </span>
@@ -264,7 +263,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
         <SectionTitle icon={<Leaf size={16} />} title="Rutina para casa" />
 
         {[
-          { title: 'Día de lavado (Wash day)', items: resultado.cuidadoCasa.diaLavado, color: '#2D5A27', bg: '#EEF5ED' },
+          { title: 'Día de lavado (Wash day)', items: resultado.cuidadoCasa.diaLavado, color: 'var(--primary)', bg: 'var(--primary-light)' },
           { title: 'Mantenimiento nocturno', items: resultado.cuidadoCasa.nocturno, color: '#3B82F6', bg: '#EFF6FF' },
           { title: 'Refresh día 2-3', items: resultado.cuidadoCasa.refresh, color: '#2D8E5B', bg: '#F0FDF4' },
         ].map(({ title, items, color, bg }) => (
@@ -341,14 +340,14 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
       )}
 
       {/* 8. Próxima cita */}
-      <div className="bg-white rounded-3xl p-4 border-2 border-[#2D5A27] shadow-sm">
+      <div className="bg-white rounded-3xl p-4 border-2 border-[var(--primary)] shadow-sm">
         <SectionTitle icon={<Clock size={16} />} title="Próxima cita" />
 
-        <div className="bg-[#EEF5ED] rounded-2xl p-3 mb-4">
+        <div className="bg-[var(--primary-light)] rounded-2xl p-3 mb-4">
           <p className="text-xs text-[#999999] mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             Intervalo recomendado:
           </p>
-          <p className="text-sm font-bold text-[#2D5A27]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
+          <p className="text-sm font-bold text-[var(--primary)]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             {resultado.intervaloSugerido}
           </p>
         </div>
@@ -389,23 +388,16 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
 
       {/* Action buttons */}
       {flags.cotizador && clienta && (
-        <div>
+        <Link href={`/?clientaId=${clienta.id}`} style={{ textDecoration: 'none' }}>
           <Button
             variant="secondary"
             size="lg"
             fullWidth
-            onClick={() => setCotizadorAbierto(true)}
             icon={<Sparkles size={16} />}
           >
             Cotizar servicio
           </Button>
-          <HojaCotizar
-            open={cotizadorAbierto}
-            onClose={() => setCotizadorAbierto(false)}
-            clienta={clienta}
-            consulta={consulta}
-          />
-        </div>
+        </Link>
       )}
       <div className="flex flex-col gap-3 pb-6">
         {saved ? (

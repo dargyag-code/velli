@@ -4,8 +4,18 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  ArrowLeft, Plus, Check, Sparkles, AlertTriangle,
-  Users, Package, Percent, Calculator, Trash2, Lock, Sliders,
+  ArrowLeft,
+  Plus,
+  Check,
+  Sparkles,
+  AlertTriangle,
+  Users,
+  Package,
+  Percent,
+  Calculator,
+  Trash2,
+  Lock,
+  Sliders,
 } from 'lucide-react';
 import { Btn, Chip, BottomNavV2 } from '@/components/v2';
 import { getProfile } from '@/lib/profile';
@@ -20,7 +30,9 @@ import {
   calcularPrecioUnitarioProducto,
   calcularComisionYMargen,
   formatearPrecioCop,
+  listarServiciosSalon,
   sembrarServiciosDesdeOnboarding,
+  sembrarBaseFinancieraSalon,
   crearServicioSalon,
   actualizarServicioSalon,
   listarPlantillasVigentes,
@@ -53,7 +65,7 @@ import {
   type ConsumoPlantillaInput,
 } from '@/lib/cotizador';
 
-type PestanaPrecios = 'plantillas' | 'rentabilidad';
+type PestanaPrecios = 'servicios' | 'quimica' | 'comisiones';
 
 const ORDEN_VARIABLES: ClaveVariable[] = ['largo', 'densidad', 'estado', 'canas'];
 
@@ -77,7 +89,7 @@ const CATEGORIAS_SERVICIO: Array<{ valor: CategoriaServicioDB; etiqueta: string 
 
 export default function ConfiguracionPreciosPage() {
   const router = useRouter();
-  const [pestana, setPestana] = useState<PestanaPrecios>('plantillas');
+  const [pestana, setPestana] = useState<PestanaPrecios>('servicios');
   const [cargando, setCargando] = useState(true);
   const [sub, setSub] = useState<SuscripcionEfectiva | null>(null);
 
@@ -94,26 +106,26 @@ export default function ConfiguracionPreciosPage() {
   const [nuevoServicioNombre, setNuevoServicioNombre] = useState('');
   const [nuevoServicioCategoria, setNuevoServicioCategoria] = useState<CategoriaServicioDB>('tratamiento');
 
-  // Estado editable del servicio y plantilla activa
+  // Estado editable del servicio activo (publica automáticamente versión interna al guardar)
   const [precioBase, setPrecioBase] = useState<number>(120000);
   const [redondeo, setRedondeo] = useState<number>(1000);
   const [vigenciaDias, setVigenciaDias] = useState<number>(15);
   const [variablesActivas, setVariablesActivas] = useState<ClaveVariable[]>(['largo', 'densidad', 'estado', 'canas']);
   const [usaFormulaColor, setUsaFormulaColor] = useState<boolean>(false);
   const [ajustesEdit, setAjustesEdit] = useState<AjustesPlantilla>({});
-  const [publicando, setPublicando] = useState(false);
+  const [guardandoServicio, setGuardandoServicio] = useState(false);
 
-  // Consumo y factores del servicio activo (Pro / Pro+IA)
+  // Consumo químico del servicio activo
   const [gramosTinteBase, setGramosTinteBase] = useState<number>(60);
   const [proporcionOxidante, setProporcionOxidante] = useState<number>(1.5);
   const [insumosFijos, setInsumosFijos] = useState<number>(0);
   const [factoresConsumo, setFactoresConsumo] = useState<FactoresConsumoPlantilla>(FACTORES_CONSUMO_DEFECTO);
 
-  // Formulario rápido de Estilista
+  // Formulario rápido de Especialista
   const [nuevaEstilistaNombre, setNuevaEstilistaNombre] = useState('');
   const [guardandoEstilista, setGuardandoEstilista] = useState(false);
 
-  // Formulario rápido de Producto
+  // Formulario rápido de Producto Químico
   const [prodNombre, setProdNombre] = useState('');
   const [prodMarca, setProdMarca] = useState('');
   const [prodTipo, setProdTipo] = useState<TipoProductoSalon>('tinte');
@@ -139,17 +151,18 @@ export default function ConfiguracionPreciosPage() {
   const [simTinteId, setSimTinteId] = useState<string>('');
   const [simOxidanteId, setSimOxidanteId] = useState<string>('');
 
-  const tienePlanPro = useMemo(() => {
-    if (!sub) return true;
-    return sub.plan === 'pro' || sub.plan === 'pro_ia' || sub.estado === 'trialing';
-  }, [sub]);
+  // Todo salón activo en Velli Business Intelligence tiene acceso completo
+  // a Costos de Química y Liquidación de Especialistas (el candado Pro+IA se
+  // reserva exclusivamente para el diagnóstico fotográfico con IA).
+  const tienePlanPro = true;
 
   const cargarTodo = useCallback(async () => {
     setCargando(true);
     try {
-      const [prof, subEf, plantillas, ests, prods, coms] = await Promise.all([
+      const [prof, subEf, svcsIniciales, plantillas, ests, prods, coms] = await Promise.all([
         getProfile().catch(() => null),
         getSuscripcionEfectiva().catch(() => null),
+        listarServiciosSalon({ soloActivos: false }).catch(() => [] as ServicioSalon[]),
         listarPlantillasVigentes().catch(() => [] as PlantillaPrecio[]),
         listarEstilistas({ soloActivas: false }).catch(() => [] as EstilistaSalon[]),
         listarProductosSalon({ soloActivos: false }).catch(() => [] as ProductoSalon[]),
@@ -157,25 +170,39 @@ export default function ConfiguracionPreciosPage() {
       ]);
 
       setSub(subEf);
-      const svcs = await sembrarServiciosDesdeOnboarding(prof?.servicios ?? []).catch(
-        () => [] as ServicioSalon[]
-      );
+      let svcs = svcsIniciales;
+      if (svcs.length === 0) {
+        await sembrarServiciosDesdeOnboarding(prof?.servicios ?? []).catch(() => [] as ServicioSalon[]);
+        svcs = await listarServiciosSalon({ soloActivos: false }).catch(() => [] as ServicioSalon[]);
+      }
       setServicios(svcs);
+
+      let estsEfectivas = ests;
+      let prodsEfectivos = prods;
+      let comsEfectivas = coms;
+      if (prods.length === 0 || ests.length === 0 || coms.length === 0) {
+        const sembrados = await sembrarBaseFinancieraSalon().catch(() => null);
+        if (sembrados) {
+          if (prodsEfectivos.length === 0) prodsEfectivos = sembrados.productos;
+          if (estsEfectivas.length === 0) estsEfectivas = sembrados.estilistas;
+          if (comsEfectivas.length === 0) comsEfectivas = sembrados.comisiones;
+        }
+      }
 
       const pMap: Record<string, PlantillaPrecio> = {};
       for (const p of plantillas) {
         if (!p.vigenteHasta) pMap[p.servicioId] = p;
       }
       setPlantillasMap(pMap);
-      setEstilistas(ests);
-      setProductos(prods);
-      setComisiones(coms);
+      setEstilistas(estsEfectivas);
+      setProductos(prodsEfectivos);
+      setComisiones(comsEfectivas);
 
       if (svcs.length > 0 && !servicioId) {
         setServicioId(svcs[0].id);
       }
-      const primerTinte = prods.find((p) => p.unidad === 'g');
-      const primerOx = prods.find((p) => p.unidad === 'ml');
+      const primerTinte = prodsEfectivos.find((p) => p.unidad === 'g');
+      const primerOx = prodsEfectivos.find((p) => p.unidad === 'ml');
       if (primerTinte) setSimTinteId(primerTinte.id);
       if (primerOx) setSimOxidanteId(primerOx.id);
     } finally {
@@ -286,16 +313,17 @@ export default function ConfiguracionPreciosPage() {
       setServicioId(creado.id);
       setNuevoServicioNombre('');
       setCreandoServicio(false);
-      showToast('Servicio creado', 'success');
+      showToast('Servicio agregado al menú', 'success');
     } catch (err) {
       console.error('[precios.crearServicio]', err);
       showToast('No se pudo crear el servicio', 'error');
     }
   };
 
-  const handlePublicarPlantilla = async () => {
+  // Guarda cambios del servicio y publica automáticamente la nueva versión en Supabase por debajo
+  const handleGuardarServicio = async () => {
     if (!servicioActual) return;
-    setPublicando(true);
+    setGuardandoServicio(true);
     try {
       const srvActualizado = await actualizarServicioSalon(servicioActual.id, {
         usaFormulaColor,
@@ -328,15 +356,13 @@ export default function ConfiguracionPreciosPage() {
       const vigente = await obtenerPlantillaVigente(servicioActual.id);
       if (vigente) {
         setPlantillasMap((prev) => ({ ...prev, [servicioActual.id]: vigente }));
-        showToast(`Plantilla v${vigente.version} publicada`, 'success');
-      } else {
-        showToast('Plantilla publicada', 'success');
       }
+      showToast(`Cambios de ${servicioActual.nombre} guardados`, 'success');
     } catch (err) {
-      console.error('[precios.publicar]', err);
-      showToast('No se pudo publicar la plantilla', 'error');
+      console.error('[precios.guardarServicio]', err);
+      showToast('No se pudieron guardar los cambios del servicio', 'error');
     } finally {
-      setPublicando(false);
+      setGuardandoServicio(false);
     }
   };
 
@@ -347,10 +373,10 @@ export default function ConfiguracionPreciosPage() {
       const creada = await crearEstilista({ nombre: nuevaEstilistaNombre.trim(), activo: true });
       setEstilistas((prev) => [...prev, creada]);
       setNuevaEstilistaNombre('');
-      showToast('Estilista agregada', 'success');
+      showToast('Especialista agregada al equipo', 'success');
     } catch (err) {
       console.error('[precios.estilista]', err);
-      showToast('No se pudo guardar la estilista', 'error');
+      showToast('No se pudo guardar la especialista', 'error');
     } finally {
       setGuardandoEstilista(false);
     }
@@ -379,10 +405,10 @@ export default function ConfiguracionPreciosPage() {
       if (creado.unidad === 'ml' && !simOxidanteId) setSimOxidanteId(creado.id);
       setProdNombre('');
       setProdMarca('');
-      showToast('Producto guardado en el catálogo', 'success');
+      showToast('Insumo químico guardado', 'success');
     } catch (err) {
       console.error('[precios.producto]', err);
-      showToast('No se pudo guardar el producto', 'error');
+      showToast('No se pudo guardar el producto químico', 'error');
     } finally {
       setGuardandoProd(false);
     }
@@ -417,13 +443,13 @@ export default function ConfiguracionPreciosPage() {
     try {
       await cerrarReglaComision(id);
       setComisiones((prev) => prev.filter((c) => c.id !== id));
-      showToast('Regla cerrada', 'success');
+      showToast('Regla de comisión eliminada', 'success');
     } catch {
-      showToast('No se pudo cerrar la regla', 'error');
+      showToast('No se pudo eliminar la regla', 'error');
     }
   };
 
-  // ── Simulador de Margen en vivo (usa las funciones puras de lib/cotizador) ──
+  // ── Simulador de Margen en vivo (usa funciones puras de lib/cotizador) ───
   const simulacion = useMemo(() => {
     const resPrecio = calcularPrecioCotizacion(
       {
@@ -522,15 +548,24 @@ export default function ConfiguracionPreciosPage() {
       className="v-grain"
       style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: 140 }}
     >
-      {/* Cabecera editorial */}
-      <div style={{ padding: '54px 20px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+      {/* Cabecera ejecutiva */}
+      <header
+        style={{
+          maxWidth: 880,
+          margin: '0 auto',
+          padding: '48px 20px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+        }}
+      >
         <button
           type="button"
           onClick={() => router.push('/configuracion')}
           aria-label="Volver a Configuración"
           style={{
-            width: 36,
-            height: 36,
+            width: 38,
+            height: 38,
             borderRadius: '50%',
             background: 'var(--bg-card)',
             border: '1px solid var(--border-soft)',
@@ -545,31 +580,31 @@ export default function ConfiguracionPreciosPage() {
           <ArrowLeft size={16} />
         </button>
         <div>
-          <span className="v-caps">Velli Business Intelligence</span>
+          <span className="v-caps">Velli Business Intelligence · Calibración del Salón</span>
           <h1
             style={{
               margin: '2px 0 0',
               fontFamily: 'var(--font-serif)',
               fontSize: 25,
-              lineHeight: 1.05,
+              fontWeight: 700,
+              lineHeight: 1.1,
               letterSpacing: '-0.02em',
-              color: 'var(--text-main)',
+              color: 'var(--primary)',
             }}
           >
-            Precios, productos y{' '}
-            <span style={{ fontStyle: 'italic', color: 'var(--secondary-deep)' }}>comisiones</span>
+            Menú de servicios, química y comisiones
           </h1>
         </div>
-      </div>
+      </header>
 
-      <main style={{ maxWidth: 768, margin: '0 auto', padding: '0 16px' }}>
-        {/* Selector de sección (Pestaña 1: Todos los planes | Pestaña 2: Pro y Pro+IA) */}
+      <main style={{ maxWidth: 880, margin: '0 auto', padding: '0 20px' }}>
+        {/* Selector de 3 Pestañas claras de negocio */}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: 8,
-            padding: 4,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(195px, 1fr))',
+            gap: 6,
+            padding: 5,
             borderRadius: 16,
             background: 'var(--bg-card)',
             border: '1px solid var(--border-soft)',
@@ -578,29 +613,30 @@ export default function ConfiguracionPreciosPage() {
         >
           <button
             type="button"
-            onClick={() => setPestana('plantillas')}
+            onClick={() => setPestana('servicios')}
             style={{
               padding: '10px 12px',
               borderRadius: 12,
               border: 'none',
-              background: pestana === 'plantillas' ? 'var(--primary)' : 'transparent',
-              color: pestana === 'plantillas' ? '#fff' : 'var(--text-secondary)',
+              background: pestana === 'servicios' ? 'var(--primary)' : 'transparent',
+              color: pestana === 'servicios' ? '#FAF7F5' : 'var(--text-secondary)',
               fontSize: 12.5,
               fontWeight: 700,
               cursor: 'pointer',
             }}
           >
-            1 · Servicios y Precios
+            1. Menú de Servicios
           </button>
+
           <button
             type="button"
-            onClick={() => setPestana('rentabilidad')}
+            onClick={() => setPestana('quimica')}
             style={{
               padding: '10px 12px',
               borderRadius: 12,
               border: 'none',
-              background: pestana === 'rentabilidad' ? 'var(--primary)' : 'transparent',
-              color: pestana === 'rentabilidad' ? '#fff' : 'var(--text-secondary)',
+              background: pestana === 'quimica' ? 'var(--primary)' : 'transparent',
+              color: pestana === 'quimica' ? '#FAF7F5' : 'var(--text-secondary)',
               fontSize: 12.5,
               fontWeight: 700,
               cursor: 'pointer',
@@ -610,154 +646,228 @@ export default function ConfiguracionPreciosPage() {
               gap: 6,
             }}
           >
-            <span>2 · Costos, Comisión y Margen</span>
+            <span>2. Costos de Química ($/g y $/ml)</span>
+            {!tienePlanPro && <Lock size={12} />}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setPestana('comisiones')}
+            style={{
+              padding: '10px 12px',
+              borderRadius: 12,
+              border: 'none',
+              background: pestana === 'comisiones' ? 'var(--primary)' : 'transparent',
+              color: pestana === 'comisiones' ? '#FAF7F5' : 'var(--text-secondary)',
+              fontSize: 12.5,
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+            }}
+          >
+            <span>3. Especialistas y Comisiones</span>
             {!tienePlanPro && <Lock size={12} />}
           </button>
         </div>
 
-        {/* Selector horizontal de servicio activo */}
-        <section className="v-card" style={{ padding: 14, marginBottom: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span className="v-caps">Servicios de tu salón</span>
-            <button
-              type="button"
-              onClick={() => setCreandoServicio((v) => !v)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--primary)',
-                fontSize: 12,
-                fontWeight: 700,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                cursor: 'pointer',
-              }}
-            >
-              <Plus size={14} /> Nuevo servicio
-            </button>
-          </div>
-
-          {creandoServicio && (
+        {/* Selector horizontal de servicio activo (visible en Pestaña 1 y 2 para calibrar tarifas y gramos) */}
+        {(pestana === 'servicios' || pestana === 'quimica') && (
+          <section className="v-card" style={{ padding: 16, marginBottom: 16 }}>
             <div
               style={{
-                padding: 12,
-                borderRadius: 12,
-                background: 'var(--bg)',
-                border: '1px solid var(--border)',
-                marginBottom: 12,
                 display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 10,
               }}
             >
-              <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 8 }}>
-                <input
-                  type="text"
-                  value={nuevoServicioNombre}
-                  onChange={(e) => setNuevoServicioNombre(e.target.value)}
-                  placeholder="Ej. Balayage + Tono, Hidratación profunda…"
-                  style={{
-                    padding: '9px 12px',
-                    borderRadius: 10,
-                    border: '1px solid var(--border)',
-                    fontSize: 13,
-                    background: 'var(--bg-card)',
-                    color: 'var(--text-main)',
-                  }}
-                />
-                <select
-                  value={nuevoServicioCategoria}
-                  onChange={(e) => setNuevoServicioCategoria(e.target.value as CategoriaServicioDB)}
-                  style={{
-                    padding: '9px 12px',
-                    borderRadius: 10,
-                    border: '1px solid var(--border)',
-                    fontSize: 13,
-                    background: 'var(--bg-card)',
-                    color: 'var(--text-main)',
-                  }}
-                >
-                  {CATEGORIAS_SERVICIO.map((cat) => (
-                    <option key={cat.valor} value={cat.valor}>
-                      {cat.etiqueta}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <Btn size="sm" variant="primary" onClick={handleCrearServicio}>
-                  Guardar servicio
-                </Btn>
-                <Btn size="sm" variant="ghost" onClick={() => setCreandoServicio(false)}>
-                  Cancelar
-                </Btn>
-              </div>
+              <span className="v-caps">Servicios de tu salón</span>
+              <button
+                type="button"
+                onClick={() => setCreandoServicio((v) => !v)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--primary)',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  cursor: 'pointer',
+                }}
+              >
+                <Plus size={14} /> Nuevo servicio
+              </button>
             </div>
-          )}
 
-          {cargando ? (
-            <div className="skeleton-shimmer" style={{ height: 42, borderRadius: 12 }} />
-          ) : (
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {servicios.map((srv) => {
-                const activo = srv.id === servicioId;
-                const plant = plantillasMap[srv.id];
-                return (
-                  <button
-                    key={srv.id}
-                    type="button"
-                    onClick={() => setServicioId(srv.id)}
+            {creandoServicio && (
+              <div
+                style={{
+                  padding: 12,
+                  borderRadius: 12,
+                  background: 'var(--bg)',
+                  border: '1px solid var(--border)',
+                  marginBottom: 12,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
+                }}
+              >
+                <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 8 }}>
+                  <input
+                    type="text"
+                    value={nuevoServicioNombre}
+                    onChange={(e) => setNuevoServicioNombre(e.target.value)}
+                    placeholder="Ej. Balayage Alta Precisión, Hidratación profunda…"
                     style={{
-                      padding: '8px 14px',
-                      borderRadius: 999,
-                      border: activo
-                        ? '1.5px solid var(--primary)'
-                        : '1px solid var(--border-soft)',
-                      background: activo ? 'var(--primary-pale)' : 'var(--bg)',
-                      color: activo ? 'var(--primary)' : 'var(--text-main)',
-                      fontSize: 12.5,
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
+                      padding: '9px 12px',
+                      borderRadius: 10,
+                      border: '1px solid var(--border)',
+                      fontSize: 13,
+                      background: 'var(--bg-card)',
+                      color: 'var(--text-main)',
+                    }}
+                  />
+                  <select
+                    value={nuevoServicioCategoria}
+                    onChange={(e) => setNuevoServicioCategoria(e.target.value as CategoriaServicioDB)}
+                    style={{
+                      padding: '9px 12px',
+                      borderRadius: 10,
+                      border: '1px solid var(--border)',
+                      fontSize: 13,
+                      background: 'var(--bg-card)',
+                      color: 'var(--text-main)',
                     }}
                   >
-                    <span>{srv.nombre}</span>
-                    {plant && (
-                      <span style={{ fontSize: 10.5, opacity: 0.75 }}>
-                        · {formatearPrecioCop(plant.precioBase)}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </section>
+                    {CATEGORIAS_SERVICIO.map((cat) => (
+                      <option key={cat.valor} value={cat.valor}>
+                        {cat.etiqueta}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <Btn size="sm" variant="primary" onClick={handleCrearServicio}>
+                    Agregar servicio
+                  </Btn>
+                  <Btn size="sm" variant="ghost" onClick={() => setCreandoServicio(false)}>
+                    Cancelar
+                  </Btn>
+                </div>
+              </div>
+            )}
 
-        {/* ═══ PESTAÑA 1: SERVICIOS Y PLANTILLAS DE PRECIO (TODOS LOS PLANES) ═══ */}
-        {pestana === 'plantillas' && servicioActual && (
+            {cargando ? (
+              <div className="skeleton-shimmer" style={{ height: 42, borderRadius: 12 }} />
+            ) : (
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {servicios.map((srv) => {
+                  const activo = srv.id === servicioId;
+                  const plant = plantillasMap[srv.id];
+                  return (
+                    <button
+                      key={srv.id}
+                      type="button"
+                      onClick={() => setServicioId(srv.id)}
+                      style={{
+                        padding: '8px 14px',
+                        borderRadius: 999,
+                        border: activo
+                          ? '1.5px solid var(--primary)'
+                          : '1px solid var(--border-soft)',
+                        background: activo ? 'var(--primary-pale)' : 'var(--bg)',
+                        color: activo ? 'var(--primary)' : 'var(--text-main)',
+                        fontSize: 12.5,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                      }}
+                    >
+                      <span>{srv.nombre}</span>
+                      {plant && (
+                        <span className="tabular-nums" style={{ fontSize: 11, opacity: 0.78 }}>
+                          · {formatearPrecioCop(plant.precioBase)}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            PESTAÑA 1: MENÚ DE SERVICIOS
+           ═══════════════════════════════════════════════════════════════════ */}
+        {pestana === 'servicios' && servicioActual && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <section className="v-card" style={{ padding: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <section className="v-card" style={{ padding: 18 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: 14,
+                  flexWrap: 'wrap',
+                  gap: 8,
+                }}
+              >
                 <div>
-                  <span className="v-caps">Plantilla de precio</span>
-                  <h2 style={{ margin: '2px 0 0', fontFamily: 'var(--font-serif)', fontSize: 20 }}>
+                  <span className="v-caps">Tarifa y reglas de cobro</span>
+                  <h2
+                    style={{
+                      margin: '2px 0 0',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 21,
+                      fontWeight: 700,
+                      color: 'var(--primary)',
+                    }}
+                  >
                     {servicioActual.nombre}
                   </h2>
                 </div>
                 {plantillasMap[servicioActual.id] && (
-                  <Chip tone="green">
-                    Versión v{plantillasMap[servicioActual.id].version} vigente
-                  </Chip>
+                  <span
+                    style={{
+                      padding: '5px 11px',
+                      borderRadius: 999,
+                      background: 'rgba(13, 148, 136, 0.12)',
+                      color: '#0D9488',
+                      fontSize: 11,
+                      fontWeight: 700,
+                    }}
+                  >
+                    Tarifa activa
+                  </span>
                 )}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+                  gap: 10,
+                  marginBottom: 16,
+                }}
+              >
                 <div>
-                  <label style={{ display: 'block', fontSize: 10.5, fontWeight: 700, color: 'var(--text-tertiary)', marginBottom: 4 }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: 10.5,
+                      fontWeight: 700,
+                      color: 'var(--text-tertiary)',
+                      marginBottom: 4,
+                    }}
+                  >
                     PRECIO BASE (COP)
                   </label>
                   <input
@@ -766,6 +876,7 @@ export default function ConfiguracionPreciosPage() {
                     step={1000}
                     value={precioBase}
                     onChange={(e) => setPrecioBase(Number(e.target.value) || 0)}
+                    className="tabular-nums"
                     style={{
                       width: '100%',
                       padding: '9px 10px',
@@ -779,8 +890,16 @@ export default function ConfiguracionPreciosPage() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 10.5, fontWeight: 700, color: 'var(--text-tertiary)', marginBottom: 4 }}>
-                    REDONDEO
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: 10.5,
+                      fontWeight: 700,
+                      color: 'var(--text-tertiary)',
+                      marginBottom: 4,
+                    }}
+                  >
+                    REDONDEO COMERCIAL
                   </label>
                   <select
                     value={redondeo}
@@ -802,8 +921,16 @@ export default function ConfiguracionPreciosPage() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 10.5, fontWeight: 700, color: 'var(--text-tertiary)', marginBottom: 4 }}>
-                    VIGENCIA (DÍAS)
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: 10.5,
+                      fontWeight: 700,
+                      color: 'var(--text-tertiary)',
+                      marginBottom: 4,
+                    }}
+                  >
+                    VIGENCIA DE COTIZACIÓN (DÍAS)
                   </label>
                   <input
                     type="number"
@@ -811,6 +938,7 @@ export default function ConfiguracionPreciosPage() {
                     max={90}
                     value={vigenciaDias}
                     onChange={(e) => setVigenciaDias(Math.max(1, Number(e.target.value) || 15))}
+                    className="tabular-nums"
                     style={{
                       width: '100%',
                       padding: '9px 10px',
@@ -826,7 +954,7 @@ export default function ConfiguracionPreciosPage() {
 
               <div style={{ marginBottom: 14 }}>
                 <div className="v-caps" style={{ marginBottom: 6 }}>
-                  Variables que modifican el precio de este servicio
+                  Factores capilares que ajustan el precio en silla
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {ORDEN_VARIABLES.map((clave) => {
@@ -839,7 +967,9 @@ export default function ConfiguracionPreciosPage() {
                         style={{
                           padding: '7px 12px',
                           borderRadius: 999,
-                          border: activa ? '1.5px solid var(--primary)' : '1px solid var(--border-soft)',
+                          border: activa
+                            ? '1.5px solid var(--primary)'
+                            : '1px solid var(--border-soft)',
                           background: activa ? 'var(--primary-pale)' : 'var(--bg)',
                           color: activa ? 'var(--primary)' : 'var(--text-secondary)',
                           fontSize: 12,
@@ -856,10 +986,13 @@ export default function ConfiguracionPreciosPage() {
               </div>
 
               {/* Ajustes por opción para cada variable activa */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {ORDEN_VARIABLES.filter((c) => variablesActivas.includes(c)).map((clave) => {
                   const opciones = CATALOGO_VARIABLES[clave];
-                  const grupo = (ajustesEdit[clave] ?? {}) as Record<string, AjusteValorVariable | undefined>;
+                  const grupo = (ajustesEdit[clave] ?? {}) as Record<
+                    string,
+                    AjusteValorVariable | undefined
+                  >;
                   return (
                     <div
                       key={clave}
@@ -870,7 +1003,14 @@ export default function ConfiguracionPreciosPage() {
                         border: '1px solid var(--border-soft)',
                       }}
                     >
-                      <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-main)', marginBottom: 8 }}>
+                      <div
+                        style={{
+                          fontSize: 12.5,
+                          fontWeight: 700,
+                          color: 'var(--text-main)',
+                          marginBottom: 8,
+                        }}
+                      >
                         {ETIQUETAS_VARIABLE[clave]}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -887,7 +1027,13 @@ export default function ConfiguracionPreciosPage() {
                               }}
                             >
                               <div>
-                                <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-main)' }}>
+                                <div
+                                  style={{
+                                    fontSize: 12.5,
+                                    fontWeight: 600,
+                                    color: 'var(--text-main)',
+                                  }}
+                                >
                                   {op.etiqueta}
                                 </div>
                                 <div style={{ fontSize: 10.5, color: 'var(--text-tertiary)' }}>
@@ -895,7 +1041,13 @@ export default function ConfiguracionPreciosPage() {
                                 </div>
                               </div>
                               <div>
-                                <label style={{ display: 'block', fontSize: 9.5, color: 'var(--text-tertiary)' }}>
+                                <label
+                                  style={{
+                                    display: 'block',
+                                    fontSize: 9.5,
+                                    color: 'var(--text-tertiary)',
+                                  }}
+                                >
                                   + SUMA ($)
                                 </label>
                                 <input
@@ -905,6 +1057,7 @@ export default function ConfiguracionPreciosPage() {
                                   onChange={(e) =>
                                     cambiarAjusteOpcion(clave, op.valor, 'suma', e.target.value)
                                   }
+                                  className="tabular-nums"
                                   style={{
                                     width: '100%',
                                     padding: '6px 8px',
@@ -919,7 +1072,13 @@ export default function ConfiguracionPreciosPage() {
                                 />
                               </div>
                               <div>
-                                <label style={{ display: 'block', fontSize: 9.5, color: 'var(--text-tertiary)' }}>
+                                <label
+                                  style={{
+                                    display: 'block',
+                                    fontSize: 9.5,
+                                    color: 'var(--text-tertiary)',
+                                  }}
+                                >
                                   + PORCENTAJE (%)
                                 </label>
                                 <input
@@ -927,8 +1086,14 @@ export default function ConfiguracionPreciosPage() {
                                   step={1}
                                   value={aj.porcentaje ?? 0}
                                   onChange={(e) =>
-                                    cambiarAjusteOpcion(clave, op.valor, 'porcentaje', e.target.value)
+                                    cambiarAjusteOpcion(
+                                      clave,
+                                      op.valor,
+                                      'porcentaje',
+                                      e.target.value
+                                    )
                                   }
+                                  className="tabular-nums"
                                   style={{
                                     width: '100%',
                                     padding: '6px 8px',
@@ -951,24 +1116,28 @@ export default function ConfiguracionPreciosPage() {
                 })}
               </div>
 
-              <div style={{ marginTop: 16 }}>
+              <div style={{ marginTop: 18 }}>
                 <Btn
                   variant="primary"
                   size="lg"
                   fullWidth
-                  disabled={publicando}
-                  onClick={handlePublicarPlantilla}
-                  icon={publicando ? <Sparkles size={16} /> : <Check size={16} />}
+                  disabled={guardandoServicio}
+                  onClick={handleGuardarServicio}
+                  icon={guardandoServicio ? <Sparkles size={16} /> : <Check size={16} />}
                 >
-                  {publicando ? 'Publicando plantilla…' : 'Publicar plantilla'}
+                  {guardandoServicio
+                    ? 'Guardando cambios…'
+                    : `Guardar cambios de ${servicioActual.nombre}`}
                 </Btn>
               </div>
             </section>
           </div>
         )}
 
-        {/* ═══ PESTAÑA 2: ESTILISTAS, PRODUCTOS, COMISIONES Y SIMULADOR (PRO / PRO+IA) ═══ */}
-        {pestana === 'rentabilidad' && (
+        {/* ═══════════════════════════════════════════════════════════════════
+            PESTAÑA 2: COSTOS DE QUÍMICA ($/g y $/ml)
+           ═══════════════════════════════════════════════════════════════════ */}
+        {pestana === 'quimica' && (
           <>
             {!tienePlanPro ? (
               <section
@@ -976,17 +1145,32 @@ export default function ConfiguracionPreciosPage() {
                 style={{
                   padding: '28px 20px',
                   textAlign: 'center',
-                  border: '1px solid rgba(138, 90, 46, 0.28)',
-                  background: 'linear-gradient(135deg, #FBF4EC 0%, #F5EDDC 100%)',
+                  border: '1px solid var(--border-strong)',
+                  background: 'var(--primary-pale)',
                 }}
               >
                 <Lock size={28} style={{ color: 'var(--secondary-deep)', margin: '0 auto 10px' }} />
-                <h2 style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--primary-deep)' }}>
-                  Rentabilidad real en Plan Pro y Pro+IA
+                <h2
+                  style={{
+                    margin: 0,
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 22,
+                    color: 'var(--primary-deep)',
+                  }}
+                >
+                  Costeo de química sin báscula en Plan Pro y Pro+IA
                 </h2>
-                <p style={{ margin: '8px auto 18px', maxWidth: 420, fontSize: 13, color: 'var(--secondary-deep)', lineHeight: 1.5 }}>
-                  Activa el control de inventario por gramo/ml, factores de consumo por largo y densidad,
-                  liquidación de comisiones por estilista y el Simulador de Margen en vivo.
+                <p
+                  style={{
+                    margin: '8px auto 18px',
+                    maxWidth: 420,
+                    fontSize: 13,
+                    color: 'var(--text-secondary)',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Registra tus tubos de tinte, decolorante y oxidantes para calcular
+                  automáticamente el costo exacto por gramo ($/g) y mililitro ($/ml) en cada servicio.
                 </p>
                 <Link href="/planes">
                   <Btn variant="primary" size="md">
@@ -996,225 +1180,50 @@ export default function ConfiguracionPreciosPage() {
               </section>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {/* SIMULADOR DE MARGEN EN VIVO */}
-                <section
-                  className="v-grain"
-                  style={{
-                    borderRadius: 20,
-                    padding: 18,
-                    background: 'linear-gradient(135deg, #25401E 0%, #14241A 100%)',
-                    color: '#F5EDDC',
-                    boxShadow: 'var(--shadow-md)',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <div>
-                      <div className="v-caps" style={{ color: 'rgba(232, 194, 144, 0.92)' }}>
-                        Simulador de Margen en vivo
-                      </div>
-                      <h2 style={{ margin: '2px 0 0', fontFamily: 'var(--font-serif)', fontSize: 22, color: '#fff' }}>
-                        {servicioActual?.nombre ?? 'Servicio'}
-                      </h2>
-                    </div>
-                    <Calculator size={20} style={{ color: '#E8C290' }} />
-                  </div>
-
-                  {/* Selectores de combinación en el simulador */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 14 }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: 10, color: 'rgba(232,194,144,0.85)', marginBottom: 3 }}>
-                        LARGO
-                      </label>
-                      <select
-                        value={simLargo}
-                        onChange={(e) => setSimLargo(e.target.value as ValorLargo)}
-                        style={{
-                          width: '100%',
-                          padding: '7px 8px',
-                          borderRadius: 10,
-                          border: '1px solid rgba(255,255,255,0.2)',
-                          background: 'rgba(20, 36, 26, 0.75)',
-                          color: '#fff',
-                          fontSize: 12,
-                        }}
-                      >
-                        {CATALOGO_VARIABLES.largo.map((o) => (
-                          <option key={o.valor} value={o.valor}>{o.etiqueta}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: 10, color: 'rgba(232,194,144,0.85)', marginBottom: 3 }}>
-                        DENSIDAD
-                      </label>
-                      <select
-                        value={simDensidad}
-                        onChange={(e) => setSimDensidad(e.target.value as ValorDensidad)}
-                        style={{
-                          width: '100%',
-                          padding: '7px 8px',
-                          borderRadius: 10,
-                          border: '1px solid rgba(255,255,255,0.2)',
-                          background: 'rgba(20, 36, 26, 0.75)',
-                          color: '#fff',
-                          fontSize: 12,
-                        }}
-                      >
-                        {CATALOGO_VARIABLES.densidad.map((o) => (
-                          <option key={o.valor} value={o.valor}>{o.etiqueta}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: 10, color: 'rgba(232,194,144,0.85)', marginBottom: 3 }}>
-                        ESTADO DE LA FIBRA
-                      </label>
-                      <select
-                        value={simEstado}
-                        onChange={(e) => setSimEstado(e.target.value as ValorEstadoFibra)}
-                        style={{
-                          width: '100%',
-                          padding: '7px 8px',
-                          borderRadius: 10,
-                          border: '1px solid rgba(255,255,255,0.2)',
-                          background: 'rgba(20, 36, 26, 0.75)',
-                          color: '#fff',
-                          fontSize: 12,
-                        }}
-                      >
-                        {CATALOGO_VARIABLES.estado.map((o) => (
-                          <option key={o.valor} value={o.valor}>{o.etiqueta}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: 10, color: 'rgba(232,194,144,0.85)', marginBottom: 3 }}>
-                        PORCENTAJE DE CANAS
-                      </label>
-                      <select
-                        value={simCanas}
-                        onChange={(e) => setSimCanas(e.target.value as ValorCanas)}
-                        style={{
-                          width: '100%',
-                          padding: '7px 8px',
-                          borderRadius: 10,
-                          border: '1px solid rgba(255,255,255,0.2)',
-                          background: 'rgba(20, 36, 26, 0.75)',
-                          color: '#fff',
-                          fontSize: 12,
-                        }}
-                      >
-                        {CATALOGO_VARIABLES.canas.map((o) => (
-                          <option key={o.valor} value={o.valor}>{o.etiqueta}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Tarjetas de resultado del simulador */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-                    <div style={{ padding: 12, borderRadius: 14, background: 'rgba(255,255,255,0.08)' }}>
-                      <div style={{ fontSize: 10, letterSpacing: '0.08em', color: 'rgba(232,194,144,0.85)' }}>
-                        PRECIO AL PÚBLICO
-                      </div>
-                      <div style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 700, color: '#fff', marginTop: 2 }}>
-                        {formatearPrecioCop(simulacion.resPrecio.precioCalculado)}
-                      </div>
-                    </div>
-                    <div style={{ padding: 12, borderRadius: 14, background: 'rgba(255,255,255,0.08)' }}>
-                      <div style={{ fontSize: 10, letterSpacing: '0.08em', color: 'rgba(232,194,144,0.85)' }}>
-                        COSTO DE PRODUCTO
-                      </div>
-                      <div style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 700, color: '#fff', marginTop: 2 }}>
-                        {formatearPrecioCop(simulacion.resCosto.costoTotal)}
-                      </div>
-                      {usaFormulaColor && (
-                        <div style={{ fontSize: 10.5, color: 'rgba(245,237,220,0.75)', marginTop: 2 }}>
-                          {simulacion.resCosto.gramosTinte}g tinte ·{' '}
-                          {simulacion.resCosto.mlOxidanteRedondeado}ml ox.
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ padding: 12, borderRadius: 14, background: 'rgba(255,255,255,0.08)' }}>
-                      <div style={{ fontSize: 10, letterSpacing: '0.08em', color: 'rgba(232,194,144,0.85)' }}>
-                        COMISIÓN ESTILISTA
-                      </div>
-                      <div style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 700, color: '#fff', marginTop: 2 }}>
-                        {formatearPrecioCop(simulacion.resComision.comision)}
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        padding: 12,
-                        borderRadius: 14,
-                        background: simulacion.resComision.alertaMargenBajo
-                          ? 'rgba(180, 60, 60, 0.35)'
-                          : 'rgba(232, 194, 144, 0.18)',
-                        border: simulacion.resComision.alertaMargenBajo
-                          ? '1px solid rgba(255, 160, 160, 0.45)'
-                          : '1px solid rgba(232, 194, 144, 0.35)',
-                      }}
-                    >
-                      <div style={{ fontSize: 10, letterSpacing: '0.08em', color: '#E8C290' }}>
-                        QUEDA AL SALÓN
-                      </div>
-                      <div style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 700, color: '#fff', marginTop: 2 }}>
-                        {formatearPrecioCop(simulacion.resComision.margenSalon)}{' '}
-                        <span style={{ fontSize: 14, fontWeight: 600 }}>
-                          ({simulacion.resComision.margenPorcentaje}%)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {simulacion.resComision.alertaMargenBajo && (
-                    <div
-                      style={{
-                        marginTop: 12,
-                        padding: 12,
-                        borderRadius: 14,
-                        background: '#FFF8EB',
-                        color: '#7A4304',
-                        fontSize: 12,
-                        lineHeight: 1.45,
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, marginBottom: 4 }}>
-                        <AlertTriangle size={14} /> Alerta de margen bajo (&lt; 20 %)
-                      </div>
-                      {Number.isFinite(simulacion.resComision.precioSugeridoProteccion) && (
-                        <div>
-                          • Para proteger un margen mínimo del 20 %, el precio sugerido es{' '}
-                          <strong>{formatearPrecioCop(simulacion.resComision.precioSugeridoProteccion)}</strong>.
-                        </div>
-                      )}
-                      <div>
-                        • O si liquidas la comisión descontando primero el producto, al salón le quedarían{' '}
-                        <strong>
-                          {formatearPrecioCop(simulacion.resComision.margenConComisionNeta)}
-                        </strong>.
-                      </div>
-                    </div>
-                  )}
-
-                  {simulacion.avisos.length > 0 && (
-                    <div style={{ marginTop: 10, fontSize: 11.5, color: '#E8C290' }}>
-                      {simulacion.avisos.map((a) => a.mensaje).join(' · ')}
-                    </div>
-                  )}
-                </section>
-
-                {/* CONSUMO Y FACTORES MULTIPLICATIVOS POR SERVICIO */}
+                {/* Consumo químico calibrado por servicio */}
                 {servicioActual && (
-                  <section className="v-card" style={{ padding: 16 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                      <Sliders size={16} style={{ color: 'var(--primary)' }} />
-                      <h3 style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: 18 }}>
-                        Consumo de producto · {servicioActual.nombre}
-                      </h3>
+                  <section className="v-card" style={{ padding: 18 }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 8,
+                        marginBottom: 10,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Sliders size={16} style={{ color: '#7C3AED' }} />
+                        <div>
+                          <span className="v-caps" style={{ color: '#7C3AED' }}>
+                            Fórmula sin báscula por servicio
+                          </span>
+                          <h3
+                            style={{
+                              margin: 0,
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 18,
+                              fontWeight: 700,
+                              color: 'var(--primary)',
+                            }}
+                          >
+                            Consumo base · {servicioActual.nombre}
+                          </h3>
+                        </div>
+                      </div>
                     </div>
 
-                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 600, marginBottom: 12, cursor: 'pointer' }}>
+                    <label
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        fontSize: 12.5,
+                        fontWeight: 600,
+                        marginBottom: 12,
+                        cursor: 'pointer',
+                      }}
+                    >
                       <input
                         type="checkbox"
                         checked={usaFormulaColor}
@@ -1223,9 +1232,24 @@ export default function ConfiguracionPreciosPage() {
                       Este servicio consume tinte / decolorante + oxidante
                     </label>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                        gap: 10,
+                        marginBottom: 14,
+                      }}
+                    >
                       <div>
-                        <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--text-tertiary)', marginBottom: 4 }}>
+                        <label
+                          style={{
+                            display: 'block',
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: 'var(--text-tertiary)',
+                            marginBottom: 4,
+                          }}
+                        >
                           GRAMOS BASE (g)
                         </label>
                         <input
@@ -1233,18 +1257,28 @@ export default function ConfiguracionPreciosPage() {
                           min={0}
                           value={gramosTinteBase}
                           onChange={(e) => setGramosTinteBase(Number(e.target.value) || 0)}
+                          className="tabular-nums"
                           style={{
                             width: '100%',
                             padding: '8px 10px',
                             borderRadius: 10,
                             border: '1px solid var(--border)',
                             fontSize: 13,
+                            fontWeight: 700,
                             background: 'var(--bg)',
                           }}
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--text-tertiary)', marginBottom: 4 }}>
+                        <label
+                          style={{
+                            display: 'block',
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: 'var(--text-tertiary)',
+                            marginBottom: 4,
+                          }}
+                        >
                           PROP. OXIDANTE (1:X)
                         </label>
                         <input
@@ -1253,19 +1287,29 @@ export default function ConfiguracionPreciosPage() {
                           step={0.5}
                           value={proporcionOxidante}
                           onChange={(e) => setProporcionOxidante(Number(e.target.value) || 0)}
+                          className="tabular-nums"
                           style={{
                             width: '100%',
                             padding: '8px 10px',
                             borderRadius: 10,
                             border: '1px solid var(--border)',
                             fontSize: 13,
+                            fontWeight: 700,
                             background: 'var(--bg)',
                           }}
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--text-tertiary)', marginBottom: 4 }}>
-                          INSUMOS FIJOS ($)
+                        <label
+                          style={{
+                            display: 'block',
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: 'var(--text-tertiary)',
+                            marginBottom: 4,
+                          }}
+                        >
+                          INSUMOS FIJOS (ALUMINIO, GUANTES · $)
                         </label>
                         <input
                           type="number"
@@ -1273,12 +1317,14 @@ export default function ConfiguracionPreciosPage() {
                           step={500}
                           value={insumosFijos}
                           onChange={(e) => setInsumosFijos(Number(e.target.value) || 0)}
+                          className="tabular-nums"
                           style={{
                             width: '100%',
                             padding: '8px 10px',
                             borderRadius: 10,
                             border: '1px solid var(--border)',
                             fontSize: 13,
+                            fontWeight: 700,
                             background: 'var(--bg)',
                           }}
                         />
@@ -1288,29 +1334,51 @@ export default function ConfiguracionPreciosPage() {
                     <Btn
                       size="sm"
                       variant="primary"
-                      disabled={publicando}
-                      onClick={handlePublicarPlantilla}
+                      disabled={guardandoServicio}
+                      onClick={handleGuardarServicio}
                     >
-                      {publicando ? 'Publicando…' : 'Publicar consumo y plantilla'}
+                      {guardandoServicio
+                        ? 'Guardando…'
+                        : `Guardar consumo de ${servicioActual.nombre}`}
                     </Btn>
                   </section>
                 )}
 
-                {/* CATÁLOGO DE PRODUCTOS ($/g y $/ml automático) */}
-                <section className="v-card" style={{ padding: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                    <Package size={16} style={{ color: 'var(--primary)' }} />
-                    <h3 style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: 18 }}>
-                      Productos de inventario ($/g y $/ml)
-                    </h3>
+                {/* Catálogo de insumos químicos ($/g y $/ml automático) */}
+                <section className="v-card" style={{ padding: 18 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <Package size={16} style={{ color: '#7C3AED' }} />
+                    <div>
+                      <span className="v-caps" style={{ color: '#7C3AED' }}>
+                        Catálogo de laboratorio
+                      </span>
+                      <h3
+                        style={{
+                          margin: 0,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 18,
+                          fontWeight: 700,
+                          color: 'var(--primary)',
+                        }}
+                      >
+                        Costos de Química ($/g y $/ml)
+                      </h3>
+                    </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 0.9fr', gap: 8, marginBottom: 8 }}>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+                      gap: 8,
+                      marginBottom: 8,
+                    }}
+                  >
                     <input
                       type="text"
                       value={prodNombre}
                       onChange={(e) => setProdNombre(e.target.value)}
-                      placeholder="Nombre (ej. Tubo tinte 60g, Oxidante 20 vol)"
+                      placeholder="Ej. Tubo tinte 60g, Oxidante 20 vol"
                       style={{
                         padding: '8px 10px',
                         borderRadius: 10,
@@ -1323,7 +1391,7 @@ export default function ConfiguracionPreciosPage() {
                       type="text"
                       value={prodMarca}
                       onChange={(e) => setProdMarca(e.target.value)}
-                      placeholder="Marca (opcional)"
+                      placeholder="Marca (ej. Wella, Schwarzkopf)"
                       style={{
                         padding: '8px 10px',
                         borderRadius: 10,
@@ -1344,15 +1412,22 @@ export default function ConfiguracionPreciosPage() {
                       }}
                     >
                       <option value="tinte">Tinte</option>
-                      <option value="oxidante">Oxidante</option>
+                      <option value="oxidante">Oxidante / Revelador</option>
                       <option value="decolorante">Decolorante</option>
-                      <option value="matizador">Matizador</option>
-                      <option value="tratamiento">Tratamiento</option>
-                      <option value="otro">Otro</option>
+                      <option value="matizador">Matizador / Toner</option>
+                      <option value="tratamiento">Tratamiento / Plex</option>
+                      <option value="otro">Otro insumo</option>
                     </select>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.2fr', gap: 8, marginBottom: 10 }}>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                      gap: 8,
+                      marginBottom: 12,
+                    }}
+                  >
                     <select
                       value={prodUnidad}
                       onChange={(e) => setProdUnidad(e.target.value as 'g' | 'ml' | 'unidad')}
@@ -1373,7 +1448,8 @@ export default function ConfiguracionPreciosPage() {
                       min={1}
                       value={prodCantidad}
                       onChange={(e) => setProdCantidad(e.target.value)}
-                      placeholder="Cant. (ej. 60)"
+                      placeholder="Presentación (ej. 60)"
+                      className="tabular-nums"
                       style={{
                         padding: '8px 10px',
                         borderRadius: 10,
@@ -1388,7 +1464,8 @@ export default function ConfiguracionPreciosPage() {
                       step={500}
                       value={prodCosto}
                       onChange={(e) => setProdCosto(e.target.value)}
-                      placeholder="Costo presentación ($)"
+                      placeholder="Costo envase ($ COP)"
+                      className="tabular-nums"
                       style={{
                         padding: '8px 10px',
                         borderRadius: 10,
@@ -1399,15 +1476,29 @@ export default function ConfiguracionPreciosPage() {
                     />
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                      Costo unitario calculado:{' '}
-                      <strong>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: 10,
+                      marginBottom: 14,
+                    }}
+                  >
+                    <span style={{ fontSize: 12.5, color: 'var(--text-secondary)' }}>
+                      Costo exacto por unidad:{' '}
+                      <strong className="tabular-nums" style={{ color: '#7C3AED' }}>
                         {formatearPrecioCop(costoUnitarioPreview)} / {prodUnidad}
                       </strong>
                     </span>
-                    <Btn size="sm" variant="primary" disabled={guardandoProd} onClick={handleAgregarProducto}>
-                      Agregar producto
+                    <Btn
+                      size="sm"
+                      variant="primary"
+                      disabled={guardandoProd}
+                      onClick={handleAgregarProducto}
+                    >
+                      Agregar insumo químico
                     </Btn>
                   </div>
 
@@ -1422,19 +1513,33 @@ export default function ConfiguracionPreciosPage() {
                               display: 'flex',
                               justifyContent: 'space-between',
                               alignItems: 'center',
-                              padding: '8px 10px',
-                              borderRadius: 10,
+                              padding: '10px 12px',
+                              borderRadius: 12,
                               background: 'var(--bg)',
+                              border: '1px solid var(--border-soft)',
                               fontSize: 12.5,
                             }}
                           >
-                            <span>
-                              <strong>{p.nombre}</strong>
-                              {p.marca ? ` · ${p.marca}` : ''} ({p.presentacionCantidad}
-                              {p.unidad})
-                            </span>
-                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5, color: 'var(--primary)' }}>
-                              {formatearPrecioCop(unitario)}/{p.unidad}
+                            <div>
+                              <strong style={{ color: 'var(--text-main)' }}>{p.nombre}</strong>
+                              {p.marca ? ` · ${p.marca}` : ''}{' '}
+                              <span style={{ color: 'var(--text-tertiary)' }}>
+                                ({p.presentacionCantidad}
+                                {p.unidad} · {formatearPrecioCop(p.precioCompra)})
+                              </span>
+                            </div>
+                            <span
+                              className="tabular-nums"
+                              style={{
+                                padding: '3px 9px',
+                                borderRadius: 999,
+                                background: 'rgba(124, 58, 237, 0.1)',
+                                color: '#7C3AED',
+                                fontSize: 11.5,
+                                fontWeight: 700,
+                              }}
+                            >
+                              {formatearPrecioCop(unitario)} / {p.unidad}
                             </span>
                           </div>
                         );
@@ -1442,37 +1547,103 @@ export default function ConfiguracionPreciosPage() {
                     </div>
                   )}
                 </section>
+              </div>
+            )}
+          </>
+        )}
 
-                {/* ESTILISTAS DEL SALÓN */}
-                <section className="v-card" style={{ padding: 16 }}>
+        {/* ═══════════════════════════════════════════════════════════════════
+            PESTAÑA 3: ESPECIALISTAS Y COMISIONES (+ SIMULADOR DE MARGEN)
+           ═══════════════════════════════════════════════════════════════════ */}
+        {pestana === 'comisiones' && (
+          <>
+            {!tienePlanPro ? (
+              <section
+                className="v-card"
+                style={{
+                  padding: '28px 20px',
+                  textAlign: 'center',
+                  border: '1px solid var(--border-strong)',
+                  background: 'var(--primary-pale)',
+                }}
+              >
+                <Lock size={28} style={{ color: 'var(--secondary-deep)', margin: '0 auto 10px' }} />
+                <h2
+                  style={{
+                    margin: 0,
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 22,
+                    color: 'var(--primary-deep)',
+                  }}
+                >
+                  Liquidación de especialistas en Plan Pro y Pro+IA
+                </h2>
+                <p
+                  style={{
+                    margin: '8px auto 18px',
+                    maxWidth: 420,
+                    fontSize: 13,
+                    color: 'var(--text-secondary)',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Configura tu equipo de especialistas, define comisiones sobre venta total o
+                  descontando química, y simula la utilidad neta del salón en vivo.
+                </p>
+                <Link href="/planes">
+                  <Btn variant="primary" size="md">
+                    Mejorar a Plan Pro
+                  </Btn>
+                </Link>
+              </section>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {/* EQUIPO DE ESPECIALISTAS */}
+                <section className="v-card" style={{ padding: 18 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                     <Users size={16} style={{ color: 'var(--primary)' }} />
-                    <h3 style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: 18 }}>
-                      Equipo de estilistas
-                    </h3>
+                    <div>
+                      <span className="v-caps">Talento del salón</span>
+                      <h3
+                        style={{
+                          margin: 0,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 18,
+                          fontWeight: 700,
+                          color: 'var(--primary)',
+                        }}
+                      >
+                        Equipo de especialistas
+                      </h3>
+                    </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
                     <input
                       type="text"
                       value={nuevaEstilistaNombre}
                       onChange={(e) => setNuevaEstilistaNombre(e.target.value)}
-                      placeholder="Nombre de la estilista…"
+                      placeholder="Nombre de la especialista…"
                       style={{
                         flex: 1,
-                        padding: '8px 12px',
+                        padding: '9px 12px',
                         borderRadius: 10,
                         border: '1px solid var(--border)',
                         fontSize: 13,
                         background: 'var(--bg)',
                       }}
                     />
-                    <Btn size="sm" variant="primary" disabled={guardandoEstilista} onClick={handleAgregarEstilista}>
+                    <Btn
+                      size="sm"
+                      variant="primary"
+                      disabled={guardandoEstilista}
+                      onClick={handleAgregarEstilista}
+                    >
                       Agregar
                     </Btn>
                   </div>
 
-                  {estilistas.length > 0 && (
+                  {estilistas.length > 0 ? (
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       {estilistas.map((e) => (
                         <Chip key={e.id} tone="green">
@@ -1480,22 +1651,45 @@ export default function ConfiguracionPreciosPage() {
                         </Chip>
                       ))}
                     </div>
+                  ) : (
+                    <p style={{ margin: 0, fontSize: 12, color: 'var(--text-tertiary)' }}>
+                      Agrega tus especialistas para liquidar comisiones automáticamente en Reportes BI.
+                    </p>
                   )}
                 </section>
 
-                {/* REGLAS DE COMISIÓN (Precedencia: estilista+servicio > estilista > servicio > salón) */}
-                <section className="v-card" style={{ padding: 16 }}>
+                {/* REGLAS DE COMISIÓN */}
+                <section className="v-card" style={{ padding: 18 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                     <Percent size={16} style={{ color: 'var(--primary)' }} />
-                    <h3 style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: 18 }}>
-                      Reglas de comisión
-                    </h3>
+                    <div>
+                      <span className="v-caps">Esquema de nómina</span>
+                      <h3
+                        style={{
+                          margin: 0,
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 18,
+                          fontWeight: 700,
+                          color: 'var(--primary)',
+                        }}
+                      >
+                        Reglas de comisión
+                      </h3>
+                    </div>
                   </div>
-                  <p style={{ margin: '0 0 12px', fontSize: 11.5, color: 'var(--text-tertiary)' }}>
-                    Precedencia automática: estilista + servicio &gt; estilista &gt; servicio &gt; regla general del salón.
+                  <p style={{ margin: '4px 0 12px', fontSize: 12, color: 'var(--text-tertiary)' }}>
+                    Prioridad automática: regla por especialista + servicio → por especialista → por
+                    servicio → regla general del salón.
                   </p>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
+                      gap: 8,
+                      marginBottom: 8,
+                    }}
+                  >
                     <select
                       value={comEstilistaId}
                       onChange={(e) => setComEstilistaId(e.target.value)}
@@ -1503,13 +1697,15 @@ export default function ConfiguracionPreciosPage() {
                         padding: '8px 10px',
                         borderRadius: 10,
                         border: '1px solid var(--border)',
-                        fontSize: 12,
+                        fontSize: 12.5,
                         background: 'var(--bg)',
                       }}
                     >
-                      <option value="">Todas las estilistas (salón)</option>
+                      <option value="">Todas las especialistas (general)</option>
                       {estilistas.map((e) => (
-                        <option key={e.id} value={e.id}>{e.nombre}</option>
+                        <option key={e.id} value={e.id}>
+                          {e.nombre}
+                        </option>
                       ))}
                     </select>
                     <select
@@ -1519,18 +1715,27 @@ export default function ConfiguracionPreciosPage() {
                         padding: '8px 10px',
                         borderRadius: 10,
                         border: '1px solid var(--border)',
-                        fontSize: 12,
+                        fontSize: 12.5,
                         background: 'var(--bg)',
                       }}
                     >
                       <option value="">Todos los servicios</option>
                       {servicios.map((s) => (
-                        <option key={s.id} value={s.id}>{s.nombre}</option>
+                        <option key={s.id} value={s.id}>
+                          {s.nombre}
+                        </option>
                       ))}
                     </select>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.2fr', gap: 8, marginBottom: 10 }}>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                      gap: 8,
+                      marginBottom: 12,
+                    }}
+                  >
                     <select
                       value={comTipo}
                       onChange={(e) => setComTipo(e.target.value as TipoComision)}
@@ -1538,12 +1743,12 @@ export default function ConfiguracionPreciosPage() {
                         padding: '8px 10px',
                         borderRadius: 10,
                         border: '1px solid var(--border)',
-                        fontSize: 12,
+                        fontSize: 12.5,
                         background: 'var(--bg)',
                       }}
                     >
                       <option value="porcentaje">Porcentaje (%)</option>
-                      <option value="fijo">Valor fijo ($)</option>
+                      <option value="fijo">Valor fijo ($ COP)</option>
                     </select>
                     <input
                       type="number"
@@ -1551,6 +1756,7 @@ export default function ConfiguracionPreciosPage() {
                       value={comValor}
                       onChange={(e) => setComValor(e.target.value)}
                       placeholder="Ej. 40"
+                      className="tabular-nums"
                       style={{
                         padding: '8px 10px',
                         borderRadius: 10,
@@ -1567,24 +1773,37 @@ export default function ConfiguracionPreciosPage() {
                         padding: '8px 10px',
                         borderRadius: 10,
                         border: '1px solid var(--border)',
-                        fontSize: 12,
+                        fontSize: 12.5,
                         background: 'var(--bg)',
                       }}
                     >
                       <option value="precio">Sobre precio cobrado</option>
-                      <option value="precio_menos_producto">Neto (precio menos producto)</option>
+                      <option value="precio_menos_producto">
+                        Neto (descontando primero química)
+                      </option>
                     </select>
                   </div>
 
-                  <Btn size="sm" variant="primary" disabled={guardandoCom} onClick={handleAgregarComision}>
+                  <Btn
+                    size="sm"
+                    variant="primary"
+                    disabled={guardandoCom}
+                    onClick={handleAgregarComision}
+                  >
                     Guardar regla de comisión
                   </Btn>
 
                   {comisiones.length > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 12 }}>
+                    <div
+                      style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 14 }}
+                    >
                       {comisiones.map((c) => {
-                        const nomEst = estilistas.find((e) => e.id === c.estilistaId)?.nombre ?? 'Todas las estilistas';
-                        const nomSrv = servicios.find((s) => s.id === c.servicioId)?.nombre ?? 'Todos los servicios';
+                        const nomEst =
+                          estilistas.find((e) => e.id === c.estilistaId)?.nombre ??
+                          'Todas las especialistas';
+                        const nomSrv =
+                          servicios.find((s) => s.id === c.servicioId)?.nombre ??
+                          'Todos los servicios';
                         return (
                           <div
                             key={c.id}
@@ -1592,27 +1811,39 @@ export default function ConfiguracionPreciosPage() {
                               display: 'flex',
                               justifyContent: 'space-between',
                               alignItems: 'center',
-                              padding: '8px 10px',
+                              padding: '9px 12px',
                               borderRadius: 10,
                               background: 'var(--bg)',
-                              fontSize: 12,
+                              border: '1px solid var(--border-soft)',
+                              fontSize: 12.5,
                             }}
                           >
                             <div>
                               <strong>{nomEst}</strong> · {nomSrv} →{' '}
-                              <span style={{ color: 'var(--primary)', fontWeight: 700 }}>
-                                {c.tipo === 'porcentaje' ? `${c.valor}%` : formatearPrecioCop(c.valor)}
+                              <span
+                                className="tabular-nums"
+                                style={{ color: 'var(--primary)', fontWeight: 700 }}
+                              >
+                                {c.tipo === 'porcentaje'
+                                  ? `${c.valor}%`
+                                  : formatearPrecioCop(c.valor)}
                               </span>{' '}
-                              ({c.base === 'precio_menos_producto' ? 'neto de producto' : 'sobre cobrado'})
+                              <span style={{ color: 'var(--text-tertiary)' }}>
+                                (
+                                {c.base === 'precio_menos_producto'
+                                  ? 'descontando química'
+                                  : 'sobre cobrado'}
+                                )
+                              </span>
                             </div>
                             <button
                               type="button"
                               onClick={() => handleEliminarComision(c.id)}
-                              aria-label="Cerrar regla"
+                              aria-label="Eliminar regla"
                               style={{
                                 background: 'transparent',
                                 border: 'none',
-                                color: '#8E2D2D',
+                                color: '#D97757',
                                 cursor: 'pointer',
                                 padding: 4,
                               }}
@@ -1622,6 +1853,418 @@ export default function ConfiguracionPreciosPage() {
                           </div>
                         );
                       })}
+                    </div>
+                  )}
+                </section>
+
+                {/* SIMULADOR DE MARGEN EN VIVO */}
+                <section
+                  className="v-gradient-hero"
+                  style={{
+                    borderRadius: 20,
+                    padding: 20,
+                    color: '#FAF7F5',
+                    boxShadow: 'var(--shadow-md)',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 14,
+                    }}
+                  >
+                    <div>
+                      <div className="v-caps" style={{ color: '#E8CFC8' }}>
+                        Simulador de Rentabilidad en Vivo
+                      </div>
+                      <h2
+                        style={{
+                          margin: '2px 0 0',
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 21,
+                          fontWeight: 700,
+                          color: '#FAF7F5',
+                        }}
+                      >
+                        {servicioActual?.nombre ?? 'Servicio'}
+                      </h2>
+                    </div>
+                    <Calculator size={20} style={{ color: '#E8CFC8' }} />
+                  </div>
+
+                  {/* Selector de servicio y especialista en el simulador */}
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                      gap: 8,
+                      marginBottom: 10,
+                    }}
+                  >
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          fontSize: 10,
+                          color: '#E8CFC8',
+                          marginBottom: 3,
+                        }}
+                      >
+                        SERVICIO A SIMULAR
+                      </label>
+                      <select
+                        value={servicioId}
+                        onChange={(e) => setServicioId(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '7px 8px',
+                          borderRadius: 10,
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          background: 'rgba(31, 5, 15, 0.75)',
+                          color: '#FAF7F5',
+                          fontSize: 12,
+                        }}
+                      >
+                        {servicios.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          fontSize: 10,
+                          color: '#E8CFC8',
+                          marginBottom: 3,
+                        }}
+                      >
+                        ESPECIALISTA
+                      </label>
+                      <select
+                        value={simEstilistaId}
+                        onChange={(e) => setSimEstilistaId(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '7px 8px',
+                          borderRadius: 10,
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          background: 'rgba(31, 5, 15, 0.75)',
+                          color: '#FAF7F5',
+                          fontSize: 12,
+                        }}
+                      >
+                        <option value="">Regla general del salón</option>
+                        {estilistas.map((e) => (
+                          <option key={e.id} value={e.id}>
+                            {e.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Selectores capilares en el simulador */}
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(2, 1fr)',
+                      gap: 8,
+                      marginBottom: 14,
+                    }}
+                  >
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          fontSize: 10,
+                          color: '#E8CFC8',
+                          marginBottom: 3,
+                        }}
+                      >
+                        LARGO
+                      </label>
+                      <select
+                        value={simLargo}
+                        onChange={(e) => setSimLargo(e.target.value as ValorLargo)}
+                        style={{
+                          width: '100%',
+                          padding: '7px 8px',
+                          borderRadius: 10,
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          background: 'rgba(31, 5, 15, 0.75)',
+                          color: '#FAF7F5',
+                          fontSize: 12,
+                        }}
+                      >
+                        {CATALOGO_VARIABLES.largo.map((o) => (
+                          <option key={o.valor} value={o.valor}>
+                            {o.etiqueta}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          fontSize: 10,
+                          color: '#E8CFC8',
+                          marginBottom: 3,
+                        }}
+                      >
+                        DENSIDAD
+                      </label>
+                      <select
+                        value={simDensidad}
+                        onChange={(e) => setSimDensidad(e.target.value as ValorDensidad)}
+                        style={{
+                          width: '100%',
+                          padding: '7px 8px',
+                          borderRadius: 10,
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          background: 'rgba(31, 5, 15, 0.75)',
+                          color: '#FAF7F5',
+                          fontSize: 12,
+                        }}
+                      >
+                        {CATALOGO_VARIABLES.densidad.map((o) => (
+                          <option key={o.valor} value={o.valor}>
+                            {o.etiqueta}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          fontSize: 10,
+                          color: '#E8CFC8',
+                          marginBottom: 3,
+                        }}
+                      >
+                        ESTADO DE LA FIBRA
+                      </label>
+                      <select
+                        value={simEstado}
+                        onChange={(e) => setSimEstado(e.target.value as ValorEstadoFibra)}
+                        style={{
+                          width: '100%',
+                          padding: '7px 8px',
+                          borderRadius: 10,
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          background: 'rgba(31, 5, 15, 0.75)',
+                          color: '#FAF7F5',
+                          fontSize: 12,
+                        }}
+                      >
+                        {CATALOGO_VARIABLES.estado.map((o) => (
+                          <option key={o.valor} value={o.valor}>
+                            {o.etiqueta}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          fontSize: 10,
+                          color: '#E8CFC8',
+                          marginBottom: 3,
+                        }}
+                      >
+                        PORCENTAJE DE CANAS
+                      </label>
+                      <select
+                        value={simCanas}
+                        onChange={(e) => setSimCanas(e.target.value as ValorCanas)}
+                        style={{
+                          width: '100%',
+                          padding: '7px 8px',
+                          borderRadius: 10,
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          background: 'rgba(31, 5, 15, 0.75)',
+                          color: '#FAF7F5',
+                          fontSize: 12,
+                        }}
+                      >
+                        {CATALOGO_VARIABLES.canas.map((o) => (
+                          <option key={o.valor} value={o.valor}>
+                            {o.etiqueta}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Tarjetas financieras del simulador */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+                    <div
+                      style={{
+                        padding: 12,
+                        borderRadius: 14,
+                        background: 'rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      <div style={{ fontSize: 10, letterSpacing: '0.08em', color: '#E8CFC8' }}>
+                        PRECIO AL PÚBLICO
+                      </div>
+                      <div
+                        className="tabular-nums"
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 22,
+                          fontWeight: 700,
+                          color: '#FAF7F5',
+                          marginTop: 2,
+                        }}
+                      >
+                        {formatearPrecioCop(simulacion.resPrecio.precioCalculado)}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: 12,
+                        borderRadius: 14,
+                        background: 'rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      <div style={{ fontSize: 10, letterSpacing: '0.08em', color: '#E8CFC8' }}>
+                        QUÍMICA ESTIMADA
+                      </div>
+                      <div
+                        className="tabular-nums"
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 22,
+                          fontWeight: 700,
+                          color: '#FAF7F5',
+                          marginTop: 2,
+                        }}
+                      >
+                        {formatearPrecioCop(simulacion.resCosto.costoTotal)}
+                      </div>
+                      {usaFormulaColor && (
+                        <div
+                          className="tabular-nums"
+                          style={{ fontSize: 10.5, color: 'rgba(250,247,245,0.75)', marginTop: 2 }}
+                        >
+                          {simulacion.resCosto.gramosTinte}g tinte ·{' '}
+                          {simulacion.resCosto.mlOxidanteRedondeado}ml ox.
+                        </div>
+                      )}
+                    </div>
+
+                    <div
+                      style={{
+                        padding: 12,
+                        borderRadius: 14,
+                        background: 'rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      <div style={{ fontSize: 10, letterSpacing: '0.08em', color: '#E8CFC8' }}>
+                        COMISIÓN ESPECIALISTA
+                      </div>
+                      <div
+                        className="tabular-nums"
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 22,
+                          fontWeight: 700,
+                          color: '#FAF7F5',
+                          marginTop: 2,
+                        }}
+                      >
+                        {formatearPrecioCop(simulacion.resComision.comision)}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: 12,
+                        borderRadius: 14,
+                        background: simulacion.resComision.alertaMargenBajo
+                          ? 'rgba(217, 119, 87, 0.25)'
+                          : 'rgba(13, 148, 136, 0.22)',
+                        border: simulacion.resComision.alertaMargenBajo
+                          ? '1px solid rgba(217, 119, 87, 0.55)'
+                          : '1px solid rgba(13, 148, 136, 0.5)',
+                      }}
+                    >
+                      <div style={{ fontSize: 10, letterSpacing: '0.08em', color: '#E8CFC8' }}>
+                        UTILIDAD NETA SALÓN
+                      </div>
+                      <div
+                        className="tabular-nums"
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 22,
+                          fontWeight: 700,
+                          color: '#FAF7F5',
+                          marginTop: 2,
+                        }}
+                      >
+                        {formatearPrecioCop(simulacion.resComision.margenSalon)}{' '}
+                        <span style={{ fontSize: 13.5, fontWeight: 600 }}>
+                          ({simulacion.resComision.margenPorcentaje}%)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {simulacion.resComision.alertaMargenBajo && (
+                    <div
+                      style={{
+                        marginTop: 12,
+                        padding: 12,
+                        borderRadius: 14,
+                        background: '#FFF8F4',
+                        color: '#8C3F27',
+                        fontSize: 12,
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          fontWeight: 700,
+                          marginBottom: 4,
+                        }}
+                      >
+                        <AlertTriangle size={14} /> Margen neto inferior al 20%
+                      </div>
+                      {Number.isFinite(simulacion.resComision.precioSugeridoProteccion) && (
+                        <div>
+                          • Precio sugerido para proteger un margen mínimo del 20%:{' '}
+                          <strong className="tabular-nums">
+                            {formatearPrecioCop(simulacion.resComision.precioSugeridoProteccion)}
+                          </strong>
+                          .
+                        </div>
+                      )}
+                      <div>
+                        • Si liquidas la comisión descontando primero la química, al salón le
+                        quedarían{' '}
+                        <strong className="tabular-nums">
+                          {formatearPrecioCop(simulacion.resComision.margenConComisionNeta)}
+                        </strong>
+                        .
+                      </div>
+                    </div>
+                  )}
+
+                  {simulacion.avisos.length > 0 && (
+                    <div style={{ marginTop: 10, fontSize: 11.5, color: '#E8CFC8' }}>
+                      {simulacion.avisos.map((a) => a.mensaje).join(' · ')}
                     </div>
                   )}
                 </section>

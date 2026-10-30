@@ -11,7 +11,7 @@ export const metadata = {
 export default function ConsentimientoQuimicoPage() {
   return (
     <article className="bg-white rounded-2xl border border-[#E5E5E5] p-6">
-      <h1 className="text-2xl text-[#2D5A27] mb-1" style={serif}>
+      <h1 className="text-2xl text-[var(--primary)] mb-1" style={serif}>
         Consentimiento informado · Servicios químicos
       </h1>
       <p className="text-xs text-[#999999] mb-6">

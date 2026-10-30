@@ -685,7 +685,7 @@ describe('lib/cotizador · 5. Mensaje de WhatsApp, ruta pública /c/[token], SW 
     expect((metaSinMarca.openGraph as { siteName?: string })?.siteName).toBe('Salón Esmeralda');
 
     expect(normalizarColorSalon('#123abc')).toBe('#123abc');
-    expect(normalizarColorSalon('javascript:alert(1)')).toBe('#2D5A27');
+    expect(normalizarColorSalon('javascript:alert(1)')).toBe('#3B0D1E');
     expect(
       extraerIpDesdeHeaders({
         get: (k) => (k === 'x-forwarded-for' ? '190.1.2.3, 10.0.0.1' : null),

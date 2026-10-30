@@ -250,7 +250,7 @@ function OpcionesChips({
                 on
                   ? medica
                     ? 'rgba(212, 130, 10, 0.4)'
-                    : 'rgba(45, 90, 39, 0.3)'
+                    : 'rgba(59, 13, 30, 0.3)'
                   : 'var(--border-soft)'
               }`,
               cursor: 'pointer',

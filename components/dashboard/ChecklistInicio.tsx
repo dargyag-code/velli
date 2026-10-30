@@ -108,7 +108,7 @@ export default function ChecklistInicio({
       icon: <Sparkles size={15} />,
       titulo: 'Haz tu primer diagnóstico',
       sub: 'Con IA o wizard manual, en minutos',
-      href: '/diagnostico',
+      href: '/',
     },
     ...(cotizadorActivo
       ? [
@@ -126,7 +126,7 @@ export default function ChecklistInicio({
             icon: <FileDown size={15} />,
             titulo: 'Descarga tu primer PDF',
             sub: 'El informe que entregas a tu clienta',
-            href: tieneConsultas ? '/clientas' : '/diagnostico',
+            href: tieneConsultas ? '/clientas' : '/',
           },
         ]),
   ];
@@ -167,7 +167,7 @@ export default function ChecklistInicio({
         style={{
           padding: '14px 16px 12px',
           background: completa
-            ? 'linear-gradient(135deg, #EEF5ED, #F5EDDC)'
+            ? 'linear-gradient(135deg, var(--primary-light), #F5EDDC)'
             : 'linear-gradient(135deg, #FBF4EC 0%, #F5EDDC 100%)',
           borderBottom: '1px solid var(--border-soft)',
           display: 'flex',
@@ -249,7 +249,7 @@ export default function ChecklistInicio({
               width: 30,
               height: 30,
               borderRadius: 9,
-              background: item.done ? '#EEF5ED' : 'var(--secondary-pale)',
+              background: item.done ? 'var(--primary-light)' : 'var(--secondary-pale)',
               color: item.done ? 'var(--primary)' : 'var(--secondary-deep)',
               display: 'flex',
               alignItems: 'center',

@@ -678,7 +678,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
                         width: 22,
                         height: 22,
                         borderRadius: '50%',
-                        background: 'linear-gradient(180deg, #3D7A35, #2D5A27)',
+                        background: 'linear-gradient(180deg, var(--primary-hover), var(--primary))',
                         color: '#fff',
                         display: 'flex',
                         alignItems: 'center',
@@ -1322,7 +1322,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
                       position: 'absolute',
                       bottom: 4,
                       left: 4,
-                      background: 'rgba(20, 36, 26, 0.7)',
+                      background: 'rgba(31, 5, 15, 0.7)',
                       backdropFilter: 'blur(4px)',
                       borderRadius: 4,
                       padding: '2px 6px',
@@ -1963,7 +1963,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
                           textAlign: 'left',
                           background: active ? 'var(--primary-pale)' : 'var(--bg)',
                           color: active ? 'var(--primary)' : 'var(--text-secondary)',
-                          border: `1px solid ${active ? 'rgba(45, 90, 39, 0.3)' : 'var(--border-soft)'}`,
+                          border: `1px solid ${active ? 'rgba(59, 13, 30, 0.3)' : 'var(--border-soft)'}`,
                           cursor: 'pointer',
                         }}
                       >
@@ -1987,7 +1987,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
                 width: '100%',
                 padding: '14px 22px',
                 borderRadius: 999,
-                background: 'linear-gradient(180deg, #3D7A35, #2D5A27)',
+                background: 'linear-gradient(180deg, var(--primary-hover), var(--primary))',
                 color: '#fff',
                 fontWeight: 600,
                 fontSize: 14,
@@ -1998,7 +1998,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8,
-                boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(45, 90, 39, 0.32)',
+                boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(59, 13, 30, 0.32)',
               }}
             >
               <input
@@ -2034,7 +2034,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
             position: 'fixed',
             inset: 0,
             zIndex: 70,
-            background: 'rgba(20, 36, 26, 0.6)',
+            background: 'rgba(31, 5, 15, 0.6)',
             backdropFilter: 'blur(6px)',
             WebkitBackdropFilter: 'blur(6px)',
             display: 'flex',

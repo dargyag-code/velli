@@ -157,7 +157,7 @@ function ModalParche({
                       : 'var(--text-secondary)',
                     border: `1px solid ${
                       on
-                        ? esAlerta ? 'rgba(178,58,58,0.35)' : 'rgba(45, 90, 39, 0.3)'
+                        ? esAlerta ? 'rgba(178,58,58,0.35)' : 'rgba(59, 13, 30, 0.3)'
                         : 'var(--border-soft)'
                     }`,
                     cursor: 'pointer',

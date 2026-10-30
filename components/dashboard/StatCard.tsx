@@ -10,11 +10,11 @@ interface StatCardProps {
 
 const colorMap = {
   green: {
-    ring:    'bg-[#EEF5ED]',
-    dot:     'linear-gradient(135deg, #2D5A27, #3D7A35)',
-    value:   '#2D5A27',
-    glow:    'rgba(45,90,39,0.15)',
-    border:  '#2D5A27',
+    ring:    'bg-[var(--primary-light)]',
+    dot:     'linear-gradient(135deg, var(--primary), var(--primary-hover))',
+    value:   'var(--primary)',
+    glow:    'rgba(59, 13, 30,0.15)',
+    border:  'var(--primary)',
   },
   gold: {
     ring:    'bg-[#FBF4EC]',

@@ -73,7 +73,7 @@ const PROBLEMAS = [
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="flex flex-col gap-3">
     <h3
-      className="text-sm font-bold text-[#2D5A27] border-b border-[#E5E5E5] pb-2"
+      className="text-sm font-bold text-[var(--primary)] border-b border-[#E5E5E5] pb-2"
       style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
     >
       {title}

@@ -1,23 +1,13 @@
 'use client';
 import React from 'react';
-import { Check, ImagePlus, X } from 'lucide-react';
-import { COLOR_VELLI } from '@/lib/profile';
+import { ImagePlus, X } from 'lucide-react';
 import { showToast } from '@/lib/toast';
 
-// ─── Editor de marca del salón (logo + color principal) ─────────────────────
-// Compartido entre el paso 2 del onboarding y Configuración → "Tu marca":
-// la marca se configura una vez en el wizard pero se puede ver y cambiar en
-// cualquier momento sin repetir la bienvenida. Presentacional: el padre
-// decide cuándo subir el logo y persistir el perfil.
-
-export const COLORES_MARCA = [
-  { hex: COLOR_VELLI, nombre: 'Verde Velli' },
-  { hex: '#8A5A2E', nombre: 'Dorado' },
-  { hex: '#B23A3A', nombre: 'Terracota' },
-  { hex: '#1A5276', nombre: 'Azul profundo' },
-  { hex: '#6B3FA0', nombre: 'Violeta' },
-  { hex: '#14241A', nombre: 'Bosque noche' },
-];
+// ─── Editor de marca del salón (solo logo) ─────────────────────────────────
+// Compartido entre el paso 2 del onboarding y Configuración → "Tu marca".
+// Desde 2026-10-24 el salón solo personaliza su logotipo: el color de acento
+// es siempre la paleta oficial de Velli Business Intelligence (COLOR_VELLI).
+// Presentacional: el padre decide cuándo subir el logo y persistir el perfil.
 
 const MAX_LOGO_BYTES = 3 * 1024 * 1024;
 
@@ -26,13 +16,11 @@ interface Props {
   logoSrc: string | null;
   /** dataURL al elegir archivo; null al quitar el logo. */
   onLogo: (dataUrl: string | null) => void;
-  color: string;
-  onColor: (hex: string) => void;
-  /** Para la franja de vista previa del acento. */
+  /** Para el texto de vista previa. */
   nombreSalon?: string;
 }
 
-export default function EditorMarca({ logoSrc, onLogo, color, onColor, nombreSalon }: Props) {
+export default function EditorMarca({ logoSrc, onLogo, nombreSalon }: Props) {
   const onLogoFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
@@ -86,7 +74,7 @@ export default function EditorMarca({ logoSrc, onLogo, color, onColor, nombreSal
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
               Toca el recuadro para {logoSrc ? 'cambiar tu logo' : 'subir tu logo'}. Sin logo,
-              tus PDF salen con la marca Velli.
+              tus PDF salen con la marca Velli{nombreSalon ? ` y el nombre ${nombreSalon}` : ''}.
             </p>
             {logoSrc && (
               <button
@@ -102,7 +90,7 @@ export default function EditorMarca({ logoSrc, onLogo, color, onColor, nombreSal
                   padding: 0,
                   fontSize: 11.5,
                   fontWeight: 600,
-                  color: '#B23A3A',
+                  color: 'var(--warning)',
                   cursor: 'pointer',
                   fontFamily: 'var(--font-sans)',
                 }}
@@ -113,72 +101,9 @@ export default function EditorMarca({ logoSrc, onLogo, color, onColor, nombreSal
           </div>
         </div>
       </div>
-
-      <div>
-        <LabelMarca>Color principal</LabelMarca>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          {COLORES_MARCA.map((c) => (
-            <button
-              key={c.hex}
-              type="button"
-              onClick={() => onColor(c.hex)}
-              aria-label={c.nombre}
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: '50%',
-                background: c.hex,
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow:
-                  color.toLowerCase() === c.hex.toLowerCase()
-                    ? '0 0 0 2px var(--bg-card), 0 0 0 4px var(--primary)'
-                    : 'inset 0 0 0 1px rgba(0,0,0,0.08)',
-              }}
-            >
-              {color.toLowerCase() === c.hex.toLowerCase() && <Check size={16} color="#fff" />}
-            </button>
-          ))}
-          <label
-            aria-label="Color personalizado"
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: '50%',
-              background: 'conic-gradient(#B23A3A, #D8A878, #4A8C42, #1A5276, #6B3FA0, #B23A3A)',
-              cursor: 'pointer',
-              position: 'relative',
-              overflow: 'hidden',
-              boxShadow: !COLORES_MARCA.some((c) => c.hex.toLowerCase() === color.toLowerCase())
-                ? '0 0 0 2px var(--bg-card), 0 0 0 4px var(--primary)'
-                : 'inset 0 0 0 1px rgba(0,0,0,0.08)',
-            }}
-          >
-            <input
-              type="color"
-              value={color}
-              onChange={(e) => onColor(e.target.value)}
-              style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
-            />
-          </label>
-        </div>
-        <div
-          style={{
-            marginTop: 14,
-            borderRadius: 12,
-            padding: '12px 14px',
-            background: color,
-            color: '#fff',
-            fontFamily: 'var(--font-serif)',
-            fontSize: 14,
-          }}
-        >
-          Así se verá el acento de tus PDF{nombreSalon ? ` · ${nombreSalon}` : ''}
-        </div>
-      </div>
+      <p style={{ margin: 0, fontSize: 11, color: 'var(--text-tertiary)', lineHeight: 1.45 }}>
+        Tus PDF y cotizaciones usan la paleta oficial de Velli Business Intelligence.
+      </p>
     </div>
   );
 }

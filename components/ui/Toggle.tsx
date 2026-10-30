@@ -26,7 +26,7 @@ export default function Toggle({ checked, onChange, label, hint }: ToggleProps) 
         onClick={() => onChange(!checked)}
         className={`
           relative flex-shrink-0 w-12 h-6 rounded-full transition-colors duration-300
-          ${checked ? 'bg-[#2D5A27]' : 'bg-gray-200'}
+          ${checked ? 'bg-[var(--primary)]' : 'bg-gray-200'}
         `}
       >
         <span

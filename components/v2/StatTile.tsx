@@ -12,7 +12,7 @@ interface StatTileProps {
 }
 
 const accentMap: Record<StatAccent, { fg: string; bg: string }> = {
-  green: { fg: '#2D5A27', bg: '#EEF5ED' },
+  green: { fg: 'var(--primary)', bg: 'var(--primary-light)' },
   gold:  { fg: '#8A5A2E', bg: '#FBF4EC' },
   blue:  { fg: '#1A5276', bg: '#E8F4FD' },
 };

@@ -13,8 +13,8 @@ interface AvatarV2Props {
 
 const toneMap: Record<AvatarTone, { bg: string; fg: string }> = {
   '1': { bg: '#F0EBDF', fg: '#5C544A' },
-  '2': { bg: '#E2F0E6', fg: '#1F3D24' },
-  '3': { bg: '#EEF5ED', fg: '#2D5A27' },
+  '2': { bg: 'var(--primary-light)', fg: 'var(--primary-mid)' },
+  '3': { bg: 'var(--primary-light)', fg: 'var(--primary)' },
   '4': { bg: '#FBF4EC', fg: '#8A5A2E' },
 };
 

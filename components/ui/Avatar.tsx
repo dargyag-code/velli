@@ -15,11 +15,11 @@ const sizeMap = {
 };
 
 function getBgColor(tipoRizo?: string): string {
-  if (!tipoRizo) return 'linear-gradient(135deg, #2D5A27, #3D7A35)';
+  if (!tipoRizo) return 'linear-gradient(135deg, var(--primary), var(--primary-hover))';
   if (['2A', '2B', '2C'].includes(tipoRizo)) return 'linear-gradient(135deg, #3B82F6, #60A5FA)';
-  if (['3A', '3B', '3C'].includes(tipoRizo)) return 'linear-gradient(135deg, #2D5A27, #3D7A35)';
+  if (['3A', '3B', '3C'].includes(tipoRizo)) return 'linear-gradient(135deg, var(--primary), var(--primary-hover))';
   if (['4A', '4B', '4C'].includes(tipoRizo)) return 'linear-gradient(135deg, #C9956B, #D4A882)';
-  return 'linear-gradient(135deg, #2D5A27, #3D7A35)';
+  return 'linear-gradient(135deg, var(--primary), var(--primary-hover))';
 }
 
 export default function Avatar({ nombre, tipoRizo, size = 'md' }: AvatarProps) {

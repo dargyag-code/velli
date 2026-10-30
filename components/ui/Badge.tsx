@@ -9,7 +9,7 @@ interface BadgeProps {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  purple: 'bg-[#EEF5ED] text-[#2D5A27] border border-[#D4B5F0]',
+  purple: 'bg-[var(--primary-light)] text-[var(--primary)] border border-[#D4B5F0]',
   gold: 'bg-[#FBF4EC] text-[#9A6A3A] border border-[#E0C4A0]',
   blue: 'bg-blue-50 text-blue-700 border border-blue-200',
   green: 'bg-green-50 text-green-700 border border-green-200',

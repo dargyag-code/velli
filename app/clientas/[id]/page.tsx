@@ -1,74 +1,235 @@
 'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Phone, MessageCircle, Trash2, Plus, Calendar, Hash,
-  Pencil, Check, X, RotateCcw, Image as ImageIcon, ArrowLeft,
-  MoreHorizontal, Heart, ChevronRight, Palette, Scissors, Sparkles,
+  Phone,
+  MessageCircle,
+  Trash2,
+  Pencil,
+  Check,
+  X,
+  Image as ImageIcon,
+  ArrowLeft,
+  MoreHorizontal,
+  Sparkles,
+  CheckCircle2,
+  ShieldCheck,
+  UserCheck,
+  Clock,
 } from 'lucide-react';
-import { Btn, Chip, type ChipTone } from '@/components/v2';
+import { BottomNavV2, Btn, Chip } from '@/components/v2';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import HistorialTimeline from '@/components/clienta/HistorialTimeline';
 import SeguridadLegal from '@/components/clienta/SeguridadLegal';
+import ListaPorCobrar from '@/components/cotizador/ListaPorCobrar';
 import { getClientaById, getConsultasByClienta, deleteClienta, updateClienta } from '@/lib/db';
+import {
+  CATALOGO_VARIABLES,
+  formatearPrecioCop,
+  listarCotizacionesPorClienta,
+  type Cotizacion,
+  type VariablesCotizacion,
+} from '@/lib/cotizador';
 import { Clienta, Consulta } from '@/lib/types';
 import { formatDate, getRizoLabel } from '@/lib/utils';
 import { showToast } from '@/lib/toast';
 import { resolveFotoUrl, resolveFotoUrls } from '@/lib/storage';
 import { enlaceWhatsApp } from '@/lib/whatsapp';
-import { useFlags } from '@/lib/flags/useFlags';
-import HojaCotizar from '@/components/cotizador/HojaCotizar';
-import ListaPorCobrar from '@/components/cotizador/ListaPorCobrar';
 
 type Tab = 'info' | 'historial' | 'galeria';
+
+function etiquetaVariable<T extends string>(
+  opciones: ReadonlyArray<{ valor: T; etiqueta: string }>,
+  valor?: T
+): string | null {
+  if (!valor) return null;
+  return opciones.find((o) => o.valor === valor)?.etiqueta ?? valor;
+}
+
+function chipsVariablesCapilares(variables?: VariablesCotizacion): string[] {
+  if (!variables) return [];
+  const res: string[] = [];
+  const largo = etiquetaVariable(CATALOGO_VARIABLES.largo, variables.largo?.valor);
+  const densidad = etiquetaVariable(CATALOGO_VARIABLES.densidad, variables.densidad?.valor);
+  const estado = etiquetaVariable(CATALOGO_VARIABLES.estado, variables.estado?.valor);
+  const canas = etiquetaVariable(CATALOGO_VARIABLES.canas, variables.canas?.valor);
+
+  if (largo) res.push(`Largo: ${largo}`);
+  if (densidad) res.push(`Densidad: ${densidad}`);
+  if (estado) res.push(`Fibra: ${estado}`);
+  if (canas) res.push(`Canas: ${canas}`);
+  return res;
+}
+
+// ── Sección de Cotizaciones y Cierres de la Clienta ───────────────────────
+function SeccionCotizacionesClienta({
+  cotizaciones,
+  clientaId,
+  limite,
+  onVerTodas,
+}: {
+  cotizaciones: Cotizacion[];
+  clientaId: string;
+  limite?: number;
+  onVerTodas?: () => void;
+}) {
+  const visibles = limite ? cotizaciones.slice(0, limite) : cotizaciones;
+
+  if (cotizaciones.length === 0) {
+    return (
+      <article className="bg-white rounded-2xl border border-[#EFE8E4] p-6 text-center shadow-[0_8px_24px_-10px_rgba(59,13,30,0.06)]">
+        <div className="w-11 h-11 rounded-2xl bg-[#F7ECEF] text-[#3B0D1E] mx-auto mb-3 flex items-center justify-center">
+          <Sparkles size={19} />
+        </div>
+        <h3 className="text-base font-bold text-[#1C1518]">Sin cotizaciones ni cierres aún</h3>
+        <p className="text-xs text-[#6E6266] mt-1 mb-4 max-w-xs mx-auto leading-relaxed">
+          Cotiza en silla para registrar el diagnóstico capilar, consumo químico sin báscula y cierre financiero de esta clienta.
+        </p>
+        <Link
+          href={`/?clientaId=${clientaId}`}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#3B0D1E] hover:bg-[#6E1E3A] text-[#FAF7F5] text-xs font-bold no-underline transition-colors"
+        >
+          <Sparkles size={13} /> Cotizar en silla
+        </Link>
+      </article>
+    );
+  }
+
+  return (
+    <section className="bg-white rounded-3xl border border-[#EFE8E4] p-5 shadow-[0_12px_28px_-10px_rgba(59,13,30,0.06)] space-y-3.5">
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#6E1E3A]">
+            Trazabilidad Financiera & Capilar
+          </span>
+          <h2 className="text-base sm:text-lg font-bold text-[#1C1518] mt-0.5">
+            Cotizaciones y Cierres ({cotizaciones.length})
+          </h2>
+        </div>
+        {limite && cotizaciones.length > limite && onVerTodas && (
+          <button
+            type="button"
+            onClick={onVerTodas}
+            className="text-xs font-bold text-[#3B0D1E] hover:underline cursor-pointer"
+          >
+            Ver todas →
+          </button>
+        )}
+      </div>
+
+      <div className="space-y-3">
+        {visibles.map((cot) => {
+          const fechaIso = (cot.cobradoAt || cot.createdAt || '').slice(0, 10);
+          const fechaLegible = fechaIso ? formatDate(fechaIso) : 'Reciente';
+          const montoMostrado =
+            cot.estado === 'cobrada'
+              ? (cot.precioCobrado ?? cot.precioCotizado)
+              : cot.precioCotizado;
+          const consentimientoDigital = cot.perfilExtendido?.['consentimientoAceptado'] === true;
+          const etiquetasVars = chipsVariablesCapilares(cot.variables);
+          const especialista = cot.estilistaNombre?.trim() || 'Especialista del salón';
+
+          return (
+            <div
+              key={cot.id}
+              className="p-4 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] space-y-2.5"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-sm font-bold text-[#1C1518]">{cot.servicioNombre}</h3>
+                    {cot.estado === 'cobrada' ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#EAF6F4] text-[#0D9488] text-[10px] font-bold">
+                        <CheckCircle2 size={11} /> Cobrada
+                      </span>
+                    ) : cot.estado === 'enviada' ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FDF2EC] text-[#D97757] text-[10px] font-bold">
+                        <Clock size={11} /> Por cobrar
+                      </span>
+                    ) : cot.estado === 'anulada' ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#EFE8E4] text-[#6E6266] text-[10px] font-bold">
+                        Anulada
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#F7ECEF] text-[#3B0D1E] text-[10px] font-bold">
+                        Borrador
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#6E6266] mt-1">
+                    <span className="font-mono tabular-nums">{fechaLegible}</span>
+                    <span>·</span>
+                    <span className="inline-flex items-center gap-1 font-medium text-[#1C1518]">
+                      <UserCheck size={12} className="text-[#3B0D1E]" />
+                      {especialista}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-right shrink-0">
+                  <div className="text-base font-bold text-[#3B0D1E] tabular-nums">
+                    {formatearPrecioCop(montoMostrado)}
+                  </div>
+                  <div className="text-[10px] text-[#6E6266]">
+                    {cot.estado === 'cobrada' ? 'Valor cobrado' : 'Valor cotizado'}
+                  </div>
+                </div>
+              </div>
+
+              {etiquetasVars.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                  {etiquetasVars.map((v) => (
+                    <span
+                      key={v}
+                      className="px-2.5 py-0.5 rounded-full bg-white border border-[#EFE8E4] text-[11px] text-[#6E6266] font-medium"
+                    >
+                      {v}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {consentimientoDigital && (
+                <div className="pt-1">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EAF6F4] border border-[#0D9488]/25 text-[11px] font-semibold text-[#0D9488]">
+                    <ShieldCheck size={12} /> Consentimiento digital aceptado
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
 // ── Galería de fotos por visita ────────────────────────────────────────────
 function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
   const [lightbox, setLightbox] = useState<string | null>(null);
 
-  const visitasConFotos = [...consultas].reverse().filter((c) =>
-    (c.fotoAnalisis && c.fotoAnalisis.length > 0) || c.fotoAntes || c.fotoDespues
+  const visitasConFotos = [...consultas].reverse().filter(
+    (c) => (c.fotoAnalisis && c.fotoAnalisis.length > 0) || c.fotoAntes || c.fotoDespues
   );
 
-  const primera = visitasConFotos.length >= 2 ? visitasConFotos[visitasConFotos.length - 1] : null;
+  const primera =
+    visitasConFotos.length >= 2 ? visitasConFotos[visitasConFotos.length - 1] : null;
   const ultima = visitasConFotos.length >= 2 ? visitasConFotos[0] : null;
   const fotoP = primera?.fotoAntes || primera?.fotoDespues || primera?.fotoAnalisis?.[0];
   const fotoU = ultima?.fotoDespues || ultima?.fotoAntes || ultima?.fotoAnalisis?.[0];
 
   if (visitasConFotos.length === 0) {
     return (
-      <div
-        className="v-card"
-        style={{ textAlign: 'center', padding: '48px 20px' }}
-      >
-        <div
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: '50%',
-            background: 'var(--bg)',
-            margin: '0 auto 14px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <ImageIcon size={24} style={{ color: 'var(--text-tertiary)' }} />
+      <div className="bg-white rounded-3xl border border-[#EFE8E4] text-center py-12 px-5">
+        <div className="w-14 h-14 rounded-full bg-[#FAF7F5] border border-[#EFE8E4] mx-auto mb-3.5 flex items-center justify-center">
+          <ImageIcon size={24} className="text-[#96888C]" />
         </div>
-        <p
-          style={{
-            margin: 0,
-            fontFamily: 'var(--font-serif)',
-            fontSize: 16,
-            color: 'var(--text-main)',
-          }}
-        >
-          Aún no hay fotos
-        </p>
-        <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-tertiary)' }}>
-          Las fotos del diagnóstico IA y antes/después aparecerán aquí
+        <p className="text-base font-bold text-[#1C1518] m-0">Aún no hay fotografías</p>
+        <p className="text-xs text-[#6E6266] mt-1 mb-0">
+          Las fotos del diagnóstico IA y registros antes/después aparecerán aquí.
         </p>
       </div>
     );
@@ -76,7 +237,6 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      {/* Comparativa evolución */}
       {fotoP && fotoU && (
         <section
           className="v-grain"
@@ -85,12 +245,12 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
             overflow: 'hidden',
             borderRadius: 18,
             padding: 16,
-            background: 'linear-gradient(135deg, var(--primary-deep) 0%, var(--primary) 100%)',
-            color: '#F5EDDC',
+            background: 'linear-gradient(135deg, #1F050F 0%, #3B0D1E 100%)',
+            color: '#FAF7F5',
             boxShadow: 'var(--shadow-md)',
           }}
         >
-          <div className="v-caps" style={{ color: 'rgba(232, 194, 144, 0.95)', marginBottom: 10 }}>
+          <div className="v-caps" style={{ color: '#E8CFC8', marginBottom: 10 }}>
             Evolución · primera vs última visita
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -120,7 +280,7 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
                     aspectRatio: '1',
                     objectFit: 'cover',
                     borderRadius: 12,
-                    border: '1px solid rgba(232, 194, 144, 0.3)',
+                    border: '1px solid rgba(232, 207, 200, 0.35)',
                   }}
                 />
                 <div
@@ -129,21 +289,14 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
                     bottom: 0,
                     left: 0,
                     right: 0,
-                    background: 'rgba(20, 36, 26, 0.7)',
+                    background: 'rgba(31, 5, 15, 0.72)',
                     backdropFilter: 'blur(6px)',
                     borderRadius: '0 0 12px 12px',
                     padding: '6px 8px',
                     textAlign: 'left',
                   }}
                 >
-                  <p
-                    style={{
-                      margin: 0,
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: 12,
-                      color: '#fff',
-                    }}
-                  >
+                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#FAF7F5' }}>
                     {label}
                   </p>
                   <p
@@ -151,7 +304,7 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
                       margin: 0,
                       fontFamily: 'var(--font-mono)',
                       fontSize: 9,
-                      color: 'rgba(232, 194, 144, 0.85)',
+                      color: '#E8CFC8',
                       letterSpacing: '0.06em',
                     }}
                   >
@@ -173,19 +326,14 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
         );
 
         return (
-          <article key={c.id} className="v-card" style={{ padding: 14 }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                marginBottom: 10,
-              }}
-            >
+          <article
+            key={c.id}
+            className="bg-white rounded-2xl border border-[#EFE8E4]"
+            style={{ padding: 14 }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
               <span className="v-num">VISITA · {c.numeroConsulta}</span>
-              <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>
-                · {formatDate(c.fecha)}
-              </span>
+              <span style={{ fontSize: 10, color: '#96888C' }}>· {formatDate(c.fecha)}</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
               {fotos.map(({ url, label }, i) => (
@@ -210,7 +358,7 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
                       aspectRatio: '1',
                       objectFit: 'cover',
                       borderRadius: 10,
-                      border: '1px solid var(--border-soft)',
+                      border: '1px solid #EFE8E4',
                     }}
                   />
                   <div
@@ -219,21 +367,13 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
                       bottom: 0,
                       left: 0,
                       right: 0,
-                      background: 'rgba(20, 36, 26, 0.6)',
+                      background: 'rgba(31, 5, 15, 0.65)',
                       borderRadius: '0 0 10px 10px',
                       padding: '2px 0',
                       textAlign: 'center',
                     }}
                   >
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: 9,
-                        color: '#fff',
-                        fontWeight: 600,
-                        letterSpacing: '0.04em',
-                      }}
-                    >
+                    <p style={{ margin: 0, fontSize: 9, color: '#FAF7F5', fontWeight: 600 }}>
                       {label}
                     </p>
                   </div>
@@ -244,7 +384,6 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
         );
       })}
 
-      {/* Lightbox */}
       {lightbox && (
         <div
           onClick={() => setLightbox(null)}
@@ -252,7 +391,7 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
             position: 'fixed',
             inset: 0,
             zIndex: 60,
-            background: 'rgba(20, 36, 26, 0.95)',
+            background: 'rgba(31, 5, 15, 0.95)',
             backdropFilter: 'blur(8px)',
             display: 'flex',
             alignItems: 'center',
@@ -272,8 +411,8 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
               height: 40,
               borderRadius: '50%',
               background: 'rgba(255,255,255,0.12)',
-              border: '1px solid rgba(232, 194, 144, 0.3)',
-              color: '#fff',
+              border: '1px solid rgba(232, 207, 200, 0.3)',
+              color: '#FAF7F5',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -300,30 +439,19 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
   );
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-function rizoChipTone(tipo?: string): ChipTone {
-  if (!tipo) return 'ghost';
-  if (['1A', '1B', '1C'].includes(tipo)) return 'ghost';
-  if (['2A', '2B', '2C'].includes(tipo)) return 'blue';
-  if (['3A', '3B', '3C'].includes(tipo)) return 'green';
-  if (['4A', '4B', '4C'].includes(tipo)) return 'gold';
-  return 'ghost';
-}
-
 // ═══ MAIN COMPONENT ═══════════════════════════════════════════════════════
 export default function ClientaPage() {
   const params = useParams();
   const router = useRouter();
-  const flags = useFlags();
   const id = params.id as string;
 
   const [clienta, setClienta] = useState<Clienta | null>(null);
   const [consultas, setConsultas] = useState<Consulta[]>([]);
+  const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('info');
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [cotizadorAbierto, setCotizadorAbierto] = useState(false);
   const [cotizacionesRefresh, setCotizacionesRefresh] = useState(0);
 
   // Edit mode
@@ -334,9 +462,10 @@ export default function ClientaPage() {
 
   const load = useCallback(async () => {
     try {
-      const [c, cs] = await Promise.all([
+      const [c, cs, cots] = await Promise.all([
         getClientaById(id),
         getConsultasByClienta(id),
+        listarCotizacionesPorClienta(id).catch(() => [] as Cotizacion[]),
       ]);
       const withSignedPhotos = await Promise.all(
         cs.map(async (consulta) => {
@@ -355,12 +484,35 @@ export default function ClientaPage() {
       );
       setClienta(c || null);
       setConsultas(withSignedPhotos);
+      setCotizaciones(cots);
     } finally {
       setLoading(false);
     }
   }, [id]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // Refrescar cotizaciones de la clienta cuando se cobre o anule desde ListaPorCobrar
+  useEffect(() => {
+    if (cotizacionesRefresh === 0) return;
+    listarCotizacionesPorClienta(id)
+      .then((cots) => setCotizaciones(cots))
+      .catch(() => {});
+  }, [cotizacionesRefresh, id]);
+
+  const resumenFinanciero = useMemo(() => {
+    const cobradas = cotizaciones.filter((c) => c.estado === 'cobrada');
+    const totalInvertido = cobradas.reduce(
+      (acc, c) => acc + (c.precioCobrado ?? c.precioCotizado),
+      0
+    );
+    return {
+      cantidadCierres: cobradas.length,
+      totalInvertido,
+    };
+  }, [cotizaciones]);
 
   const startEditing = () => {
     if (!clienta) return;
@@ -443,8 +595,11 @@ export default function ClientaPage() {
   // ═══ LOADING ════════════════════════════════════════════════════════════
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-        <div style={{ height: 280, background: 'var(--bg-deep)', position: 'relative' }} className="loading-pulse">
+      <div style={{ minHeight: '100vh', background: '#FAF7F5' }}>
+        <div
+          style={{ height: 240, background: '#3B0D1E', position: 'relative' }}
+          className="loading-pulse"
+        >
           <div
             style={{
               position: 'absolute',
@@ -453,14 +608,14 @@ export default function ClientaPage() {
               width: 36,
               height: 36,
               borderRadius: '50%',
-              background: 'var(--bg-card)',
+              background: '#FFFFFF',
               boxShadow: 'var(--shadow-sm)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <ArrowLeft size={16} style={{ color: 'var(--text-main)' }} />
+            <ArrowLeft size={16} style={{ color: '#1C1518' }} />
           </div>
         </div>
         <main style={{ maxWidth: 768, margin: '0 auto', padding: '18px 16px' }}>
@@ -477,12 +632,12 @@ export default function ClientaPage() {
   // ═══ NOT FOUND ══════════════════════════════════════════════════════════
   if (!clienta) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      <div style={{ minHeight: '100vh', background: '#FAF7F5' }}>
         <header
           style={{
             padding: '54px 16px 14px',
-            background: 'var(--bg-card)',
-            borderBottom: '1px solid var(--border-soft)',
+            background: '#FFFFFF',
+            borderBottom: '1px solid #EFE8E4',
           }}
         >
           <button
@@ -493,9 +648,9 @@ export default function ClientaPage() {
               width: 36,
               height: 36,
               borderRadius: '50%',
-              background: 'var(--bg)',
-              border: '1px solid var(--border)',
-              color: 'var(--text-main)',
+              background: '#FAF7F5',
+              border: '1px solid #EFE8E4',
+              color: '#1C1518',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -506,7 +661,7 @@ export default function ClientaPage() {
           </button>
         </header>
         <main style={{ maxWidth: 768, margin: '0 auto', padding: '40px 16px', textAlign: 'center' }}>
-          <p style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: 'var(--text-main)' }}>
+          <p style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: '#1C1518' }}>
             Clienta no encontrada
           </p>
           <Link
@@ -514,8 +669,8 @@ export default function ClientaPage() {
             style={{
               display: 'inline-block',
               marginTop: 14,
-              color: 'var(--primary)',
-              fontWeight: 600,
+              color: '#3B0D1E',
+              fontWeight: 700,
               fontSize: 13,
               textDecoration: 'underline',
             }}
@@ -523,313 +678,170 @@ export default function ClientaPage() {
             Volver a clientas
           </Link>
         </main>
+        <BottomNavV2 />
       </div>
     );
   }
 
   // ═══ MAIN RENDER ════════════════════════════════════════════════════════
   const ultimaConsulta = consultas.at(-1);
+  const totalEventosHistorial = cotizaciones.length + consultas.length;
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', position: 'relative' }}>
-      {/* ── Hero portrait ────────────────────────────────────────────────── */}
-      <section style={{ position: 'relative', height: 280, overflow: 'hidden' }}>
-        <div
-          className="v-photo v-photo-curly v-grain"
-          style={{ position: 'absolute', inset: 0, borderRadius: 0 }}
-        />
-        {/* Top action bar (back + actions) */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 50,
-            left: 16,
-            right: 16,
-            display: 'flex',
-            justifyContent: 'space-between',
-            zIndex: 5,
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => router.back()}
-            aria-label="Volver"
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.95)',
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: 'var(--shadow-sm)',
-              cursor: 'pointer',
-            }}
-          >
-            <ArrowLeft size={16} style={{ color: 'var(--text-main)' }} />
-          </button>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {editing ? (
-              <button
-                type="button"
-                onClick={cancelEditing}
-                aria-label="Cancelar edición"
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.95)',
-                  border: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: 'var(--shadow-sm)',
-                  cursor: 'pointer',
-                }}
-              >
-                <X size={16} style={{ color: 'var(--text-main)' }} />
-              </button>
-            ) : (
-              <>
+    <div style={{ minHeight: '100vh', background: '#FAF7F5', position: 'relative' }}>
+      {/* ── Hero Velvet Studio ───────────────────────────────────────────── */}
+      <section className="v-gradient-hero v-grain relative pt-12 pb-6 px-4 sm:px-6 text-[#FAF7F5]">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              aria-label="Volver"
+              className="w-9 h-9 rounded-full bg-[#FAF7F5]/15 hover:bg-[#FAF7F5]/25 border border-[#E8CFC8]/25 text-[#FAF7F5] flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <ArrowLeft size={16} />
+            </button>
+
+            <div className="flex items-center gap-2">
+              {editing ? (
                 <button
                   type="button"
-                  onClick={startEditing}
-                  aria-label="Editar"
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.95)',
-                    border: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: 'var(--shadow-sm)',
-                    cursor: 'pointer',
-                  }}
+                  onClick={cancelEditing}
+                  aria-label="Cancelar edición"
+                  className="w-9 h-9 rounded-full bg-[#FAF7F5]/15 hover:bg-[#FAF7F5]/25 border border-[#E8CFC8]/25 text-[#FAF7F5] flex items-center justify-center transition-colors cursor-pointer"
                 >
-                  <Pencil size={15} style={{ color: 'var(--primary)' }} />
+                  <X size={16} />
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setShowDelete(true)}
-                  aria-label="Eliminar"
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.95)',
-                    border: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: 'var(--shadow-sm)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <MoreHorizontal size={16} style={{ color: 'var(--text-main)' }} />
-                </button>
-              </>
-            )}
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={startEditing}
+                    aria-label="Editar"
+                    className="w-9 h-9 rounded-full bg-[#FAF7F5]/15 hover:bg-[#FAF7F5]/25 border border-[#E8CFC8]/25 text-[#FAF7F5] flex items-center justify-center transition-colors cursor-pointer"
+                  >
+                    <Pencil size={15} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowDelete(true)}
+                    aria-label="Eliminar"
+                    className="w-9 h-9 rounded-full bg-[#FAF7F5]/15 hover:bg-[#FAF7F5]/25 border border-[#E8CFC8]/25 text-[#FAF7F5] flex items-center justify-center transition-colors cursor-pointer"
+                  >
+                    <MoreHorizontal size={16} />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
-        </div>
-        {/* Bottom gradient */}
-        <div
-          aria-hidden
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(180deg, transparent 40%, rgba(20, 36, 26, 0.85) 100%)',
-          }}
-        />
-        {/* Title */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 18,
-            left: 18,
-            right: 18,
-            color: '#F5EDDC',
-            zIndex: 5,
-          }}
-        >
-          <div
-            className="v-num"
-            style={{ color: 'rgba(232, 194, 144, 0.95)', fontSize: 9.5 }}
-          >
-            FOLIO · {clienta.id.slice(0, 8).toUpperCase()} · DESDE {new Date(clienta.fechaRegistro).getFullYear()}
+
+          <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#E8CFC8]">
+            FOLIO · {clienta.id.slice(0, 8).toUpperCase()} · DESDE{' '}
+            {new Date(clienta.fechaRegistro).getFullYear()}
           </div>
-          <h1
-            style={{
-              margin: '4px 0 6px',
-              fontFamily: 'var(--font-serif)',
-              fontSize: 32,
-              letterSpacing: '-0.02em',
-              lineHeight: 1,
-              color: '#fff',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
+          <h1 className="text-3xl sm:text-4xl font-bold text-[#FAF7F5] tracking-tight mt-1 mb-3 truncate">
             {clienta.nombre}
           </h1>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+
+          <div className="flex flex-wrap gap-2">
             {clienta.tipoRizoPrincipal && (
-              <Chip
-                tone="gold"
-                style={{
-                  background: 'rgba(232, 194, 144, 0.92)',
-                  color: '#14241A',
-                  borderColor: 'transparent',
-                }}
-              >
+              <span className="px-3 py-1 rounded-full bg-[#E8CFC8] text-[#1F050F] text-xs font-bold">
                 {getRizoLabel(clienta.tipoRizoPrincipal)}
-              </Chip>
+              </span>
             )}
-            <Chip
-              tone="green"
-              dot
-              style={{
-                background: 'rgba(45, 90, 39, 0.85)',
-                color: '#fff',
-                borderColor: 'transparent',
-              }}
-            >
-              {clienta.totalVisitas > 0 ? 'Activa' : 'Nueva'}
-            </Chip>
-            <Chip
-              tone="ghost"
-              style={{
-                background: 'rgba(255,255,255,0.18)',
-                color: '#fff',
-                borderColor: 'transparent',
-              }}
-            >
-              {clienta.totalVisitas} {clienta.totalVisitas === 1 ? 'visita' : 'visitas'}
-            </Chip>
+            <span className="px-3 py-1 rounded-full bg-[#FAF7F5]/15 border border-[#E8CFC8]/25 text-[#FAF7F5] text-xs font-semibold">
+              {resumenFinanciero.cantidadCierres > 0 || clienta.totalVisitas > 0
+                ? 'Clienta activa'
+                : 'Clienta nueva'}
+            </span>
+            {resumenFinanciero.cantidadCierres > 0 && (
+              <span className="px-3 py-1 rounded-full bg-[#0D9488]/25 border border-[#0D9488]/40 text-[#FAF7F5] text-xs font-bold tabular-nums">
+                {resumenFinanciero.cantidadCierres}{' '}
+                {resumenFinanciero.cantidadCierres === 1 ? 'cierre' : 'cierres'}
+              </span>
+            )}
           </div>
         </div>
       </section>
 
-      <main style={{ maxWidth: 768, margin: '0 auto', padding: '18px 16px 100px' }}>
-        {/* Quick stats strip */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            background: 'var(--bg-card)',
-            borderRadius: 16,
-            border: '1px solid var(--border-soft)',
-            boxShadow: 'var(--shadow-xs)',
-            overflow: 'hidden',
-            marginBottom: 18,
-          }}
-        >
-          {[
-            { l: 'CONSULTAS', v: clienta.totalVisitas, s: clienta.totalVisitas === 1 ? '· total' : '· totales' },
-            { l: 'REGISTRO', v: formatDate(clienta.fechaRegistro).split(' ').slice(0, 2).join(' '), s: '· fecha' },
-            {
-              l: 'ÚLTIMA VISITA',
-              v: clienta.ultimaVisita ? formatDate(clienta.ultimaVisita).split(' ').slice(0, 2).join(' ') : '—',
-              s: clienta.ultimaVisita ? '· en el salón' : '· sin visitas',
-            },
-          ].map((s, i) => (
-            <div
-              key={i}
-              style={{
-                padding: '14px 10px',
-                textAlign: 'center',
-                borderRight: i < 2 ? '1px solid var(--border-soft)' : 'none',
-              }}
-            >
-              <div className="v-num" style={{ fontSize: 9 }}>{s.l}</div>
-              <div
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 16,
-                  color: 'var(--text-main)',
-                  marginTop: 2,
-                  letterSpacing: '-0.01em',
-                  lineHeight: 1.1,
-                }}
-              >
-                {s.v}
-              </div>
-              <div style={{ fontSize: 9.5, color: 'var(--text-tertiary)' }}>{s.s}</div>
+      <main style={{ maxWidth: 768, margin: '0 auto', padding: '18px 16px 120px' }}>
+        {/* ── KPIs de Retención y Ticket de la Clienta ─────────────────── */}
+        <div className="grid grid-cols-3 bg-white rounded-2xl border border-[#EFE8E4] shadow-[0_8px_24px_-10px_rgba(59,13,30,0.06)] overflow-hidden mb-5">
+          <div className="py-3.5 px-2.5 text-center border-r border-[#EFE8E4]">
+            <div className="v-num" style={{ fontSize: 9 }}>
+              CIERRES BI
             </div>
-          ))}
+            <div className="text-base font-bold text-[#1C1518] tabular-nums mt-0.5">
+              {resumenFinanciero.cantidadCierres}
+            </div>
+            <div className="text-[10px] text-[#6E6266]">
+              {cotizaciones.length} cotiz.
+            </div>
+          </div>
+
+          <div className="py-3.5 px-2.5 text-center border-r border-[#EFE8E4]">
+            <div className="v-num" style={{ fontSize: 9 }}>
+              INVERSIÓN TOTAL
+            </div>
+            <div className="text-sm sm:text-base font-bold text-[#3B0D1E] tabular-nums mt-0.5 truncate">
+              {formatearPrecioCop(resumenFinanciero.totalInvertido)}
+            </div>
+            <div className="text-[10px] text-[#6E6266]">en salón</div>
+          </div>
+
+          <div className="py-3.5 px-2.5 text-center">
+            <div className="v-num" style={{ fontSize: 9 }}>
+              ÚLTIMA VISITA
+            </div>
+            <div className="text-sm sm:text-base font-bold text-[#1C1518] mt-0.5 truncate">
+              {clienta.ultimaVisita
+                ? formatDate(clienta.ultimaVisita).split(' ').slice(0, 2).join(' ')
+                : '—'}
+            </div>
+            <div className="text-[10px] text-[#6E6266]">
+              {consultas.length} {consultas.length === 1 ? 'consulta' : 'consultas'}
+            </div>
+          </div>
         </div>
 
-        {/* Quick actions */}
+        {/* ── Acciones principales (CTA maestro siempre a /?clientaId=...) ── */}
         {!editing && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 22 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
+            <Link
+              href={`/?clientaId=${clienta.id}`}
+              style={{ flex: '1 1 100%', textDecoration: 'none' }}
+            >
+              <Btn variant="primary" size="lg" fullWidth icon={<Sparkles size={15} />}>
+                Cotizar en Silla
+              </Btn>
+            </Link>
             {clienta.telefono && (
               <>
-                <a href={`tel:${clienta.telefono}`} style={{ flex: 1, minWidth: 0, textDecoration: 'none' }}>
+                <a
+                  href={`tel:${clienta.telefono}`}
+                  style={{ flex: 1, minWidth: 0, textDecoration: 'none' }}
+                >
                   <Btn variant="outline" size="md" fullWidth icon={<Phone size={14} />}>
                     Llamar
                   </Btn>
                 </a>
-                <button type="button" onClick={handleWhatsApp} style={{ flex: 1, background: 'transparent', border: 'none', padding: 0 }}>
+                <button
+                  type="button"
+                  onClick={handleWhatsApp}
+                  style={{ flex: 1, background: 'transparent', border: 'none', padding: 0 }}
+                >
                   <Btn variant="soft" size="md" fullWidth icon={<MessageCircle size={14} />}>
                     WhatsApp
                   </Btn>
                 </button>
               </>
             )}
-            <Link href={`/diagnostico?clientaId=${clienta.id}`} style={{ flex: clienta.telefono ? '1 1 100%' : 1, textDecoration: 'none' }}>
-              <Btn variant="primary" size="md" fullWidth icon={<Plus size={14} />}>
-                Nueva consulta
-              </Btn>
-            </Link>
-            {flags.cotizador && (
-              <div style={{ flex: 1, minWidth: 150 }}>
-                <Btn
-                  variant="gold"
-                  size="md"
-                  fullWidth
-                  icon={<Sparkles size={14} />}
-                  onClick={() => setCotizadorAbierto(true)}
-                >
-                  Cotizar
-                </Btn>
-              </div>
-            )}
-            <Link href={`/diagnostico?clientaId=${clienta.id}`} style={{ display: 'none' }}>
-              <Btn variant="primary" size="md" fullWidth icon={<Plus size={14} />}>
-                Nueva consulta
-              </Btn>
-            </Link>
-            <Link href={`/color?clientaId=${clienta.id}`} style={{ textDecoration: 'none', flex: 1, minWidth: 150 }}>
-              <Btn variant="soft" size="md" fullWidth icon={<Palette size={14} />}>
-                Color
-              </Btn>
-            </Link>
-            {flags.cortes && (
-              <Link href={`/cortes?clientaId=${clienta.id}`} style={{ textDecoration: 'none', flex: 1, minWidth: 150 }}>
-                <Btn variant="soft" size="md" fullWidth icon={<Scissors size={14} />}>
-                  Cortes
-                </Btn>
-              </Link>
-            )}
-            {consultas.length > 0 && (
-              <Link
-                href={`/diagnostico?clientaId=${clienta.id}&repeatFrom=${consultas.at(-1)?.id}`}
-                style={{ textDecoration: 'none', flex: '1 1 100%' }}
-              >
-                <Btn variant="ghost" size="md" fullWidth icon={<RotateCcw size={13} />}>
-                  Repetir último diagnóstico
-                </Btn>
-              </Link>
-            )}
           </div>
         )}
 
         {/* ── MODO EDITAR ───────────────────────────────────────────────── */}
         {editing ? (
-          <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="bg-white rounded-3xl border border-[#EFE8E4] p-5 space-y-4">
             <Input
               label="Nombre completo *"
               value={String(editData.nombre ?? '')}
@@ -845,11 +857,11 @@ export default function ClientaPage() {
                 placeholder="Años"
               />
               <Input
-                label="Teléfono"
+                label="WhatsApp / Teléfono"
                 type="tel"
                 value={String(editData.telefono ?? '')}
                 onChange={(e) => setEditData((p) => ({ ...p, telefono: e.target.value }))}
-                placeholder="+58 412…"
+                placeholder="+57 300 123 4567"
               />
             </div>
             <Input
@@ -857,14 +869,11 @@ export default function ClientaPage() {
               type="email"
               value={String(editData.email ?? '')}
               onChange={(e) => setEditData((p) => ({ ...p, email: e.target.value }))}
-              placeholder="correo@ejemplo.com"
+              placeholder="valentina@ejemplo.co"
             />
 
             <div>
-              <p
-                className="v-caps"
-                style={{ marginBottom: 8 }}
-              >
+              <p className="v-caps" style={{ marginBottom: 8 }}>
                 Nivel de estrés
               </p>
               <div style={{ display: 'flex', gap: 6 }}>
@@ -883,9 +892,9 @@ export default function ClientaPage() {
                         fontSize: 12,
                         fontWeight: 600,
                         fontFamily: 'var(--font-sans)',
-                        background: active ? 'var(--primary-pale)' : 'var(--bg-card)',
-                        color: active ? 'var(--primary)' : 'var(--text-secondary)',
-                        border: `1px solid ${active ? 'rgba(45, 90, 39, 0.3)' : 'var(--border-soft)'}`,
+                        background: active ? '#F7ECEF' : '#FAF7F5',
+                        color: active ? '#3B0D1E' : '#6E6266',
+                        border: `1px solid ${active ? '#DFC5CE' : '#EFE8E4'}`,
                         cursor: 'pointer',
                       }}
                     >
@@ -898,19 +907,24 @@ export default function ClientaPage() {
 
             <div
               style={{
-                borderTop: '1px solid var(--border)',
+                borderTop: '1px solid #EFE8E4',
                 paddingTop: 14,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 14,
               }}
             >
-              <p className="v-caps">Datos de salud</p>
+              <p className="v-caps">Datos de salud capilar</p>
 
               <div>
-                <p className="v-caps" style={{ marginBottom: 8 }}>¿Embarazo o lactancia?</p>
+                <p className="v-caps" style={{ marginBottom: 8 }}>
+                  ¿Embarazo o lactancia?
+                </p>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  {[{ v: true, label: 'Sí' }, { v: false, label: 'No' }].map(({ v, label }) => {
+                  {[
+                    { v: true, label: 'Sí' },
+                    { v: false, label: 'No' },
+                  ].map(({ v, label }) => {
                     const active = (editData.embarazo ?? false) === v;
                     return (
                       <button
@@ -924,9 +938,9 @@ export default function ClientaPage() {
                           fontSize: 12,
                           fontWeight: 600,
                           fontFamily: 'var(--font-sans)',
-                          background: active ? 'var(--primary-pale)' : 'var(--bg-card)',
-                          color: active ? 'var(--primary)' : 'var(--text-secondary)',
-                          border: `1px solid ${active ? 'rgba(45, 90, 39, 0.3)' : 'var(--border-soft)'}`,
+                          background: active ? '#F7ECEF' : '#FAF7F5',
+                          color: active ? '#3B0D1E' : '#6E6266',
+                          border: `1px solid ${active ? '#DFC5CE' : '#EFE8E4'}`,
                           cursor: 'pointer',
                         }}
                       >
@@ -941,13 +955,13 @@ export default function ClientaPage() {
                 label="Alergias a productos capilares"
                 value={String(editData.alergias ?? '')}
                 onChange={(e) => setEditData((p) => ({ ...p, alergias: e.target.value }))}
-                placeholder="Opcional — ej: sulfatos, siliconas…"
+                placeholder="Opcional — ej. PPD, amoníaco…"
               />
               <Input
                 label="Condiciones médicas relevantes"
                 value={String(editData.condicionesMedicas ?? '')}
                 onChange={(e) => setEditData((p) => ({ ...p, condicionesMedicas: e.target.value }))}
-                placeholder="Tiroides, anemia, SOP, etc."
+                placeholder="Tiroides, dermatitis, etc."
               />
               <Input
                 label="Medicamentos que afectan el cabello"
@@ -963,48 +977,35 @@ export default function ClientaPage() {
               fullWidth
               onClick={saveEditing}
               disabled={saving}
-              icon={
-                saveOk ? (
-                  <Check size={16} />
-                ) : saving ? (
-                  <span
-                    style={{
-                      width: 16,
-                      height: 16,
-                      border: '2px solid rgba(255,255,255,0.3)',
-                      borderTopColor: '#fff',
-                      borderRadius: '50%',
-                      animation: 'pulse-soft 1s linear infinite',
-                    }}
-                    className="loading-pulse"
-                  />
-                ) : undefined
-              }
+              icon={saveOk ? <Check size={16} /> : undefined}
             >
-              {saveOk ? '¡Guardado!' : 'Guardar cambios'}
+              {saveOk ? '¡Guardado!' : saving ? 'Guardando…' : 'Guardar cambios'}
             </Btn>
           </div>
         ) : (
           <>
-            {/* ── Tabs ───────────────────────────────────────────────────── */}
-            {flags.cotizador && (
+            {/* ── Cotizaciones pendientes de cerrar en 1 toque ─────────── */}
+            <div className="mb-4">
               <ListaPorCobrar
                 clientaId={clienta.id}
                 clientaNombre={clienta.nombre}
                 refreshKey={cotizacionesRefresh}
+                onCambio={() => setCotizacionesRefresh((k) => k + 1)}
               />
-            )}
+            </div>
+
+            {/* ── Pestañas de la Ficha ──────────────────────────────────── */}
             <div
               style={{
                 display: 'flex',
                 gap: 0,
-                borderBottom: '1px solid var(--border)',
-                marginBottom: 14,
+                borderBottom: '1px solid #EFE8E4',
+                marginBottom: 16,
               }}
             >
               {[
-                { key: 'info' as const, label: 'Información' },
-                { key: 'historial' as const, label: `Historial · ${consultas.length}` },
+                { key: 'info' as const, label: 'Resumen & Legal' },
+                { key: 'historial' as const, label: `Historial · ${totalEventosHistorial}` },
                 { key: 'galeria' as const, label: 'Galería' },
               ].map(({ key, label }) => {
                 const active = tab === key;
@@ -1021,10 +1022,8 @@ export default function ClientaPage() {
                       fontWeight: 700,
                       letterSpacing: '0.06em',
                       textTransform: 'uppercase',
-                      color: active ? 'var(--primary)' : 'var(--text-tertiary)',
-                      borderBottom: active
-                        ? '2px solid var(--primary)'
-                        : '2px solid transparent',
+                      color: active ? '#3B0D1E' : '#96888C',
+                      borderBottom: active ? '2px solid #3B0D1E' : '2px solid transparent',
                       fontFamily: 'var(--font-sans)',
                       cursor: 'pointer',
                     }}
@@ -1035,21 +1034,31 @@ export default function ClientaPage() {
               })}
             </div>
 
-            {/* ── Tab content ────────────────────────────────────────────── */}
+            {/* ── Tab: Resumen & Legal ──────────────────────────────────── */}
             {tab === 'info' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {/* Notas última visita */}
+                {/* Destacado de Cotizaciones y Cierres directamente en la ficha */}
+                <SeccionCotizacionesClienta
+                  cotizaciones={cotizaciones}
+                  clientaId={clienta.id}
+                  limite={4}
+                  onVerTodas={() => setTab('historial')}
+                />
+
                 {ultimaConsulta?.notasEstilista && (
                   <article
                     style={{
                       padding: '16px 18px',
-                      borderLeft: '3px solid var(--secondary)',
-                      background: 'var(--secondary-pale)',
-                      borderRadius: '0 14px 14px 0',
+                      borderLeft: '3px solid #6E1E3A',
+                      background: '#FFFFFF',
+                      borderRadius: '0 16px 16px 0',
+                      borderTop: '1px solid #EFE8E4',
+                      borderRight: '1px solid #EFE8E4',
+                      borderBottom: '1px solid #EFE8E4',
                     }}
                   >
-                    <div className="v-caps" style={{ color: 'var(--secondary-deep)' }}>
-                      Notas de la última visita
+                    <div className="v-caps" style={{ color: '#6E1E3A' }}>
+                      Notas de la última consulta
                     </div>
                     <p
                       style={{
@@ -1058,17 +1067,17 @@ export default function ClientaPage() {
                         fontStyle: 'italic',
                         fontSize: 14,
                         lineHeight: 1.45,
-                        color: 'var(--primary-deep)',
+                        color: '#1C1518',
                       }}
                     >
                       «{ultimaConsulta.notasEstilista}»
                     </p>
                     <div
                       style={{
-                        marginTop: 10,
+                        marginTop: 8,
                         fontFamily: 'var(--font-mono)',
                         fontSize: 9.5,
-                        color: 'var(--secondary-deep)',
+                        color: '#6E6266',
                         letterSpacing: '0.1em',
                       }}
                     >
@@ -1078,14 +1087,24 @@ export default function ClientaPage() {
                 )}
 
                 {/* Datos personales */}
-                <article className="v-card" style={{ padding: 14 }}>
-                  <div className="v-caps" style={{ marginBottom: 10 }}>Datos personales</div>
+                <article className="bg-white rounded-3xl border border-[#EFE8E4] p-5">
+                  <div className="v-caps" style={{ marginBottom: 10 }}>
+                    Datos personales
+                  </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {[
-                      { label: 'Teléfono', value: clienta.telefono || '—', mono: !!clienta.telefono },
+                      {
+                        label: 'WhatsApp / Teléfono',
+                        value: clienta.telefono || '—',
+                        mono: !!clienta.telefono,
+                      },
                       { label: 'Email', value: clienta.email || '—' },
                       { label: 'Edad', value: clienta.edad ? `${clienta.edad} años` : '—' },
-                      { label: 'Nivel de estrés', value: clienta.nivelEstres || '—', cap: !!clienta.nivelEstres },
+                      {
+                        label: 'Nivel de estrés',
+                        value: clienta.nivelEstres || '—',
+                        cap: !!clienta.nivelEstres,
+                      },
                       { label: 'Registro', value: formatDate(clienta.fechaRegistro), mono: true },
                     ].map(({ label, value, mono, cap }) => (
                       <div
@@ -1096,14 +1115,14 @@ export default function ClientaPage() {
                           alignItems: 'baseline',
                           gap: 12,
                           paddingBottom: 6,
-                          borderBottom: '1px solid var(--border-soft)',
+                          borderBottom: '1px solid #FAF7F5',
                         }}
                       >
-                        <span style={{ fontSize: 11.5, color: 'var(--text-tertiary)' }}>{label}</span>
+                        <span style={{ fontSize: 11.5, color: '#6E6266' }}>{label}</span>
                         <span
                           style={{
                             fontSize: 13,
-                            color: 'var(--text-main)',
+                            color: '#1C1518',
                             fontFamily: mono ? 'var(--font-mono)' : 'var(--font-sans)',
                             textTransform: cap ? 'capitalize' : 'none',
                             fontWeight: 500,
@@ -1121,45 +1140,69 @@ export default function ClientaPage() {
                 </article>
 
                 {/* Salud capilar */}
-                {(clienta.alergias || clienta.condicionesMedicas || clienta.medicamentos || clienta.embarazo) && (
+                {(clienta.alergias ||
+                  clienta.condicionesMedicas ||
+                  clienta.medicamentos ||
+                  clienta.embarazo) && (
                   <article
                     style={{
-                      padding: 14,
-                      borderRadius: 16,
-                      background: 'var(--treat-recon-bg)',
-                      border: '1px solid rgba(212, 130, 10, 0.22)',
+                      padding: 16,
+                      borderRadius: 20,
+                      background: '#FDF2EC',
+                      border: '1px solid rgba(217, 119, 87, 0.28)',
                     }}
                   >
-                    <div className="v-caps" style={{ color: 'var(--treat-recon-color)', marginBottom: 10 }}>
-                      Salud capilar
+                    <div className="v-caps" style={{ color: '#B85D3B', marginBottom: 10 }}>
+                      Salud capilar y antecedentes
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {clienta.alergias && (
                         <div>
-                          <p style={{ margin: 0, fontSize: 10.5, color: 'var(--treat-recon-color)', letterSpacing: '0.04em', fontWeight: 600 }}>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: 10.5,
+                              color: '#B85D3B',
+                              fontWeight: 700,
+                            }}
+                          >
                             Alergias
                           </p>
-                          <p style={{ margin: '2px 0 0', fontSize: 13, color: 'var(--text-main)' }}>
+                          <p style={{ margin: '2px 0 0', fontSize: 13, color: '#1C1518' }}>
                             {clienta.alergias}
                           </p>
                         </div>
                       )}
                       {clienta.condicionesMedicas && (
                         <div>
-                          <p style={{ margin: 0, fontSize: 10.5, color: 'var(--treat-recon-color)', letterSpacing: '0.04em', fontWeight: 600 }}>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: 10.5,
+                              color: '#B85D3B',
+                              fontWeight: 700,
+                            }}
+                          >
                             Condiciones médicas
                           </p>
-                          <p style={{ margin: '2px 0 0', fontSize: 13, color: 'var(--text-main)' }}>
+                          <p style={{ margin: '2px 0 0', fontSize: 13, color: '#1C1518' }}>
                             {clienta.condicionesMedicas}
                           </p>
                         </div>
                       )}
                       {clienta.medicamentos && (
                         <div>
-                          <p style={{ margin: 0, fontSize: 10.5, color: 'var(--treat-recon-color)', letterSpacing: '0.04em', fontWeight: 600 }}>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: 10.5,
+                              color: '#B85D3B',
+                              fontWeight: 700,
+                            }}
+                          >
                             Medicamentos
                           </p>
-                          <p style={{ margin: '2px 0 0', fontSize: 13, color: 'var(--text-main)' }}>
+                          <p style={{ margin: '2px 0 0', fontSize: 13, color: '#1C1518' }}>
                             {clienta.medicamentos}
                           </p>
                         </div>
@@ -1169,75 +1212,58 @@ export default function ClientaPage() {
                           style={{
                             marginTop: 4,
                             paddingTop: 8,
-                            borderTop: '1px solid rgba(212, 130, 10, 0.22)',
+                            borderTop: '1px solid rgba(217, 119, 87, 0.25)',
                           }}
                         >
-                          <Chip tone="amber" dot>Embarazo o lactancia</Chip>
+                          <Chip tone="amber" dot>
+                            Embarazo o lactancia
+                          </Chip>
                         </div>
                       )}
                     </div>
                   </article>
                 )}
 
-                {/* Consentimientos + seguridad química (validación técnica) */}
+                {/* Consentimientos + seguridad química */}
                 <SeguridadLegal clienta={clienta} onClientaChange={setClienta} />
-
-                {/* Sin consultas */}
-                {consultas.length === 0 && (
-                  <article
-                    style={{
-                      textAlign: 'center',
-                      padding: '32px 20px',
-                      background: 'var(--bg-card)',
-                      borderRadius: 16,
-                      border: '1px solid var(--border-soft)',
-                    }}
-                  >
-                    <p style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--text-main)' }}>
-                      Sin consultas aún
-                    </p>
-                    <p style={{ margin: '4px 0 14px', fontSize: 12, color: 'var(--text-tertiary)' }}>
-                      Comienza la primera consulta para esta clienta
-                    </p>
-                    <Link href={`/diagnostico?clientaId=${clienta.id}`}>
-                      <Btn variant="primary" size="md" icon={<Plus size={14} />}>
-                        Primera consulta
-                      </Btn>
-                    </Link>
-                  </article>
-                )}
               </div>
             )}
 
+            {/* ── Tab: Historial completo (Cotizaciones + Diagnósticos) ── */}
             {tab === 'historial' && (
-              <HistorialTimeline
-                consultas={consultas}
-                clienta={clienta}
-                onCotizacionCreada={() => setCotizacionesRefresh((k) => k + 1)}
-              />
+              <div className="space-y-6">
+                <SeccionCotizacionesClienta cotizaciones={cotizaciones} clientaId={clienta.id} />
+
+                <section className="bg-white rounded-3xl border border-[#EFE8E4] p-5 shadow-[0_12px_28px_-10px_rgba(59,13,30,0.06)]">
+                  <div className="mb-4">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#6E6266]">
+                      Fichas Técnicas Previas
+                    </span>
+                    <h2 className="text-base sm:text-lg font-bold text-[#1C1518] mt-0.5">
+                      Diagnósticos Capilares ({consultas.length})
+                    </h2>
+                  </div>
+                  <HistorialTimeline
+                    consultas={consultas}
+                    clienta={clienta}
+                    onCotizacionCreada={() => setCotizacionesRefresh((k) => k + 1)}
+                  />
+                </section>
+              </div>
             )}
 
+            {/* ── Tab: Galería ──────────────────────────────────────────── */}
             {tab === 'galeria' && <GaleriaTab consultas={consultas} />}
           </>
         )}
       </main>
 
       {/* Delete modal */}
-      {flags.cotizador && (
-        <HojaCotizar
-          open={cotizadorAbierto}
-          onClose={() => setCotizadorAbierto(false)}
-          clienta={clienta}
-          consulta={ultimaConsulta ?? null}
-          onCotizacionCreada={() => setCotizacionesRefresh((k) => k + 1)}
-        />
-      )}
       <Modal open={showDelete} onClose={() => setShowDelete(false)} title="Eliminar clienta">
-        <p style={{ margin: 0, fontSize: 14, color: 'var(--text-main)', lineHeight: 1.5 }}>
-          Esto borrará toda la información de <strong>{clienta.nombre}</strong> y su historial
-          ({consultas.length} {consultas.length === 1 ? 'consulta' : 'consultas'}).
+        <p style={{ margin: 0, fontSize: 14, color: '#1C1518', lineHeight: 1.5 }}>
+          Esto borrará toda la información de <strong>{clienta.nombre}</strong> y su historial.
         </p>
-        <p style={{ margin: '10px 0 18px', fontSize: 13, color: 'var(--text-secondary)' }}>
+        <p style={{ margin: '10px 0 18px', fontSize: 13, color: '#6E6266' }}>
           La acción no se puede deshacer. ¿Estás segura?
         </p>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -1256,10 +1282,9 @@ export default function ClientaPage() {
               fontWeight: 600,
               fontFamily: 'var(--font-sans)',
               borderRadius: 999,
-              background: 'linear-gradient(180deg, #A03333, #8E2D2D)',
-              color: '#fff',
+              background: '#C25949',
+              color: '#FAF7F5',
               border: 'none',
-              boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(142, 45, 45, 0.32)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -1268,25 +1293,13 @@ export default function ClientaPage() {
               opacity: deleting ? 0.6 : 1,
             }}
           >
-            {deleting ? (
-              <span
-                style={{
-                  width: 14,
-                  height: 14,
-                  border: '2px solid rgba(255,255,255,0.3)',
-                  borderTopColor: '#fff',
-                  borderRadius: '50%',
-                  animation: 'pulse-soft 1s linear infinite',
-                }}
-                className="loading-pulse"
-              />
-            ) : (
-              <Trash2 size={14} />
-            )}
-            Eliminar
+            <Trash2 size={14} />
+            {deleting ? 'Eliminando…' : 'Eliminar'}
           </button>
         </div>
       </Modal>
+
+      <BottomNavV2 />
     </div>
   );
 }

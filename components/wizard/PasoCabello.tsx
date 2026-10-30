@@ -140,7 +140,7 @@ function ChipGroup({
               fontFamily: 'var(--font-sans)',
               background: on ? 'var(--primary-pale)' : 'var(--bg-card)',
               color: on ? 'var(--primary)' : 'var(--text-secondary)',
-              border: `1px solid ${on ? 'rgba(45, 90, 39, 0.3)' : 'var(--border-soft)'}`,
+              border: `1px solid ${on ? 'rgba(59, 13, 30, 0.3)' : 'var(--border-soft)'}`,
               cursor: 'pointer',
             }}
           >
@@ -707,7 +707,7 @@ export default function PasoCabello({
               padding: '10px 14px',
               borderRadius: 12,
               background: 'var(--primary-pale)',
-              border: '1px solid rgba(45, 90, 39, 0.18)',
+              border: '1px solid rgba(59, 13, 30, 0.18)',
             }}
           >
             <Bot size={14} style={{ color: 'var(--primary)' }} />
@@ -1015,7 +1015,7 @@ export default function PasoCabello({
                     fontFamily: 'var(--font-sans)',
                     background: sel ? 'var(--primary-pale)' : 'var(--bg-card)',
                     color: sel ? 'var(--primary)' : 'var(--text-secondary)',
-                    border: `1px solid ${sel ? 'rgba(45, 90, 39, 0.3)' : 'var(--border-soft)'}`,
+                    border: `1px solid ${sel ? 'rgba(59, 13, 30, 0.3)' : 'var(--border-soft)'}`,
                     cursor: 'pointer',
                   }}
                 >
@@ -1082,7 +1082,7 @@ export default function PasoCabello({
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'flex-end',
-            background: 'rgba(20, 36, 26, 0.55)',
+            background: 'rgba(31, 5, 15, 0.55)',
             backdropFilter: 'blur(4px)',
           }}
         >

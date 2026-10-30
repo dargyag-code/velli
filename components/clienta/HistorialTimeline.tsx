@@ -8,7 +8,6 @@ import { generateConsultaPDF } from '@/lib/pdfGenerator';
 import { updateConsulta } from '@/lib/db';
 import { enlaceWhatsApp } from '@/lib/whatsapp';
 import { useFlags } from '@/lib/flags/useFlags';
-import HojaCotizar from '@/components/cotizador/HojaCotizar';
 
 interface Props {
   consultas: Consulta[];
@@ -44,7 +43,7 @@ function buildWhatsAppUrl(clienta: Clienta, consulta: Consulta): string {
     `Tu PDF completo te lo envío por aquí 📄`,
     ``,
     `_Diagnóstico generado con Velli Pro_`,
-    `_Inteligencia capilar a tu alcance_ 🌿`,
+    `_Generado con Velli Business Intelligence_`,
   ].filter((l) => l !== null).join('\n');
 
   return enlaceWhatsApp(clienta.telefono, lines);
@@ -180,7 +179,7 @@ function ConsultaItem({
               ].map(({ label, value }) => (
                 <div key={label} className="bg-[#F9F9F9] rounded-xl px-3 py-2">
                   <p className="text-[10px] text-[#999999]" style={serif}>{label}</p>
-                  <p className="text-sm font-bold text-[#2D5A27] capitalize" style={serif}>{value}</p>
+                  <p className="text-sm font-bold text-[var(--primary)] capitalize" style={serif}>{value}</p>
                 </div>
               ))}
             </div>
@@ -197,7 +196,7 @@ function ConsultaItem({
                 <p className="text-[10px] font-bold text-[#666666] mb-1.5" style={serif}>Problemas tratados:</p>
                 <div className="flex flex-wrap gap-1">
                   {consulta.problemas.map((p) => (
-                    <span key={p} className="text-[10px] bg-[#EEF5ED] text-[#2D5A27] px-2 py-0.5 rounded-full border border-[#90B98A]">
+                    <span key={p} className="text-[10px] bg-[var(--primary-light)] text-[var(--primary)] px-2 py-0.5 rounded-full border border-[var(--primary-line)]">
                       {p}
                     </span>
                   ))}
@@ -241,32 +240,24 @@ function ConsultaItem({
             </div>
 
             {/* Acciones */}
-            {cotizadorActivo && onCotizar && (
+            {cotizadorActivo && (
               <div className="mb-1">
-                <button
-                  type="button"
-                  onClick={() => onCotizar(consulta)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#C9956B] bg-[#FBF4EC] text-xs font-semibold text-[#8A5A2E] hover:bg-[#C9956B] hover:text-white active:scale-95 transition-all"
+                <Link
+                  href={`/?clientaId=${clienta.id}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#DFC5CE] bg-[#F7ECEF] text-xs font-semibold text-[#3B0D1E] hover:bg-[#3B0D1E] hover:text-[#FAF7F5] no-underline active:scale-95 transition-all"
                 >
                   <Sparkles size={12} />
-                  Cotizar
-                </button>
+                  Cotizar en Silla
+                </Link>
               </div>
             )}
             <div className="flex gap-2 flex-wrap">
-              <Link
-                href={`/diagnostico?edit=${consulta.id}`}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5E5E5] bg-white text-xs font-semibold text-[#666666] hover:border-[#2D5A27] hover:text-[#2D5A27] active:scale-95 transition-all"
-              >
-                <Pencil size={12} />
-                Editar
-              </Link>
 
               <button
                 type="button"
                 onClick={handleDownloadPDF}
                 disabled={downloading}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5E5E5] bg-white text-xs font-semibold text-[#666666] hover:border-[#2D5A27] hover:text-[#2D5A27] active:scale-95 transition-all disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5E5E5] bg-white text-xs font-semibold text-[#666666] hover:border-[var(--primary)] hover:text-[var(--primary)] active:scale-95 transition-all disabled:opacity-50"
               >
                 <Download size={12} className={downloading ? 'animate-bounce' : ''} />
                 {downloading ? 'Generando...' : 'Descargar PDF'}
@@ -291,14 +282,13 @@ function ConsultaItem({
   );
 }
 
-export default function HistorialTimeline({ consultas, clienta, onCotizacionCreada }: Props) {
+export default function HistorialTimeline({ consultas, clienta }: Props) {
   const flags = useFlags();
-  const [consultaACotizar, setConsultaACotizar] = useState<Consulta | null>(null);
   if (!consultas.length) {
     return (
       <div className="text-center py-10">
-        <div className="w-16 h-16 bg-[#EEF5ED] rounded-full mx-auto mb-3 flex items-center justify-center">
-          <Calendar size={28} className="text-[#90B98A]" />
+        <div className="w-16 h-16 bg-[var(--primary-light)] rounded-full mx-auto mb-3 flex items-center justify-center">
+          <Calendar size={28} className="text-[var(--primary-line)]" />
         </div>
         <p className="text-sm font-semibold text-[#666666]" style={serif}>Sin consultas registradas</p>
         <p className="text-xs text-[#999999] mt-1">Las consultas aparecerán aquí</p>
@@ -315,18 +305,8 @@ export default function HistorialTimeline({ consultas, clienta, onCotizacionCrea
           clienta={clienta}
           index={i}
           cotizadorActivo={flags.cotizador}
-          onCotizar={(cons) => setConsultaACotizar(cons)}
         />
       ))}
-      {flags.cotizador && (
-        <HojaCotizar
-          open={!!consultaACotizar}
-          onClose={() => setConsultaACotizar(null)}
-          clienta={clienta}
-          consulta={consultaACotizar}
-          onCotizacionCreada={() => onCotizacionCreada?.()}
-        />
-      )}
       {([] as null[]).map((_, idx) => (<React.Fragment key={idx} />
       ))}
     </div>

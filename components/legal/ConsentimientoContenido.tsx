@@ -16,7 +16,7 @@ const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
 function Seccion({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+      <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
         {titulo}
       </h2>
       {children}

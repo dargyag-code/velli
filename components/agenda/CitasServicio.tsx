@@ -180,7 +180,7 @@ function ModalNuevaCita({
             style={{
               display: 'flex', gap: 8, alignItems: 'flex-start',
               padding: '10px 12px', borderRadius: 12,
-              background: 'var(--primary-pale)', border: '1px solid rgba(45, 90, 39, 0.18)',
+              background: 'var(--primary-pale)', border: '1px solid rgba(59, 13, 30, 0.18)',
             }}
           >
             <Lock size={14} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: 1 }} />

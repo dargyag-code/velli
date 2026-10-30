@@ -14,7 +14,7 @@ interface ClientaCardProps {
 const rizoColors: Record<string, { bg: string; text: string; border: string }> = {
   '1': { bg: '#F5F5F5', text: '#6B6560', border: '#DDDDDD' },
   '2': { bg: '#E8F4FD', text: '#1A5276', border: '#BDD9EE' },
-  '3': { bg: '#EEF5ED', text: '#2D5A27', border: '#90B98A' },
+  '3': { bg: 'var(--primary-light)', text: 'var(--primary)', border: 'var(--primary-line)' },
   '4': { bg: '#FBF4EC', text: '#9A6A3A', border: '#D4A882' },
 };
 
@@ -99,7 +99,7 @@ export default function ClientaCard({ clienta, ultimoTratamiento }: ClientaCardP
         <div className="flex items-center gap-2 flex-shrink-0">
           {clienta.totalVisitas > 0 && (
             <span
-              className="text-[10px] font-bold bg-[#EEF5ED] text-[#2D5A27] px-2 py-0.5 rounded-full"
+              className="text-[10px] font-bold bg-[var(--primary-light)] text-[var(--primary)] px-2 py-0.5 rounded-full"
               style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
             >
               {clienta.totalVisitas}×

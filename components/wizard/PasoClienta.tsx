@@ -76,7 +76,7 @@ export default function PasoClienta({ data, onChange, errors }: Props) {
             gap: 12,
             padding: 14,
             background: 'var(--primary-pale)',
-            border: '1px solid rgba(45, 90, 39, 0.18)',
+            border: '1px solid rgba(59, 13, 30, 0.18)',
           }}
         >
           <AvatarV2 nombre={data.nombre} tone={toneFromTipoRizo()} size="md" />

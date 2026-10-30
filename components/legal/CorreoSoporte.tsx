@@ -8,7 +8,7 @@ export default function CorreoSoporte() {
     return <span className="font-semibold text-[#7A5200]">[correo de soporte pendiente]</span>;
   }
   return (
-    <a href={`mailto:${SOPORTE_EMAIL}`} className="text-[#2D5A27] font-semibold hover:underline">
+    <a href={`mailto:${SOPORTE_EMAIL}`} className="text-[var(--primary)] font-semibold hover:underline">
       {SOPORTE_EMAIL}
     </a>
   );

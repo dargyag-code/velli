@@ -36,6 +36,20 @@ const nextConfig: NextConfig = {
     // por foto vive en cada route handler (1.2MB c/u, 5 fotos máx).
     proxyClientMaxBodySize: '5mb',
   },
+  async redirects() {
+    return [
+      { source: '/agenda', destination: '/', permanent: false },
+      { source: '/agenda/:path*', destination: '/', permanent: false },
+      { source: '/color', destination: '/', permanent: false },
+      { source: '/color/:path*', destination: '/', permanent: false },
+      { source: '/cortes', destination: '/', permanent: false },
+      { source: '/cortes/:path*', destination: '/', permanent: false },
+      { source: '/conocimiento', destination: '/', permanent: false },
+      { source: '/conocimiento/:path*', destination: '/', permanent: false },
+      { source: '/diagnostico', destination: '/', permanent: false },
+      { source: '/diagnostico/:path*', destination: '/', permanent: false },
+    ];
+  },
   async headers() {
     return [
       {

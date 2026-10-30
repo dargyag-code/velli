@@ -10,7 +10,7 @@ export const metadata = {
 export default function PrivacidadPage() {
   return (
     <article className="bg-white rounded-2xl border border-[#E5E5E5] p-6">
-      <h1 className="text-2xl text-[#2D5A27] mb-1" style={serif}>
+      <h1 className="text-2xl text-[var(--primary)] mb-1" style={serif}>
         Política de privacidad
       </h1>
       <p className="text-xs text-[#999999] mb-6">Última actualización: octubre 2026</p>
@@ -19,7 +19,7 @@ export default function PrivacidadPage() {
 
       <div className="flex flex-col gap-5 text-sm text-[#2D2D2D] leading-relaxed">
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             1. Quiénes somos
           </h2>
           <p>
@@ -31,7 +31,7 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             2. Datos que recopilamos
           </h2>
           <ul className="list-disc pl-5 flex flex-col gap-1">
@@ -58,7 +58,7 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             3. Cómo usamos los datos y enlaces públicos de cotización
           </h2>
           <p>
@@ -79,7 +79,7 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             4. Inteligencia artificial (Anthropic)
           </h2>
           <p>
@@ -96,7 +96,7 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             5. Aislamiento multi-tenant
           </h2>
           <p>
@@ -107,7 +107,7 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             6. Tus derechos (Habeas Data)
           </h2>
           <p>Como titular o encargada de tratamiento puedes en cualquier momento:</p>
@@ -120,7 +120,7 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             7. Cómo eliminar tus datos
           </h2>
           <p>Puedes eliminar la información desde la propia app:</p>
@@ -141,7 +141,7 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             8. Conservación y seguridad
           </h2>
           <p>
@@ -152,7 +152,7 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[#2D5A27] mb-2" style={serif}>
+          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
             9. Contacto
           </h2>
           <p>

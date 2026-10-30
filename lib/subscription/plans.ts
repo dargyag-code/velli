@@ -77,17 +77,15 @@ export const PLANES: Record<PlanId, PlanDef> = {
   },
   pro: {
     id: 'pro',
-    nombre: 'Pro',
-    precioCop: 60_000,
-    tagline: 'Para salones en crecimiento',
-    destacado: true,
+    nombre: 'Studio BI',
+    precioCop: 89_000,
+    tagline: 'Control de precios, costos sin báscula y rentabilidad por servicio',
     beneficios: [
-      'Clientas ilimitadas',
-      'Todo lo del plan Básico',
-      'Cotizador + rentabilidad (costos, comisiones y margen)',
-      'Calculadora de colorimetría',
-      'Reportes de tu negocio y exportación a Excel',
-      'Personalización de marca',
+      'Cotizador ilimitado sin báscula',
+      'Cierre en 1 toque («Por Cobrar»)',
+      'Comprobantes por WhatsApp (/c/[token])',
+      'Dashboard BI de Utilidad Neta y Liquidación de Especialistas',
+      'Clientas ilimitadas y respaldo de datos',
     ],
     features: {
       maxClientas: null,
@@ -105,14 +103,16 @@ export const PLANES: Record<PlanId, PlanDef> = {
   },
   pro_ia: {
     id: 'pro_ia',
-    nombre: 'Pro + IA',
-    precioCop: 120_000,
-    tagline: 'La experiencia Velli completa',
+    nombre: 'Salón Pro + IA',
+    precioCop: 149_000,
+    tagline: 'Inteligencia Artificial capilar, múltiples especialistas y marca blanca',
+    destacado: true,
     beneficios: [
-      'Todo lo del plan Pro',
-      'Hasta 150 diagnósticos con IA al mes',
-      'Cotización pública sin marca Velli',
-      'Acceso anticipado a nuevas funciones de IA',
+      'Todo lo de Plan Studio BI',
+      'Diagnóstico fotográfico con IA (hasta 150 análisis/mes)',
+      'Asistente visual IA de porosidad, densidad y canas',
+      'Comprobante público sin marca Velli',
+      'Soporte prioritario',
     ],
     features: {
       maxClientas: null,
@@ -131,6 +131,9 @@ export const PLANES: Record<PlanId, PlanDef> = {
 };
 
 export const PLAN_IDS = Object.keys(PLANES) as PlanId[];
+
+/** Planes activos comercialmente en Velli Business Intelligence (sin plan básico legado). */
+export const PLAN_IDS_COMERCIALES: readonly PlanId[] = ['pro', 'pro_ia'];
 
 export function esPlanId(v: unknown): v is PlanId {
   return typeof v === 'string' && v in PLANES;

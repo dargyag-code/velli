@@ -15,9 +15,9 @@ interface BtnProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, '
 
 const variantStyles: Record<BtnVariant, React.CSSProperties> = {
   primary: {
-    background: 'linear-gradient(180deg, #3D7A35, #2D5A27)',
+    background: 'linear-gradient(180deg, var(--primary-hover), var(--primary))',
     color: '#fff',
-    boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(45, 90, 39, 0.32)',
+    boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(59, 13, 30, 0.32)',
     border: 'none',
   },
   gold: {
@@ -27,9 +27,9 @@ const variantStyles: Record<BtnVariant, React.CSSProperties> = {
     border: 'none',
   },
   dark: {
-    background: 'linear-gradient(180deg, #25401E, #14241A)',
+    background: 'linear-gradient(180deg, var(--primary-mid), var(--primary-deep))',
     color: '#F5EDDC',
-    boxShadow: '0 1px 0 rgba(255,255,255,0.06) inset, 0 4px 14px rgba(20, 36, 26, 0.4)',
+    boxShadow: '0 1px 0 rgba(255,255,255,0.06) inset, 0 4px 14px rgba(31, 5, 15, 0.4)',
     border: 'none',
   },
   ghost: {

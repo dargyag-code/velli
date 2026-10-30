@@ -1,56 +1,59 @@
 @import "tailwindcss";
 
 :root {
-  /* ── Base palette (v2 premium · alineado al diseño Velli.html) ─────── */
-  --primary: #2D5A27;
-  --primary-deep: #14241A;
-  --primary-mid: #1F3D24;
-  --primary-dark: #1A2E1A; /* legacy alias — uso en componentes antiguos */
-  --primary-light: #EEF5ED;
-  --primary-pale: #F4F8F2;
-  --primary-hover: #3D7A35;
-  --primary-line: #B8CDB4;
+  /* ── Base palette (Velvet Studio · Alta Cosmética + BI) ────────────── */
+  --primary: #3B0D1E;          /* Velvet Plum (antes verde #2D5A27) */
+  --primary-deep: #1F050F;     /* Plum abisal para contrastes profundos */
+  --primary-mid: #2D0916;      /* Plum medio */
+  --primary-dark: #260713;     /* legacy alias — uso en componentes antiguos */
+  --primary-light: #F7ECEF;    /* Cuarzo/Plum ultra suave para cards activas */
+  --primary-pale: #FCF8F9;     /* Velo rosado casi blanco */
+  --primary-hover: #6E1E3A;    /* Velvet Berry para estados interactivos */
+  --primary-line: #DFC5CE;     /* Línea divisoria con subtono ciruela */
 
-  --secondary: #C9956B;
-  --secondary-deep: #8A5A2E;
-  --secondary-light: #FBF4EC;
-  --secondary-pale: #FAF5EE;
-  --secondary-hover: #D4A882; /* legacy */
+  --secondary: #C98A7A;        /* Velvet Rose-Copper */
+  --secondary-deep: #6E1E3A;   /* Velvet Berry (usado en eyebrows y acentos) */
+  --secondary-light: #F7ECE9;  /* Cuarzo suave */
+  --secondary-pale: #FCF7F5;   /* Fondo cálido secundario */
+  --secondary-hover: #E8CFC8;  /* Velvet Quartz */
 
-  --gold: #E8C290;            /* acento dorado editorial */
-  --gold-deep: #B47E4D;
+  --gold: #E8CFC8;             /* Acento cosmético Velvet Quartz */
+  --gold-deep: #A66E62;        /* Rose-gold profundo */
 
-  --bg: #F2EBDD;              /* crema cálida · era #F5F0E8 */
-  --bg-deep: #E8DFCB;
-  --bg-card: #FFFFFF;
-  --bg-elev: #FFFEFB;
+  --bg: #FAF7F5;               /* Velvet Cream luminoso (antes #F2EBDD) */
+  --bg-deep: #F2EAE6;          /* Crema profundo para fondos secundarios */
+  --bg-card: #FFFFFF;          /* Superficie pura para lectura de datos */
+  --bg-elev: #FFFDFC;          /* Superficie elevada */
 
-  --text-main: #1A1814;        /* era #2D2D2D */
-  --text-secondary: #5C544A;   /* era #666666 */
-  --text-tertiary: #8C8378;    /* era #999999 */
-  --text-muted: #B5AB9D;
-  --border: #E5DFD2;           /* era #E5E5E5 */
-  --border-soft: #EFE9DB;
-  --border-strong: #C9C0AE;
+  --text-main: #1C1518;        /* Velvet Obsidian (negro con subtono ciruela) */
+  --text-secondary: #6E6266;   /* Velvet Taupe */
+  --text-tertiary: #96888C;    /* Mauve-gris para subtítulos y etiquetas */
+  --text-muted: #BDB0B4;       /* Texto deshabilitado / placeholders */
 
-  --success: #2D8E5B;
-  --warning: #C97A4C;
-  --danger: #8E2D2D;
+  --border: #EFE8E4;           /* Borde cálido Velvet */
+  --border-soft: #F5EFEA;      /* Borde sutil de tarjetas */
+  --border-strong: #D9CCC6;    /* Divisor editorial marcado */
 
-  /* Treatment colors */
-  --treat-hidrat-bg: #E8F4FD;     --treat-hidrat-color: #1A5276;
-  --treat-nutri-bg: #EEF5ED;      --treat-nutri-color: #2D5A27;
-  --treat-recon-bg: #FFF3E0;      --treat-recon-color: #D4820A;
-  --treat-repol-bg: #F3EDF9;      --treat-repol-color: #6B3FA0;
-  --treat-mant-bg: #F5F5F5;       --treat-mant-color: #6B6560;
+  /* ── Semántica BI No Punitiva ──────────────────────────────────────── */
+  --success: #0D9488;          /* Emerald Teal: Rentabilidad óptima */
+  --warning: #D97757;          /* Warm Copper: Oportunidad de calibración */
+  --danger: #C25949;           /* Terracota suave (cero rojo punitivo) */
+  --bi-smart: #7C3AED;         /* Velvet Amethyst: Cálculo sin báscula */
 
-  /* ── Sistema de elevación premium ────────────────────────────────── */
-  --shadow-xs: 0 1px 2px rgba(20, 36, 26, 0.04), 0 1px 1px rgba(20, 36, 26, 0.02);
-  --shadow-sm: 0 1px 2px rgba(20, 36, 26, 0.04), 0 2px 6px rgba(20, 36, 26, 0.04);
-  --shadow-md: 0 1px 3px rgba(20, 36, 26, 0.05), 0 8px 20px rgba(20, 36, 26, 0.06);
-  --shadow-lg: 0 2px 4px rgba(20, 36, 26, 0.06), 0 18px 40px rgba(20, 36, 26, 0.10);
-  --shadow-hi: 0 8px 32px rgba(20, 36, 26, 0.18), 0 24px 64px rgba(20, 36, 26, 0.16);
-  --shadow-inner: inset 0 1px 2px rgba(20, 36, 26, 0.04);
+  /* ── Treatment colors (Armonizados con Velvet Studio) ──────────────── */
+  --treat-hidrat-bg: #EEF6FA;  --treat-hidrat-color: #1E5670;
+  --treat-nutri-bg: #EAF6F4;   --treat-nutri-color: #0D7A70;
+  --treat-recon-bg: #FDF2EC;   --treat-recon-color: #B85D3B;
+  --treat-repol-bg: #F5EFFB;   --treat-repol-color: #6D37A8;
+  --treat-mant-bg: #F6F3F4;    --treat-mant-color: #6E6266;
+
+  /* ── Sistema de elevación premium (Sombras teñidas en Velvet Plum) ─── */
+  --shadow-xs: 0 1px 2px rgba(59, 13, 30, 0.04), 0 1px 1px rgba(59, 13, 30, 0.02);
+  --shadow-sm: 0 2px 8px -2px rgba(59, 13, 30, 0.06), 0 1px 3px rgba(59, 13, 30, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(59, 13, 30, 0.06), 0 12px 28px -6px rgba(59, 13, 30, 0.08);
+  --shadow-lg: 0 6px 16px -4px rgba(59, 13, 30, 0.08), 0 20px 44px -8px rgba(59, 13, 30, 0.12);
+  --shadow-hi: 0 8px 32px rgba(59, 13, 30, 0.16), 0 24px 64px rgba(59, 13, 30, 0.18);
+  --shadow-inner: inset 0 1px 2px rgba(59, 13, 30, 0.04);
 
   --radius-xs: 6px;
   --radius-sm: 10px;
@@ -59,26 +62,47 @@
   --radius-xl: 24px;
   --radius-2xl: 32px;
 
-  /* ── Tipografía ──────────────────────────────────────────────────── */
-  --font-serif: var(--font-dm-serif), 'DM Serif Display', 'Playfair Display', Georgia, serif;
+  /* ── Tipografía ────────────────────────────────────────────────────── */
+  --font-serif: var(--font-jakarta), 'Plus Jakarta Sans', var(--font-dm-serif), Georgia, sans-serif;
   --font-sans: var(--font-dm-sans), 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: var(--font-jetbrains), 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* Exponer tokens a clases nativas de Tailwind v4 */
+@theme {
+  --color-velvet-cream: #FAF7F5;
+  --color-velvet-surface: #FFFFFF;
+  --color-velvet-border: #EFE8E4;
+  --color-velvet-quartz: #E8CFC8;
+  --color-velvet-plum: #3B0D1E;
+  --color-velvet-berry: #6E1E3A;
+  --color-velvet-obsidian: #1C1518;
+  --color-velvet-taupe: #6E6266;
+  --color-bi-emerald: #0D9488;
+  --color-bi-amethyst: #7C3AED;
+  --color-bi-copper: #D97757;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
 
 html, body {
   margin: 0;
   padding: 0;
   background-color: var(--bg);
   color: var(--text-main);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-serif);
-  font-weight: 400;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .font-brand { font-family: var(--font-serif); }
@@ -86,7 +110,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Tipografía utilitaria editorial */
 .v-serif { font-family: var(--font-serif); }
 .v-sans  { font-family: var(--font-sans); }
-.v-mono  { font-family: var(--font-mono); }
+.v-mono  { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
 .v-caps {
   font-family: var(--font-sans);
@@ -110,6 +134,7 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 10px;
   letter-spacing: 0.08em;
   color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
 }
 
 .v-rule {
@@ -118,7 +143,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .v-ticks { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
-.v-ticks::before { content: ''; display: inline-block; width: 10px; height: 1px; background: var(--text-main); }
+.v-ticks::before { content: ''; display: inline-block; width: 10px; height: 1px; background: var(--primary); }
 .v-ticks::after  { content: ''; flex: 1; height: 1px; background: var(--border); }
 
 /* Cards */
@@ -128,23 +153,25 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--border-soft);
   box-shadow: var(--shadow-sm);
 }
+
 .v-card-hi {
   background: var(--bg-card);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-md);
 }
+
 .v-card-flat {
   background: var(--bg-card);
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
 }
 
-/* Editorial gradient (hero dark) */
+/* Editorial gradient (Hero Dark en clave Velvet Studio) */
 .v-gradient-hero {
   background:
-    radial-gradient(ellipse 120% 80% at 100% 0%, rgba(201, 149, 107, 0.28), transparent 60%),
-    radial-gradient(ellipse 120% 80% at 0% 100%, rgba(45, 90, 39, 0.18), transparent 60%),
-    linear-gradient(180deg, #14241A 0%, #1F3D24 60%, #2D5A27 100%);
+    radial-gradient(ellipse 120% 80% at 100% 0%, rgba(232, 207, 200, 0.22), transparent 60%),
+    radial-gradient(ellipse 120% 80% at 0% 100%, rgba(110, 30, 58, 0.35), transparent 60%),
+    linear-gradient(180deg, #1F050F 0%, #2D0916 55%, #3B0D1E 100%);
 }
 
 /* Grain overlay (refinado v2) */
@@ -153,7 +180,7 @@ h1, h2, h3, h4, h5, h6 {
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.04;
+  opacity: 0.035;
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-size: 220px 220px;
@@ -170,35 +197,34 @@ h1, h2, h3, h4, h5, h6 {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-md);
-  background: radial-gradient(ellipse 70% 60% at 50% 30%, #6b4a32 0%, #3d2a1c 55%, #1f1510 100%);
+  background: radial-gradient(ellipse 70% 60% at 50% 30%, #6E1E3A 0%, #3B0D1E 55%, #1C1518 100%);
 }
 .v-photo::after {
   content: '';
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(0,0,0,0.5), transparent 65%),
-    repeating-linear-gradient(14deg, transparent 0 4px, rgba(0,0,0,0.18) 4px 6px);
+    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(28, 21, 24, 0.5), transparent 65%),
+    repeating-linear-gradient(14deg, transparent 0 4px, rgba(28, 21, 24, 0.18) 4px 6px);
 }
 .v-photo-blonde { background: radial-gradient(ellipse 70% 60% at 50% 30%, #d4b18a 0%, #8b6a44 60%, #4a3827 100%); }
-.v-photo-curly  { background: radial-gradient(ellipse 60% 65% at 50% 35%, #4a2f1e 0%, #2a1a10 100%); }
-.v-photo-dark   { background: radial-gradient(ellipse 70% 60% at 50% 30%, #3a2a20 0%, #1a110b 100%); }
-.v-photo-red    { background: radial-gradient(ellipse 70% 60% at 50% 30%, #8c4a2e 0%, #4a2014 100%); }
+.v-photo-curly  { background: radial-gradient(ellipse 60% 65% at 50% 35%, #522938 0%, #261119 100%); }
+.v-photo-dark   { background: radial-gradient(ellipse 70% 60% at 50% 30%, #3B232B 0%, #1C1518 100%); }
+.v-photo-red    { background: radial-gradient(ellipse 70% 60% at 50% 30%, #8c3b4a 0%, #4a1522 100%); }
 
 /* Scrollbar utility */
 .v-noscroll::-webkit-scrollbar { display: none; }
 .v-noscroll { scrollbar-width: none; }
-
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #f1f1f1; }
-::-webkit-scrollbar-thumb { background: var(--secondary); border-radius: 2px; }
+::-webkit-scrollbar-track { background: #FAF7F5; }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
 
-/* ── Card hover (legacy) ────────────────────────────────────────────── */
+/* ── Card hover & Selección Táctil Velvet ───────────────────────────── */
 .card-hover {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(45, 90, 39, 0.14);
+  box-shadow: 0 8px 28px rgba(59, 13, 30, 0.12);
 }
 
 .selection-card {
@@ -208,7 +234,7 @@ h1, h2, h3, h4, h5, h6 {
 .selection-card.selected {
   border-color: var(--primary) !important;
   background-color: var(--primary-light) !important;
-  box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.15);
+  box-shadow: 0 0 0 3px rgba(59, 13, 30, 0.14);
 }
 
 /* ── Animations ─────────────────────────────────────────────────────── */
@@ -231,7 +257,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 .fade-in { animation: fadeIn 0.25s ease forwards; }
 
-@keyframes vFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes vFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 .v-fade { animation: vFadeIn 0.5s ease forwards; }
 
 @keyframes fadeUp {
@@ -252,16 +281,16 @@ h1, h2, h3, h4, h5, h6 {
 .stagger-item:nth-child(8) { animation-delay: 560ms; }
 
 @keyframes pulse-ring {
-  0%   { box-shadow: 0 0 0 0 rgba(45, 90, 39, 0.45); }
-  70%  { box-shadow: 0 0 0 8px rgba(45, 90, 39, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(45, 90, 39, 0); }
+  0%   { box-shadow: 0 0 0 0 rgba(59, 13, 30, 0.45); }
+  70%  { box-shadow: 0 0 0 8px rgba(59, 13, 30, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(59, 13, 30, 0); }
 }
 .pulse-ring { animation: pulse-ring 1.8s ease-in-out infinite; }
 
 @keyframes vPulseRing {
-  0%   { box-shadow: 0 0 0 0 rgba(45, 90, 39, 0.4); }
-  70%  { box-shadow: 0 0 0 10px rgba(45, 90, 39, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(45, 90, 39, 0); }
+  0%   { box-shadow: 0 0 0 0 rgba(59, 13, 30, 0.4); }
+  70%  { box-shadow: 0 0 0 10px rgba(59, 13, 30, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(59, 13, 30, 0); }
 }
 .v-pulse { animation: vPulseRing 2s ease-in-out infinite; }
 
@@ -276,7 +305,7 @@ h1, h2, h3, h4, h5, h6 {
   100% { background-position: 200% center; }
 }
 .skeleton-shimmer {
-  background: linear-gradient(90deg, #ede9e0 25%, #e2ddd4 50%, #ede9e0 75%);
+  background: linear-gradient(90deg, #F5EFEA 25%, #E8CFC8 50%, #F5EFEA 75%);
   background-size: 200% auto;
   animation: shimmer 1.4s linear infinite;
   border-radius: 16px;
@@ -338,14 +367,11 @@ h1, h2, h3, h4, h5, h6 {
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--primary) !important;
-  box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 13, 30, 0.12);
 }
 
 /* ── Safe area padding ──────────────────────────────────────────────── */
 .pb-safe { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
-/* BottomNav: 64px + safe-area + FAB de 56px que sobresale 20px por encima.
-   Reservar 118px en iPhone (safe-area ~34px) para que la última Section
-   nunca quede tapada por el FAB — antes era 106px y faltaban ~12px. */
 .pb-nav  { padding-bottom: max(112px, calc(96px + env(safe-area-inset-bottom))); }
 
 /* ── Grain texture overlay (legacy global) ──────────────────────────── */

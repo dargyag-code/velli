@@ -34,10 +34,10 @@ export default function ToastHost() {
       {toasts.map((t) => {
         const palette =
           t.kind === 'success'
-            ? { bg: '#2D5A27', fg: '#FFFFFF', icon: <Check size={16} /> }
+            ? { bg: 'var(--primary)', fg: '#FFFFFF', icon: <Check size={16} /> }
             : t.kind === 'error'
             ? { bg: '#B23A48', fg: '#FFFFFF', icon: <AlertCircle size={16} /> }
-            : { bg: '#1A2E1A', fg: '#FFFFFF', icon: <Info size={16} /> };
+            : { bg: 'var(--primary-deep)', fg: '#FFFFFF', icon: <Info size={16} /> };
 
         return (
           <div

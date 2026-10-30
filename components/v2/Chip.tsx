@@ -11,7 +11,7 @@ interface ChipProps {
 }
 
 const toneMap: Record<ChipTone, { bg: string; fg: string; bd: string }> = {
-  green:  { bg: 'var(--primary-pale)',     fg: 'var(--primary)',           bd: 'rgba(45, 90, 39, 0.16)' },
+  green:  { bg: 'var(--primary-pale)',     fg: 'var(--primary)',           bd: 'rgba(59, 13, 30, 0.16)' },
   gold:   { bg: 'var(--secondary-pale)',   fg: 'var(--secondary-deep)',    bd: 'rgba(138, 90, 46, 0.18)' },
   blue:   { bg: 'var(--treat-hidrat-bg)',  fg: 'var(--treat-hidrat-color)', bd: 'rgba(26, 82, 118, 0.15)' },
   purple: { bg: 'var(--treat-repol-bg)',   fg: 'var(--treat-repol-color)',  bd: 'rgba(107, 63, 160, 0.15)' },
