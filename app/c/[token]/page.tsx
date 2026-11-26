@@ -113,12 +113,13 @@ const cargarEnPeticion = cache(async (token: string): Promise<ResultadoCargaCoti
       const admin = createAdminClient();
       const { data: cotRow } = await admin
         .from('cotizaciones')
-        .select('user_id, estilista_nombre, variables, perfil_extendido, estado')
+        .select('user_id, organization_id, estilista_nombre, variables, perfil_extendido, estado')
         .eq('token_publico', token.trim())
         .maybeSingle();
 
       const fila = cotRow as {
         user_id?: string;
+        organization_id?: string | null;
         estilista_nombre?: string | null;
         variables?: VariablesCotizacion | null;
         perfil_extendido?: Record<string, unknown> | null;
@@ -132,24 +133,33 @@ const cargarEnPeticion = cache(async (token: string): Promise<ResultadoCargaCoti
           fila.perfil_extendido?.['consentimientoAceptado'] === true ||
           fila.estado === 'cobrada';
 
-        if (fila.user_id) {
-          const [{ data: profRow }, { data: subRow }] = await Promise.all([
+        const orgIdEfectivo = fila.organization_id || fila.user_id || null;
+        if (orgIdEfectivo) {
+          const [{ data: orgRow }, { data: profRow }, { data: subRow }] = await Promise.all([
+            admin
+              .from('organizations')
+              .select('whatsapp_phone, plan')
+              .eq('id', orgIdEfectivo)
+              .maybeSingle(),
             admin
               .from('profiles')
               .select('telefono')
-              .eq('id', fila.user_id)
+              .eq('id', fila.user_id ?? orgIdEfectivo)
               .maybeSingle(),
             admin
-              .from('suscripciones')
-              .select('plan, estado')
-              .eq('user_id', fila.user_id)
+              .from('subscriptions')
+              .select('plan, status')
+              .eq('user_id', orgIdEfectivo)
               .maybeSingle(),
           ]);
 
+          const org = orgRow as { whatsapp_phone?: string | null; plan?: string | null } | null;
           salonWhatsapp =
-            ((profRow as { telefono?: string | null } | null)?.telefono ?? '').trim() || null;
-          const sub = subRow as { plan?: string | null; estado?: string | null } | null;
-          if (sub?.plan === 'pro_ia') {
+            (org?.whatsapp_phone ?? '').trim() ||
+            ((profRow as { telefono?: string | null } | null)?.telefono ?? '').trim() ||
+            null;
+          const sub = subRow as { plan?: string | null; status?: string | null } | null;
+          if (org?.plan === 'pro_ia' || sub?.plan === 'pro_ia') {
             esPlanProIA = true;
           }
         }

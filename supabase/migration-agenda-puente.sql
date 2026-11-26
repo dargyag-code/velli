@@ -145,7 +145,7 @@ BEGIN
       FROM public.appointments a
       WHERE a.organization_id = NEW.organization_id
         AND a.specialist_id = NEW.specialist_id
-        AND a.id <> NEW.id
+        AND a.id IS DISTINCT FROM NEW.id
         AND a.status NOT IN ('cancelled', 'no_show')
         AND tstzrange(a.starts_at, a.ends_at, '[)') && tstzrange(NEW.starts_at, NEW.ends_at, '[)')
     ) THEN
@@ -273,6 +273,20 @@ ALTER TABLE public.clientas
 
 CREATE INDEX IF NOT EXISTS idx_clientas_reactivacion
   ON public.clientas (user_id, ultima_visita, last_reactivation_contact_at);
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'clientas'
+      AND column_name = 'organization_id'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_clientas_reactivacion_org
+      ON public.clientas (organization_id, ultima_visita, last_reactivation_contact_at);
+  END IF;
+END $$;
 
 -- ── 5. Row Level Security (RLS) ────────────────────────────────────────────
 ALTER TABLE public.specialist_schedules ENABLE ROW LEVEL SECURITY;
