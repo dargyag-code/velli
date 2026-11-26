@@ -123,3 +123,11 @@ Los siguientes puntos dependen de servicios externos y deben validarse en el des
    - Subir un logo en `/configuracion` y una foto de producto en `/vitrina` (< 3 MB, `.webp`/`.png`/`.jpg`) verificando renderizado público en `/s/[slug]` y previsualización OpenGraph al compartir en WhatsApp.
    - Iniciar sesión con una cuenta miembro de rol `specialist`: comprobar redirección automática de `/reportes` y `/configuracion/precios` hacia `/agenda`, ausencia de costos/utilidad neta en `/` y creación exitosa de cotización enviada a WhatsApp.
    - Agendar dos citas simultáneas para la misma especialista en `/s/[slug]` y confirmar respuesta `409` sin doble reserva.
+
+---
+
+## 4. Puerta de Calidad Automatizada
+
+- **TypeScript (`npm run typecheck`)**: `0` errores (`strict: true`).
+- **Vitest (`npm test`)**: `18` archivos de prueba y **`390` tests pasando** (incluyendo `tests/preprod.hardening.test.ts` sobre `btree_gist` y `SET search_path = ''`, reglas y API de Storage `vitrina-media`, guardias y proyección operativa de `specialist`, y metadatos SEO/OpenGraph seguros en `/s/[slug]` frente a `/c/[token]`).
+- **Build de producción (`npm run build`)**: compilación limpia sobre **Next.js `16.4.6`** (Turbopack).

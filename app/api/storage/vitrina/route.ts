@@ -204,6 +204,14 @@ export async function DELETE(req: Request) {
         ? extraerRutaVitrinaMediaDesdeUrl(raw.url)
         : null;
 
+  const formatoRuta = validarRutaObjetoVitrinaMedia(candidatoRuta);
+  if (!formatoRuta.ok) {
+    return Response.json(
+      { error: formatoRuta.error },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
+  }
+
   const validacionRuta = validarRutaObjetoVitrinaMedia(
     candidatoRuta,
     access.membership.organizationId
@@ -211,7 +219,7 @@ export async function DELETE(req: Request) {
   if (!validacionRuta.ok) {
     return Response.json(
       { error: validacionRuta.error },
-      { status: 400, headers: NO_STORE_HEADERS }
+      { status: 403, headers: NO_STORE_HEADERS }
     );
   }
 
