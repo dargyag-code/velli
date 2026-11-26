@@ -1,25 +1,23 @@
 import BannerPlaceholder from '@/components/legal/BannerPlaceholder';
 import CorreoSoporte from '@/components/legal/CorreoSoporte';
 
-const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
-
 export const metadata = {
   title: 'Términos de uso — Velli Pro',
 };
 
 export default function TerminosPage() {
   return (
-    <article className="bg-white rounded-2xl border border-[#E5E5E5] p-6">
-      <h1 className="text-2xl text-[var(--primary)] mb-1" style={serif}>
+    <article className="bg-white rounded-3xl border border-[#EFE8E4] p-6 sm:p-8 shadow-velvet">
+      <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#3B0D1E] mb-1.5">
         Términos de uso
       </h1>
-      <p className="text-xs text-[#999999] mb-6">Última actualización: octubre 2026</p>
+      <p className="text-xs text-[#947C85] mb-6">Última actualización: octubre 2026</p>
 
       <BannerPlaceholder />
 
-      <div className="flex flex-col gap-5 text-sm text-[#2D2D2D] leading-relaxed">
+      <div className="flex flex-col gap-5 text-sm text-[#6B535C] leading-relaxed [&_strong]:text-[#3B0D1E]">
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             1. Propósito del servicio
           </h2>
           <p>
@@ -33,7 +31,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             2. Estimaciones, cotizaciones y responsabilidad del profesional
           </h2>
           <p>
@@ -61,7 +59,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             3. Cuentas y responsabilidad
           </h2>
           <p>
@@ -72,7 +70,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             4. Información de las clientas
           </h2>
           <p>
@@ -85,7 +83,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             5. Uso de inteligencia artificial
           </h2>
           <p>
@@ -99,7 +97,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             6. Uso aceptable
           </h2>
           <p>No está permitido usar Velli Pro para:</p>
@@ -112,7 +110,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             7. Disponibilidad y limitación de responsabilidad
           </h2>
           <p>
@@ -126,7 +124,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             8. Cambios
           </h2>
           <p>
@@ -136,7 +134,7 @@ export default function TerminosPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             9. Contacto
           </h2>
           <p>
@@ -144,7 +142,7 @@ export default function TerminosPage() {
           </p>
         </section>
 
-        <p className="text-xs text-[#999999] italic border-t border-[#F0F0F0] pt-4 mt-2">
+        <p className="text-xs text-[#947C85] italic border-t border-[#EFE8E4] pt-4 mt-2">
           Borrador de trabajo: puede cambiar antes de la versión definitiva.
         </p>
       </div>

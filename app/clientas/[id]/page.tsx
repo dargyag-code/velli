@@ -19,7 +19,7 @@ import {
   UserCheck,
   Clock,
 } from 'lucide-react';
-import { BottomNavV2, Btn, Chip } from '@/components/v2';
+import { Btn, Chip, VelvetTopHeader } from '@/components/v2';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import HistorialTimeline from '@/components/clienta/HistorialTimeline';
@@ -80,32 +80,34 @@ function SeccionCotizacionesClienta({
 
   if (cotizaciones.length === 0) {
     return (
-      <article className="bg-white rounded-2xl border border-[#EFE8E4] p-6 text-center shadow-[0_8px_24px_-10px_rgba(59,13,30,0.06)]">
-        <div className="w-11 h-11 rounded-2xl bg-[#F7ECEF] text-[#3B0D1E] mx-auto mb-3 flex items-center justify-center">
-          <Sparkles size={19} />
+      <article className="bg-white rounded-3xl border border-[#EFE8E4] p-6 text-center shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]">
+        <div className="w-12 h-12 rounded-2xl bg-[#F5EBE8] border border-[#E8CFC8] text-[#3B0D1E] mx-auto mb-3 flex items-center justify-center">
+          <Sparkles size={20} />
         </div>
-        <h3 className="text-base font-bold text-[#1C1518]">Sin cotizaciones ni cierres aún</h3>
-        <p className="text-xs text-[#6E6266] mt-1 mb-4 max-w-xs mx-auto leading-relaxed">
+        <h3 className="m-0 font-sans text-base font-bold tracking-tight text-[#3B0D1E]">
+          Sin cotizaciones ni cierres aún
+        </h3>
+        <p className="text-xs text-[#6B535C] mt-1 mb-4 max-w-xs mx-auto leading-relaxed">
           Cotiza en silla para registrar el diagnóstico capilar, consumo químico sin báscula y cierre financiero de esta clienta.
         </p>
         <Link
           href={`/?clientaId=${clientaId}`}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#3B0D1E] hover:bg-[#6E1E3A] text-[#FAF7F5] text-xs font-bold no-underline transition-colors"
+          className="min-h-[44px] inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] text-xs font-bold no-underline transition-colors"
         >
-          <Sparkles size={13} /> Cotizar en silla
+          <Sparkles size={14} /> Cotizar en silla
         </Link>
       </article>
     );
   }
 
   return (
-    <section className="bg-white rounded-3xl border border-[#EFE8E4] p-5 shadow-[0_12px_28px_-10px_rgba(59,13,30,0.06)] space-y-3.5">
+    <section className="bg-white rounded-3xl border border-[#EFE8E4] p-5 sm:p-6 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] space-y-3.5">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#6E1E3A]">
+          <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
             Trazabilidad Financiera & Capilar
           </span>
-          <h2 className="text-base sm:text-lg font-bold text-[#1C1518] mt-0.5">
+          <h2 className="m-0 mt-0.5 font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E] tabular-nums">
             Cotizaciones y Cierres ({cotizaciones.length})
           </h2>
         </div>
@@ -113,7 +115,7 @@ function SeccionCotizacionesClienta({
           <button
             type="button"
             onClick={onVerTodas}
-            className="text-xs font-bold text-[#3B0D1E] hover:underline cursor-pointer"
+            className="min-h-[40px] px-3 rounded-xl bg-[#FAF7F5] hover:bg-[#F5EBE8] border border-[#EFE8E4] text-xs font-bold text-[#3B0D1E] cursor-pointer transition-colors"
           >
             Ver todas →
           </button>
@@ -140,29 +142,33 @@ function SeccionCotizacionesClienta({
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-sm font-bold text-[#1C1518]">{cot.servicioNombre}</h3>
+                    <h3 className="m-0 font-sans text-sm font-bold text-[#3B0D1E] capitalize">
+                      {cot.servicioNombre}
+                    </h3>
                     {cot.estado === 'cobrada' ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#EAF6F4] text-[#0D9488] text-[10px] font-bold">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#F0FDFA] border border-[#0D9488]/25 text-[#0D9488] text-[10px] font-bold">
                         <CheckCircle2 size={11} /> Cobrada
                       </span>
                     ) : cot.estado === 'enviada' ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FDF2EC] text-[#D97757] text-[10px] font-bold">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FFF7F5] border border-[#D97757]/30 text-[#D97757] text-[10px] font-bold">
                         <Clock size={11} /> Por cobrar
                       </span>
                     ) : cot.estado === 'anulada' ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#EFE8E4] text-[#6E6266] text-[10px] font-bold">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#EFE8E4] text-[#6B535C] text-[10px] font-bold">
                         Anulada
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#F7ECEF] text-[#3B0D1E] text-[10px] font-bold">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#F5EBE8] border border-[#E8CFC8] text-[#3B0D1E] text-[10px] font-bold">
                         Borrador
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#6E6266] mt-1">
-                    <span className="font-mono tabular-nums">{fechaLegible}</span>
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#6B535C] mt-1">
+                    <span className="font-mono font-semibold tabular-nums text-[#947C85]">
+                      {fechaLegible}
+                    </span>
                     <span>·</span>
-                    <span className="inline-flex items-center gap-1 font-medium text-[#1C1518]">
+                    <span className="inline-flex items-center gap-1 font-semibold text-[#3B0D1E] capitalize">
                       <UserCheck size={12} className="text-[#3B0D1E]" />
                       {especialista}
                     </span>
@@ -170,10 +176,10 @@ function SeccionCotizacionesClienta({
                 </div>
 
                 <div className="text-right shrink-0">
-                  <div className="text-base font-bold text-[#3B0D1E] tabular-nums">
+                  <div className="font-display text-lg font-bold text-[#3B0D1E] tabular-nums tracking-tight">
                     {formatearPrecioCop(montoMostrado)}
                   </div>
-                  <div className="text-[10px] text-[#6E6266]">
+                  <div className="text-[10px] text-[#947C85] font-semibold uppercase tracking-[0.06em]">
                     {cot.estado === 'cobrada' ? 'Valor cobrado' : 'Valor cotizado'}
                   </div>
                 </div>
@@ -184,7 +190,7 @@ function SeccionCotizacionesClienta({
                   {etiquetasVars.map((v) => (
                     <span
                       key={v}
-                      className="px-2.5 py-0.5 rounded-full bg-white border border-[#EFE8E4] text-[11px] text-[#6E6266] font-medium"
+                      className="px-2.5 py-0.5 rounded-full bg-white border border-[#EFE8E4] text-[11px] text-[#6B535C] font-semibold"
                     >
                       {v}
                     </span>
@@ -194,7 +200,7 @@ function SeccionCotizacionesClienta({
 
               {consentimientoDigital && (
                 <div className="pt-1">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EAF6F4] border border-[#0D9488]/25 text-[11px] font-semibold text-[#0D9488]">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F0FDFA] border border-[#0D9488]/25 text-[11px] font-bold text-[#0D9488]">
                     <ShieldCheck size={12} /> Consentimiento digital aceptado
                   </span>
                 </div>
@@ -211,9 +217,11 @@ function SeccionCotizacionesClienta({
 function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
   const [lightbox, setLightbox] = useState<string | null>(null);
 
-  const visitasConFotos = [...consultas].reverse().filter(
-    (c) => (c.fotoAnalisis && c.fotoAnalisis.length > 0) || c.fotoAntes || c.fotoDespues
-  );
+  const visitasConFotos = [...consultas]
+    .reverse()
+    .filter(
+      (c) => (c.fotoAnalisis && c.fotoAnalisis.length > 0) || c.fotoAntes || c.fotoDespues
+    );
 
   const primera =
     visitasConFotos.length >= 2 ? visitasConFotos[visitasConFotos.length - 1] : null;
@@ -223,12 +231,14 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
 
   if (visitasConFotos.length === 0) {
     return (
-      <div className="bg-white rounded-3xl border border-[#EFE8E4] text-center py-12 px-5">
-        <div className="w-14 h-14 rounded-full bg-[#FAF7F5] border border-[#EFE8E4] mx-auto mb-3.5 flex items-center justify-center">
-          <ImageIcon size={24} className="text-[#96888C]" />
+      <div className="bg-white rounded-3xl border border-[#EFE8E4] text-center py-12 px-5 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]">
+        <div className="w-14 h-14 rounded-2xl bg-[#F5EBE8] border border-[#E8CFC8] mx-auto mb-3.5 flex items-center justify-center">
+          <ImageIcon size={24} className="text-[#3B0D1E]" />
         </div>
-        <p className="text-base font-bold text-[#1C1518] m-0">Aún no hay fotografías</p>
-        <p className="text-xs text-[#6E6266] mt-1 mb-0">
+        <h3 className="m-0 font-sans text-base font-bold text-[#3B0D1E]">
+          Aún no hay fotografías
+        </h3>
+        <p className="text-xs text-[#6B535C] mt-1 mb-0">
           Las fotos del diagnóstico IA y registros antes/después aparecerán aquí.
         </p>
       </div>
@@ -236,24 +246,13 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div className="space-y-4">
       {fotoP && fotoU && (
-        <section
-          className="v-grain"
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-            borderRadius: 18,
-            padding: 16,
-            background: 'linear-gradient(135deg, #1F050F 0%, #3B0D1E 100%)',
-            color: '#FAF7F5',
-            boxShadow: 'var(--shadow-md)',
-          }}
-        >
-          <div className="v-caps" style={{ color: '#E8CFC8', marginBottom: 10 }}>
+        <section className="v-gradient-hero v-grain relative overflow-hidden rounded-3xl p-5 text-[#FAF7F5] shadow-[0_16px_40px_-8px_rgba(59,13,30,0.2)]">
+          <div className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#E8CFC8] mb-3">
             Evolución · primera vs última visita
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div className="grid grid-cols-2 gap-3">
             {[
               { foto: fotoP, label: 'Primera', sub: formatDate(primera!.fecha) },
               { foto: fotoU, label: 'Última', sub: formatDate(ultima!.fecha) },
@@ -262,52 +261,17 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
                 key={label}
                 type="button"
                 onClick={() => setLightbox(foto!)}
-                className="active:scale-95 transition-transform"
-                style={{
-                  position: 'relative',
-                  background: 'transparent',
-                  border: 'none',
-                  padding: 0,
-                  cursor: 'pointer',
-                }}
+                className="relative bg-transparent border-none p-0 cursor-pointer active:scale-[0.98] transition-transform"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={foto}
                   alt={label}
-                  style={{
-                    width: '100%',
-                    aspectRatio: '1',
-                    objectFit: 'cover',
-                    borderRadius: 12,
-                    border: '1px solid rgba(232, 207, 200, 0.35)',
-                  }}
+                  className="w-full aspect-square object-cover rounded-2xl border border-[#E8CFC8]/35"
                 />
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    background: 'rgba(31, 5, 15, 0.72)',
-                    backdropFilter: 'blur(6px)',
-                    borderRadius: '0 0 12px 12px',
-                    padding: '6px 8px',
-                    textAlign: 'left',
-                  }}
-                >
-                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#FAF7F5' }}>
-                    {label}
-                  </p>
-                  <p
-                    style={{
-                      margin: 0,
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 9,
-                      color: '#E8CFC8',
-                      letterSpacing: '0.06em',
-                    }}
-                  >
+                <div className="absolute bottom-0 left-0 right-0 bg-[#1F050F]/75 backdrop-blur-sm rounded-b-2xl px-3 py-2 text-left">
+                  <p className="m-0 text-xs font-bold text-[#FAF7F5]">{label}</p>
+                  <p className="m-0 font-mono text-[10px] text-[#E8CFC8] tabular-nums">
                     {sub}
                   </p>
                 </div>
@@ -328,54 +292,30 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
         return (
           <article
             key={c.id}
-            className="bg-white rounded-2xl border border-[#EFE8E4]"
-            style={{ padding: 14 }}
+            className="bg-white rounded-3xl border border-[#EFE8E4] p-4 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]"
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <span className="v-num">VISITA · {c.numeroConsulta}</span>
-              <span style={{ fontSize: 10, color: '#96888C' }}>· {formatDate(c.fecha)}</span>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="font-mono text-xs font-bold text-[#3B0D1E] tabular-nums">
+                VISITA · {c.numeroConsulta}
+              </span>
+              <span className="text-xs text-[#947C85] tabular-nums">· {formatDate(c.fecha)}</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+            <div className="grid grid-cols-3 gap-2">
               {fotos.map(({ url, label }, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => setLightbox(url)}
-                  style={{
-                    position: 'relative',
-                    background: 'transparent',
-                    border: 'none',
-                    padding: 0,
-                    cursor: 'pointer',
-                  }}
+                  className="relative bg-transparent border-none p-0 cursor-pointer"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={url}
                     alt={label}
-                    style={{
-                      width: '100%',
-                      aspectRatio: '1',
-                      objectFit: 'cover',
-                      borderRadius: 10,
-                      border: '1px solid #EFE8E4',
-                    }}
+                    className="w-full aspect-square object-cover rounded-xl border border-[#EFE8E4]"
                   />
-                  <div
-                    style={{
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      background: 'rgba(31, 5, 15, 0.65)',
-                      borderRadius: '0 0 10px 10px',
-                      padding: '2px 0',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <p style={{ margin: 0, fontSize: 9, color: '#FAF7F5', fontWeight: 600 }}>
-                      {label}
-                    </p>
+                  <div className="absolute bottom-0 left-0 right-0 bg-[#1F050F]/70 rounded-b-xl py-1 text-center">
+                    <p className="m-0 text-[10px] text-[#FAF7F5] font-semibold">{label}</p>
                   </div>
                 </button>
               ))}
@@ -387,37 +327,13 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
       {lightbox && (
         <div
           onClick={() => setLightbox(null)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 60,
-            background: 'rgba(31, 5, 15, 0.95)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 16,
-          }}
+          className="fixed inset-0 z-50 bg-[#1F050F]/95 backdrop-blur-md flex items-center justify-center p-4"
         >
           <button
             type="button"
             onClick={() => setLightbox(null)}
             aria-label="Cerrar"
-            style={{
-              position: 'absolute',
-              top: 16,
-              right: 16,
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.12)',
-              border: '1px solid rgba(232, 207, 200, 0.3)',
-              color: '#FAF7F5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-            }}
+            className="absolute top-4 right-4 min-w-[44px] min-h-[44px] rounded-full bg-white/15 border border-[#E8CFC8]/30 text-[#FAF7F5] flex items-center justify-center cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -426,12 +342,7 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
             src={lightbox}
             alt="Foto completa"
             onClick={(e) => e.stopPropagation()}
-            style={{
-              maxWidth: '100%',
-              maxHeight: '100%',
-              objectFit: 'contain',
-              borderRadius: 16,
-            }}
+            className="max-w-full max-h-full object-contain rounded-2xl"
           />
         </div>
       )}
@@ -595,35 +506,16 @@ export default function ClientaPage() {
   // ═══ LOADING ════════════════════════════════════════════════════════════
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#FAF7F5' }}>
-        <div
-          style={{ height: 240, background: '#3B0D1E', position: 'relative' }}
-          className="loading-pulse"
-        >
-          <div
-            style={{
-              position: 'absolute',
-              top: 50,
-              left: 16,
-              width: 36,
-              height: 36,
-              borderRadius: '50%',
-              background: '#FFFFFF',
-              boxShadow: 'var(--shadow-sm)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <ArrowLeft size={16} style={{ color: '#1C1518' }} />
+      <div className="min-h-screen bg-[#FAF7F5] font-sans">
+        <div className="h-56 bg-[#3B0D1E] relative loading-pulse">
+          <div className="absolute top-12 left-4 min-w-[44px] min-h-[44px] rounded-full bg-white flex items-center justify-center">
+            <ArrowLeft size={16} className="text-[#3B0D1E]" />
           </div>
         </div>
-        <main style={{ maxWidth: 768, margin: '0 auto', padding: '18px 16px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="skeleton-shimmer" style={{ height: 80 }} />
-            ))}
-          </div>
+        <main className="max-w-3xl mx-auto px-4 py-5 space-y-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="skeleton-shimmer h-20 rounded-2xl" />
+          ))}
         </main>
       </div>
     );
@@ -632,53 +524,28 @@ export default function ClientaPage() {
   // ═══ NOT FOUND ══════════════════════════════════════════════════════════
   if (!clienta) {
     return (
-      <div style={{ minHeight: '100vh', background: '#FAF7F5' }}>
-        <header
-          style={{
-            padding: '54px 16px 14px',
-            background: '#FFFFFF',
-            borderBottom: '1px solid #EFE8E4',
-          }}
-        >
+      <div className="min-h-screen bg-[#FAF7F5] font-sans">
+        <header className="pt-12 pb-3.5 px-4 bg-[#FAF7F5] border-b border-[#EFE8E4]">
           <button
             type="button"
             onClick={() => router.back()}
             aria-label="Volver"
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: '50%',
-              background: '#FAF7F5',
-              border: '1px solid #EFE8E4',
-              color: '#1C1518',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-            }}
+            className="min-w-[44px] min-h-[44px] rounded-full bg-white border border-[#EFE8E4] text-[#3B0D1E] flex items-center justify-center cursor-pointer"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={18} />
           </button>
         </header>
-        <main style={{ maxWidth: 768, margin: '0 auto', padding: '40px 16px', textAlign: 'center' }}>
-          <p style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: '#1C1518' }}>
+        <main className="max-w-3xl mx-auto px-4 py-12 text-center">
+          <h1 className="m-0 font-display text-2xl font-semibold text-[#3B0D1E]">
             Clienta no encontrada
-          </p>
+          </h1>
           <Link
             href="/clientas"
-            style={{
-              display: 'inline-block',
-              marginTop: 14,
-              color: '#3B0D1E',
-              fontWeight: 700,
-              fontSize: 13,
-              textDecoration: 'underline',
-            }}
+            className="inline-block mt-4 text-sm font-bold text-[#3B0D1E] underline"
           >
             Volver a clientas
           </Link>
         </main>
-        <BottomNavV2 />
       </div>
     );
   }
@@ -688,18 +555,19 @@ export default function ClientaPage() {
   const totalEventosHistorial = cotizaciones.length + consultas.length;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FAF7F5', position: 'relative' }}>
+    <div className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] font-sans relative pb-16">
+      <VelvetTopHeader />
       {/* ── Hero Velvet Studio ───────────────────────────────────────────── */}
-      <section className="v-gradient-hero v-grain relative pt-12 pb-6 px-4 sm:px-6 text-[#FAF7F5]">
+      <section className="v-gradient-hero v-grain relative pt-8 pb-6 px-4 sm:px-6 text-[#FAF7F5]">
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-5">
             <button
               type="button"
               onClick={() => router.back()}
               aria-label="Volver"
-              className="w-9 h-9 rounded-full bg-[#FAF7F5]/15 hover:bg-[#FAF7F5]/25 border border-[#E8CFC8]/25 text-[#FAF7F5] flex items-center justify-center transition-colors cursor-pointer"
+              className="min-w-[44px] min-h-[44px] rounded-full bg-[#FAF7F5]/15 hover:bg-[#FAF7F5]/25 border border-[#E8CFC8]/25 text-[#FAF7F5] flex items-center justify-center transition-colors cursor-pointer"
             >
-              <ArrowLeft size={16} />
+              <ArrowLeft size={17} />
             </button>
 
             <div className="flex items-center gap-2">
@@ -708,9 +576,9 @@ export default function ClientaPage() {
                   type="button"
                   onClick={cancelEditing}
                   aria-label="Cancelar edición"
-                  className="w-9 h-9 rounded-full bg-[#FAF7F5]/15 hover:bg-[#FAF7F5]/25 border border-[#E8CFC8]/25 text-[#FAF7F5] flex items-center justify-center transition-colors cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] rounded-full bg-[#FAF7F5]/15 hover:bg-[#FAF7F5]/25 border border-[#E8CFC8]/25 text-[#FAF7F5] flex items-center justify-center transition-colors cursor-pointer"
                 >
-                  <X size={16} />
+                  <X size={17} />
                 </button>
               ) : (
                 <>
@@ -718,7 +586,7 @@ export default function ClientaPage() {
                     type="button"
                     onClick={startEditing}
                     aria-label="Editar"
-                    className="w-9 h-9 rounded-full bg-[#FAF7F5]/15 hover:bg-[#FAF7F5]/25 border border-[#E8CFC8]/25 text-[#FAF7F5] flex items-center justify-center transition-colors cursor-pointer"
+                    className="min-w-[44px] min-h-[44px] rounded-full bg-[#FAF7F5]/15 hover:bg-[#FAF7F5]/25 border border-[#E8CFC8]/25 text-[#FAF7F5] flex items-center justify-center transition-colors cursor-pointer"
                   >
                     <Pencil size={15} />
                   </button>
@@ -726,26 +594,26 @@ export default function ClientaPage() {
                     type="button"
                     onClick={() => setShowDelete(true)}
                     aria-label="Eliminar"
-                    className="w-9 h-9 rounded-full bg-[#FAF7F5]/15 hover:bg-[#FAF7F5]/25 border border-[#E8CFC8]/25 text-[#FAF7F5] flex items-center justify-center transition-colors cursor-pointer"
+                    className="min-w-[44px] min-h-[44px] rounded-full bg-[#FAF7F5]/15 hover:bg-[#FAF7F5]/25 border border-[#E8CFC8]/25 text-[#FAF7F5] flex items-center justify-center transition-colors cursor-pointer"
                   >
-                    <MoreHorizontal size={16} />
+                    <MoreHorizontal size={17} />
                   </button>
                 </>
               )}
             </div>
           </div>
 
-          <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#E8CFC8]">
+          <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#E8CFC8] tabular-nums">
             FOLIO · {clienta.id.slice(0, 8).toUpperCase()} · DESDE{' '}
             {new Date(clienta.fechaRegistro).getFullYear()}
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-[#FAF7F5] tracking-tight mt-1 mb-3 truncate">
+          <h1 className="m-0 font-display text-2xl md:text-3xl font-semibold !text-[#FAF7F5] tracking-tight mt-1 mb-3 truncate capitalize">
             {clienta.nombre}
           </h1>
 
           <div className="flex flex-wrap gap-2">
             {clienta.tipoRizoPrincipal && (
-              <span className="px-3 py-1 rounded-full bg-[#E8CFC8] text-[#1F050F] text-xs font-bold">
+              <span className="px-3 py-1 rounded-full bg-[#E8CFC8] text-[#3B0D1E] text-xs font-bold">
                 {getRizoLabel(clienta.tipoRizoPrincipal)}
               </span>
             )}
@@ -764,41 +632,41 @@ export default function ClientaPage() {
         </div>
       </section>
 
-      <main style={{ maxWidth: 768, margin: '0 auto', padding: '18px 16px 120px' }}>
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-5">
         {/* ── KPIs de Retención y Ticket de la Clienta ─────────────────── */}
-        <div className="grid grid-cols-3 bg-white rounded-2xl border border-[#EFE8E4] shadow-[0_8px_24px_-10px_rgba(59,13,30,0.06)] overflow-hidden mb-5">
+        <div className="grid grid-cols-3 bg-white rounded-2xl border border-[#EFE8E4] shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] overflow-hidden mb-5">
           <div className="py-3.5 px-2.5 text-center border-r border-[#EFE8E4]">
-            <div className="v-num" style={{ fontSize: 9 }}>
-              CIERRES BI
+            <div className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+              Cierres BI
             </div>
-            <div className="text-base font-bold text-[#1C1518] tabular-nums mt-0.5">
+            <div className="font-display text-xl font-bold text-[#3B0D1E] tabular-nums mt-0.5">
               {resumenFinanciero.cantidadCierres}
             </div>
-            <div className="text-[10px] text-[#6E6266]">
+            <div className="text-[11px] text-[#947C85] tabular-nums">
               {cotizaciones.length} cotiz.
             </div>
           </div>
 
           <div className="py-3.5 px-2.5 text-center border-r border-[#EFE8E4]">
-            <div className="v-num" style={{ fontSize: 9 }}>
-              INVERSIÓN TOTAL
+            <div className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+              Inversión total
             </div>
-            <div className="text-sm sm:text-base font-bold text-[#3B0D1E] tabular-nums mt-0.5 truncate">
+            <div className="font-display text-base sm:text-xl font-bold text-[#0D9488] tabular-nums mt-0.5 truncate">
               {formatearPrecioCop(resumenFinanciero.totalInvertido)}
             </div>
-            <div className="text-[10px] text-[#6E6266]">en salón</div>
+            <div className="text-[11px] text-[#947C85]">en salón</div>
           </div>
 
           <div className="py-3.5 px-2.5 text-center">
-            <div className="v-num" style={{ fontSize: 9 }}>
-              ÚLTIMA VISITA
+            <div className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+              Última visita
             </div>
-            <div className="text-sm sm:text-base font-bold text-[#1C1518] mt-0.5 truncate">
+            <div className="font-display text-sm sm:text-base font-bold text-[#3B0D1E] tabular-nums mt-1 truncate">
               {clienta.ultimaVisita
                 ? formatDate(clienta.ultimaVisita).split(' ').slice(0, 2).join(' ')
                 : '—'}
             </div>
-            <div className="text-[10px] text-[#6E6266]">
+            <div className="text-[11px] text-[#947C85] tabular-nums">
               {consultas.length} {consultas.length === 1 ? 'consulta' : 'consultas'}
             </div>
           </div>
@@ -806,21 +674,15 @@ export default function ClientaPage() {
 
         {/* ── Acciones principales (CTA maestro siempre a /?clientaId=...) ── */}
         {!editing && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
-            <Link
-              href={`/?clientaId=${clienta.id}`}
-              style={{ flex: '1 1 100%', textDecoration: 'none' }}
-            >
+          <div className="flex gap-2.5 flex-wrap mb-5">
+            <Link href={`/?clientaId=${clienta.id}`} className="basis-full no-underline">
               <Btn variant="primary" size="lg" fullWidth icon={<Sparkles size={15} />}>
                 Cotizar en Silla
               </Btn>
             </Link>
             {clienta.telefono && (
               <>
-                <a
-                  href={`tel:${clienta.telefono}`}
-                  style={{ flex: 1, minWidth: 0, textDecoration: 'none' }}
-                >
+                <a href={`tel:${clienta.telefono}`} className="flex-1 min-w-0 no-underline">
                   <Btn variant="outline" size="md" fullWidth icon={<Phone size={14} />}>
                     Llamar
                   </Btn>
@@ -828,7 +690,7 @@ export default function ClientaPage() {
                 <button
                   type="button"
                   onClick={handleWhatsApp}
-                  style={{ flex: 1, background: 'transparent', border: 'none', padding: 0 }}
+                  className="flex-1 bg-transparent border-none p-0"
                 >
                   <Btn variant="soft" size="md" fullWidth icon={<MessageCircle size={14} />}>
                     WhatsApp
@@ -841,20 +703,21 @@ export default function ClientaPage() {
 
         {/* ── MODO EDITAR ───────────────────────────────────────────────── */}
         {editing ? (
-          <div className="bg-white rounded-3xl border border-[#EFE8E4] p-5 space-y-4">
+          <div className="bg-white rounded-3xl border border-[#EFE8E4] p-5 sm:p-6 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] space-y-4">
             <Input
               label="Nombre completo *"
               value={String(editData.nombre ?? '')}
               onChange={(e) => setEditData((p) => ({ ...p, nombre: e.target.value }))}
               placeholder="Nombre de la clienta"
             />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Input
                 label="Edad"
                 type="number"
                 value={String(editData.edad ?? '')}
                 onChange={(e) => setEditData((p) => ({ ...p, edad: Number(e.target.value) }))}
                 placeholder="Años"
+                className="tabular-nums"
               />
               <Input
                 label="WhatsApp / Teléfono"
@@ -862,6 +725,7 @@ export default function ClientaPage() {
                 value={String(editData.telefono ?? '')}
                 onChange={(e) => setEditData((p) => ({ ...p, telefono: e.target.value }))}
                 placeholder="+57 300 123 4567"
+                className="tabular-nums"
               />
             </div>
             <Input
@@ -873,10 +737,10 @@ export default function ClientaPage() {
             />
 
             <div>
-              <p className="v-caps" style={{ marginBottom: 8 }}>
+              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block mb-2">
                 Nivel de estrés
-              </p>
-              <div style={{ display: 'flex', gap: 6 }}>
+              </span>
+              <div className="grid grid-cols-3 gap-2">
                 {(['bajo', 'medio', 'alto'] as const).map((nivel) => {
                   const active = editData.nivelEstres === nivel;
                   return (
@@ -884,19 +748,11 @@ export default function ClientaPage() {
                       key={nivel}
                       type="button"
                       onClick={() => setEditData((p) => ({ ...p, nivelEstres: nivel }))}
-                      style={{
-                        flex: 1,
-                        padding: '10px 8px',
-                        borderRadius: 12,
-                        textTransform: 'capitalize',
-                        fontSize: 12,
-                        fontWeight: 600,
-                        fontFamily: 'var(--font-sans)',
-                        background: active ? '#F7ECEF' : '#FAF7F5',
-                        color: active ? '#3B0D1E' : '#6E6266',
-                        border: `1px solid ${active ? '#DFC5CE' : '#EFE8E4'}`,
-                        cursor: 'pointer',
-                      }}
+                      className={`min-h-[46px] px-3 py-2 rounded-xl capitalize text-xs font-bold border transition-all cursor-pointer ${
+                        active
+                          ? 'bg-[#F5EBE8] text-[#3B0D1E] border-[#E8CFC8]'
+                          : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8] hover:text-[#3B0D1E]'
+                      }`}
                     >
                       {nivel}
                     </button>
@@ -905,22 +761,16 @@ export default function ClientaPage() {
               </div>
             </div>
 
-            <div
-              style={{
-                borderTop: '1px solid #EFE8E4',
-                paddingTop: 14,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 14,
-              }}
-            >
-              <p className="v-caps">Datos de salud capilar</p>
+            <div className="border-t border-[#EFE8E4] pt-4 space-y-4">
+              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#D97757] block">
+                Datos de salud capilar
+              </span>
 
               <div>
-                <p className="v-caps" style={{ marginBottom: 8 }}>
+                <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block mb-2">
                   ¿Embarazo o lactancia?
-                </p>
-                <div style={{ display: 'flex', gap: 6 }}>
+                </span>
+                <div className="grid grid-cols-2 gap-2">
                   {[
                     { v: true, label: 'Sí' },
                     { v: false, label: 'No' },
@@ -931,18 +781,11 @@ export default function ClientaPage() {
                         key={String(v)}
                         type="button"
                         onClick={() => setEditData((p) => ({ ...p, embarazo: v }))}
-                        style={{
-                          flex: 1,
-                          padding: '10px 8px',
-                          borderRadius: 12,
-                          fontSize: 12,
-                          fontWeight: 600,
-                          fontFamily: 'var(--font-sans)',
-                          background: active ? '#F7ECEF' : '#FAF7F5',
-                          color: active ? '#3B0D1E' : '#6E6266',
-                          border: `1px solid ${active ? '#DFC5CE' : '#EFE8E4'}`,
-                          cursor: 'pointer',
-                        }}
+                        className={`min-h-[46px] px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                          active
+                            ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E]'
+                            : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8] hover:text-[#3B0D1E]'
+                        }`}
                       >
                         {label}
                       </button>
@@ -994,15 +837,8 @@ export default function ClientaPage() {
               />
             </div>
 
-            {/* ── Pestañas de la Ficha ──────────────────────────────────── */}
-            <div
-              style={{
-                display: 'flex',
-                gap: 0,
-                borderBottom: '1px solid #EFE8E4',
-                marginBottom: 16,
-              }}
-            >
+            {/* ── Segmented Control de la Ficha ────────────────────────── */}
+            <div className="grid grid-cols-3 gap-1.5 p-1.5 rounded-2xl bg-white border border-[#EFE8E4] shadow-[0_4px_16px_-4px_rgba(59,13,30,0.04)] mb-5">
               {[
                 { key: 'info' as const, label: 'Resumen & Legal' },
                 { key: 'historial' as const, label: `Historial · ${totalEventosHistorial}` },
@@ -1014,19 +850,11 @@ export default function ClientaPage() {
                     key={key}
                     type="button"
                     onClick={() => setTab(key)}
-                    style={{
-                      padding: '10px 14px',
-                      background: 'transparent',
-                      border: 'none',
-                      fontSize: 11.5,
-                      fontWeight: 700,
-                      letterSpacing: '0.06em',
-                      textTransform: 'uppercase',
-                      color: active ? '#3B0D1E' : '#96888C',
-                      borderBottom: active ? '2px solid #3B0D1E' : '2px solid transparent',
-                      fontFamily: 'var(--font-sans)',
-                      cursor: 'pointer',
-                    }}
+                    className={`min-h-[44px] px-2.5 py-2 rounded-xl text-xs font-bold tabular-nums transition-all cursor-pointer border-none ${
+                      active
+                        ? 'bg-[#3B0D1E] text-[#FAF7F5] shadow-[0_4px_12px_-2px_rgba(59,13,30,0.2)]'
+                        : 'bg-transparent text-[#6B535C] hover:bg-[#FAF7F5] hover:text-[#3B0D1E]'
+                    }`}
                   >
                     {label}
                   </button>
@@ -1036,8 +864,7 @@ export default function ClientaPage() {
 
             {/* ── Tab: Resumen & Legal ──────────────────────────────────── */}
             {tab === 'info' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {/* Destacado de Cotizaciones y Cierres directamente en la ficha */}
+              <div className="space-y-4">
                 <SeccionCotizacionesClienta
                   cotizaciones={cotizaciones}
                   clientaId={clienta.id}
@@ -1046,52 +873,25 @@ export default function ClientaPage() {
                 />
 
                 {ultimaConsulta?.notasEstilista && (
-                  <article
-                    style={{
-                      padding: '16px 18px',
-                      borderLeft: '3px solid #6E1E3A',
-                      background: '#FFFFFF',
-                      borderRadius: '0 16px 16px 0',
-                      borderTop: '1px solid #EFE8E4',
-                      borderRight: '1px solid #EFE8E4',
-                      borderBottom: '1px solid #EFE8E4',
-                    }}
-                  >
-                    <div className="v-caps" style={{ color: '#6E1E3A' }}>
+                  <article className="p-5 bg-white rounded-2xl border border-[#EFE8E4] border-l-4 border-l-[#3B0D1E] shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]">
+                    <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
                       Notas de la última consulta
-                    </div>
-                    <p
-                      style={{
-                        margin: '6px 0 0',
-                        fontFamily: 'var(--font-serif)',
-                        fontStyle: 'italic',
-                        fontSize: 14,
-                        lineHeight: 1.45,
-                        color: '#1C1518',
-                      }}
-                    >
+                    </span>
+                    <p className="m-0 mt-1.5 font-display italic text-sm leading-relaxed text-[#3B0D1E]">
                       «{ultimaConsulta.notasEstilista}»
                     </p>
-                    <div
-                      style={{
-                        marginTop: 8,
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: 9.5,
-                        color: '#6E6266',
-                        letterSpacing: '0.1em',
-                      }}
-                    >
+                    <div className="mt-2 font-mono text-[10px] font-semibold text-[#947C85] tracking-[0.08em] tabular-nums">
                       — {formatDate(ultimaConsulta.fecha).toUpperCase()}
                     </div>
                   </article>
                 )}
 
                 {/* Datos personales */}
-                <article className="bg-white rounded-3xl border border-[#EFE8E4] p-5">
-                  <div className="v-caps" style={{ marginBottom: 10 }}>
+                <article className="bg-white rounded-3xl border border-[#EFE8E4] p-5 sm:p-6 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]">
+                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block mb-3">
                     Datos personales
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  </span>
+                  <div className="space-y-2.5">
                     {[
                       {
                         label: 'WhatsApp / Teléfono',
@@ -1099,38 +899,27 @@ export default function ClientaPage() {
                         mono: !!clienta.telefono,
                       },
                       { label: 'Email', value: clienta.email || '—' },
-                      { label: 'Edad', value: clienta.edad ? `${clienta.edad} años` : '—' },
+                      {
+                        label: 'Edad',
+                        value: clienta.edad ? `${clienta.edad} años` : '—',
+                        tabular: true,
+                      },
                       {
                         label: 'Nivel de estrés',
                         value: clienta.nivelEstres || '—',
                         cap: !!clienta.nivelEstres,
                       },
                       { label: 'Registro', value: formatDate(clienta.fechaRegistro), mono: true },
-                    ].map(({ label, value, mono, cap }) => (
+                    ].map(({ label, value, mono, cap, tabular }) => (
                       <div
                         key={label}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'baseline',
-                          gap: 12,
-                          paddingBottom: 6,
-                          borderBottom: '1px solid #FAF7F5',
-                        }}
+                        className="flex justify-between items-baseline gap-3 pb-2 border-b border-[#FAF7F5] last:border-none last:pb-0"
                       >
-                        <span style={{ fontSize: 11.5, color: '#6E6266' }}>{label}</span>
+                        <span className="text-xs text-[#6B535C]">{label}</span>
                         <span
-                          style={{
-                            fontSize: 13,
-                            color: '#1C1518',
-                            fontFamily: mono ? 'var(--font-mono)' : 'var(--font-sans)',
-                            textTransform: cap ? 'capitalize' : 'none',
-                            fontWeight: 500,
-                            textAlign: 'right',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
+                          className={`text-sm font-semibold text-[#3B0D1E] text-right truncate ${
+                            mono ? 'font-mono text-xs tabular-nums' : ''
+                          } ${tabular ? 'tabular-nums' : ''} ${cap ? 'capitalize' : ''}`}
                         >
                           {value}
                         </span>
@@ -1144,83 +933,39 @@ export default function ClientaPage() {
                   clienta.condicionesMedicas ||
                   clienta.medicamentos ||
                   clienta.embarazo) && (
-                  <article
-                    style={{
-                      padding: 16,
-                      borderRadius: 20,
-                      background: '#FDF2EC',
-                      border: '1px solid rgba(217, 119, 87, 0.28)',
-                    }}
-                  >
-                    <div className="v-caps" style={{ color: '#B85D3B', marginBottom: 10 }}>
+                  <article className="p-5 rounded-3xl bg-[#FFF7F5] border border-[#D97757]/30 space-y-2.5">
+                    <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#D97757] block">
                       Salud capilar y antecedentes
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {clienta.alergias && (
-                        <div>
-                          <p
-                            style={{
-                              margin: 0,
-                              fontSize: 10.5,
-                              color: '#B85D3B',
-                              fontWeight: 700,
-                            }}
-                          >
-                            Alergias
-                          </p>
-                          <p style={{ margin: '2px 0 0', fontSize: 13, color: '#1C1518' }}>
-                            {clienta.alergias}
-                          </p>
-                        </div>
-                      )}
-                      {clienta.condicionesMedicas && (
-                        <div>
-                          <p
-                            style={{
-                              margin: 0,
-                              fontSize: 10.5,
-                              color: '#B85D3B',
-                              fontWeight: 700,
-                            }}
-                          >
-                            Condiciones médicas
-                          </p>
-                          <p style={{ margin: '2px 0 0', fontSize: 13, color: '#1C1518' }}>
-                            {clienta.condicionesMedicas}
-                          </p>
-                        </div>
-                      )}
-                      {clienta.medicamentos && (
-                        <div>
-                          <p
-                            style={{
-                              margin: 0,
-                              fontSize: 10.5,
-                              color: '#B85D3B',
-                              fontWeight: 700,
-                            }}
-                          >
-                            Medicamentos
-                          </p>
-                          <p style={{ margin: '2px 0 0', fontSize: 13, color: '#1C1518' }}>
-                            {clienta.medicamentos}
-                          </p>
-                        </div>
-                      )}
-                      {clienta.embarazo && (
-                        <div
-                          style={{
-                            marginTop: 4,
-                            paddingTop: 8,
-                            borderTop: '1px solid rgba(217, 119, 87, 0.25)',
-                          }}
-                        >
-                          <Chip tone="amber" dot>
-                            Embarazo o lactancia
-                          </Chip>
-                        </div>
-                      )}
-                    </div>
+                    </span>
+                    {clienta.alergias && (
+                      <div>
+                        <p className="m-0 text-[11px] font-bold text-[#D97757]">Alergias</p>
+                        <p className="m-0 mt-0.5 text-sm text-[#3B0D1E]">{clienta.alergias}</p>
+                      </div>
+                    )}
+                    {clienta.condicionesMedicas && (
+                      <div>
+                        <p className="m-0 text-[11px] font-bold text-[#D97757]">
+                          Condiciones médicas
+                        </p>
+                        <p className="m-0 mt-0.5 text-sm text-[#3B0D1E]">
+                          {clienta.condicionesMedicas}
+                        </p>
+                      </div>
+                    )}
+                    {clienta.medicamentos && (
+                      <div>
+                        <p className="m-0 text-[11px] font-bold text-[#D97757]">Medicamentos</p>
+                        <p className="m-0 mt-0.5 text-sm text-[#3B0D1E]">{clienta.medicamentos}</p>
+                      </div>
+                    )}
+                    {clienta.embarazo && (
+                      <div className="pt-2 border-t border-[#D97757]/20">
+                        <Chip tone="amber" dot>
+                          Embarazo o lactancia
+                        </Chip>
+                      </div>
+                    )}
                   </article>
                 )}
 
@@ -1234,12 +979,12 @@ export default function ClientaPage() {
               <div className="space-y-6">
                 <SeccionCotizacionesClienta cotizaciones={cotizaciones} clientaId={clienta.id} />
 
-                <section className="bg-white rounded-3xl border border-[#EFE8E4] p-5 shadow-[0_12px_28px_-10px_rgba(59,13,30,0.06)]">
+                <section className="bg-white rounded-3xl border border-[#EFE8E4] p-5 sm:p-6 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]">
                   <div className="mb-4">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#6E6266]">
+                    <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
                       Fichas Técnicas Previas
                     </span>
-                    <h2 className="text-base sm:text-lg font-bold text-[#1C1518] mt-0.5">
+                    <h2 className="m-0 mt-0.5 font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E] tabular-nums">
                       Diagnósticos Capilares ({consultas.length})
                     </h2>
                   </div>
@@ -1260,46 +1005,27 @@ export default function ClientaPage() {
 
       {/* Delete modal */}
       <Modal open={showDelete} onClose={() => setShowDelete(false)} title="Eliminar clienta">
-        <p style={{ margin: 0, fontSize: 14, color: '#1C1518', lineHeight: 1.5 }}>
+        <p className="m-0 text-sm text-[#3B0D1E] leading-relaxed">
           Esto borrará toda la información de <strong>{clienta.nombre}</strong> y su historial.
         </p>
-        <p style={{ margin: '10px 0 18px', fontSize: 13, color: '#6E6266' }}>
+        <p className="mt-2.5 mb-5 text-xs text-[#6B535C]">
           La acción no se puede deshacer. ¿Estás segura?
         </p>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Btn variant="ghost" size="md" fullWidth onClick={() => setShowDelete(false)}>
+        <div className="flex gap-2.5">
+          <Btn variant="outline" size="md" fullWidth onClick={() => setShowDelete(false)}>
             Cancelar
           </Btn>
           <button
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="active:scale-95 transition-transform"
-            style={{
-              flex: 1,
-              padding: '10px 18px',
-              fontSize: 13,
-              fontWeight: 600,
-              fontFamily: 'var(--font-sans)',
-              borderRadius: 999,
-              background: '#C25949',
-              color: '#FAF7F5',
-              border: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              cursor: deleting ? 'not-allowed' : 'pointer',
-              opacity: deleting ? 0.6 : 1,
-            }}
+            className="flex-1 min-h-[44px] px-4 py-2.5 rounded-xl bg-[#D97757] hover:opacity-95 text-[#FAF7F5] font-sans text-xs font-bold border-none inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 active:scale-[0.98] transition-all"
           >
             <Trash2 size={14} />
             {deleting ? 'Eliminando…' : 'Eliminar'}
           </button>
         </div>
       </Modal>
-
-      <BottomNavV2 />
     </div>
   );
 }

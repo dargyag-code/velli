@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import { getProfile, updateProfile, COLOR_VELLI } from '@/lib/profile';
 import {
-  AJUSTES_EJEMPLO_PLANTILLA,
   FACTORES_CONSUMO_DEFECTO,
   formatearPrecioCop,
   inferirCategoriaServicio,
@@ -27,6 +26,11 @@ import {
 } from '@/lib/cotizador';
 import { showToast } from '@/lib/toast';
 import { registrarEvento } from '@/lib/funnel';
+import {
+  AJUSTES_VELVET_STUDIO_DEFECTO,
+  SERVICIOS_BASE_SEMILLA,
+  obtenerSemillaServicio,
+} from '@/lib/semilla-financiera';
 
 interface ServicioOnboardingItem {
   nombre: string;
@@ -35,12 +39,12 @@ interface ServicioOnboardingItem {
 }
 
 const CATALOGO_INICIAL_SERVICIOS: ReadonlyArray<{ nombre: string; precioBase: number; preseleccionado: boolean }> = [
-  { nombre: 'Balayage Alta Precisión', precioBase: 240_000, preseleccionado: true },
-  { nombre: 'Babylights / Rubios Globales', precioBase: 260_000, preseleccionado: true },
-  { nombre: 'Color Global & Cubrimiento', precioBase: 140_000, preseleccionado: true },
-  { nombre: 'Corrección de Color', precioBase: 320_000, preseleccionado: true },
-  { nombre: 'Keratina y Alisado', precioBase: 200_000, preseleccionado: false },
-  { nombre: 'Tratamiento Capilar Profundo', precioBase: 110_000, preseleccionado: false },
+  ...SERVICIOS_BASE_SEMILLA.map((s) => ({
+    nombre: s.nombre,
+    precioBase: s.tarifaBaseCop,
+    preseleccionado: true,
+  })),
+  { nombre: 'Corrección de Color', precioBase: 320_000, preseleccionado: false },
   { nombre: 'Corte y Diseño', precioBase: 85_000, preseleccionado: false },
   { nombre: 'Peinado y Brushing', precioBase: 55_000, preseleccionado: false },
 ];
@@ -51,17 +55,31 @@ function precioSugeridoPorNombre(nombre: string): number {
   );
   if (coincidencia) return coincidencia.precioBase;
   const inf = inferirCategoriaServicio(nombre);
-  if (inf.categoria === 'decoloracion') return 240_000;
-  if (inf.categoria === 'alisado' || inf.categoria === 'extensiones') return 200_000;
-  if (inf.categoria === 'color') return 140_000;
-  if (inf.categoria === 'tratamiento' || inf.categoria === 'rizos') return 110_000;
+  if (inf.categoria === 'decoloracion') return 210_000;
+  if (inf.categoria === 'alisado' || inf.categoria === 'extensiones') return 190_000;
+  if (inf.categoria === 'color') return 120_000;
+  if (inf.categoria === 'tratamiento' || inf.categoria === 'rizos') return 85_000;
   return 85_000;
 }
 
 function gramosBasePorCategoria(categoria: string): number {
-  if (categoria === 'decoloracion') return 90;
+  if (categoria === 'decoloracion') return 60;
   if (categoria === 'color') return 60;
-  return 45;
+  if (categoria === 'alisado') return 60;
+  return 35;
+}
+
+function insumosFijosPorCategoria(categoria: string): number {
+  if (categoria === 'decoloracion') return 9_500;
+  if (categoria === 'alisado') return 5_000;
+  if (categoria === 'tratamiento') return 3_500;
+  return 3_500;
+}
+
+function proporcionOxidantePorCategoria(categoria: string): number {
+  if (categoria === 'decoloracion') return 1.5;
+  if (categoria === 'color') return 1.0;
+  return 0;
 }
 
 export default function OnboardingExpressPage() {
@@ -243,19 +261,23 @@ export default function OnboardingExpressPage() {
         serviciosDB
           .filter((srv) => !conPlantilla.has(srv.id))
           .map((srv) => {
+            const semillaSrv = obtenerSemillaServicio(srv);
             const tarifa =
               mapaPrecios.get(srv.nombre.trim().toLowerCase()) ??
+              semillaSrv.tarifaBaseCop ??
               precioSugeridoPorNombre(srv.nombre);
             return publicarPlantillaPrecio({
               servicioId: srv.id,
               precioBase: tarifa,
-              ajustes: AJUSTES_EJEMPLO_PLANTILLA,
+              ajustes: AJUSTES_VELVET_STUDIO_DEFECTO,
               consumo: {
                 usaFormulaColor: srv.usaFormulaColor,
-                gramosTinteBase: gramosBasePorCategoria(srv.categoria),
+                gramosTinteBase: semillaSrv.gramosBase || gramosBasePorCategoria(srv.categoria),
                 factores: FACTORES_CONSUMO_DEFECTO,
-                proporcionOxidante: 1.5,
-                insumosFijos: 3_000,
+                proporcionOxidante:
+                  semillaSrv.ratioPeroxido ?? proporcionOxidantePorCategoria(srv.categoria),
+                insumosFijos:
+                  semillaSrv.insumosFijosCop || insumosFijosPorCategoria(srv.categoria),
               },
               redondeo: 1_000,
               vigenciaDias: 15,
@@ -288,10 +310,33 @@ export default function OnboardingExpressPage() {
         servicios: nombres,
         onboardingCompleted: true,
       });
-      await Promise.allSettled([
-        sembrarServiciosDesdeOnboarding(nombres),
-        sembrarBaseFinancieraSalon(),
+      const [serviciosDB, plantillasExistentes] = await Promise.all([
+        sembrarServiciosDesdeOnboarding(nombres).catch(() => []),
+        listarPlantillasVigentes().catch(() => []),
+        sembrarBaseFinancieraSalon().catch(() => null),
       ]);
+      const conPlantilla = new Set(plantillasExistentes.map((p) => p.servicioId));
+      await Promise.allSettled(
+        serviciosDB
+          .filter((srv) => !conPlantilla.has(srv.id))
+          .map((srv) => {
+            const semillaSrv = obtenerSemillaServicio(srv);
+            return publicarPlantillaPrecio({
+              servicioId: srv.id,
+              precioBase: semillaSrv.tarifaBaseCop,
+              ajustes: AJUSTES_VELVET_STUDIO_DEFECTO,
+              consumo: {
+                usaFormulaColor: srv.usaFormulaColor,
+                gramosTinteBase: semillaSrv.gramosBase,
+                factores: FACTORES_CONSUMO_DEFECTO,
+                proporcionOxidante: semillaSrv.ratioPeroxido,
+                insumosFijos: semillaSrv.insumosFijosCop,
+              },
+              redondeo: 1_000,
+              vigenciaDias: 15,
+            });
+          })
+      );
       registrarEvento('onboarding_completado');
       router.replace('/');
     } catch (err) {
@@ -327,21 +372,21 @@ export default function OnboardingExpressPage() {
 
   const encabezados = {
     1: {
-      etiqueta: 'Identidad y Canal de Cierre',
+      etiqueta: '1. Identidad y WhatsApp',
       titulo: 'Configura la identidad de tu salón',
       subtitulo:
         'Estos datos encabezan tus cotizaciones digitales y conectan el canal donde recibirás las confirmaciones de tus clientas.',
       icono: <Store size={18} />,
     },
     2: {
-      etiqueta: 'Servicios y Precios Base',
+      etiqueta: '2. Servicios y Tarifas Base',
       titulo: 'Elige tus servicios y tarifas base',
       subtitulo:
         'Define desde cuánto arranca cada técnica en cabello corto/sano. En silla, Velli ajustará automáticamente según largo, densidad y canas.',
       icono: <Sparkles size={18} />,
     },
     3: {
-      etiqueta: 'Activación BI sin Báscula',
+      etiqueta: '3. Sembrado Financiero sin Báscula',
       titulo: 'Motor financiero listo para cotizar',
       subtitulo:
         'Dejamos calibrada tu base química y de comisión para que desde la primera clienta veas utilidad real y nunca un margen falso.',
@@ -349,8 +394,14 @@ export default function OnboardingExpressPage() {
     },
   }[paso];
 
+  const PASOS_INDICADOR = [
+    { num: 1 as const, label: '1. Identidad y WhatsApp' },
+    { num: 2 as const, label: '2. Servicios y Tarifas Base' },
+    { num: 3 as const, label: '3. Sembrado Financiero sin Báscula' },
+  ];
+
   return (
-    <div className="min-h-screen w-full bg-[#FAF7F5] text-[#1C1518] flex flex-col justify-between pb-10">
+    <div className="min-h-screen w-full bg-[#FAF7F5] text-[#3B0D1E] flex flex-col justify-between pb-10">
       {/* ── Top Hero Velvet Studio ──────────────────────────────────────── */}
       <header className="v-gradient-hero v-grain text-[#FAF7F5] pt-8 pb-8 px-5 sm:px-8 border-b border-[#3B0D1E]">
         <div className="max-w-xl mx-auto">
@@ -371,10 +422,10 @@ export default function OnboardingExpressPage() {
                 </svg>
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-xl font-bold tracking-tight text-[#FAF7F5] font-brand">
+                <span className="text-xl font-bold tracking-tight !text-[#FAF7F5] font-brand">
                   velli
                 </span>
-                <span className="text-[9px] uppercase tracking-[0.22em] font-semibold mt-0.5 text-[#E8CFC8]">
+                <span className="text-[9px] uppercase tracking-[0.22em] font-semibold mt-0.5 !text-[#E8CFC8]">
                   Business Intelligence
                 </span>
               </div>
@@ -390,34 +441,39 @@ export default function OnboardingExpressPage() {
             </button>
           </div>
 
-          {/* Barra de progreso Express */}
-          <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-[0.18em] text-[#E8CFC8] mb-2">
-            <span>
-              Paso {paso} de 3 · {encabezados.etiqueta}
-            </span>
-            <span className="w-7 h-7 rounded-lg bg-[#FAF7F5]/10 flex items-center justify-center text-[#FAF7F5]">
-              {encabezados.icono}
-            </span>
-          </div>
-          <div className="grid grid-cols-3 gap-2 mb-5">
-            {[1, 2, 3].map((n) => (
-              <div
-                key={n}
-                className={`h-1.5 rounded-full transition-all ${
-                  n <= paso ? 'bg-[#E8CFC8]' : 'bg-[#FAF7F5]/20'
-                }`}
-              />
-            ))}
-          </div>
-
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#FAF7F5] leading-tight">
+          <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight !text-[#FAF7F5] leading-tight">
             {encabezados.titulo}
           </h1>
-          <p className="mt-2 text-xs sm:text-sm text-[#FAF7F5]/80 leading-relaxed">
+          <p className="mt-2 text-xs sm:text-sm !text-[#FAF7F5]/85 leading-relaxed">
             {encabezados.subtitulo}
           </p>
         </div>
       </header>
+
+      {/* ── Indicador de Progreso de 3 Pasos ────────────────────────────── */}
+      <div className="w-full max-w-xl mx-auto px-5 sm:px-8 pt-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 bg-[#F3ECE8] p-1.5 rounded-2xl border border-[#EFE8E4]">
+          {PASOS_INDICADOR.map((item) => {
+            const activo = paso === item.num;
+            const completado = paso > item.num;
+            return (
+              <div
+                key={item.num}
+                className={`px-3 py-2.5 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-1.5 text-center transition-all ${
+                  activo
+                    ? 'bg-[#3B0D1E] text-[#FAF7F5] shadow-sm'
+                    : completado
+                      ? 'bg-white text-[#0D9488] border border-[#EFE8E4]'
+                      : 'text-[#6B535C]'
+                }`}
+              >
+                {completado && <Check size={13} className="shrink-0" />}
+                <span>{item.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* ── Contenido por Paso ──────────────────────────────────────────── */}
       <main className="w-full max-w-xl mx-auto px-5 sm:px-8 pt-6 flex-1">
@@ -628,18 +684,24 @@ export default function OnboardingExpressPage() {
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-[#1C1518] text-sm">
-                      2 Insumos Químicos de Referencia (Sin Báscula)
+                      Catálogo Químico Semilla Colombia 2026 (Sin Báscula)
                     </p>
                     <p className="text-[#6E6266] mt-0.5 leading-relaxed">
                       Sembramos{' '}
                       <strong className="text-[#1C1518] tabular-nums">
-                        Decolorante / Tinte Estándar ($320 COP/g)
-                      </strong>{' '}
-                      y{' '}
+                        Polvo Decolorante ($320/g)
+                      </strong>
+                      ,{' '}
                       <strong className="text-[#1C1518] tabular-nums">
-                        Peróxido / Revelador ($95 COP/ml)
+                        Tinte Permanente ($465/g)
+                      </strong>
+                      ,{' '}
+                      <strong className="text-[#1C1518] tabular-nums">
+                        Peróxido 10V-30V ($32/ml)
                       </strong>{' '}
-                      para descontar el costo químico real en cada servicio.
+                      e insumos fijos (<strong className="text-[#1C1518] tabular-nums">$9.500</strong> en
+                      decoloración y <strong className="text-[#1C1518] tabular-nums">$3.000–$3.500</strong> en
+                      color/hidratación).
                     </p>
                   </div>
                 </div>
@@ -650,13 +712,12 @@ export default function OnboardingExpressPage() {
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-[#1C1518] text-sm">
-                      Especialista y Regla de Comisión Base (35%)
+                      Especialista y Regla de Comisión Saludable (40%)
                     </p>
                     <p className="text-[#6E6266] mt-0.5 leading-relaxed">
                       Activamos tu <strong className="text-[#1C1518]">Especialista Principal</strong> con
-                      comisión del <strong className="text-[#1C1518] tabular-nums">35%</strong> calculada
-                      sobre <em className="not-italic font-semibold">precio menos química</em>, protegiendo
-                      la utilidad neta del salón.
+                      comisión del <strong className="text-[#1C1518] tabular-nums">40% sobre base libre de química</strong>,
+                      protegiendo la utilidad neta del salón.
                     </p>
                   </div>
                 </div>

@@ -16,12 +16,13 @@ import { cache } from 'react';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { unstable_noStore as noStore } from 'next/cache';
-import { CheckCircle2, Sparkles, Clock } from 'lucide-react';
+import { CheckCircle2, Sparkles, Clock, UserCheck } from 'lucide-react';
 import { checkRateLimit, cotizacionPublicaLimiter } from '@/lib/api/rateLimit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { APP_HOST, APP_URL } from '@/lib/sitio';
 import ConfirmacionPublicaCotizacion from '@/components/cotizador/ConfirmacionPublicaCotizacion';
 import {
+  CATALOGO_VARIABLES,
   TEXTO_LEGAL_COTIZACION_PUBLICA,
   construirMetadataCotizacion,
   esUuidValido,
@@ -30,6 +31,7 @@ import {
   formatearPrecioCop,
   obtenerCotizacionPublica,
   type CotizacionPublica,
+  type VariablesCotizacion,
 } from '@/lib/cotizador';
 
 export const dynamic = 'force-dynamic';
@@ -39,54 +41,135 @@ interface ResultadoCargaCotizacionPublica {
   estado: 'ok' | 'no_encontrada' | 'rate_limited';
   cotizacion: CotizacionPublica | null;
   salonWhatsapp: string | null;
+  estilistaNombre: string | null;
+  pildorasDiagnostico: string[];
+  confirmado: boolean;
+  esPlanProIA: boolean;
+}
+
+function extraerPildorasDiagnosticoPublico(variables?: VariablesCotizacion | null): string[] {
+  if (!variables || typeof variables !== 'object') {
+    return ['Longitud: Evaluada en silla', 'Densidad: Calibrada', 'Fibra: Diagnóstico técnico'];
+  }
+  const vLargo =
+    typeof variables.largo === 'object' ? variables.largo?.valor : (variables.largo as string | undefined);
+  const vDensidad =
+    typeof variables.densidad === 'object'
+      ? variables.densidad?.valor
+      : (variables.densidad as string | undefined);
+  const vEstado =
+    typeof variables.estado === 'object' ? variables.estado?.valor : (variables.estado as string | undefined);
+
+  const etqLargo = CATALOGO_VARIABLES.largo.find((o) => o.valor === vLargo)?.etiqueta;
+  const etqDensidad = CATALOGO_VARIABLES.densidad.find((o) => o.valor === vDensidad)?.etiqueta;
+  const etqEstado = CATALOGO_VARIABLES.estado.find((o) => o.valor === vEstado)?.etiqueta;
+
+  const pildoras: string[] = [];
+  if (etqLargo) pildoras.push(`Longitud: ${etqLargo}`);
+  if (etqDensidad) pildoras.push(`Densidad: ${etqDensidad}`);
+  if (etqEstado) pildoras.push(`Fibra: ${etqEstado}`);
+  return pildoras.length > 0
+    ? pildoras
+    : ['Longitud: Evaluada en silla', 'Densidad: Calibrada', 'Fibra: Diagnóstico técnico'];
 }
 
 const cargarEnPeticion = cache(async (token: string): Promise<ResultadoCargaCotizacionPublica> => {
   noStore();
 
+  const vacio: ResultadoCargaCotizacionPublica = {
+    estado: 'no_encontrada',
+    cotizacion: null,
+    salonWhatsapp: null,
+    estilistaNombre: null,
+    pildorasDiagnostico: [],
+    confirmado: false,
+    esPlanProIA: false,
+  };
+
   if (!esUuidValido(token)) {
-    return { estado: 'no_encontrada', cotizacion: null, salonWhatsapp: null };
+    return vacio;
   }
 
   const hdrs = await headers();
   const ip = extraerIpDesdeHeaders(hdrs);
   const rl = await checkRateLimit(cotizacionPublicaLimiter(), `ip:${ip}`);
   if (!rl.ok) {
-    return { estado: 'rate_limited', cotizacion: null, salonWhatsapp: null };
+    return { ...vacio, estado: 'rate_limited' };
   }
 
   try {
     const cotizacion = await obtenerCotizacionPublica(token);
     if (!cotizacion) {
-      return { estado: 'no_encontrada', cotizacion: null, salonWhatsapp: null };
+      return vacio;
     }
 
     let salonWhatsapp: string | null = null;
+    let estilistaNombre: string | null = null;
+    let pildorasDiagnostico = extraerPildorasDiagnosticoPublico(null);
+    let confirmado = false;
+    let esPlanProIA = !cotizacion.conMarcaVelli;
+
     try {
       const admin = createAdminClient();
       const { data: cotRow } = await admin
         .from('cotizaciones')
-        .select('user_id')
+        .select('user_id, estilista_nombre, variables, perfil_extendido, estado')
         .eq('token_publico', token.trim())
         .maybeSingle();
-      const userId = (cotRow as { user_id?: string } | null)?.user_id;
-      if (userId) {
-        const { data: profRow } = await admin
-          .from('profiles')
-          .select('telefono')
-          .eq('id', userId)
-          .maybeSingle();
-        salonWhatsapp =
-          ((profRow as { telefono?: string | null } | null)?.telefono ?? '').trim() || null;
+
+      const fila = cotRow as {
+        user_id?: string;
+        estilista_nombre?: string | null;
+        variables?: VariablesCotizacion | null;
+        perfil_extendido?: Record<string, unknown> | null;
+        estado?: string | null;
+      } | null;
+
+      if (fila) {
+        estilistaNombre = (fila.estilista_nombre ?? '').trim() || null;
+        pildorasDiagnostico = extraerPildorasDiagnosticoPublico(fila.variables);
+        confirmado =
+          fila.perfil_extendido?.['consentimientoAceptado'] === true ||
+          fila.estado === 'cobrada';
+
+        if (fila.user_id) {
+          const [{ data: profRow }, { data: subRow }] = await Promise.all([
+            admin
+              .from('profiles')
+              .select('telefono')
+              .eq('id', fila.user_id)
+              .maybeSingle(),
+            admin
+              .from('suscripciones')
+              .select('plan, estado')
+              .eq('user_id', fila.user_id)
+              .maybeSingle(),
+          ]);
+
+          salonWhatsapp =
+            ((profRow as { telefono?: string | null } | null)?.telefono ?? '').trim() || null;
+          const sub = subRow as { plan?: string | null; estado?: string | null } | null;
+          if (sub?.plan === 'pro_ia') {
+            esPlanProIA = true;
+          }
+        }
       }
     } catch {
       salonWhatsapp = null;
     }
 
-    return { estado: 'ok', cotizacion, salonWhatsapp };
+    return {
+      estado: 'ok',
+      cotizacion,
+      salonWhatsapp,
+      estilistaNombre,
+      pildorasDiagnostico,
+      confirmado,
+      esPlanProIA,
+    };
   } catch (err) {
     console.error('[cotizacion-publica]', err);
-    return { estado: 'no_encontrada', cotizacion: null, salonWhatsapp: null };
+    return vacio;
   }
 });
 
@@ -140,6 +223,7 @@ function obtenerPasosIncluidos(servicioNombre: string): string[] {
   ];
 }
 
+// ── Isotipo Oficial La Gota Dual (Intacto) ────────────────────────────────
 function IsotipoGotaDual() {
   return (
     <div className="w-11 h-11 rounded-2xl bg-[#FAF7F5]/12 border border-[#E8CFC8]/25 flex items-center justify-center shrink-0">
@@ -165,16 +249,24 @@ export default async function CotizacionPublicaPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  const { estado, cotizacion, salonWhatsapp } = await cargarEnPeticion(token);
+  const {
+    estado,
+    cotizacion,
+    salonWhatsapp,
+    estilistaNombre,
+    pildorasDiagnostico,
+    confirmado,
+    esPlanProIA,
+  } = await cargarEnPeticion(token);
 
   if (estado === 'rate_limited') {
     return (
       <main className="min-h-screen bg-[#FAF7F5] flex items-center justify-center p-4">
-        <section className="w-full max-w-md bg-white rounded-3xl border border-[#EFE8E4] p-7 text-center shadow-[0_20px_50px_-12px_rgba(59,13,30,0.10)]">
-          <h1 className="text-xl font-bold text-[#1C1518] mb-2">
+        <section className="w-full max-w-md mx-auto bg-white rounded-3xl border border-[#EFE8E4] p-7 text-center shadow-[0_10px_30px_-5px_rgba(59,13,30,0.06)]">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-[#3B0D1E] mb-2">
             Demasiadas consultas
           </h1>
-          <p className="text-sm text-[#6E6266]">
+          <p className="font-sans text-sm text-[#6B535C]">
             Por favor espera unos minutos antes de volver a abrir este comprobante.
           </p>
         </section>
@@ -185,11 +277,11 @@ export default async function CotizacionPublicaPage({
   if (!cotizacion) {
     return (
       <main className="min-h-screen bg-[#FAF7F5] flex items-center justify-center p-4">
-        <section className="w-full max-w-md bg-white rounded-3xl border border-[#EFE8E4] p-7 text-center shadow-[0_20px_50px_-12px_rgba(59,13,30,0.10)]">
-          <h1 className="text-xl font-bold text-[#1C1518] mb-2">
+        <section className="w-full max-w-md mx-auto bg-white rounded-3xl border border-[#EFE8E4] p-7 text-center shadow-[0_10px_30px_-5px_rgba(59,13,30,0.06)]">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-[#3B0D1E] mb-2">
             Cotización no disponible
           </h1>
-          <p className="text-sm text-[#6E6266]">
+          <p className="font-sans text-sm text-[#6B535C]">
             Este enlace no existe o la cotización fue anulada. Solicita una cotización actualizada en tu salón.
           </p>
         </section>
@@ -200,73 +292,120 @@ export default async function CotizacionPublicaPage({
   const precioFormateado = formatearPrecioCop(cotizacion.precio);
   const fechaFormateada = formatearFechaVigencia(cotizacion.vigenciaHasta);
   const pasosIncluidos = obtenerPasosIncluidos(cotizacion.servicio);
+  const codigoReferencia = token.trim().slice(0, 8).toUpperCase();
+  const mostrarMarcaVelli = cotizacion.conMarcaVelli && !esPlanProIA;
 
   return (
-    <main className="min-h-screen bg-[#FAF7F5] text-[#1C1518] flex flex-col items-center justify-center py-8 px-4">
-      <article className="w-full max-w-lg bg-white rounded-3xl border border-[#EFE8E4] overflow-hidden shadow-[0_24px_60px_-15px_rgba(59,13,30,0.15)]">
-        {/* Cabecera Oficial Velvet Plum #3B0D1E */}
-        <header className="bg-[#3B0D1E] px-6 py-6 text-[#FAF7F5]">
-          <div className="flex items-center gap-3.5">
-            <IsotipoGotaDual />
-            <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-[0.22em] text-[#E8CFC8] font-bold">
-                Propuesta Capilar Personalizada
-              </p>
-              <h1 className="text-2xl font-bold tracking-tight text-[#FAF7F5] truncate mt-0.5">
-                {cotizacion.salon}
-              </h1>
+    <main className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] py-4">
+      <article className="max-w-md mx-auto my-6 px-4">
+        {/* Cabecera Ciruela */}
+        <header className="bg-[#3B0D1E] !text-[#FAF7F5] p-6 rounded-t-3xl space-y-4 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.18)]">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <IsotipoGotaDual />
+              <div className="min-w-0">
+                <p className="font-sans text-[11px] uppercase tracking-[0.08em] !text-[#E8CFC8] font-bold">
+                  Comprobante de Cotización
+                </p>
+                <h1 className="font-display text-2xl font-semibold tracking-tight !text-[#FAF7F5] truncate mt-0.5 capitalize">
+                  {cotizacion.salon}
+                </h1>
+              </div>
             </div>
+
+            <span className="px-2.5 py-1 rounded-lg bg-[#FAF7F5]/10 border border-[#E8CFC8]/25 !text-[#E8CFC8] font-mono text-xs font-semibold tabular-nums shrink-0">
+              #{codigoReferencia}
+            </span>
+          </div>
+
+          {/* Badge de estado (Vigencia activa · Hora Bogotá o Confirmada ✓) */}
+          <div className="pt-3 border-t border-[#FAF7F5]/15 flex flex-wrap items-center justify-between gap-2">
+            {confirmado ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0D9488]/30 border border-[#99F6E4]/45 !text-[#FAF7F5] font-sans text-xs font-bold">
+                <CheckCircle2 size={13} />
+                Confirmada ✓
+              </span>
+            ) : cotizacion.vigente ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0D9488]/25 border border-[#0D9488]/45 !text-[#F0FDFA] font-sans text-xs font-semibold">
+                <Clock size={12} />
+                Vigencia activa · Hora Bogotá ({fechaFormateada})
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D97757]/25 border border-[#D97757]/45 !text-[#FFF7F5] font-sans text-xs font-semibold">
+                Vencida el {fechaFormateada} · Hora Bogotá
+              </span>
+            )}
+          </div>
+
+          {/* Total Cotizado ($ COP) en la Cabecera Ciruela */}
+          <div className="pt-3 border-t border-[#FAF7F5]/15 flex items-end justify-between gap-3">
+            <div>
+              <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] !text-[#E8CFC8] block">
+                Total Cotizado ({cotizacion.moneda})
+              </span>
+              <div className="font-display text-3xl font-bold tabular-nums !text-[#FAF7F5] tracking-tight mt-0.5">
+                {precioFormateado}{' '}
+                <span className="font-sans text-xs font-bold !text-[#E8CFC8]">
+                  {cotizacion.moneda}
+                </span>
+              </div>
+            </div>
+            <span className="font-mono text-[11px] !text-[#E8CFC8]/90 tabular-nums">
+              Válida hasta {fechaFormateada}
+            </span>
           </div>
         </header>
 
-        {/* Cuerpo Editorial */}
-        <div className="p-6 sm:p-7 space-y-6">
-          {/* Servicio y Resumen de Diagnóstico */}
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F7ECEF] text-[#6E1E3A] text-[11px] font-bold uppercase tracking-wider">
-              <Sparkles size={12} />
-              Diagnóstico & Servicio
+        {/* Cuerpo del Comprobante */}
+        <div className="bg-white p-6 border-x border-b border-[#EFE8E4] rounded-b-3xl space-y-5 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.06)]">
+          {/* Servicio, Especialista Asignada y Píldoras de Diagnóstico Capilar */}
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F5EBE8] text-[#3B0D1E] font-sans text-[11px] font-bold uppercase tracking-[0.08em]">
+                <Sparkles size={12} />
+                Servicio Personalizado
+              </div>
+
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF7F5] border border-[#EFE8E4] text-[#3B0D1E] font-sans text-xs font-semibold">
+                <UserCheck size={13} className="text-[#3B0D1E]" />
+                <span className="capitalize">
+                  {estilistaNombre || 'Especialista asignada'}
+                </span>
+              </div>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-[#1C1518] tracking-tight">
+
+            <h2 className="font-sans text-lg md:text-xl font-bold tracking-tight text-[#3B0D1E] capitalize">
               {cotizacion.servicio}
             </h2>
-            <p className="text-xs sm:text-sm text-[#6E6266] leading-relaxed">
-              Valor calculado de forma transparente según las características de longitud, masa capilar, porosidad y requerimientos técnicos evaluados para tu cabello.
-            </p>
-          </div>
 
-          {/* Tarjeta de Precio en $ COP */}
-          <div className="rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] p-5 text-center">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-[#6E6266] font-bold mb-1.5">
-              Inversión Cotizada
-            </p>
-            <p className="text-4xl font-bold tracking-tight text-[#3B0D1E]">
-              {precioFormateado}{' '}
-              <span className="text-sm font-semibold text-[#6E6266]">{cotizacion.moneda}</span>
-            </p>
-
-            <div className="mt-3 flex items-center justify-center">
-              {cotizacion.vigente ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAF6F4] text-[#0D7A70] text-xs font-semibold">
-                  <Clock size={12} />
-                  Válida hasta el {fechaFormateada}
+            {/* Píldoras de diagnóstico capilar (sin exponer jamás costos ni comisiones) */}
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
+              {pildorasDiagnostico.map((pildora) => (
+                <span
+                  key={pildora}
+                  className="px-3 py-1 rounded-full bg-[#FAF7F5] border border-[#EFE8E4] font-sans text-xs font-semibold text-[#3B0D1E]"
+                >
+                  {pildora}
                 </span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FDF2EC] text-[#B85D3B] text-xs font-semibold">
-                  Cotización vencida el {fechaFormateada} · Solicita actualizarla
-                </span>
-              )}
+              ))}
             </div>
+
+            <p className="font-sans text-xs sm:text-sm text-[#6B535C] leading-relaxed">
+              Valor calculado de forma transparente según las características de longitud, densidad y estado de la fibra evaluadas en silla para tu cabello.
+            </p>
           </div>
 
-          {/* Pasos Incluidos en el Procedimiento */}
+          {/* Desglose Transparente para la Clienta */}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-[#6E6266] mb-3">
+            <h3 className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-3">
               Qué incluye tu procedimiento
             </h3>
-            <ul className="space-y-2.5">
+            <ul className="space-y-2.5 pl-0 list-none">
               {pasosIncluidos.map((paso, idx) => (
-                <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-[13px] text-[#1C1518] leading-relaxed">
+                <li
+                  key={idx}
+                  className="flex items-start gap-2.5 font-sans text-xs sm:text-[13px] text-[#3B0D1E] leading-relaxed"
+                >
                   <CheckCircle2 size={15} className="text-[#0D9488] shrink-0 mt-0.5" />
                   <span>{paso}</span>
                 </li>
@@ -274,7 +413,7 @@ export default async function CotizacionPublicaPage({
             </ul>
           </div>
 
-          {/* Casilla de Consentimiento y Confirmación por WhatsApp */}
+          {/* Bloque Legal de Consentimiento Químico Informado + Confirmación */}
           <ConfirmacionPublicaCotizacion
             token={token}
             salon={cotizacion.salon}
@@ -283,27 +422,28 @@ export default async function CotizacionPublicaPage({
             precioFormateado={precioFormateado}
             moneda={cotizacion.moneda}
             vigente={cotizacion.vigente}
+            confirmadoInicial={confirmado}
           />
 
           {/* Aviso legal estándar (P13) */}
-          <p className="text-[11px] text-[#6E6266] leading-relaxed border-t border-[#EFE8E4] pt-4">
+          <p className="font-sans text-[11px] text-[#6B535C] leading-relaxed border-t border-[#EFE8E4] pt-4">
             {TEXTO_LEGAL_COTIZACION_PUBLICA}
           </p>
-        </div>
 
-        {/* Pie con marca Velli salvo en Salón Pro + IA */}
-        {cotizacion.conMarcaVelli && (
-          <footer className="bg-[#FAF7F5] border-t border-[#EFE8E4] px-6 py-3.5 text-center">
-            <a
-              href={APP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-[#6E6266] hover:text-[#3B0D1E] transition-colors font-semibold no-underline"
-            >
-              Cotización hecha con Velli Business Intelligence · {APP_HOST}
-            </a>
-          </footer>
-        )}
+          {/* Regla de Marca Blanca: oculto cuando es pro_ia */}
+          {mostrarMarcaVelli && (
+            <div className="pt-2 border-t border-[#EFE8E4] text-center">
+              <a
+                href={APP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-sans text-xs text-[#6B535C] hover:text-[#3B0D1E] transition-colors font-semibold no-underline"
+              >
+                Cotización hecha con Velli Business Intelligence · {APP_HOST}
+              </a>
+            </div>
+          )}
+        </div>
       </article>
     </main>
   );

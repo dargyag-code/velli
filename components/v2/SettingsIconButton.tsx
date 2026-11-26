@@ -7,22 +7,9 @@ export default function SettingsIconButton() {
     <Link
       href="/configuracion"
       aria-label="Configuración"
-      style={{
-        width: 38,
-        height: 38,
-        borderRadius: '50%',
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border)',
-        color: 'var(--text-main)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxShadow: 'var(--shadow-xs)',
-        textDecoration: 'none',
-        flexShrink: 0,
-      }}
+      className="min-w-[44px] min-h-[44px] rounded-full bg-white hover:bg-[#F5EBE8] border border-[#EFE8E4] text-[#3B0D1E] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(59,13,30,0.05)] no-underline shrink-0 transition-colors"
     >
-      <Settings size={18} strokeWidth={1.7} />
+      <Settings size={18} strokeWidth={1.8} />
     </Link>
   );
 }

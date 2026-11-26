@@ -10,9 +10,17 @@
 
 import type { Entorno } from './registro';
 import { evaluarFlags, parsearFlagsEntorno, type FlagsEvaluados, type OverridesFlags } from './evaluar';
+import {
+  evaluarHairClinicalPack,
+  parsearPacksEntorno,
+  type EstadoHairClinicalPack,
+  type OverridesVerticalPacks,
+  type VerticalSalon,
+} from './verticales';
 
 export * from './registro';
 export * from './evaluar';
+export * from './verticales';
 
 export function entornoActual(): Entorno {
   const vercel = process.env.NEXT_PUBLIC_VERCEL_ENV;
@@ -38,5 +46,25 @@ export function flagsActivos(salonOverrides?: OverridesFlags | null): FlagsEvalu
     entorno: entornoActual(),
     entornoOverrides: overridesDelEntorno(),
     salonOverrides,
+  });
+}
+
+export function overridesPacksDelEntorno(): OverridesVerticalPacks {
+  return parsearPacksEntorno(process.env.NEXT_PUBLIC_VELLI_FLAGS);
+}
+
+/**
+ * Evalúa el `hair_clinical_pack` combinando la vertical de la organización
+ * (`'hair_studio'` por defecto para cuentas existentes) con overrides de
+ * entorno y de la organización/salón.
+ */
+export function hairClinicalPackActivo(opciones?: {
+  vertical?: VerticalSalon | string | null;
+  salonPackOverrides?: OverridesVerticalPacks | Record<string, unknown> | null;
+}): EstadoHairClinicalPack {
+  return evaluarHairClinicalPack({
+    vertical: opciones?.vertical,
+    entornoPackOverrides: overridesPacksDelEntorno(),
+    salonPackOverrides: opciones?.salonPackOverrides,
   });
 }

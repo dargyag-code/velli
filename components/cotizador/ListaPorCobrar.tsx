@@ -36,6 +36,9 @@ import {
   type ComisionSalon,
   type ConsumoPlantillaInput,
 } from '@/lib/cotizador';
+import {
+  obtenerSemillaServicio,
+} from '@/lib/semilla-financiera';
 
 export interface ListaPorCobrarProps {
   clientaId?: string;
@@ -46,6 +49,7 @@ export interface ListaPorCobrarProps {
   mostrarVacio?: boolean;
   onIrACotizar?: () => void;
   onCambio?: () => void;
+  onCountChange?: (count: number) => void;
 }
 
 export default function ListaPorCobrar({
@@ -57,6 +61,7 @@ export default function ListaPorCobrar({
   mostrarVacio = false,
   onIrACotizar,
   onCambio,
+  onCountChange,
 }: ListaPorCobrarProps) {
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
   const [estilistas, setEstilistas] = useState<EstilistaSalon[]>(estilistasProp ?? []);
@@ -105,9 +110,9 @@ export default function ListaPorCobrar({
       }
 
       setCotizaciones(cots);
+      onCountChange?.(cots.length);
       setEstilistas(ests);
 
-      // Preasignar especialista cuando solo hay 1 activa o conservar la de la cotización
       setEstilistaPorCotizacion((prev) => {
         const next: Record<string, string> = { ...prev };
         for (const c of cots) {
@@ -140,10 +145,11 @@ export default function ListaPorCobrar({
       setNombresClientas(mapaNombres);
     } catch {
       setCotizaciones([]);
+      onCountChange?.(0);
     } finally {
       setCargando(false);
     }
-  }, [clientaId, clientaNombre, clientasProp, estilistasProp]);
+  }, [clientaId, clientaNombre, clientasProp, estilistasProp, onCountChange]);
 
   useEffect(() => {
     cargar();
@@ -156,16 +162,45 @@ export default function ListaPorCobrar({
   ) => {
     const srv = cot.servicioId ? serviciosMap[cot.servicioId] : undefined;
     const plant = cot.servicioId ? plantillasMap[cot.servicioId] : undefined;
+    const semilla = obtenerSemillaServicio({
+      nombre: srv?.nombre ?? cot.servicioNombre,
+      categoria: srv?.categoria,
+    });
     const tintePrincipal = productos.find((p) => p.unidad === 'g');
     const oxidantePrincipal = productos.find((p) => p.unidad === 'ml');
     const consumoPlantilla = (plant?.consumo ?? {}) as ConsumoPlantillaInput;
+
+    const gramosGuardados =
+      typeof cot.formula?.['gramosTinte'] === 'number' && cot.formula['gramosTinte'] > 0
+        ? (cot.formula['gramosTinte'] as number)
+        : null;
+
     const resCosto = calcularCostoProducto({
       variables: cot.variables,
       consumo: {
-        ...consumoPlantilla,
-        usaFormulaColor: srv?.usaFormulaColor ?? consumoPlantilla.usaFormulaColor ?? false,
+        gramosTinteBase: consumoPlantilla.gramosTinteBase ?? semilla.gramosBase,
+        proporcionOxidante: consumoPlantilla.proporcionOxidante ?? semilla.ratioPeroxido,
+        insumosFijos:
+          typeof consumoPlantilla.insumosFijos === 'number' && consumoPlantilla.insumosFijos > 0
+            ? consumoPlantilla.insumosFijos
+            : semilla.insumosFijosCop,
+        usaFormulaColor: srv?.usaFormulaColor ?? consumoPlantilla.usaFormulaColor ?? true,
       },
-      productoTinte: tintePrincipal ?? null,
+      formulaFinal:
+        gramosGuardados !== null
+          ? {
+              componentes: [{ descripcion: cot.servicioNombre, gramos: gramosGuardados }],
+              proporcion: consumoPlantilla.proporcionOxidante ?? semilla.ratioPeroxido,
+            }
+          : null,
+      aplicarFactoresAFormula: gramosGuardados !== null ? false : true,
+      productoTinte: tintePrincipal
+        ? { ...tintePrincipal, precioUnitario: semilla.costoGramoBaseCop }
+        : {
+            nombre: cot.servicioNombre,
+            unidad: 'g',
+            precioUnitario: semilla.costoGramoBaseCop,
+          },
       productoOxidante: oxidantePrincipal ?? null,
     });
     const resComision = calcularComisionYMargen({
@@ -213,7 +248,11 @@ export default function ListaPorCobrar({
         comisionEstimada: snap.comisionEstimada,
         comisionDetalle: snap.comisionDetalle,
       });
-      setCotizaciones((prev) => prev.filter((c) => c.id !== cot.id));
+      setCotizaciones((prev) => {
+        const next = prev.filter((c) => c.id !== cot.id);
+        onCountChange?.(next.length);
+        return next;
+      });
       setEditandoId(null);
       showToast(`Cobro confirmado: ${formatearPrecioCop(monto)}`, 'success');
       onCambio?.();
@@ -229,7 +268,11 @@ export default function ListaPorCobrar({
     setProcesandoId(cot.id);
     try {
       await anularCotizacion(cot.id);
-      setCotizaciones((prev) => prev.filter((c) => c.id !== cot.id));
+      setCotizaciones((prev) => {
+        const next = prev.filter((c) => c.id !== cot.id);
+        onCountChange?.(next.length);
+        return next;
+      });
       setEditandoId(null);
       showToast('Cotización anulada', 'success');
       onCambio?.();
@@ -244,8 +287,8 @@ export default function ListaPorCobrar({
   if (cargando) {
     if (!mostrarVacio) return null;
     return (
-      <section className="bg-white rounded-2xl p-8 border border-[#EFE8E4] text-center shadow-[0_12px_32px_-8px_rgba(59,13,30,0.06)]">
-        <p className="text-sm text-[#6E6266]">Cargando servicios por cobrar…</p>
+      <section className="bg-white rounded-2xl p-8 border border-[#EFE8E4] text-center shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]">
+        <p className="font-sans text-sm text-[#6B535C]">Cargando servicios por cobrar…</p>
       </section>
     );
   }
@@ -253,23 +296,25 @@ export default function ListaPorCobrar({
   if (cotizaciones.length === 0) {
     if (!mostrarVacio) return null;
     return (
-      <section className="bg-white rounded-3xl p-10 border border-[#EFE8E4] text-center shadow-[0_12px_32px_-8px_rgba(59,13,30,0.06)]">
-        <div className="w-12 h-12 rounded-2xl bg-[#F7ECEF] text-[#3B0D1E] mx-auto flex items-center justify-center mb-4">
+      <section className="bg-white rounded-3xl p-10 border border-[#EFE8E4] text-center shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]">
+        <div className="w-12 h-12 rounded-2xl bg-[#F5EBE8] text-[#3B0D1E] mx-auto flex items-center justify-center mb-4">
           <Sparkles size={22} />
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#6E1E3A]">
+        <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
           Cierre Financiero en 1 Toque
         </span>
-        <h2 className="text-xl font-bold text-[#1C1518] mt-1">Todo al día en caja</h2>
-        <p className="text-sm text-[#6E6266] mt-2 max-w-md mx-auto">
-          No hay cotizaciones pendientes por cobrar en este momento. Crea una cotización para
-          congelar gramos, comisión y margen en 1 toque.
+        <h2 className="font-display text-2xl font-semibold tracking-tight text-[#3B0D1E] mt-1">
+          Todo al día en caja
+        </h2>
+        <p className="font-sans text-sm text-[#6B535C] mt-2 max-w-md mx-auto">
+          No hay cotizaciones pendientes por cobrar en este momento. Crea una cotización en silla
+          para congelar gramos, comisión y utilidad neta en 1 toque.
         </p>
         {onIrACotizar && (
           <button
             type="button"
             onClick={onIrACotizar}
-            className="mt-5 px-6 py-3 rounded-full bg-[#3B0D1E] hover:bg-[#6E1E3A] text-[#FAF7F5] text-xs font-bold tracking-wide transition-all cursor-pointer"
+            className="mt-6 min-h-[46px] px-6 py-3 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans text-xs font-bold tracking-wide transition-all cursor-pointer shadow-[0_10px_30px_-5px_rgba(59,13,30,0.18)]"
           >
             Nueva Cotización en Silla
           </button>
@@ -281,21 +326,21 @@ export default function ListaPorCobrar({
   return (
     <section className="mb-8">
       {/* Encabezado de la Pestaña / Bloque de Cierre */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#6E1E3A]">
+          <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
             Cierre Financiero en 1 Toque
           </span>
-          <h2 className="text-xl font-bold text-[#1C1518] tracking-tight mt-0.5">
+          <h2 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E] mt-0.5 tabular-nums">
             Servicios por Cobrar ({cotizaciones.length})
           </h2>
         </div>
-        <span className="px-3 py-1 rounded-full bg-[#F5EFFB] text-[#7C3AED] text-xs font-semibold">
+        <span className="px-3 py-1.5 rounded-full bg-[#F5F3FF] border border-[#DDD6FE] text-[#7C3AED] font-sans text-xs font-semibold">
           Congela insumos y comisión
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {cotizaciones.map((cot) => {
           const nombreFormula =
             typeof cot.formula?.['clientaNombre'] === 'string'
@@ -336,40 +381,49 @@ export default function ListaPorCobrar({
             cot.perfilExtendido?.['consentimientoAceptado'] === true;
           const enviadaPorWhatsApp =
             cot.formula?.['enviadaPorWhatsApp'] === true || consentimientoAceptado;
+          const gramosEstimados =
+            snapPreview.costoDetalle.gramosTinte > 0
+              ? Math.round(snapPreview.costoDetalle.gramosTinte)
+              : null;
 
           return (
             <article
               key={cot.id}
-              className="bg-white rounded-2xl p-5 border border-[#EFE8E4] shadow-[0_12px_32px_-8px_rgba(59,13,30,0.07)] flex flex-col justify-between gap-4"
+              className="bg-white rounded-2xl p-5 border border-[#EFE8E4] shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] flex flex-col justify-between gap-4"
             >
               {/* Cabecera de la Cotización */}
               <div>
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     {!clientaId && (
-                      <span className="text-xs font-bold uppercase tracking-wider text-[#6E1E3A]">
+                      <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
                         {nombreCli}
                       </span>
                     )}
-                    <h3 className="text-lg font-bold text-[#1C1518] leading-snug mt-0.5">
+                    <h3 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E] leading-snug mt-0.5 capitalize">
                       {cot.servicioNombre}
                     </h3>
-                    <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
                       {nombreEst && (
-                        <div className="inline-flex items-center gap-1 text-xs text-[#6E6266]">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F5EBE8] text-xs font-semibold text-[#3B0D1E] capitalize">
                           <UserCheck className="text-[#3B0D1E]" size={13} />
                           <span>{nombreEst}</span>
                         </div>
                       )}
+                      {gramosEstimados !== null && (
+                        <span className="px-2.5 py-1 rounded-full bg-[#F5F3FF] border border-[#DDD6FE] text-[#7C3AED] font-mono text-xs font-semibold tabular-nums">
+                          {gramosEstimados}g
+                        </span>
+                      )}
                       {consentimientoAceptado ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#EAF6F4] text-[#0D7A70] text-[10px] font-bold">
-                          <ShieldCheck size={11} />
-                          Consentimiento aceptado
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F0FDFA] text-[#0D9488] text-[11px] font-bold">
+                          <ShieldCheck size={12} />
+                          Confirmada ✓
                         </span>
                       ) : enviadaPorWhatsApp ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#F5EFFB] text-[#7C3AED] text-[10px] font-semibold">
-                          <MessageCircle size={11} />
-                          Enviada por WhatsApp
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F5F3FF] text-[#7C3AED] text-[11px] font-semibold">
+                          <MessageCircle size={12} />
+                          Enviada WA
                         </span>
                       ) : null}
                     </div>
@@ -377,40 +431,40 @@ export default function ListaPorCobrar({
 
                   {/* Badge No Punitivo de Rentabilidad */}
                   <span
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center gap-1 shrink-0 tabular-nums ${
+                    className={`px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1 shrink-0 tabular-nums ${
                       esRentable
-                        ? 'bg-[#EAF6F4] text-[#0D9488]'
-                        : 'bg-[#FDF2EC] text-[#D97757]'
+                        ? 'bg-[#F0FDFA] text-[#0D9488]'
+                        : 'bg-[#FFF7F5] text-[#D97757]'
                     }`}
                   >
-                    <TrendingUp size={12} /> {margenPct}% margen
+                    <TrendingUp size={13} /> {margenPct}%
                   </span>
                 </div>
 
                 {/* Resumen BI antes de cerrar */}
-                <div className="mt-4 p-3.5 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] grid grid-cols-3 gap-2 text-xs tabular-nums">
+                <div className="mt-4 p-3.5 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] grid grid-cols-3 gap-2 text-xs tabular-nums">
                   <div>
-                    <span className="text-[10px] uppercase tracking-wider text-[#6E6266] block">
-                      Química (IA)
+                    <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                      Química
                     </span>
-                    <span className="font-bold text-[#7C3AED]">
+                    <span className="font-bold text-[#7C3AED] mt-0.5 block">
                       {formatearPrecioCop(snapPreview.costoProductoEstimado)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase tracking-wider text-[#6E6266] block">
+                    <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
                       Comisión
                     </span>
-                    <span className="font-bold text-[#1C1518]">
+                    <span className="font-bold text-[#3B0D1E] mt-0.5 block">
                       {formatearPrecioCop(snapPreview.comisionEstimada)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase tracking-wider text-[#6E6266] block">
-                      Utilidad Salón
+                    <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                      Utilidad Neta
                     </span>
                     <span
-                      className={`font-bold ${
+                      className={`font-bold mt-0.5 block ${
                         esRentable ? 'text-[#0D9488]' : 'text-[#D97757]'
                       }`}
                     >
@@ -419,29 +473,35 @@ export default function ListaPorCobrar({
                   </div>
                 </div>
 
-                {/* Selector directo en tarjeta cuando la cotización no trae especialista asignada */}
+                {/* Píldoras táctiles cuando la cotización no trae especialista asignada */}
                 {!enEdicion && !cot.estilistaId && estilistas.length > 0 && (
-                  <div className="mt-3">
-                    <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#6E1E3A] mb-1">
-                      <UserCheck size={12} />
+                  <div className="mt-3.5">
+                    <label className="flex items-center gap-1.5 font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-2">
+                      <UserCheck size={13} className="text-[#3B0D1E]" />
                       Especialista asignada para liquidación
                     </label>
-                    <select
-                      value={seleccionTarjeta}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setEstilistaPorCotizacion((prev) => ({ ...prev, [cot.id]: val }));
-                        setEstilistaOverrideId(val);
-                      }}
-                      className="w-full px-3.5 py-2 rounded-xl bg-[#FAF7F5] border border-[#DFC5CE] text-xs font-semibold text-[#1C1518] outline-none focus:border-[#3B0D1E]"
-                    >
-                      <option value="">Seleccionar especialista…</option>
-                      {estilistas.map((e) => (
-                        <option key={e.id} value={e.id}>
-                          {e.nombre}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="flex flex-wrap gap-2">
+                      {estilistas.map((e) => {
+                        const activa = seleccionTarjeta === e.id;
+                        return (
+                          <button
+                            key={e.id}
+                            type="button"
+                            onClick={() => {
+                              setEstilistaPorCotizacion((prev) => ({ ...prev, [cot.id]: e.id }));
+                              setEstilistaOverrideId(e.id);
+                            }}
+                            className={`min-h-[44px] px-3.5 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer capitalize ${
+                              activa
+                                ? 'bg-[#F5EBE8] border-[#3B0D1E] text-[#3B0D1E]'
+                                : 'bg-[#FAF7F5] border-[#EFE8E4] text-[#6B535C] hover:text-[#3B0D1E]'
+                            }`}
+                          >
+                            {e.nombre}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
@@ -453,9 +513,9 @@ export default function ListaPorCobrar({
                     type="button"
                     disabled={ocupado}
                     onClick={() => handleConfirmarCobro(cot)}
-                    className="flex-1 py-3 px-4 rounded-full bg-[#3B0D1E] hover:bg-[#6E1E3A] disabled:opacity-60 text-[#FAF7F5] font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer tabular-nums"
+                    className="flex-1 min-h-[46px] py-3 px-4 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] disabled:opacity-60 text-[#FAF7F5] font-sans font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_-6px_rgba(59,13,30,0.22)] transition-all cursor-pointer tabular-nums"
                   >
-                    {ocupado ? <Sparkles size={15} /> : <Check size={15} />}
+                    {ocupado ? <Sparkles size={16} /> : <Check size={16} />}
                     <span>Cobrado {formatearPrecioCop(cot.precioCotizado)}</span>
                   </button>
 
@@ -467,55 +527,59 @@ export default function ListaPorCobrar({
                       setOtroValorTexto(String(cot.precioCotizado));
                       setEstilistaOverrideId(cot.estilistaId || seleccionTarjeta || '');
                     }}
-                    className="py-3 px-4 rounded-full bg-[#FAF7F5] hover:bg-[#E8CFC8]/40 border border-[#EFE8E4] text-[#1C1518] font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                    className="min-h-[46px] py-3 px-4 rounded-2xl bg-[#FAF7F5] hover:bg-[#F5EBE8] border border-[#EFE8E4] text-[#3B0D1E] font-sans font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
                   >
-                    <Edit3 size={13} />
+                    <Edit3 size={14} />
                     <span>Ajustar</span>
                   </button>
                 </div>
               ) : (
-                <div className="pt-2 border-t border-[#EFE8E4] space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#6E6266] mb-1">
-                        Valor final cobrado ($ COP)
-                      </label>
-                      <input
-                        type="number"
-                        min={0}
-                        step={1000}
-                        value={otroValorTexto}
-                        onChange={(e) => setOtroValorTexto(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] text-sm font-bold text-[#1C1518] tabular-nums"
-                      />
-                    </div>
-
-                    {estilistas.length > 0 && (
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#6E6266] mb-1">
-                          Especialista asignada
-                        </label>
-                        <select
-                          value={estilistaOverrideId}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setEstilistaOverrideId(val);
-                            setEstilistaPorCotizacion((prev) => ({ ...prev, [cot.id]: val }));
-                          }}
-                          className="w-full px-3.5 py-2 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] text-sm text-[#1C1518]"
-                        >
-                          <option value="">Seleccionar especialista…</option>
-                          {estilistas.map((e) => (
-                            <option key={e.id} value={e.id}>
-                              {e.nombre}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
+                <div className="pt-3 border-t border-[#EFE8E4] space-y-3.5">
+                  <div>
+                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                      Valor final cobrado ($ COP)
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      step={1000}
+                      value={otroValorTexto}
+                      onChange={(e) => setOtroValorTexto(e.target.value)}
+                      className="w-full min-h-[46px] px-3.5 py-2.5 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] text-sm font-bold text-[#3B0D1E] tabular-nums"
+                    />
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-2">
+                  {estilistas.length > 0 && (
+                    <div>
+                      <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                        Especialista asignada
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {estilistas.map((e) => {
+                          const activa = estilistaOverrideId === e.id;
+                          return (
+                            <button
+                              key={e.id}
+                              type="button"
+                              onClick={() => {
+                                setEstilistaOverrideId(e.id);
+                                setEstilistaPorCotizacion((prev) => ({ ...prev, [cot.id]: e.id }));
+                              }}
+                              className={`min-h-[44px] px-3.5 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer capitalize ${
+                                activa
+                                  ? 'bg-[#F5EBE8] border-[#3B0D1E] text-[#3B0D1E]'
+                                  : 'bg-[#FAF7F5] border-[#EFE8E4] text-[#6B535C] hover:text-[#3B0D1E]'
+                              }`}
+                            >
+                              {e.nombre}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
@@ -526,16 +590,16 @@ export default function ListaPorCobrar({
                             Number(otroValorTexto.replace(/\D/g, ''))
                           )
                         }
-                        className="py-2.5 px-4 rounded-full bg-[#0D9488] hover:bg-[#0D7A70] text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                        className="min-h-[44px] py-2.5 px-4 rounded-xl bg-[#0D9488] hover:opacity-95 text-white font-sans font-bold text-xs flex items-center gap-1.5 cursor-pointer"
                       >
-                        <Check size={14} /> Confirmar cierre
+                        <Check size={15} /> Confirmar cierre
                       </button>
 
                       <button
                         type="button"
                         disabled={ocupado}
                         onClick={() => setEditandoId(null)}
-                        className="py-2.5 px-3.5 rounded-full bg-[#FAF7F5] border border-[#EFE8E4] text-[#6E6266] font-semibold text-xs cursor-pointer"
+                        className="min-h-[44px] py-2.5 px-3.5 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] text-[#6B535C] font-sans font-bold text-xs cursor-pointer"
                       >
                         Cancelar
                       </button>
@@ -545,9 +609,9 @@ export default function ListaPorCobrar({
                       type="button"
                       disabled={ocupado}
                       onClick={() => handleAnular(cot)}
-                      className="text-xs font-semibold text-[#D97757] hover:underline inline-flex items-center gap-1 cursor-pointer"
+                      className="min-h-[44px] px-3 text-xs font-bold text-[#D97757] hover:underline inline-flex items-center gap-1 cursor-pointer"
                     >
-                      <XCircle size={13} /> Anular
+                      <XCircle size={14} /> Anular
                     </button>
                   </div>
                 </div>

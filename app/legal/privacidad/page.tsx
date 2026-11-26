@@ -1,25 +1,23 @@
 import BannerPlaceholder from '@/components/legal/BannerPlaceholder';
 import CorreoSoporte from '@/components/legal/CorreoSoporte';
 
-const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
-
 export const metadata = {
   title: 'Política de privacidad — Velli Pro',
 };
 
 export default function PrivacidadPage() {
   return (
-    <article className="bg-white rounded-2xl border border-[#E5E5E5] p-6">
-      <h1 className="text-2xl text-[var(--primary)] mb-1" style={serif}>
+    <article className="bg-white rounded-3xl border border-[#EFE8E4] p-6 sm:p-8 shadow-velvet">
+      <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#3B0D1E] mb-1.5">
         Política de privacidad
       </h1>
-      <p className="text-xs text-[#999999] mb-6">Última actualización: octubre 2026</p>
+      <p className="text-xs text-[#947C85] mb-6">Última actualización: octubre 2026</p>
 
       <BannerPlaceholder />
 
-      <div className="flex flex-col gap-5 text-sm text-[#2D2D2D] leading-relaxed">
+      <div className="flex flex-col gap-5 text-sm text-[#6B535C] leading-relaxed [&_strong]:text-[#3B0D1E] [&_code]:font-mono [&_code]:text-xs [&_code]:bg-[#FAF7F5] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded-md [&_code]:text-[#3B0D1E]">
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             1. Quiénes somos
           </h2>
           <p>
@@ -31,7 +29,7 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             2. Datos que recopilamos
           </h2>
           <ul className="list-disc pl-5 flex flex-col gap-1">
@@ -58,7 +56,7 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             3. Cómo usamos los datos y enlaces públicos de cotización
           </h2>
           <p>
@@ -79,7 +77,7 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             4. Inteligencia artificial (Anthropic)
           </h2>
           <p>
@@ -96,7 +94,7 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             5. Aislamiento multi-tenant
           </h2>
           <p>
@@ -107,7 +105,7 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             6. Tus derechos (Habeas Data)
           </h2>
           <p>Como titular o encargada de tratamiento puedes en cualquier momento:</p>
@@ -120,7 +118,7 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             7. Cómo eliminar tus datos
           </h2>
           <p>Puedes eliminar la información desde la propia app:</p>
@@ -130,7 +128,7 @@ export default function PrivacidadPage() {
               eliminar. Borra la clienta y todo su historial.
             </li>
             <li>
-              <strong>Todos tus datos:</strong> ve a <em>Configuración → Zona de peligro → Borrar
+              <strong>Todos tus datos:</strong> ve a <em>Configuración → Respaldo y datos del salón → Borrar
               todos los datos</em>. La acción es irreversible.
             </li>
             <li>
@@ -141,18 +139,18 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             8. Conservación y seguridad
           </h2>
           <p>
             Conservamos los datos mientras tu cuenta esté activa. Usamos cifrado en tránsito
             (HTTPS) y en reposo. Aún así, ningún sistema es 100% infalible: te recomendamos
-            exportar backups periódicos desde <em>Configuración → Datos</em>.
+            exportar backups periódicos desde <em>Configuración → Respaldo y datos del salón</em>.
           </p>
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+          <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
             9. Contacto
           </h2>
           <p>
@@ -160,7 +158,7 @@ export default function PrivacidadPage() {
           </p>
         </section>
 
-        <p className="text-xs text-[#999999] italic border-t border-[#F0F0F0] pt-4 mt-2">
+        <p className="text-xs text-[#947C85] italic border-t border-[#EFE8E4] pt-4 mt-2">
           Borrador de trabajo: puede cambiar antes de la versión definitiva.
         </p>
       </div>

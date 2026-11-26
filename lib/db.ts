@@ -40,6 +40,7 @@ type ClientaRow = {
   // upserts no fallan si la migración aún no corrió en ese entorno.
   nueva_en_color?: boolean | null;
   cambio_marca_quimica?: boolean | null;
+  last_reactivation_contact_at?: string | null;
 };
 
 type ConsultaRow = {
@@ -118,7 +119,34 @@ function rowToClienta(r: ClientaRow): Clienta {
     // así clientaToRow omite la columna y el upsert no rompe sin migración.
     nuevaEnColor: r.nueva_en_color ?? undefined,
     cambioMarcaQuimica: r.cambio_marca_quimica ?? undefined,
+    lastReactivationContactAt: r.last_reactivation_contact_at ?? leerReactivacionLocal(r.id),
   };
+}
+
+const REACTIVACION_STORAGE_KEY = 'velli_reactivacion_contactos_v1';
+
+function leerReactivacionLocal(clientaId: string): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  try {
+    const raw = window.localStorage.getItem(REACTIVACION_STORAGE_KEY);
+    if (!raw) return undefined;
+    const map = JSON.parse(raw) as Record<string, string>;
+    return typeof map[clientaId] === 'string' ? map[clientaId] : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function guardarReactivacionLocal(clientaId: string, iso: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = window.localStorage.getItem(REACTIVACION_STORAGE_KEY);
+    const map = raw ? (JSON.parse(raw) as Record<string, string>) : {};
+    map[clientaId] = iso;
+    window.localStorage.setItem(REACTIVACION_STORAGE_KEY, JSON.stringify(map));
+  } catch {
+    // localStorage no disponible
+  }
 }
 
 function clientaToRow(c: Clienta): Omit<ClientaRow, 'user_id' | 'created_at'> {
@@ -142,6 +170,9 @@ function clientaToRow(c: Clienta): Omit<ClientaRow, 'user_id' | 'created_at'> {
   // definido para no romper (400 PostgREST) en entornos sin la migración.
   if (c.nuevaEnColor !== undefined) row.nueva_en_color = c.nuevaEnColor;
   if (c.cambioMarcaQuimica !== undefined) row.cambio_marca_quimica = c.cambioMarcaQuimica;
+  if (c.lastReactivationContactAt !== undefined) {
+    row.last_reactivation_contact_at = c.lastReactivationContactAt;
+  }
   return row;
 }
 
@@ -360,6 +391,22 @@ export async function updateClienta(clienta: Clienta): Promise<void> {
     .from('clientas')
     .upsert({ ...clientaToRow(clienta), user_id: userId });
   if (error) throw error;
+}
+
+export async function registrarContactoReactivacion(
+  clientaId: string,
+  contactAtIso: string = new Date().toISOString()
+): Promise<string> {
+  guardarReactivacionLocal(clientaId, contactAtIso);
+  const supabase = createClient();
+  const { error } = await supabase
+    .from('clientas')
+    .update({ last_reactivation_contact_at: contactAtIso })
+    .eq('id', clientaId);
+  if (error && error.code !== '42703' && error.code !== 'PGRST204') {
+    console.warn('[clientas.reactivacion]', error);
+  }
+  return contactAtIso;
 }
 
 export async function deleteClienta(id: string): Promise<void> {

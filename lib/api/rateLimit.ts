@@ -93,6 +93,44 @@ export function cotizacionPublicaLimiter(): Ratelimit | null {
   return _cotizacionPublicaLimiter;
 }
 
+let _vitrinaPublicaLimiter: Ratelimit | null | undefined;
+
+/** Límite por IP para lecturas de la vitrina pública `/s/[slug]`. */
+export function vitrinaPublicaLimiter(): Ratelimit | null {
+  if (_vitrinaPublicaLimiter !== undefined) return _vitrinaPublicaLimiter;
+  const redis = getRedis();
+  if (!redis) {
+    _vitrinaPublicaLimiter = null;
+    return null;
+  }
+  _vitrinaPublicaLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(120, '1 h'),
+    prefix: 'velli:rl:vitrina_publica',
+    analytics: false,
+  });
+  return _vitrinaPublicaLimiter;
+}
+
+let _publicOrderLimiter: Ratelimit | null | undefined;
+
+/** Límite por IP para creación de pedidos en `POST /api/public/orders`. */
+export function publicOrderLimiter(): Ratelimit | null {
+  if (_publicOrderLimiter !== undefined) return _publicOrderLimiter;
+  const redis = getRedis();
+  if (!redis) {
+    _publicOrderLimiter = null;
+    return null;
+  }
+  _publicOrderLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(20, '1 h'),
+    prefix: 'velli:rl:public_order',
+    analytics: false,
+  });
+  return _publicOrderLimiter;
+}
+
 // ── checkRateLimit ─────────────────────────────────────────────────────────
 export interface RateLimitResult {
   ok: boolean;

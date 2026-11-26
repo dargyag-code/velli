@@ -15,7 +15,7 @@ import {
   MessageCircle,
   Copy,
 } from 'lucide-react';
-import BottomNavV2 from '@/components/v2/BottomNavV2';
+import VelvetTopHeader from '@/components/v2/VelvetTopHeader';
 import { getProfile } from '@/lib/profile';
 import { enlaceWhatsApp } from '@/lib/whatsapp';
 import { showToast } from '@/lib/toast';
@@ -45,7 +45,6 @@ function fechaLimitePeriodo(periodo: PeriodoFiltro): Date | null {
   if (periodo === 'treinta_dias') {
     return new Date(ahora.getTime() - 30 * 86_400_000);
   }
-  // mes_actual: día 1 del mes corriente a las 00:00 locales
   return new Date(ahora.getFullYear(), ahora.getMonth(), 1, 0, 0, 0, 0);
 }
 
@@ -69,12 +68,15 @@ interface ResumenServicio {
   utilidadNetaTotal: number;
   utilidadPromedioPorServicio: number;
   margenPct: number;
+  gramosTeoricos: number;
+  gramosReales: number;
 }
 
 export default function ReportesBIPage() {
   const [periodo, setPeriodo] = useState<PeriodoFiltro>('mes_actual');
   const [cargando, setCargando] = useState(true);
   const [nombreSalon, setNombreSalon] = useState('Tu Salón');
+  const [ciudadSalon, setCiudadSalon] = useState('Colombia');
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
   const [estilistasMap, setEstilistasMap] = useState<Record<string, string>>({});
 
@@ -93,6 +95,9 @@ export default function ReportesBIPage() {
         setNombreSalon(prof.nombreSalon.trim());
       } else if (prof?.nombre?.trim()) {
         setNombreSalon(prof.nombre.trim());
+      }
+      if (prof?.ciudad?.trim()) {
+        setCiudadSalon(prof.ciudad.trim());
       }
 
       const mapaEst: Record<string, string> = {};
@@ -141,7 +146,8 @@ export default function ReportesBIPage() {
     let totalCotizadoEnCerrados = 0;
     let inversionQuimica = 0;
     let comisionesEspecialistas = 0;
-    let gramosTotales = 0;
+    let gramosTeoricosTotales = 0;
+    let gramosRealesTotales = 0;
 
     for (const c of cobradasPeriodo) {
       const cobrado = c.precioCobrado ?? c.precioCotizado;
@@ -152,13 +158,26 @@ export default function ReportesBIPage() {
       inversionQuimica += quimica;
       comisionesEspecialistas += comision;
 
-      if (typeof c.costoDetalle?.gramosTinte === 'number') {
-        gramosTotales += c.costoDetalle.gramosTinte;
-      }
+      const realesCot =
+        typeof c.formula?.['gramosTinte'] === 'number'
+          ? (c.formula['gramosTinte'] as number)
+          : typeof c.costoDetalle?.gramosTinte === 'number'
+            ? c.costoDetalle.gramosTinte
+            : 0;
+
+      const teoricosCot =
+        typeof c.formula?.['gramosTeoricos'] === 'number'
+          ? (c.formula['gramosTeoricos'] as number)
+          : c.costoDetalle && c.costoDetalle.gramosBase > 0
+            ? c.costoDetalle.gramosBase * (c.costoDetalle.factores?.total || 1)
+            : realesCot;
+
+      gramosRealesTotales += realesCot;
+      gramosTeoricosTotales += teoricosCot;
     }
 
-    const utilidadNetaSalon =
-      ingresosCobrados - inversionQuimica - comisionesEspecialistas;
+    const costoQuimicoMasNomina = inversionQuimica + comisionesEspecialistas;
+    const utilidadNetaSalon = ingresosCobrados - costoQuimicoMasNomina;
     const margenPromedioPct =
       ingresosCobrados > 0
         ? Math.round((utilidadNetaSalon / ingresosCobrados) * 100)
@@ -168,22 +187,28 @@ export default function ReportesBIPage() {
         ? Math.round((inversionQuimica / ingresosCobrados) * 1000) / 10
         : 0;
 
-    // Positivo = se cobró más que lo cotizado (adicionales); Negativo = cortesías en silla
     const ajusteNetoEnSilla = ingresosCobrados - totalCotizadoEnCerrados;
     const montoPorCobrar = enviadasPendientes.reduce(
       (acc, c) => acc + c.precioCotizado,
       0
     );
 
+    const gTeoricos = Math.round(gramosTeoricosTotales);
+    const gReales = Math.round(gramosRealesTotales);
+    const desvioGramos = gReales - gTeoricos;
+
     return {
       ingresosCobrados,
       inversionQuimica,
       comisionesEspecialistas,
+      costoQuimicoMasNomina,
       utilidadNetaSalon,
       margenPromedioPct,
       esOptimo: cobradasPeriodo.length === 0 || margenPromedioPct >= 30,
       pctQuimicaSobreVentas,
-      gramosTotales: Math.round(gramosTotales),
+      gramosTeoricosTotales: gTeoricos,
+      gramosRealesTotales: gReales,
+      desvioGramos,
       ajusteNetoEnSilla,
       cantidadCerrados: cobradasPeriodo.length,
       cantidadPorCobrar: enviadasPendientes.length,
@@ -191,7 +216,7 @@ export default function ReportesBIPage() {
     };
   }, [cobradasPeriodo, enviadasPendientes]);
 
-  // ── Tabla de Liquidación por Especialista ────────────────────────────
+  // ── Tarjetas de Liquidación por Especialista ─────────────────────────
   const liquidacionEspecialistas = useMemo((): ResumenEspecialista[] => {
     const grupos = new Map<string, Omit<ResumenEspecialista, 'margenPct'>>();
 
@@ -236,7 +261,7 @@ export default function ReportesBIPage() {
       .sort((a, b) => b.totalFacturado - a.totalFacturado);
   }, [cobradasPeriodo, estilistasMap]);
 
-  // ── Ranking de Rentabilidad por Servicio ─────────────────────────────
+  // ── Ranking de Rentabilidad y Calibración de Gramos por Servicio ─────
   const rankingServicios = useMemo((): ResumenServicio[] => {
     const grupos = new Map<
       string,
@@ -252,6 +277,20 @@ export default function ReportesBIPage() {
       const comision = c.comisionEstimada ?? 0;
       const utilidad = cobrado - quimica - comision;
 
+      const realesCot =
+        typeof c.formula?.['gramosTinte'] === 'number'
+          ? (c.formula['gramosTinte'] as number)
+          : typeof c.costoDetalle?.gramosTinte === 'number'
+            ? c.costoDetalle.gramosTinte
+            : 0;
+
+      const teoricosCot =
+        typeof c.formula?.['gramosTeoricos'] === 'number'
+          ? (c.formula['gramosTeoricos'] as number)
+          : c.costoDetalle && c.costoDetalle.gramosBase > 0
+            ? c.costoDetalle.gramosBase * (c.costoDetalle.factores?.total || 1)
+            : realesCot;
+
       const actual = grupos.get(clave) ?? {
         servicioNombre: nombre,
         serviciosCerrados: 0,
@@ -259,6 +298,8 @@ export default function ReportesBIPage() {
         quimicaUtilizada: 0,
         comisionTotal: 0,
         utilidadNetaTotal: 0,
+        gramosTeoricos: 0,
+        gramosReales: 0,
       };
 
       actual.serviciosCerrados += 1;
@@ -266,6 +307,8 @@ export default function ReportesBIPage() {
       actual.quimicaUtilizada += quimica;
       actual.comisionTotal += comision;
       actual.utilidadNetaTotal += utilidad;
+      actual.gramosTeoricos += Math.round(teoricosCot);
+      actual.gramosReales += Math.round(realesCot);
       grupos.set(clave, actual);
     }
 
@@ -284,244 +327,183 @@ export default function ReportesBIPage() {
       .sort((a, b) => b.utilidadNetaTotal - a.utilidadNetaTotal);
   }, [cobradasPeriodo]);
 
-  const maxUtilidadServicio = rankingServicios[0]?.utilidadNetaTotal ?? 1;
+  const maxUtilidadServicio = rankingServicios[0]?.utilidadNetaTotal || 1;
+  const serviciosConGramos = useMemo(
+    () => rankingServicios.filter((s) => s.gramosTeoricos > 0 || s.gramosReales > 0),
+    [rankingServicios]
+  );
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] text-[#1C1518] pb-32">
-      {/* ── Top Bar Ejecutivo ──────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 bg-[#FAF7F5]/90 backdrop-blur-md border-b border-[#EFE8E4]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-3 py-3">
+    <div className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] pb-32 lg:pb-12">
+      <VelvetTopHeader nombreSalon={nombreSalon} ciudadSalon={ciudadSalon} />
+      {/* ── Sub-header Ejecutivo Velvet Studio ─────────────────────────── */}
+      <div className="border-b border-[#EFE8E4]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-3">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#6E1E3A] block">
+            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
               Velli Business Intelligence
             </span>
-            <h1 className="text-lg sm:text-xl font-bold text-[#1C1518] tracking-tight">
-               Rentabilidad & Liquidación · {nombreSalon}
+            <h1 className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-[#3B0D1E] mt-0.5">
+              Rentabilidad & Liquidación · {nombreSalon}
             </h1>
           </div>
 
           <Link
             href="/configuracion/precios"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-[#EFE8E4] hover:border-[#E8CFC8] text-xs font-semibold text-[#3B0D1E] shadow-xs no-underline transition-colors"
+            className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-[#EFE8E4] hover:bg-[#F5EBE8] font-sans text-xs font-bold text-[#3B0D1E] shadow-[0_2px_8px_-2px_rgba(59,13,30,0.05)] no-underline transition-colors shrink-0"
           >
             <Settings size={14} />
             <span className="hidden sm:inline">Calibrar Servicios & Comisiones</span>
             <span className="sm:hidden">Calibrar</span>
           </Link>
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-7 space-y-8">
-        {/* ── 1. Selector de Periodo + Tarjeta Maestra Hero ────────────── */}
-        <section className="space-y-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="inline-flex items-center gap-1 p-1.5 rounded-full bg-white border border-[#EFE8E4] shadow-xs">
-              {OPCIONES_PERIODO.map((op) => {
-                const activo = periodo === op.key;
-                return (
-                  <button
-                    key={op.key}
-                    type="button"
-                    onClick={() => setPeriodo(op.key)}
-                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                      activo
-                        ? 'bg-[#3B0D1E] text-[#FAF7F5] shadow-xs'
-                        : 'text-[#6E6266] hover:text-[#1C1518]'
-                    }`}
-                  >
-                    {op.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {kpis.cantidadPorCobrar > 0 && (
-              <Link
-                href="/?tab=cierre"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F7ECEF] border border-[#DFC5CE] text-xs font-bold text-[#3B0D1E] hover:bg-[#3B0D1E] hover:text-[#FAF7F5] no-underline transition-colors"
-              >
-                <CheckCircle2 size={14} />
-                {kpis.cantidadPorCobrar} por cobrar ({formatearPrecioCop(kpis.montoPorCobrar)})
-                <ArrowUpRight size={13} />
-              </Link>
-            )}
-          </div>
-
-          {/* Tarjeta Maestra v-gradient-hero */}
-          <div className="v-gradient-hero rounded-3xl p-6 sm:p-8 text-[#FAF7F5] shadow-[0_24px_55px_-14px_rgba(31,5,15,0.28)]">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <span className="text-[11px] uppercase tracking-[0.22em] text-[#E8CFC8] font-bold">
-                Utilidad Neta Real del Salón
-              </span>
-
-              <span
-                className={`px-3.5 py-1 rounded-full text-xs font-bold inline-flex items-center gap-2 ${
-                  kpis.esOptimo
-                    ? 'bg-[#0D9488]/25 text-[#5EEAD4] border border-[#0D9488]/45'
-                    : 'bg-[#D97757]/25 text-[#FDBA74] border border-[#D97757]/45'
-                }`}
-              >
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    kpis.esOptimo ? 'bg-[#0D9488]' : 'bg-[#D97757]'
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
+        {/* ── Barra de Periodo (Segmented Control) + Acceso a Por Cobrar ── */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="inline-flex flex-wrap items-center gap-1 p-1 rounded-2xl bg-[#F5EBE8] border border-[#EFE8E4]">
+            {OPCIONES_PERIODO.map((op) => {
+              const activo = periodo === op.key;
+              return (
+                <button
+                  key={op.key}
+                  type="button"
+                  onClick={() => setPeriodo(op.key)}
+                  className={`min-h-[44px] px-4 py-2 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer ${
+                    activo
+                      ? 'bg-[#3B0D1E] text-[#FAF7F5] shadow-[0_6px_16px_-4px_rgba(59,13,30,0.22)]'
+                      : 'text-[#6B535C] hover:text-[#3B0D1E]'
                   }`}
-                />
-                {kpis.cantidadCerrados === 0
-                  ? 'Listo para medir tus cierres'
-                  : kpis.esOptimo
-                    ? `Rentabilidad Óptima · ${kpis.margenPromedioPct}% margen neto`
-                    : `Oportunidad de Calibración · ${kpis.margenPromedioPct}% margen neto`}
-              </span>
-            </div>
-
-            <div className="mt-5 flex flex-col md:flex-row md:items-end justify-between gap-6">
-              <div>
-                <div className="text-4xl sm:text-5xl font-bold tracking-tight tabular-nums">
-                  {cargando ? '…' : formatearPrecioCop(kpis.utilidadNetaSalon)}
-                </div>
-                <p className="text-xs sm:text-sm text-[#E8CFC8]/85 mt-2">
-                  Dinero libre para el salón después de descontar química capilar y comisiones en{' '}
-                  <strong className="text-[#FAF7F5]">
-                    {kpis.cantidadCerrados}{' '}
-                    {kpis.cantidadCerrados === 1 ? 'servicio cerrado' : 'servicios cerrados'}
-                  </strong>
-                  .
-                </p>
-              </div>
-
-              <div className="flex items-center gap-6 border-t md:border-t-0 border-[#FAF7F5]/15 pt-4 md:pt-0">
-                <div>
-                  <span className="text-[10px] uppercase tracking-wider text-[#E8CFC8]/75 block">
-                    Margen Neto Promedio
-                  </span>
-                  <span className="text-2xl sm:text-3xl font-bold text-[#E8CFC8] tabular-nums">
-                    {kpis.margenPromedioPct}%
-                  </span>
-                </div>
-                <div className="h-9 w-px bg-[#FAF7F5]/15" />
-                <div>
-                  <span className="text-[10px] uppercase tracking-wider text-[#E8CFC8]/75 block">
-                    Meta Saludable BI
-                  </span>
-                  <span className="text-2xl sm:text-3xl font-bold text-[#5EEAD4] tabular-nums">
-                    ≥ 30%
-                  </span>
-                </div>
-              </div>
-            </div>
+                >
+                  {op.label}
+                </button>
+              );
+            })}
           </div>
-        </section>
 
-        {/* ── 2. Los 4 KPIs de Desglose Financiero (tabular-nums) ──────── */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* KPI 1: Ingresos Cobrados */}
-          <article className="bg-white rounded-2xl p-5 border border-[#EFE8E4] shadow-[0_12px_28px_-10px_rgba(59,13,30,0.06)] flex flex-col justify-between">
-            <div className="flex items-center justify-between text-[#6E6266] mb-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider">
-                Ingresos Cobrados
+          {kpis.cantidadPorCobrar > 0 && (
+            <Link
+              href="/?tab=cierre"
+              className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-[#EFE8E4] hover:bg-[#3B0D1E] text-[#3B0D1E] hover:text-[#FAF7F5] font-sans text-xs font-bold no-underline transition-colors tabular-nums shadow-[0_4px_14px_-4px_rgba(59,13,30,0.06)]"
+            >
+              <CheckCircle2 size={14} />
+              {kpis.cantidadPorCobrar} por cobrar ({formatearPrecioCop(kpis.montoPorCobrar)})
+              <ArrowUpRight size={13} />
+            </Link>
+          )}
+        </div>
+
+        {/* ── 1. Bento Grid Financiero Superior (3 Tarjetas) ───────────── */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Tarjeta 1: Ingresos Cerrados */}
+          <article className="bg-white rounded-3xl p-6 border border-[#EFE8E4] shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] flex flex-col justify-between gap-4">
+            <div className="flex items-center justify-between">
+              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                01 · Ingresos Cerrados
               </span>
-              <TrendingUp size={16} className="text-[#0D9488]" />
+              <span className="w-9 h-9 rounded-xl bg-[#F0FDFA] text-[#0D9488] flex items-center justify-center">
+                <TrendingUp size={18} />
+              </span>
             </div>
+
             <div>
-              <div className="text-2xl font-bold text-[#1C1518] tabular-nums">
-                {formatearPrecioCop(kpis.ingresosCobrados)}
+              <div className="font-display text-2xl md:text-3xl font-bold tabular-nums tracking-tight text-[#3B0D1E]">
+                {cargando ? '…' : formatearPrecioCop(kpis.ingresosCobrados)}
               </div>
-              <p className="text-xs text-[#6E6266] mt-1.5 tabular-nums">
-                {kpis.cantidadCerrados} cerrados ·{' '}
-                <span className="font-semibold text-[#6E1E3A]">
-                  {kpis.cantidadPorCobrar} en Por Cobrar
+              <p className="font-sans text-xs text-[#6B535C] mt-2 tabular-nums">
+                <strong className="text-[#3B0D1E]">{kpis.cantidadCerrados}</strong>{' '}
+                {kpis.cantidadCerrados === 1 ? 'servicio cobrado' : 'servicios cobrados'} ·{' '}
+                <span className="text-[#947C85]">
+                  {kpis.cantidadPorCobrar} pendientes en caja
                 </span>
               </p>
             </div>
           </article>
 
-          {/* KPI 2: Inversión en Química (Sin Báscula) */}
-          <article className="bg-white rounded-2xl p-5 border border-[#EFE8E4] shadow-[0_12px_28px_-10px_rgba(59,13,30,0.06)] flex flex-col justify-between">
-            <div className="flex items-center justify-between text-[#6E6266] mb-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider">
-                Inversión en Química
+          {/* Tarjeta 2: Costo Químico + Nómina */}
+          <article className="bg-white rounded-3xl p-6 border border-[#EFE8E4] shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] flex flex-col justify-between gap-4">
+            <div className="flex items-center justify-between">
+              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                02 · Costo Químico + Nómina
               </span>
-              <FlaskConical size={16} className="text-[#7C3AED]" />
+              <span className="w-9 h-9 rounded-xl bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center">
+                <FlaskConical size={18} />
+              </span>
             </div>
+
             <div>
-              <div className="text-2xl font-bold text-[#7C3AED] tabular-nums">
-                {formatearPrecioCop(kpis.inversionQuimica)}
+              <div className="font-display text-2xl md:text-3xl font-bold tabular-nums tracking-tight text-[#3B0D1E]">
+                {cargando ? '…' : formatearPrecioCop(kpis.costoQuimicoMasNomina)}
               </div>
-              <p className="text-xs text-[#6E6266] mt-1.5 tabular-nums">
-                Representa el <strong>{kpis.pctQuimicaSobreVentas}%</strong> de las ventas
-                {kpis.gramosTotales > 0 ? ` · ~${kpis.gramosTotales} g` : ''}
-              </p>
+
+              <div className="mt-3 pt-3 border-t border-[#EFE8E4] grid grid-cols-2 gap-2 text-xs tabular-nums">
+                <div>
+                  <span className="text-[11px] text-[#6B535C] block">Química ({kpis.pctQuimicaSobreVentas}%)</span>
+                  <span className="font-bold text-[#7C3AED]">
+                    {formatearPrecioCop(kpis.inversionQuimica)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-[#6B535C] block">Comisiones equipo</span>
+                  <span className="font-bold text-[#3B0D1E]">
+                    {formatearPrecioCop(kpis.comisionesEspecialistas)}
+                  </span>
+                </div>
+              </div>
             </div>
           </article>
 
-          {/* KPI 3: Comisiones de Especialistas */}
-          <article className="bg-white rounded-2xl p-5 border border-[#EFE8E4] shadow-[0_12px_28px_-10px_rgba(59,13,30,0.06)] flex flex-col justify-between">
-            <div className="flex items-center justify-between text-[#6E6266] mb-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider">
-                Comisiones Equipo
+          {/* Tarjeta 3 (Protagonista): Utilidad Neta Real */}
+          <article className="bg-[#3B0D1E] rounded-3xl p-6 text-[#FAF7F5] shadow-[0_16px_40px_-8px_rgba(59,13,30,0.22)] flex flex-col justify-between gap-4">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#E8CFC8]">
+                03 · Utilidad Neta Real
               </span>
-              <UserCheck size={16} className="text-[#3B0D1E]" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-[#1C1518] tabular-nums">
-                {formatearPrecioCop(kpis.comisionesEspecialistas)}
-              </div>
-              <p className="text-xs text-[#6E6266] mt-1.5">
-                Listas para liquidar sin hojas de cálculo
-              </p>
-            </div>
-          </article>
-
-          {/* KPI 4: Ajustes en Silla (No punitivo) */}
-          <article className="bg-white rounded-2xl p-5 border border-[#EFE8E4] shadow-[0_12px_28px_-10px_rgba(59,13,30,0.06)] flex flex-col justify-between">
-            <div className="flex items-center justify-between text-[#6E6266] mb-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider">
-                Calibración en Silla
-              </span>
-              <SlidersHorizontal size={16} className="text-[#D97757]" />
-            </div>
-            <div>
-              <div
-                className={`text-2xl font-bold tabular-nums ${
-                  kpis.ajusteNetoEnSilla < 0 ? 'text-[#D97757]' : 'text-[#0D9488]'
+              <span
+                className={`px-3 py-1 rounded-full font-mono text-xs font-semibold tabular-nums ${
+                  kpis.esOptimo
+                    ? 'bg-[#0D9488] text-white'
+                    : 'bg-[#D97757] text-white'
                 }`}
               >
-                {kpis.ajusteNetoEnSilla > 0 ? '+' : ''}
-                {formatearPrecioCop(kpis.ajusteNetoEnSilla)}
+                {kpis.margenPromedioPct}% margen
+              </span>
+            </div>
+
+            <div>
+              <div className="font-display text-3xl md:text-4xl font-bold tabular-nums tracking-tight text-[#FAF7F5]">
+                {cargando ? '…' : formatearPrecioCop(kpis.utilidadNetaSalon)}
               </div>
-              <p className="text-xs text-[#6E6266] mt-1.5">
-                {kpis.ajusteNetoEnSilla === 0
-                  ? '100% cobrado al valor cotizado'
-                  : kpis.ajusteNetoEnSilla > 0
-                    ? 'Servicios adicionales sumados al cierre'
-                    : 'Cortesías comerciales aplicadas al cierre'}
+              <p className="font-sans text-xs text-[#E8CFC8] mt-2 leading-relaxed">
+                Capital libre para el salón tras descontar insumos químicos sin báscula y liquidación de especialistas (meta saludable ≥ 30%).
               </p>
             </div>
           </article>
         </section>
 
         {!cargando && cobradasPeriodo.length === 0 ? (
-          <section className="bg-white rounded-3xl p-10 border border-[#EFE8E4] text-center shadow-[0_12px_32px_-8px_rgba(59,13,30,0.06)]">
-            <div className="w-12 h-12 rounded-2xl bg-[#F7ECEF] text-[#3B0D1E] mx-auto flex items-center justify-center mb-4">
+          <section className="bg-white rounded-3xl p-10 border border-[#EFE8E4] text-center shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]">
+            <div className="w-12 h-12 rounded-2xl bg-[#F5EBE8] text-[#3B0D1E] mx-auto flex items-center justify-center mb-4">
               <Sparkles size={22} />
             </div>
-            <h2 className="text-xl font-bold text-[#1C1518]">
+            <h2 className="font-display text-2xl font-semibold tracking-tight text-[#3B0D1E]">
               Aún no hay servicios cerrados en este periodo
             </h2>
-            <p className="text-sm text-[#6E6266] mt-2 max-w-md mx-auto">
-              Cuando confirmes un cobro en 1 toque desde «Por Cobrar», aquí verás al instante la liquidación de cada especialista y el ranking de rentabilidad por técnica.
+            <p className="font-sans text-sm text-[#6B535C] mt-2 max-w-md mx-auto">
+              Cuando confirmes un cobro en 1 toque desde «Por Cobrar», aquí verás al instante la calibración de gramos en silla, la liquidación por especialista y el ranking de rentabilidad.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
                 href="/"
-                className="px-6 py-3 rounded-full bg-[#3B0D1E] hover:bg-[#6E1E3A] text-[#FAF7F5] text-xs font-bold tracking-wide no-underline transition-colors"
+                className="min-h-[46px] inline-flex items-center px-6 py-3 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans text-xs font-bold tracking-wide no-underline transition-colors"
               >
-                Ir al Cotizador
+                Ir al Cotizador en Silla
               </Link>
               {kpis.cantidadPorCobrar > 0 && (
                 <Link
                   href="/?tab=cierre"
-                  className="px-6 py-3 rounded-full bg-white border border-[#DFC5CE] text-[#3B0D1E] text-xs font-bold tracking-wide no-underline hover:bg-[#F7ECEF]/60 transition-colors"
+                  className="min-h-[46px] inline-flex items-center px-6 py-3 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] text-[#3B0D1E] font-sans text-xs font-bold tracking-wide no-underline hover:bg-[#F5EBE8] transition-colors tabular-nums"
                 >
                   Cerrar {kpis.cantidadPorCobrar} pendiente(s)
                 </Link>
@@ -530,134 +512,297 @@ export default function ReportesBIPage() {
           </section>
         ) : (
           <>
-            {/* ── 3. Tabla de Liquidación por Especialista ─────────────── */}
-            <section className="bg-white rounded-3xl border border-[#EFE8E4] overflow-hidden shadow-[0_14px_34px_-10px_rgba(59,13,30,0.07)]">
-              <div className="px-6 py-5 border-b border-[#EFE8E4] flex flex-wrap items-center justify-between gap-2">
+            {/* ── 2. Calibración en Silla (Gramos Teóricos vs. Gramos Reales) ── */}
+            <section className="bg-white rounded-3xl border border-[#EFE8E4] p-6 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] space-y-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#6E1E3A]">
+                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                    Control de Consumo sin Báscula
+                  </span>
+                  <h2 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E] mt-0.5">
+                    Calibración en Silla · Gramos Teóricos vs. Reales
+                  </h2>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`px-3 py-1 rounded-full font-mono text-xs font-semibold tabular-nums ${
+                      kpis.desvioGramos > 0
+                        ? 'bg-[#FFF7F5] border border-[#D97757]/40 text-[#D97757]'
+                        : 'bg-[#F0FDFA] border border-[#0D9488]/30 text-[#0D9488]'
+                    }`}
+                  >
+                    <SlidersHorizontal size={12} className="inline mr-1" />
+                    {kpis.desvioGramos === 0
+                      ? 'Consumo 100% calibrado'
+                      : kpis.desvioGramos > 0
+                        ? `Desvío +${kpis.desvioGramos}g en silla`
+                        : `Ahorro ${kpis.desvioGramos}g en silla`}
+                  </span>
+
+                  <span
+                    className={`px-3 py-1 rounded-full font-sans text-xs font-bold tabular-nums ${
+                      kpis.ajusteNetoEnSilla < 0
+                        ? 'bg-[#FFF7F5] text-[#D97757]'
+                        : 'bg-[#F5EBE8] text-[#3B0D1E]'
+                    }`}
+                  >
+                    Caja vs. cotizado:{' '}
+                    {kpis.ajusteNetoEnSilla > 0 ? '+' : ''}
+                    {formatearPrecioCop(kpis.ajusteNetoEnSilla)}
+                  </span>
+                </div>
+              </div>
+
+              {serviciosConGramos.length === 0 ? (
+                <p className="font-sans text-xs text-[#6B535C]">
+                  Los servicios cerrados en este periodo no registraron fórmula de color en gramos.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {serviciosConGramos.map((srv) => {
+                    const maxG = Math.max(srv.gramosTeoricos, srv.gramosReales, 1);
+                    const pctTeorico = Math.max(6, Math.round((srv.gramosTeoricos / maxG) * 100));
+                    const pctReal = Math.max(6, Math.round((srv.gramosReales / maxG) * 100));
+                    const diffG = srv.gramosReales - srv.gramosTeoricos;
+                    const tieneSobreconsumo = diffG > 0;
+
+                    return (
+                      <div
+                        key={`cal-${srv.servicioNombre}`}
+                        className="p-4 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] space-y-3"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <h3 className="font-sans text-sm font-bold text-[#3B0D1E] capitalize">
+                              {srv.servicioNombre}
+                            </h3>
+                            <span className="font-sans text-[11px] text-[#6B535C] tabular-nums">
+                              {srv.serviciosCerrados}{' '}
+                              {srv.serviciosCerrados === 1 ? 'aplicación' : 'aplicaciones'}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-1 rounded-lg bg-[#F5F3FF] border border-[#DDD6FE] text-[#7C3AED] font-mono text-xs font-semibold tabular-nums">
+                              Teórico: {srv.gramosTeoricos}g
+                            </span>
+                            <span
+                              className={`px-2.5 py-1 rounded-lg border font-mono text-xs font-semibold tabular-nums ${
+                                tieneSobreconsumo
+                                  ? 'bg-[#FFF7F5] border-[#D97757] text-[#D97757]'
+                                  : 'bg-[#F0FDFA] border-[#0D9488]/40 text-[#0D9488]'
+                              }`}
+                            >
+                              Real: {srv.gramosReales}g
+                              {diffG !== 0
+                                ? ` (${diffG > 0 ? `+${diffG}g` : `${diffG}g`})`
+                                : ''}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-3">
+                            <span className="w-16 font-sans text-[11px] font-semibold text-[#6B535C] shrink-0">
+                              Teórico
+                            </span>
+                            <div className="flex-1 h-2.5 rounded-full bg-[#EFE8E4] overflow-hidden">
+                              <div
+                                className="h-full rounded-full bg-[#7C3AED]"
+                                style={{ width: `${pctTeorico}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <span className="w-16 font-sans text-[11px] font-semibold text-[#6B535C] shrink-0">
+                              Real silla
+                            </span>
+                            <div className="flex-1 h-2.5 rounded-full bg-[#EFE8E4] overflow-hidden">
+                              <div
+                                className={`h-full rounded-full ${
+                                  tieneSobreconsumo ? 'bg-[#D97757]' : 'bg-[#0D9488]'
+                                }`}
+                                style={{ width: `${pctReal}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            {/* ── 3. Liquidación por Especialista (Tarjetas Ejecutivas) ─── */}
+            <section className="space-y-4">
+              <div className="flex flex-wrap items-end justify-between gap-2">
+                <div>
+                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
                     Nómina & Productividad
                   </span>
-                  <h2 className="text-lg sm:text-xl font-bold text-[#1C1518] mt-0.5">
+                  <h2 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E] mt-0.5">
                     Liquidación por Especialista
                   </h2>
                 </div>
-                <span className="text-xs text-[#6E6266]">
+                <span className="font-sans text-xs text-[#6B535C]">
                   Calculado sobre servicios efectivamente cobrados
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-[#FAF7F5] border-b border-[#EFE8E4] text-[11px] font-bold uppercase tracking-wider text-[#6E6266]">
-                      <th className="py-3.5 px-6">Especialista</th>
-                      <th className="py-3.5 px-4 text-right">Servicios</th>
-                      <th className="py-3.5 px-4 text-right">Total Facturado</th>
-                      <th className="py-3.5 px-4 text-right">Química Usada</th>
-                      <th className="py-3.5 px-4 text-right text-[#3B0D1E]">Comisión a Pagar</th>
-                      <th className="py-3.5 px-4 text-right">Margen Salón</th>
-                      <th className="py-3.5 px-6 text-right">Colilla</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#FAF7F5] text-sm">
-                    {liquidacionEspecialistas.map((item) => {
-                      const optimo = item.margenPct >= 30;
-                      const etiquetaPeriodo =
-                        OPCIONES_PERIODO.find((p) => p.key === periodo)?.label ?? 'Este mes';
-                      const textoColilla = [
-                        `*${nombreSalon}* · Corte de Liquidación (${etiquetaPeriodo})`,
-                        ``,
-                        `Especialista: *${item.nombre}*`,
-                        `Servicios cerrados: ${item.serviciosCerrados}`,
-                        `Total facturado en silla: ${formatearPrecioCop(item.totalFacturado)} COP`,
-                        `Química capilar empleada: ${formatearPrecioCop(item.quimicaUtilizada)} COP`,
-                        `*Total comisión a liquidar: ${formatearPrecioCop(item.comisionPagar)} COP*`,
-                        ``,
-                        `_Resumen generado con Velli Business Intelligence_`,
-                      ].join('\n');
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {liquidacionEspecialistas.map((item) => {
+                  const optimo = item.margenPct >= 30;
+                  const etiquetaPeriodo =
+                    OPCIONES_PERIODO.find((p) => p.key === periodo)?.label ?? 'Este mes';
+                  const textoColilla = [
+                    `*${nombreSalon}* · Corte de Liquidación (${etiquetaPeriodo})`,
+                    ``,
+                    `Especialista: *${item.nombre}*`,
+                    `Servicios cerrados: ${item.serviciosCerrados}`,
+                    `Total facturado en silla: ${formatearPrecioCop(item.totalFacturado)} COP`,
+                    `Química capilar empleada: ${formatearPrecioCop(item.quimicaUtilizada)} COP`,
+                    `*Total comisión a liquidar: ${formatearPrecioCop(item.comisionPagar)} COP*`,
+                    ``,
+                    `_Resumen generado con Velli Business Intelligence_`,
+                  ].join('\n');
 
-                      const enviarColillaWA = () => {
-                        if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                          navigator.clipboard.writeText(textoColilla).catch(() => {});
-                        }
-                        const url = enlaceWhatsApp(undefined, textoColilla);
-                        window.open(url, '_blank', 'noopener,noreferrer');
-                      };
+                  const enviarColillaWA = () => {
+                    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                      navigator.clipboard.writeText(textoColilla).catch(() => {});
+                    }
+                    const url = enlaceWhatsApp(undefined, textoColilla);
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                  };
 
-                      const copiarColilla = async () => {
-                        try {
-                          await navigator.clipboard.writeText(textoColilla);
-                          showToast(`Colilla de ${item.nombre} copiada`, 'success');
-                        } catch {
-                          showToast('No se pudo copiar al portapapeles', 'error');
-                        }
-                      };
+                  const copiarColilla = async () => {
+                    try {
+                      await navigator.clipboard.writeText(textoColilla);
+                      showToast(`Colilla de ${item.nombre} copiada`, 'success');
+                    } catch {
+                      showToast('No se pudo copiar al portapapeles', 'error');
+                    }
+                  };
 
-                      return (
-                        <tr key={item.clave} className="hover:bg-[#FAF7F5]/60 transition-colors">
-                          <td className="py-4 px-6 font-bold text-[#1C1518]">{item.nombre}</td>
-                          <td className="py-4 px-4 text-right text-[#6E6266] tabular-nums">
-                            {item.serviciosCerrados}
-                          </td>
-                          <td className="py-4 px-4 text-right font-semibold text-[#1C1518] tabular-nums">
-                            {formatearPrecioCop(item.totalFacturado)}
-                          </td>
-                          <td className="py-4 px-4 text-right font-medium text-[#7C3AED] tabular-nums">
-                            {formatearPrecioCop(item.quimicaUtilizada)}
-                          </td>
-                          <td className="py-4 px-4 text-right">
-                            <span className="inline-block px-3 py-1 rounded-full bg-[#F7ECEF] text-[#3B0D1E] font-bold tabular-nums">
-                              {formatearPrecioCop(item.comisionPagar)}
+                  return (
+                    <article
+                      key={item.clave}
+                      className="bg-white rounded-3xl p-6 border border-[#EFE8E4] shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] flex flex-col justify-between gap-5"
+                    >
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-11 h-11 rounded-2xl bg-[#F5EBE8] text-[#3B0D1E] flex items-center justify-center shrink-0">
+                              <UserCheck size={20} />
+                            </div>
+                            <div>
+                              <h3 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E] capitalize">
+                                {item.nombre}
+                              </h3>
+                              <span className="font-sans text-xs text-[#6B535C] tabular-nums">
+                                {item.serviciosCerrados}{' '}
+                                {item.serviciosCerrados === 1
+                                  ? 'servicio cerrado'
+                                  : 'servicios cerrados'}
+                              </span>
+                            </div>
+                          </div>
+
+                          <span
+                            className={`px-3 py-1 rounded-full font-mono text-xs font-semibold tabular-nums ${
+                              optimo
+                                ? 'bg-[#F0FDFA] text-[#0D9488]'
+                                : 'bg-[#FFF7F5] text-[#D97757]'
+                            }`}
+                          >
+                            {item.margenPct}% salón
+                          </span>
+                        </div>
+
+                        {/* Comisión Neta Protagonista */}
+                        <div className="rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] p-4 flex items-center justify-between gap-3">
+                          <div>
+                            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                              Comisión Neta a Liquidar
                             </span>
-                          </td>
-                          <td className="py-4 px-4 text-right tabular-nums">
+                            <span className="font-sans text-xs text-[#947C85]">
+                              Lista para pago de nómina
+                            </span>
+                          </div>
+                          <div className="font-display text-2xl font-bold tabular-nums tracking-tight text-[#3B0D1E]">
+                            {formatearPrecioCop(item.comisionPagar)}
+                          </div>
+                        </div>
+
+                        {/* Desglose secundario */}
+                        <div className="grid grid-cols-3 gap-2 text-xs tabular-nums">
+                          <div className="p-2.5 rounded-xl bg-[#FAF7F5]/70 border border-[#EFE8E4]">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                              Facturado
+                            </span>
+                            <span className="font-bold text-[#3B0D1E] mt-0.5 block">
+                              {formatearPrecioCop(item.totalFacturado)}
+                            </span>
+                          </div>
+                          <div className="p-2.5 rounded-xl bg-[#F5F3FF]/60 border border-[#DDD6FE]">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#7C3AED] block">
+                              Química
+                            </span>
+                            <span className="font-bold text-[#7C3AED] mt-0.5 block">
+                              {formatearPrecioCop(item.quimicaUtilizada)}
+                            </span>
+                          </div>
+                          <div className="p-2.5 rounded-xl bg-[#F0FDFA]/70 border border-[#0D9488]/20">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0D9488] block">
+                              Utilidad Salón
+                            </span>
                             <span
-                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
-                                optimo
-                                  ? 'bg-[#EAF6F4] text-[#0D9488]'
-                                  : 'bg-[#FDF2EC] text-[#D97757]'
+                              className={`font-bold mt-0.5 block ${
+                                optimo ? 'text-[#0D9488]' : 'text-[#D97757]'
                               }`}
                             >
-                              {item.margenPct}% ({formatearPrecioCop(item.utilidadSalon)})
+                              {formatearPrecioCop(item.utilidadSalon)}
                             </span>
-                          </td>
-                          <td className="py-4 px-6 text-right">
-                            <div className="inline-flex items-center justify-end gap-1.5">
-                              <button
-                                type="button"
-                                onClick={enviarColillaWA}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF7F5] hover:bg-[#EAF6F4] border border-[#EFE8E4] hover:border-[#0D9488]/40 text-xs font-bold text-[#1C1518] hover:text-[#0D9488] transition-colors whitespace-nowrap cursor-pointer"
-                              >
-                                <MessageCircle size={13} className="text-[#0D9488]" />
-                                Resumen WA
-                              </button>
-                              <button
-                                type="button"
-                                onClick={copiarColilla}
-                                aria-label={`Copiar colilla de ${item.nombre}`}
-                                title="Copiar resumen de liquidación"
-                                className="w-8 h-8 rounded-full bg-[#FAF7F5] hover:bg-[#F7ECEF] border border-[#EFE8E4] text-[#6E6266] hover:text-[#3B0D1E] inline-flex items-center justify-center transition-colors cursor-pointer"
-                              >
-                                <Copy size={13} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Acciones táctiles de colilla */}
+                      <div className="flex items-center gap-2.5 pt-1">
+                        <button
+                          type="button"
+                          onClick={enviarColillaWA}
+                          className="flex-1 min-h-[46px] px-4 py-2.5 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans text-xs font-bold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                        >
+                          <MessageCircle size={15} />
+                          Resumen WA
+                        </button>
+                        <button
+                          type="button"
+                          onClick={copiarColilla}
+                          aria-label={`Copiar colilla de ${item.nombre}`}
+                          title="Copiar resumen de liquidación"
+                          className="min-w-[46px] min-h-[46px] rounded-2xl bg-[#FAF7F5] hover:bg-[#F5EBE8] border border-[#EFE8E4] text-[#6B535C] hover:text-[#3B0D1E] inline-flex items-center justify-center transition-colors cursor-pointer"
+                        >
+                          <Copy size={16} />
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             </section>
 
             {/* ── 4. Ranking de Rentabilidad por Servicio ──────────────── */}
-            <section className="bg-white rounded-3xl border border-[#EFE8E4] p-6 shadow-[0_14px_34px_-10px_rgba(59,13,30,0.07)]">
+            <section className="bg-white rounded-3xl border border-[#EFE8E4] p-6 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-5">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#6E1E3A]">
+                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
                     Ingeniería de Menú
                   </span>
-                  <h2 className="text-lg sm:text-xl font-bold text-[#1C1518] mt-0.5">
+                  <h2 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E] mt-0.5">
                     Ranking de Rentabilidad por Servicio
                   </h2>
                 </div>
@@ -675,22 +820,22 @@ export default function ReportesBIPage() {
                   return (
                     <div
                       key={srv.servicioNombre}
-                      className="p-4 rounded-2xl bg-[#FAF7F5]/75 border border-[#EFE8E4] space-y-3"
+                      className="p-4 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] space-y-3"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <span className="w-7 h-7 rounded-full bg-[#3B0D1E] text-[#FAF7F5] text-xs font-bold flex items-center justify-center shrink-0">
+                          <span className="w-7 h-7 rounded-full bg-[#3B0D1E] text-[#FAF7F5] font-mono text-xs font-semibold tabular-nums flex items-center justify-center shrink-0">
                             {idx + 1}
                           </span>
                           <div>
-                            <h3 className="font-bold text-base text-[#1C1518]">
+                            <h3 className="font-sans font-bold text-base text-[#3B0D1E] capitalize">
                               {srv.servicioNombre}
                             </h3>
-                            <p className="text-xs text-[#6E6266] tabular-nums">
+                            <p className="font-sans text-xs text-[#6B535C] tabular-nums">
                               {srv.serviciosCerrados}{' '}
                               {srv.serviciosCerrados === 1 ? 'cierre' : 'cierres'} · Utilidad
                               promedio{' '}
-                              <strong className="text-[#1C1518]">
+                              <strong className="text-[#3B0D1E]">
                                 {formatearPrecioCop(srv.utilidadPromedioPorServicio)}
                               </strong>{' '}
                               / servicio
@@ -700,20 +845,20 @@ export default function ReportesBIPage() {
 
                         <div className="text-right tabular-nums">
                           <div
-                            className={`text-lg font-bold ${
+                            className={`font-display text-lg font-bold ${
                               optimo ? 'text-[#0D9488]' : 'text-[#D97757]'
                             }`}
                           >
                             {formatearPrecioCop(srv.utilidadNetaTotal)} netos
                           </div>
-                          <span className="text-xs text-[#6E6266]">
+                          <span className="font-sans text-xs text-[#6B535C]">
                             {srv.margenPct}% margen · Facturado{' '}
                             {formatearPrecioCop(srv.totalFacturado)}
                           </span>
                         </div>
                       </div>
 
-                      <div className="w-full h-2 rounded-full bg-[#EFE8E4] overflow-hidden">
+                      <div className="w-full h-2.5 rounded-full bg-[#EFE8E4] overflow-hidden">
                         <div
                           className={`h-full rounded-full ${
                             optimo ? 'bg-[#0D9488]' : 'bg-[#D97757]'
@@ -729,8 +874,6 @@ export default function ReportesBIPage() {
           </>
         )}
       </main>
-
-      <BottomNavV2 />
     </div>
   );
 }

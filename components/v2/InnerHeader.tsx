@@ -22,55 +22,23 @@ export default function InnerHeader({ title, eyebrow, backHref, right }: InnerHe
       onClick={() => {
         if (!backHref) router.back();
       }}
-      style={{
-        width: 36,
-        height: 36,
-        borderRadius: '50%',
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border)',
-        color: 'var(--text-main)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxShadow: 'var(--shadow-xs)',
-        cursor: 'pointer',
-        flexShrink: 0,
-      }}
+      className="min-w-[44px] min-h-[44px] rounded-full bg-white border border-[#EFE8E4] text-[#3B0D1E] hover:bg-[#F5EBE8] transition-colors flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(59,13,30,0.05)] cursor-pointer shrink-0"
     >
-      <ArrowLeft size={16} strokeWidth={1.8} />
+      <ArrowLeft size={18} strokeWidth={2} />
     </button>
   );
 
   return (
-    <header
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 40,
-        padding: '54px 16px 14px',
-        background: 'rgba(242, 235, 221, 0.92)',
-        backdropFilter: 'blur(14px)',
-        WebkitBackdropFilter: 'blur(14px)',
-        borderBottom: '1px solid var(--border-soft)',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        {backHref ? <Link href={backHref}>{BackBtn}</Link> : BackBtn}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {eyebrow && <div className="v-caps" style={{ marginBottom: 1 }}>{eyebrow}</div>}
-          <h1
-            style={{
-              margin: 0,
-              fontFamily: 'var(--font-serif)',
-              fontSize: 18,
-              color: 'var(--text-main)',
-              letterSpacing: '-0.01em',
-              lineHeight: 1.1,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
+    <header className="sticky top-0 z-40 bg-[#FAF7F5]/95 backdrop-blur-md border-b border-[#EFE8E4] px-4 py-3.5">
+      <div className="max-w-5xl mx-auto flex items-center gap-3">
+        {backHref ? <Link href={backHref} className="no-underline">{BackBtn}</Link> : BackBtn}
+        <div className="flex-1 min-w-0">
+          {eyebrow && (
+            <div className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-0.5">
+              {eyebrow}
+            </div>
+          )}
+          <h1 className="m-0 font-display text-xl md:text-2xl font-semibold tracking-tight text-[#3B0D1E] truncate">
             {title}
           </h1>
         </div>

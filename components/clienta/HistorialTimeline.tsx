@@ -1,9 +1,24 @@
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, ChevronUp, Calendar, Star, FileText, Download, MessageCircle, Pencil, Sparkles } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronUp,
+  Calendar,
+  Star,
+  FileText,
+  Download,
+  MessageCircle,
+  Sparkles,
+} from 'lucide-react';
 import { Clienta, Consulta, SatisfaccionNivel } from '@/lib/types';
-import { formatDate, getTratamientoBg, getTratamientoTextColor, getTratamientoBorderColor, getRizoLabel } from '@/lib/utils';
+import {
+  formatDate,
+  getTratamientoBg,
+  getTratamientoTextColor,
+  getTratamientoBorderColor,
+  getRizoLabel,
+} from '@/lib/utils';
 import { generateConsultaPDF } from '@/lib/pdfGenerator';
 import { updateConsulta } from '@/lib/db';
 import { enlaceWhatsApp } from '@/lib/whatsapp';
@@ -15,12 +30,10 @@ interface Props {
   onCotizacionCreada?: () => void;
 }
 
-const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
-
 function buildWhatsAppUrl(clienta: Clienta, consulta: Consulta): string {
   const { resultado } = consulta;
   const lines = [
-    `🌿 *Velli Pro — Diagnóstico Capilar*`,
+    `🌿 *Velli — Diagnóstico Capilar*`,
     ``,
     `Hola *${clienta.nombre}*! Aquí está tu diagnóstico:`,
     ``,
@@ -42,9 +55,10 @@ function buildWhatsAppUrl(clienta: Clienta, consulta: Consulta): string {
     ``,
     `Tu PDF completo te lo envío por aquí 📄`,
     ``,
-    `_Diagnóstico generado con Velli Pro_`,
     `_Generado con Velli Business Intelligence_`,
-  ].filter((l) => l !== null).join('\n');
+  ]
+    .filter((l) => l !== null)
+    .join('\n');
 
   return enlaceWhatsApp(clienta.telefono, lines);
 }
@@ -54,7 +68,6 @@ function ConsultaItem({
   clienta,
   index,
   cotizadorActivo,
-  onCotizar,
 }: {
   consulta: Consulta;
   clienta: Clienta;
@@ -88,9 +101,13 @@ function ConsultaItem({
 
   const handleDownloadPDF = async () => {
     setDownloading(true);
-    try { await generateConsultaPDF(clienta, consulta); }
-    catch (e) { console.error('[HistorialTimeline] PDF error:', e); }
-    finally { setDownloading(false); }
+    try {
+      await generateConsultaPDF(clienta, consulta);
+    } catch (e) {
+      console.error('[HistorialTimeline] PDF error:', e);
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const { resultado } = consulta;
@@ -99,104 +116,126 @@ function ConsultaItem({
   const treatColor = getTratamientoTextColor(resultado.tratamientoPrincipal);
 
   return (
-    <div className="relative pl-7 mb-4">
+    <div className="relative pl-8 mb-4 font-sans">
       {/* Timeline dot */}
       <div
-        className="absolute left-0 top-4 w-5 h-5 rounded-full flex items-center justify-center shadow-sm z-10"
+        className="absolute left-0 top-4 w-6 h-6 rounded-full flex items-center justify-center shadow-[0_4px_10px_-2px_rgba(59,13,30,0.18)] z-10"
         style={{ background: borderColor }}
       >
-        <span className="text-white text-[10px] font-bold" style={serif}>
+        <span className="text-[#FAF7F5] font-mono text-[10px] font-bold tabular-nums">
           {consulta.numeroConsulta}
         </span>
       </div>
       {/* Timeline line */}
-      <div className="absolute left-2.5 top-9 bottom-0 w-px bg-[#E5E5E5]" />
+      <div className="absolute left-3 top-10 bottom-0 w-px bg-[#EFE8E4]" />
 
       <div
-        className="bg-white rounded-2xl border border-[#E5E5E5] overflow-hidden shadow-sm"
+        className="bg-white rounded-2xl border border-[#EFE8E4] overflow-hidden shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]"
         style={{ borderLeft: `4px solid ${borderColor}` }}
       >
         {/* Header */}
         <button
+          type="button"
           onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center justify-between p-4 text-left hover:bg-[#F5F0E8] transition-colors"
+          className="w-full min-h-[56px] flex items-center justify-between p-4 text-left bg-transparent border-none hover:bg-[#FAF7F5] transition-colors cursor-pointer"
         >
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <Calendar size={12} className="text-[#999999]" />
-              <span className="text-sm font-bold text-[#2D2D2D]" style={serif}>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+              <Calendar size={13} className="text-[#947C85]" />
+              <span className="font-sans text-sm font-bold text-[#3B0D1E] tabular-nums">
                 {formatDate(consulta.fecha)}
               </span>
               {consulta.esBorrador && (
-                <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-amber-300">
-                  <FileText size={8} />
+                <span className="inline-flex items-center gap-1 bg-[#FFF7F5] text-[#D97757] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#D97757]/30">
+                  <FileText size={10} />
                   Borrador
                 </span>
               )}
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <span
-                className="text-[10px] font-bold px-2.5 py-1 rounded-full"
+                className="text-[11px] font-bold px-2.5 py-0.5 rounded-full capitalize"
                 style={{ backgroundColor: treatBg, color: treatColor }}
               >
                 {resultado.tratamientoPrincipal}
               </span>
-              <span className="text-[10px] text-[#999999]">
-                {getRizoLabel(consulta.tipoRizoPrincipal)}
-              </span>
+              {consulta.tipoRizoPrincipal && (
+                <span className="px-2.5 py-0.5 rounded-full bg-[#F5EBE8] text-[#3B0D1E] text-[11px] font-semibold">
+                  {getRizoLabel(consulta.tipoRizoPrincipal)}
+                </span>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             {consulta.proximaCita && (
-              <span className="text-[9px] text-[#AAAAAA]">
+              <span className="font-mono text-[10px] text-[#947C85] tabular-nums">
                 Próx: {formatDate(consulta.proximaCita)}
               </span>
             )}
-            {expanded
-              ? <ChevronUp size={16} className="text-[#AAAAAA]" />
-              : <ChevronDown size={16} className="text-[#AAAAAA]" />
-            }
+            {expanded ? (
+              <ChevronUp size={17} className="text-[#6B535C]" />
+            ) : (
+              <ChevronDown size={17} className="text-[#6B535C]" />
+            )}
           </div>
         </button>
 
         {/* Expanded */}
         {expanded && (
-          <div className="px-4 pb-4 flex flex-col gap-3 border-t border-[#F0F0F0] fade-in">
+          <div className="px-4 pb-4 flex flex-col gap-3 border-t border-[#EFE8E4] fade-in">
             {consulta.esBorrador && (
-              <div className="flex items-center gap-2 mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200">
-                <FileText size={13} className="text-amber-600" />
-                <p className="text-xs font-semibold text-amber-700">Diagnóstico express — detalles incompletos</p>
+              <div className="flex items-center gap-2 mt-3 p-3 bg-[#FFF7F5] rounded-xl border border-[#D97757]/30">
+                <FileText size={14} className="text-[#D97757]" />
+                <p className="m-0 text-xs font-semibold text-[#D97757]">
+                  Diagnóstico express — detalles incompletos
+                </p>
               </div>
             )}
 
             {/* Mediciones */}
-            <div className="grid grid-cols-2 gap-2 mt-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
               {[
                 { label: 'Porosidad', value: consulta.porosidad || '—' },
                 { label: 'Densidad', value: consulta.densidad || '—' },
                 { label: 'Grosor', value: consulta.grosor || '—' },
                 { label: 'Elasticidad', value: consulta.elasticidad || '—' },
               ].map(({ label, value }) => (
-                <div key={label} className="bg-[#F9F9F9] rounded-xl px-3 py-2">
-                  <p className="text-[10px] text-[#999999]" style={serif}>{label}</p>
-                  <p className="text-sm font-bold text-[var(--primary)] capitalize" style={serif}>{value}</p>
+                <div
+                  key={label}
+                  className="bg-[#FAF7F5] border border-[#EFE8E4] rounded-xl px-3 py-2.5"
+                >
+                  <p className="m-0 font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                    {label}
+                  </p>
+                  <p className="m-0 mt-0.5 text-sm font-bold text-[#3B0D1E] capitalize">
+                    {value}
+                  </p>
                 </div>
               ))}
             </div>
 
             {/* Técnica */}
-            <div className="bg-[#FBF4EC] rounded-xl p-3">
-              <p className="text-[10px] font-bold text-[#9A6A3A] mb-1" style={serif}>Técnica</p>
-              <p className="text-sm font-semibold text-[#C9956B]">{resultado.tecnicaDefinicion}</p>
+            <div className="bg-[#F5EBE8] border border-[#E8CFC8] rounded-xl p-3">
+              <p className="m-0 font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1">
+                Técnica sugerida
+              </p>
+              <p className="m-0 text-sm font-semibold text-[#3B0D1E]">
+                {resultado.tecnicaDefinicion}
+              </p>
             </div>
 
             {/* Problemas */}
             {consulta.problemas.length > 0 && (
               <div>
-                <p className="text-[10px] font-bold text-[#666666] mb-1.5" style={serif}>Problemas tratados:</p>
-                <div className="flex flex-wrap gap-1">
+                <p className="m-0 font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                  Condiciones tratadas
+                </p>
+                <div className="flex flex-wrap gap-1.5">
                   {consulta.problemas.map((p) => (
-                    <span key={p} className="text-[10px] bg-[var(--primary-light)] text-[var(--primary)] px-2 py-0.5 rounded-full border border-[var(--primary-line)]">
+                    <span
+                      key={p}
+                      className="text-[11px] font-semibold bg-[#FAF7F5] text-[#3B0D1E] px-2.5 py-0.5 rounded-full border border-[#EFE8E4]"
+                    >
                       {p}
                     </span>
                   ))}
@@ -206,18 +245,22 @@ function ConsultaItem({
 
             {/* Notas */}
             {consulta.notasEstilista && (
-              <div className="bg-[#F9F9F9] rounded-xl p-3">
-                <p className="text-[10px] font-bold text-[#666666] mb-1" style={serif}>Notas:</p>
-                <p className="text-xs text-[#444444] leading-relaxed">{consulta.notasEstilista}</p>
+              <div className="bg-[#FAF7F5] border border-[#EFE8E4] rounded-xl p-3">
+                <p className="m-0 font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1">
+                  Notas de silla
+                </p>
+                <p className="m-0 text-xs text-[#3B0D1E] leading-relaxed">
+                  {consulta.notasEstilista}
+                </p>
               </div>
             )}
 
             {/* Satisfacción 1–5 — lectura si ya existe, captura de un toque si no */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] font-bold text-[#666666]" style={serif}>
+            <div className="flex items-center gap-2 flex-wrap pt-1">
+              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
                 {sat ? 'Satisfacción:' : '¿Cómo quedó tu clienta?'}
               </span>
-              <div className="flex gap-0.5">
+              <div className="flex gap-1">
                 {([1, 2, 3, 4, 5] as SatisfaccionNivel[]).map((n) => (
                   <button
                     key={n}
@@ -225,42 +268,46 @@ function ConsultaItem({
                     disabled={!!sat || savingSat}
                     onClick={() => calificar(n)}
                     aria-label={`Calificar ${n} de 5`}
-                    className={sat ? 'cursor-default' : 'active:scale-90 transition-transform'}
+                    className={`min-w-[36px] min-h-[36px] rounded-lg flex items-center justify-center bg-transparent border-none ${
+                      sat ? 'cursor-default' : 'hover:bg-[#FAF7F5] active:scale-90 transition-all cursor-pointer'
+                    }`}
                   >
                     <Star
-                      size={15}
-                      fill={sat && n <= sat ? '#C9956B' : 'none'}
-                      className={sat && n <= sat ? 'text-[#C9956B]' : 'text-[#D8D2C6]'}
+                      size={16}
+                      fill={sat && n <= sat ? '#D97757' : 'none'}
+                      className={sat && n <= sat ? 'text-[#D97757]' : 'text-[#E8CFC8]'}
                     />
                   </button>
                 ))}
               </div>
-              {sat && <span className="text-xs font-semibold text-[#9A6A3A]">{sat}/5</span>}
-              {!sat && <span className="text-[10px] text-[#999999]">opcional · un toque</span>}
+              {sat && (
+                <span className="font-mono text-xs font-bold text-[#3B0D1E] tabular-nums">
+                  {sat}/5
+                </span>
+              )}
+              {!sat && <span className="text-[11px] text-[#947C85]">opcional · un toque</span>}
             </div>
 
             {/* Acciones */}
-            {cotizadorActivo && (
-              <div className="mb-1">
+            <div className="flex gap-2 flex-wrap pt-1">
+              {cotizadorActivo && (
                 <Link
                   href={`/?clientaId=${clienta.id}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#DFC5CE] bg-[#F7ECEF] text-xs font-semibold text-[#3B0D1E] hover:bg-[#3B0D1E] hover:text-[#FAF7F5] no-underline active:scale-95 transition-all"
+                  className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#E8CFC8] bg-[#F5EBE8] text-xs font-bold text-[#3B0D1E] hover:bg-[#3B0D1E] hover:text-[#FAF7F5] no-underline active:scale-[0.98] transition-all"
                 >
-                  <Sparkles size={12} />
+                  <Sparkles size={13} />
                   Cotizar en Silla
                 </Link>
-              </div>
-            )}
-            <div className="flex gap-2 flex-wrap">
+              )}
 
               <button
                 type="button"
                 onClick={handleDownloadPDF}
                 disabled={downloading}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5E5E5] bg-white text-xs font-semibold text-[#666666] hover:border-[var(--primary)] hover:text-[var(--primary)] active:scale-95 transition-all disabled:opacity-50"
+                className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#EFE8E4] bg-white text-xs font-bold text-[#6B535C] hover:border-[#3B0D1E] hover:text-[#3B0D1E] active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
               >
-                <Download size={12} className={downloading ? 'animate-bounce' : ''} />
-                {downloading ? 'Generando...' : 'Descargar PDF'}
+                <Download size={13} className={downloading ? 'animate-bounce' : ''} />
+                {downloading ? 'Generando…' : 'Descargar PDF'}
               </button>
 
               {clienta.telefono && (
@@ -268,10 +315,10 @@ function ConsultaItem({
                   href={buildWhatsAppUrl(clienta, consulta)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#25D366] bg-white text-xs font-semibold text-[#25D366] hover:bg-[#25D366] hover:text-white active:scale-95 transition-all"
+                  className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#0D9488]/30 bg-[#F0FDFA] text-xs font-bold text-[#0D9488] hover:bg-[#0D9488] hover:text-[#FAF7F5] no-underline active:scale-[0.98] transition-all"
                 >
-                  <MessageCircle size={12} />
-                  Compartir
+                  <MessageCircle size={13} />
+                  Compartir WA
                 </a>
               )}
             </div>
@@ -286,12 +333,16 @@ export default function HistorialTimeline({ consultas, clienta }: Props) {
   const flags = useFlags();
   if (!consultas.length) {
     return (
-      <div className="text-center py-10">
-        <div className="w-16 h-16 bg-[var(--primary-light)] rounded-full mx-auto mb-3 flex items-center justify-center">
-          <Calendar size={28} className="text-[var(--primary-line)]" />
+      <div className="text-center py-10 font-sans">
+        <div className="w-14 h-14 bg-[#F5EBE8] border border-[#E8CFC8] rounded-2xl mx-auto mb-3 flex items-center justify-center">
+          <Calendar size={24} className="text-[#3B0D1E]" />
         </div>
-        <p className="text-sm font-semibold text-[#666666]" style={serif}>Sin consultas registradas</p>
-        <p className="text-xs text-[#999999] mt-1">Las consultas aparecerán aquí</p>
+        <p className="m-0 font-sans text-sm font-bold text-[#3B0D1E]">
+          Sin consultas registradas
+        </p>
+        <p className="m-0 text-xs text-[#947C85] mt-1">
+          Las fichas técnicas previas aparecerán en esta línea de tiempo.
+        </p>
       </div>
     );
   }
@@ -306,8 +357,6 @@ export default function HistorialTimeline({ consultas, clienta }: Props) {
           index={i}
           cotizadorActivo={flags.cotizador}
         />
-      ))}
-      {([] as null[]).map((_, idx) => (<React.Fragment key={idx} />
       ))}
     </div>
   );

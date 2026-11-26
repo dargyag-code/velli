@@ -1,36 +1,29 @@
 import type { Metadata, Viewport } from 'next';
-import { DM_Serif_Display, DM_Sans, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google';
+import { Fraunces, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
 import ToastHost from '@/components/ui/ToastHost';
 import { APP_URL } from '@/lib/sitio';
 import './globals.css';
 
+// Las 3 familias son variable fonts en Google Fonts: omitir `weight` solicita
+// el eje variable completo (incluyendo 400/500/600/700) en un único archivo
+// .woff2 estático por subset y evita las URLs dinámicas `/l/font?kit=...&skey=...`
+// que rompen el parser de queries de Turbopack en Next.js 16.
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  weight: ['500', '600', '700'],
-  variable: '--font-jakarta',
+  variable: '--font-sans',
   display: 'swap',
 });
 
-const dmSerifDisplay = DM_Serif_Display({
+const fraunces = Fraunces({
   subsets: ['latin'],
-  weight: ['400'],
-  style: ['normal', 'italic'],
-  variable: '--font-dm-serif',
-  display: 'swap',
-});
-
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-dm-sans',
+  variable: '--font-display',
   display: 'swap',
 });
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  variable: '--font-jetbrains',
+  variable: '--font-mono',
   display: 'swap',
 });
 
@@ -85,20 +78,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="es"
-      className={`${plusJakartaSans.variable} ${dmSerifDisplay.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
+      className={`${plusJakartaSans.variable} ${fraunces.variable} ${jetbrainsMono.variable}`}
     >
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
       </head>
-      <body
-        className="velli-grain"
-        style={{
-          fontFamily: 'var(--font-sans)',
-          backgroundColor: 'var(--bg)',
-          minHeight: '100vh',
-        }}
-      >
+      <body className="velli-grain font-sans bg-[#FAF7F5] text-[#3B0D1E] min-h-screen antialiased">
         {children}
         <ToastHost />
         <ServiceWorkerRegistrar />

@@ -38,8 +38,6 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      { source: '/agenda', destination: '/', permanent: false },
-      { source: '/agenda/:path*', destination: '/', permanent: false },
       { source: '/color', destination: '/', permanent: false },
       { source: '/color/:path*', destination: '/', permanent: false },
       { source: '/cortes', destination: '/', permanent: false },
@@ -54,6 +52,13 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/c/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate' },
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+        ],
+      },
+      {
+        source: '/s/:path*',
         headers: [
           { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate' },
           { key: 'X-Robots-Tag', value: 'noindex, nofollow' },

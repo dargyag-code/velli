@@ -11,12 +11,10 @@
 // publicado.
 // ══════════════════════════════════════════════════════════════════════════
 
-const serif = { fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" };
-
 function Seccion({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="text-base font-bold text-[var(--primary)] mb-2" style={serif}>
+      <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E] mb-2">
         {titulo}
       </h2>
       {children}
@@ -26,7 +24,7 @@ function Seccion({ titulo, children }: { titulo: string; children: React.ReactNo
 
 export function ContenidoConsentimientoQuimico() {
   return (
-    <div className="flex flex-col gap-5 text-sm text-[#2D2D2D] leading-relaxed">
+    <div className="flex flex-col gap-5 text-sm text-[#6B535C] leading-relaxed">
       <Seccion titulo="1. Naturaleza del servicio">
         <p>
           Autorizo la realización de servicios químicos capilares (decoloración,
@@ -60,7 +58,7 @@ export function ContenidoConsentimientoQuimico() {
           iniciar el servicio.
         </p>
       </Seccion>
-      <p className="text-xs text-[#999999] italic">
+      <p className="text-xs text-[#947C85] italic border-t border-[#EFE8E4] pt-4 mt-2">
         Borrador de trabajo del Paquete Legal — pendiente del texto definitivo
         de la asesora legal.
       </p>
@@ -70,7 +68,7 @@ export function ContenidoConsentimientoQuimico() {
 
 export function ContenidoConsentimientoImagenes() {
   return (
-    <div className="flex flex-col gap-5 text-sm text-[#2D2D2D] leading-relaxed">
+    <div className="flex flex-col gap-5 text-sm text-[#6B535C] leading-relaxed">
       <Seccion titulo="1. Datos sensibles de salud">
         <p>
           Autorizo al salón a capturar y almacenar fotografías de mi cabello y
@@ -104,7 +102,7 @@ export function ContenidoConsentimientoImagenes() {
           de volver a activar la cámara en los módulos protegidos.
         </p>
       </Seccion>
-      <p className="text-xs text-[#999999] italic">
+      <p className="text-xs text-[#947C85] italic border-t border-[#EFE8E4] pt-4 mt-2">
         Borrador de trabajo del Paquete Legal — pendiente del texto definitivo
         de la asesora legal.
       </p>

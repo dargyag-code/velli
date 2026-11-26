@@ -37,6 +37,19 @@ import {
   urlPublicaCotizacion,
   type ReglaComision,
 } from '@/lib/cotizador';
+import {
+  CATALOGO_QUIMICO_SEMILLA,
+  MULTIPLICADORES_DIAGNOSTICO,
+  SERVICIOS_BASE_SEMILLA,
+  formatearEquivalenciaFisica,
+  normalizarAjustesVelvetStudio,
+  obtenerSemillaServicio,
+} from '@/lib/semilla-financiera';
+import { calcularTicketFinancieroVivo } from '@/lib/costo';
+import {
+  PORCENTAJE_COMISION_SALUDABLE_DEFECTO,
+  REGLA_COMISION_SALUDABLE_DEFECTO,
+} from '@/lib/comision';
 
 describe('lib/cotizador · 1. Caso exacto del documento (§3) y escenarios de la plantilla', () => {
   it('reproduce exactamente el ejemplo de §3: Tinte completo -> Precio $182.000, Tinte 134,55g ($67.275), Oxidante 201,8ml ($6.055), Insumos $3.000, Comisión $72.800, Margen $32.870', () => {
@@ -810,4 +823,161 @@ describe('lib/cotizador · 7. Guardarraíles legales en el cotizador (§2.1)', (
     ).toBeNull();
   });
 });
+
+describe('lib/semilla-financiera + calcularTicketFinancieroVivo · 8. Calibración Colombia 2026', () => {
+  it('garantiza insumos fijos nunca en $0 ($9.500 decoloración y $3.500 tinte e hidratación)', () => {
+    for (const servicio of SERVICIOS_BASE_SEMILLA) {
+      expect(servicio.insumosFijosCop).toBeGreaterThan(0);
+    }
+
+    const balayage = obtenerSemillaServicio({ slug: 'balayage' });
+    const tinte = obtenerSemillaServicio({ slug: 'tinte-global' });
+    const hidratacion = obtenerSemillaServicio({ slug: 'hidratacion' });
+    const alisado = obtenerSemillaServicio({ slug: 'alisado-organico' });
+
+    expect(balayage.insumosFijosCop).toBe(9500);
+    expect(tinte.insumosFijosCop).toBe(3500);
+    expect(hidratacion.insumosFijosCop).toBe(3500);
+    expect(alisado.insumosFijosCop).toBe(5000);
+  });
+
+  it('valida el catálogo químico semilla Colombia 2026 ($/g y $/ml exactos)', () => {
+    const porCodigo = Object.fromEntries(
+      CATALOGO_QUIMICO_SEMILLA.map((p) => [p.codigo, p])
+    );
+
+    expect(porCodigo['DEC-PRO-450'].costoUnitarioCop).toBe(320);
+    expect(porCodigo['TIN-PRO-60'].costoUnitarioCop).toBe(465);
+    expect(porCodigo['MAT-PRO-60'].costoUnitarioCop).toBe(440);
+    expect(porCodigo['PER-PRO-1000'].costoUnitarioCop).toBe(32);
+    expect(porCodigo['ALI-ORG-1000'].costoUnitarioCop).toBe(280);
+    expect(porCodigo['TRT-BACK-500'].costoUnitarioCop).toBe(180);
+
+    for (const item of CATALOGO_QUIMICO_SEMILLA) {
+      expect(item.costoEnvaseCop / item.presentacionCantidad).toBe(item.costoUnitarioCop);
+    }
+  });
+
+  it('valida Hidratación calibrada: $85.000 tarifa y $9.800 química (35g × $180 + $3.500 insumos)', () => {
+    const semilla = obtenerSemillaServicio({ slug: 'hidratacion' });
+    const ticket = calcularTicketFinancieroVivo({
+      tarifaBaseCop: semilla.tarifaBaseCop,
+      recargoVariablesCop: MULTIPLICADORES_DIAGNOSTICO.longitud.corto.recargoCop,
+      gramosBase: semilla.gramosBase,
+      multiplicadorTotal: MULTIPLICADORES_DIAGNOSTICO.longitud.corto.multGramos,
+      ajusteManualGramos: 0,
+      costoGramoCop: semilla.costoGramoBaseCop,
+      ratioPeroxido: semilla.ratioPeroxido,
+      costoMlPeroxidoCop: semilla.costoMlPeroxidoCop,
+      insumosFijosCop: semilla.insumosFijosCop,
+      porcentajeComision: PORCENTAJE_COMISION_SALUDABLE_DEFECTO,
+      comisionSobreNetoQuimico: true,
+      unidadFisica: semilla.unidadFisica,
+    });
+
+    expect(ticket.precioTotalCop).toBe(85000);
+    expect(ticket.gramosFinales).toBe(35);
+    expect(ticket.mlPeroxido).toBe(0);
+    expect(ticket.subtotalQuimicoPrincipalCop).toBe(6300);
+    expect(ticket.subtotalPeroxidoCop).toBe(0);
+    expect(ticket.costoInsumosCop).toBe(3500);
+    expect(ticket.costoQuimicoTotalCop).toBe(9800);
+    expect(ticket.equivalenciaFisica).toBe('≈ 1 aplicación');
+    // Comisión 40% sobre neto químico: (85.000 - 9.800) × 0,40 = 30.080
+    expect(ticket.comisionEspecialistaCop).toBe(30080);
+    expect(ticket.utilidadNetaSalonCop).toBe(45120);
+    expect(ticket.margenNetoPct).toBe(53);
+    expect(ticket.requiereCalibracion).toBe(false);
+  });
+
+  it('valida Balayage calibrado en Cabello Medio (1.5x): $230.000 tarifa y $42.620 química', () => {
+    const semilla = obtenerSemillaServicio({ slug: 'balayage' });
+    const ticket = calcularTicketFinancieroVivo({
+      tarifaBaseCop: semilla.tarifaBaseCop,
+      recargoVariablesCop: MULTIPLICADORES_DIAGNOSTICO.longitud.medio.recargoCop,
+      gramosBase: semilla.gramosBase,
+      multiplicadorTotal: MULTIPLICADORES_DIAGNOSTICO.longitud.medio.multGramos,
+      ajusteManualGramos: 0,
+      costoGramoCop: semilla.costoGramoBaseCop,
+      ratioPeroxido: semilla.ratioPeroxido,
+      costoMlPeroxidoCop: semilla.costoMlPeroxidoCop,
+      insumosFijosCop: semilla.insumosFijosCop,
+      porcentajeComision: PORCENTAJE_COMISION_SALUDABLE_DEFECTO,
+      comisionSobreNetoQuimico: true,
+      unidadFisica: semilla.unidadFisica,
+    });
+
+    expect(ticket.precioTotalCop).toBe(230000);
+    expect(ticket.gramosFinales).toBe(90);
+    expect(ticket.mlPeroxido).toBe(135);
+    expect(ticket.subtotalQuimicoPrincipalCop).toBe(28800);
+    expect(ticket.subtotalPeroxidoCop).toBe(4320);
+    expect(ticket.costoInsumosCop).toBe(9500);
+    expect(ticket.costoQuimicoTotalCop).toBe(42620);
+    expect(ticket.equivalenciaFisica).toBe('≈ 3 cazos (30g) / 1.5 tubos');
+    // Comisión 40% sobre neto químico: (230.000 - 42.620) × 0,40 = 74.952
+    expect(ticket.comisionEspecialistaCop).toBe(74952);
+    expect(ticket.utilidadNetaSalonCop).toBe(112428);
+    expect(ticket.margenNetoPct).toBe(49);
+    expect(ticket.requiereCalibracion).toBe(false);
+  });
+
+  it('aplica la regla de comisión saludable 40% sobre neto químico y protege el margen frente a base bruta', () => {
+    expect(PORCENTAJE_COMISION_SALUDABLE_DEFECTO).toBe(40);
+    expect(REGLA_COMISION_SALUDABLE_DEFECTO).toEqual({
+      tipo: 'porcentaje',
+      valor: 40,
+      base: 'precio_menos_producto',
+    });
+
+    const baseInput = {
+      tarifaBaseCop: 210000,
+      recargoVariablesCop: 20000,
+      gramosBase: 60,
+      multiplicadorTotal: 1.5,
+      ajusteManualGramos: 0,
+      costoGramoCop: 320,
+      ratioPeroxido: 1.5,
+      costoMlPeroxidoCop: 32,
+      insumosFijosCop: 9500,
+      porcentajeComision: 40,
+    };
+
+    const sobreNeto = calcularTicketFinancieroVivo({
+      ...baseInput,
+      comisionSobreNetoQuimico: true,
+    });
+    const sobreBruto = calcularTicketFinancieroVivo({
+      ...baseInput,
+      comisionSobreNetoQuimico: false,
+    });
+
+    // Sobre bruto: 40% de $230.000 = $92.000; sobre neto químico: 40% de $187.380 = $74.952
+    expect(sobreBruto.comisionEspecialistaCop).toBe(92000);
+    expect(sobreNeto.comisionEspecialistaCop).toBe(74952);
+    expect(sobreNeto.utilidadNetaSalonCop).toBeGreaterThan(sobreBruto.utilidadNetaSalonCop);
+  });
+
+  it('traduce gramos y mililitros a equivalencias físicas sin báscula (tubos, cazos, onzas, aplicaciones)', () => {
+    expect(formatearEquivalenciaFisica(60, 'tubo_60g')).toBe('≈ 1 tubo (60g)');
+    expect(formatearEquivalenciaFisica(90, 'tubo_60g')).toBe('≈ 1.5 tubos (60g)');
+    expect(formatearEquivalenciaFisica(30, 'cazo_30g')).toBe('≈ 1 cazo (30g) / 0.5 tubos');
+    expect(formatearEquivalenciaFisica(90, 'cazo_30g')).toBe('≈ 3 cazos (30g) / 1.5 tubos');
+    expect(formatearEquivalenciaFisica(60, 'onza_30ml')).toBe('≈ 2 oz (60ml)');
+    expect(formatearEquivalenciaFisica(35, 'aplicacion_35g')).toBe('≈ 1 aplicación');
+    expect(formatearEquivalenciaFisica(70, 'aplicacion_35g')).toBe('≈ 2 aplicaciones');
+  });
+
+  it('normaliza recargos Velvet Studio descartando descuentos negativos heredados en cabello corto', () => {
+    const normalizado = normalizarAjustesVelvetStudio({
+      largo: { corto: { suma: -7000, porcentaje: 0 } },
+    });
+    expect(normalizado.largo?.corto?.suma).toBe(0);
+    expect(normalizado.largo?.medio?.suma).toBe(20000);
+    expect(normalizado.largo?.largo?.suma).toBe(45000);
+    expect(normalizado.largo?.extra_largo?.suma).toBe(70000);
+    expect(normalizado.densidad?.alta?.suma).toBe(20000);
+  });
+});
+
 

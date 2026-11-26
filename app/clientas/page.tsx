@@ -1,26 +1,51 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { Users, Plus, Search, Filter, SlidersHorizontal, ChevronRight, Sparkles } from 'lucide-react';
 import {
-  BottomNavV2,
+  Users,
+  Plus,
+  Search,
+  Filter,
+  SlidersHorizontal,
+  ChevronRight,
+  Sparkles,
+  MessageCircle,
+  Check,
+  Clock,
+} from 'lucide-react';
+import {
+  VelvetTopHeader,
   Btn,
-  Chip,
   AvatarV2,
   toneFromTipoRizo,
   SettingsIconButton,
 } from '@/components/v2';
-import { getAllClientas } from '@/lib/db';
+import {
+  armarEnlaceReactivacionWhatsApp,
+  segmentarClientasPorReactivar,
+  type ClientaPorReactivar,
+  type TramoInactividadDias,
+} from '@/lib/clientas/reactivacion';
+import { getAllClientas, registrarContactoReactivacion } from '@/lib/db';
+import { getProfile } from '@/lib/profile';
+import { showToast } from '@/lib/toast';
 import { Clienta } from '@/lib/types';
 import { formatDate, getRizoLabel } from '@/lib/utils';
+import { obtenerOrganizacionActivaPanel } from '@/lib/vitrina';
 
 type SortKey = 'nombre' | 'ultima' | 'visitas';
 type FilterRizo = 'todas' | '1' | '2' | '3' | '4';
+type TabCRM = 'directorio' | 'reactivar';
 
 export default function ClientasPage() {
   const [clientas, setClientas] = useState<Clienta[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tabCrm, setTabCrm] = useState<TabCRM>('directorio');
+  const [umbralDias, setUmbralDias] = useState<TramoInactividadDias>(30);
+  const [salonNombre, setSalonNombre] = useState<string>('Tu Salón');
+  const [vitrinaSlug, setVitrinaSlug] = useState<string | null>(null);
+
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortKey>('ultima');
   const [filterRizo, setFilterRizo] = useState<FilterRizo>('todas');
@@ -28,8 +53,20 @@ export default function ClientasPage() {
 
   const load = useCallback(async () => {
     try {
-      const all = await getAllClientas();
+      const [all, prof, org] = await Promise.all([
+        getAllClientas(),
+        getProfile().catch(() => null),
+        obtenerOrganizacionActivaPanel().catch(() => null),
+      ]);
       setClientas(all);
+      if (org?.name) {
+        setSalonNombre(org.name);
+        setVitrinaSlug(org.slug);
+      } else if (prof?.nombreSalon?.trim()) {
+        setSalonNombre(prof.nombreSalon.trim());
+      } else if (prof?.nombre?.trim()) {
+        setSalonNombre(prof.nombre.trim());
+      }
     } finally {
       setLoading(false);
     }
@@ -56,6 +93,66 @@ export default function ClientasPage() {
       return 0;
     });
 
+  // Segmentación automática del Motor de Reactivación (30 / 45 / 60+ días)
+  const todasInactivas30 = useMemo(
+    () => segmentarClientasPorReactivar(clientas, { umbralMinimoDias: 30 }),
+    [clientas]
+  );
+
+  const conteosReactivacion = useMemo(
+    () => ({
+      30: todasInactivas30.length,
+      45: todasInactivas30.filter((item) => item.diasInactiva >= 45).length,
+      60: todasInactivas30.filter((item) => item.diasInactiva >= 60).length,
+      pendientesHoy: todasInactivas30.filter((item) => !item.contactadaEstaSemana).length,
+    }),
+    [todasInactivas30]
+  );
+
+  const listaReactivacion = useMemo(
+    () =>
+      todasInactivas30.filter((item) => {
+        if (item.diasInactiva < umbralDias) return false;
+        if (
+          search &&
+          !item.clienta.nombre.toLowerCase().includes(search.toLowerCase())
+        ) {
+          return false;
+        }
+        return true;
+      }),
+    [todasInactivas30, umbralDias, search]
+  );
+
+  const enviarMensajeReactivacion = async (item: ClientaPorReactivar) => {
+    if (item.contactadaEstaSemana) {
+      showToast('Ya escribiste a esta clienta durante los últimos 7 días', 'info');
+      return;
+    }
+
+    const { whatsappUrl } = armarEnlaceReactivacionWhatsApp({
+      clienta: item.clienta,
+      salonNombre,
+      diasInactiva: item.diasInactiva,
+      vitrinaSlug,
+    });
+
+    if (!whatsappUrl) {
+      showToast('Esta clienta no tiene un número de WhatsApp válido', 'error');
+      return;
+    }
+
+    const iso = await registrarContactoReactivacion(item.clienta.id);
+    setClientas((prev) =>
+      prev.map((c) =>
+        c.id === item.clienta.id ? { ...c, lastReactivationContactAt: iso } : c
+      )
+    );
+
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    showToast(`Mensaje de reactivación preparado para ${item.clienta.nombre}`, 'success');
+  };
+
   const counts = {
     todas: clientas.length,
     '1': clientas.filter((c) => c.tipoRizoPrincipal?.startsWith('1')).length,
@@ -73,53 +170,29 @@ export default function ClientasPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] text-[#1C1518] relative">
-      {/* Sticky header en Velvet Studio (#FAF7F5 / #EFE8E4 / #3B0D1E) */}
-      <header
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 40,
-          padding: '50px 16px 14px',
-          background: 'rgba(250, 247, 245, 0.94)',
-          backdropFilter: 'blur(14px)',
-          WebkitBackdropFilter: 'blur(14px)',
-          borderBottom: '1px solid #EFE8E4',
-        }}
-      >
-        <div style={{ maxWidth: 768, margin: '0 auto' }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-end',
-              marginBottom: 14,
-              gap: 12,
-            }}
-          >
-            <div style={{ minWidth: 0 }}>
-              <div className="v-caps" style={{ color: '#6E1E3A' }}>
+    <div className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] font-sans relative pb-24 lg:pb-12">
+      <VelvetTopHeader />
+
+      {/* Sub-header CRM */}
+      <div className="border-b border-[#EFE8E4] pt-6 pb-4 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-end justify-between gap-3 mb-4">
+            <div className="min-w-0">
+              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
                 Directorio CRM · Retención BI
-              </div>
-              <h1
-                style={{
-                  margin: '2px 0 0',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 28,
-                  letterSpacing: '-0.02em',
-                  color: '#1C1518',
-                  lineHeight: 1.05,
-                }}
-              >
+              </span>
+              <h1 className="m-0 mt-0.5 font-display text-2xl md:text-3xl font-semibold tracking-tight text-[#3B0D1E] leading-tight">
                 Clientas{' '}
                 {!loading && (
-                  <em style={{ color: '#6E1E3A' }}>· {clientas.length}</em>
+                  <span className="text-[#6B535C] font-normal tabular-nums">
+                    · {clientas.length}
+                  </span>
                 )}
               </h1>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <div className="flex items-center gap-2 shrink-0">
               <Link href="/clientas/nueva" className="no-underline">
-                <Btn size="sm" variant="primary" icon={<Plus size={12} />}>
+                <Btn size="md" variant="primary" icon={<Plus size={14} />}>
                   Nueva
                 </Btn>
               </Link>
@@ -127,347 +200,361 @@ export default function ClientasPage() {
             </div>
           </div>
 
+          {/* Selector de Pestañas: Directorio / Por reactivar */}
+          <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-[#F5EBE8] border border-[#EFE8E4] mb-3.5">
+            <button
+              type="button"
+              onClick={() => setTabCrm('directorio')}
+              className={`min-h-[40px] px-4 py-1.5 rounded-xl font-sans text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer border-none transition-all ${
+                tabCrm === 'directorio'
+                  ? 'bg-[#3B0D1E] text-[#FAF7F5]'
+                  : 'bg-transparent text-[#6B535C] hover:text-[#3B0D1E]'
+              }`}
+            >
+              <Users size={14} />
+              <span>Directorio ({clientas.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTabCrm('reactivar')}
+              className={`min-h-[40px] px-4 py-1.5 rounded-xl font-sans text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer border-none transition-all ${
+                tabCrm === 'reactivar'
+                  ? 'bg-[#3B0D1E] text-[#FAF7F5]'
+                  : 'bg-transparent text-[#6B535C] hover:text-[#3B0D1E]'
+              }`}
+            >
+              <Clock size={14} />
+              <span>Por reactivar</span>
+              {!loading && conteosReactivacion.pendientesHoy > 0 && (
+                <span
+                  className={`px-2 py-0.5 rounded-full font-mono text-[10px] font-bold tabular-nums ${
+                    tabCrm === 'reactivar'
+                      ? 'bg-[#D97757] text-white'
+                      : 'bg-[#FFF7F5] text-[#D97757] border border-[#D97757]/30'
+                  }`}
+                >
+                  {conteosReactivacion.pendientesHoy}
+                </span>
+              )}
+            </button>
+          </div>
+
           {/* Search bar */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              padding: '10px 14px',
-              background: '#FFFFFF',
-              border: '1px solid #EFE8E4',
-              borderRadius: 999,
-              boxShadow: 'var(--shadow-xs)',
-            }}
-          >
-            <Search size={15} style={{ color: '#96888C', flexShrink: 0 }} />
+          <div className="min-h-[48px] flex items-center gap-2.5 px-4 bg-white border border-[#EFE8E4] rounded-2xl shadow-velvet">
+            <Search size={16} className="text-[#947C85] shrink-0" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar clienta por nombre…"
-              style={{
-                flex: 1,
-                border: 'none',
-                background: 'transparent',
-                outline: 'none',
-                fontSize: 13,
-                color: '#1C1518',
-                fontFamily: 'var(--font-sans)',
-              }}
+              className="flex-1 min-w-0 py-2 border-none bg-transparent outline-none text-sm font-sans text-[#3B0D1E] placeholder-[#947C85]"
             />
-            <button
-              type="button"
-              onClick={() => setShowFilters((v) => !v)}
-              aria-label="Filtros"
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: showFilters || sort !== 'ultima' ? '#3B0D1E' : '#96888C',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-                cursor: 'pointer',
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: '0.06em',
-                fontFamily: 'var(--font-sans)',
-              }}
-            >
-              <Filter size={13} />
-              FILTROS
-            </button>
-          </div>
-
-          {/* Filter pills */}
-          <div
-            className="v-noscroll"
-            style={{ display: 'flex', gap: 6, marginTop: 12, overflowX: 'auto', paddingBottom: 4 }}
-          >
-            {filterPills.map((p) => {
-              const active = filterRizo === p.key;
-              return (
-                <button
-                  key={p.key}
-                  type="button"
-                  onClick={() => setFilterRizo(p.key)}
-                  style={{
-                    flexShrink: 0,
-                    padding: '6px 12px',
-                    borderRadius: 999,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    fontFamily: 'var(--font-sans)',
-                    background: active ? '#3B0D1E' : '#FFFFFF',
-                    color: active ? '#FAF7F5' : '#6E6266',
-                    border: active ? '1px solid #3B0D1E' : '1px solid #EFE8E4',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {p.label} · {p.count}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </header>
-
-      {/* Filter drawer */}
-      {showFilters && (
-        <section
-          className="bg-white rounded-2xl border border-[#EFE8E4]"
-          style={{
-            margin: '14px 16px 0',
-            padding: 14,
-            maxWidth: 736,
-            marginLeft: 'auto',
-            marginRight: 'auto',
-            boxShadow: 'var(--shadow-xs)',
-          }}
-        >
-          <div className="v-caps" style={{ marginBottom: 8 }}>
-            Ordenar por
-          </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {[
-              { key: 'ultima', label: 'Última visita' },
-              { key: 'nombre', label: 'Nombre A-Z' },
-              { key: 'visitas', label: 'Más visitas' },
-            ].map(({ key, label }) => {
-              const active = sort === key;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setSort(key as SortKey)}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: 999,
-                    fontSize: 11.5,
-                    fontWeight: 600,
-                    fontFamily: 'var(--font-sans)',
-                    background: active ? '#F7ECEF' : '#FAF7F5',
-                    color: active ? '#3B0D1E' : '#6E6266',
-                    border: `1px solid ${active ? '#DFC5CE' : '#EFE8E4'}`,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* List */}
-      <main
-        style={{
-          maxWidth: 768,
-          margin: '0 auto',
-          padding: '16px 16px 120px',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 12,
-          }}
-        >
-          <span className="v-num">
-            {filtered.length} {filtered.length === 1 ? 'clienta' : 'clientas'}
-            {sort === 'ultima'
-              ? ' · ordenadas por última visita'
-              : sort === 'nombre'
-                ? ' · A-Z'
-                : ' · más visitas'}
-          </span>
-          <button
-            type="button"
-            onClick={() => setShowFilters((v) => !v)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-              color: '#6E6266',
-              fontSize: 11,
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: 'var(--font-sans)',
-            }}
-          >
-            <SlidersHorizontal size={12} /> Ordenar
-          </button>
-        </div>
-
-        {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="skeleton-shimmer" style={{ height: 80 }} />
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '48px 20px',
-              background: '#FFFFFF',
-              borderRadius: 20,
-              border: '1px solid #EFE8E4',
-              boxShadow: 'var(--shadow-xs)',
-            }}
-          >
-            <div
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: '50%',
-                background: '#F7ECEF',
-                margin: '0 auto 14px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Users size={24} style={{ color: '#3B0D1E' }} />
-            </div>
-            <p
-              style={{
-                margin: 0,
-                fontFamily: 'var(--font-serif)',
-                fontSize: 17,
-                color: '#1C1518',
-                letterSpacing: '-0.01em',
-              }}
-            >
-              {search || filterRizo !== 'todas' ? 'Sin resultados' : 'Aún no tienes clientas registradas'}
-            </p>
-            <p
-              style={{
-                margin: '6px auto 16px',
-                maxWidth: 320,
-                fontSize: 12.5,
-                color: '#6E6266',
-                lineHeight: 1.5,
-              }}
-            >
-              {search || filterRizo !== 'todas'
-                ? 'Prueba ajustando tu búsqueda o cambiando el filtro activo.'
-                : 'Cada clienta conserva sus cotizaciones, cierres en silla, diagnósticos y consentimientos digitales.'}
-            </p>
-            {!search && filterRizo === 'todas' && (
-              <div className="flex flex-wrap justify-center gap-2.5">
-                <Link href="/clientas/nueva" className="no-underline">
-                  <Btn variant="primary" size="md" icon={<Plus size={14} />}>
-                    Registrar clienta
-                  </Btn>
-                </Link>
-                <Link href="/" className="no-underline">
-                  <Btn variant="outline" size="md" icon={<Sparkles size={14} />}>
-                    Ir a Cotizar
-                  </Btn>
-                </Link>
-              </div>
+            {tabCrm === 'directorio' && (
+              <button
+                type="button"
+                onClick={() => setShowFilters((v) => !v)}
+                aria-label="Filtros"
+                className={`min-h-[38px] px-3 rounded-xl border-none flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] transition-colors cursor-pointer ${
+                  showFilters || sort !== 'ultima'
+                    ? 'bg-[#F5EBE8] text-[#3B0D1E]'
+                    : 'bg-transparent text-[#6B535C] hover:bg-[#FAF7F5] hover:text-[#3B0D1E]'
+                }`}
+              >
+                <Filter size={13} />
+                Filtros
+              </button>
             )}
           </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {filtered.map((c) => {
-              const tone = toneFromTipoRizo(c.tipoRizoPrincipal);
-              return (
-                <Link
-                  key={c.id}
-                  href={`/clientas/${c.id}`}
-                  className="stagger-item"
-                  style={{ textDecoration: 'none', display: 'block' }}
-                >
-                  <article
-                    style={{
-                      background: '#FFFFFF',
-                      borderRadius: 18,
-                      padding: 14,
-                      boxShadow: 'var(--shadow-xs)',
-                      border: '1px solid #EFE8E4',
-                      display: 'flex',
-                      gap: 12,
-                      alignItems: 'center',
-                    }}
+
+          {tabCrm === 'directorio' ? (
+            <div className="v-noscroll flex gap-2 mt-3 overflow-x-auto pb-1">
+              {filterPills.map((p) => {
+                const active = filterRizo === p.key;
+                return (
+                  <button
+                    key={p.key}
+                    type="button"
+                    onClick={() => setFilterRizo(p.key)}
+                    className={`min-h-[44px] shrink-0 px-4 py-2 rounded-xl text-xs font-bold tabular-nums border transition-all whitespace-nowrap cursor-pointer ${
+                      active
+                        ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E]'
+                        : 'bg-white text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8] hover:text-[#3B0D1E]'
+                    }`}
                   >
-                    <AvatarV2 nombre={c.nombre} tone={tone} size="md" />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'baseline',
-                          gap: 8,
-                        }}
-                      >
-                        <h3
-                          style={{
-                            margin: 0,
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: 16,
-                            color: '#1C1518',
-                            letterSpacing: '-0.005em',
-                            lineHeight: 1.2,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {c.nombre}
-                        </h3>
-                        {c.ultimaVisita && (
-                          <span className="v-num" style={{ fontSize: 9.5, flexShrink: 0 }}>
-                            {formatDate(c.ultimaVisita)}
-                          </span>
-                        )}
-                      </div>
-                      <div
-                        style={{
-                          display: 'flex',
-                          gap: 4,
-                          marginTop: 5,
-                          alignItems: 'center',
-                          flexWrap: 'wrap',
-                        }}
-                      >
-                        {c.tipoRizoPrincipal && (
-                          <Chip tone="ghost" style={{ padding: '2px 7px', fontSize: 9.5 }}>
-                            {getRizoLabel(c.tipoRizoPrincipal)}
-                          </Chip>
-                        )}
-                        {c.edad > 0 && (
-                          <span style={{ fontSize: 11, color: '#96888C' }}>
-                            · {c.edad} años
-                          </span>
-                        )}
-                        {c.totalVisitas > 0 && (
-                          <Chip
-                            tone={c.totalVisitas >= 5 ? 'gold' : 'green'}
-                            dot
-                            style={{ marginLeft: 'auto', fontSize: 9.5 }}
+                    {p.label}{' '}
+                    <span className={active ? 'text-[#E8CFC8]' : 'text-[#947C85]'}>
+                      · {p.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="v-noscroll flex gap-2 mt-3 overflow-x-auto pb-1">
+              {(
+                [
+                  { dias: 30 as const, label: '30+ días sin visita', count: conteosReactivacion[30] },
+                  { dias: 45 as const, label: '45+ días', count: conteosReactivacion[45] },
+                  { dias: 60 as const, label: '60+ días (prioridad)', count: conteosReactivacion[60] },
+                ]
+              ).map((t) => {
+                const activo = umbralDias === t.dias;
+                return (
+                  <button
+                    key={t.dias}
+                    type="button"
+                    onClick={() => setUmbralDias(t.dias)}
+                    className={`min-h-[42px] shrink-0 px-4 py-2 rounded-xl text-xs font-bold tabular-nums border transition-all whitespace-nowrap cursor-pointer ${
+                      activo
+                        ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E]'
+                        : 'bg-white text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8] hover:text-[#3B0D1E]'
+                    }`}
+                  >
+                    {t.label}{' '}
+                    <span className={activo ? 'text-[#E8CFC8]' : 'text-[#947C85]'}>
+                      · {t.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Filter drawer */}
+      {tabCrm === 'directorio' && showFilters && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-3.5">
+          <section className="bg-white rounded-2xl border border-[#EFE8E4] p-4 shadow-velvet">
+            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block mb-2.5">
+              Ordenar directorio por
+            </span>
+            <div className="flex gap-2 flex-wrap">
+              {[
+                { key: 'ultima', label: 'Última visita' },
+                { key: 'nombre', label: 'Nombre A–Z' },
+                { key: 'visitas', label: 'Más visitas' },
+              ].map(({ key, label }) => {
+                const active = sort === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setSort(key as SortKey)}
+                    className={`min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      active
+                        ? 'bg-[#F5EBE8] text-[#3B0D1E] border-[#E8CFC8]'
+                        : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:border-[#E8CFC8] hover:text-[#3B0D1E]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-4">
+        {tabCrm === 'reactivar' ? (
+          loading ? (
+            <div className="space-y-2.5">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="skeleton-shimmer h-24 rounded-3xl" />
+              ))}
+            </div>
+          ) : listaReactivacion.length === 0 ? (
+            <section className="text-center py-12 px-5 bg-white rounded-3xl border border-[#EFE8E4] shadow-velvet">
+              <div className="w-14 h-14 rounded-2xl bg-[#F0FDFA] border border-[#0D9488]/25 mx-auto mb-3.5 flex items-center justify-center text-[#0D9488]">
+                <Check size={24} />
+              </div>
+              <h2 className="m-0 font-display text-xl font-semibold text-[#3B0D1E]">
+                Sin clientas inactivas en el tramo de {umbralDias}+ días
+              </h2>
+              <p className="mt-1.5 mb-0 max-w-sm mx-auto text-xs text-[#6B535C] leading-relaxed">
+                Tus clientas habituales están al día con su frecuencia de visita en este segmento.
+              </p>
+            </section>
+          ) : (
+            <div className="space-y-3">
+              {listaReactivacion.map((item) => {
+                const { clienta: c, diasInactiva, tramo, contactadaEstaSemana, tieneTelefonoValido } =
+                  item;
+                const tone = toneFromTipoRizo(c.tipoRizoPrincipal);
+
+                return (
+                  <article
+                    key={c.id}
+                    className="bg-white rounded-3xl border border-[#EFE8E4] p-5 shadow-velvet flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  >
+                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                      <AvatarV2 nombre={c.nombre} tone={tone} size="md" />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link
+                            href={`/clientas/${c.id}`}
+                            className="font-sans text-base font-bold text-[#3B0D1E] hover:underline no-underline truncate"
                           >
-                            {c.totalVisitas}× {c.totalVisitas === 1 ? 'visita' : 'visitas'}
-                          </Chip>
-                        )}
+                            {c.nombre}
+                          </Link>
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full font-mono text-[11px] font-bold tabular-nums border ${
+                              tramo === 60
+                                ? 'bg-[#FFF7F5] text-[#D97757] border-[#D97757]/35'
+                                : tramo === 45
+                                  ? 'bg-[#F5EBE8] text-[#52142B] border-[#E8CFC8]'
+                                  : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4]'
+                            }`}
+                          >
+                            Hace {diasInactiva} días
+                          </span>
+                        </div>
+
+                        <p className="m-0 mt-1 text-xs text-[#6B535C] tabular-nums">
+                          Última visita: {c.ultimaVisita ? formatDate(c.ultimaVisita) : '—'}
+                          {c.totalVisitas > 0 ? ` · ${c.totalVisitas} visitas` : ''}
+                        </p>
                       </div>
                     </div>
-                    <ChevronRight size={15} style={{ color: '#96888C', flexShrink: 0 }} />
+
+                    <div className="shrink-0">
+                      {contactadaEstaSemana ? (
+                        <span className="min-h-[42px] px-4 py-2 rounded-2xl bg-[#F0FDFA] border border-[#0D9488]/25 text-[#0D9488] font-sans text-xs font-bold inline-flex items-center gap-1.5">
+                          <Check size={14} />
+                          <span>Contactada esta semana</span>
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={!tieneTelefonoValido}
+                          onClick={() => enviarMensajeReactivacion(item)}
+                          className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans text-xs font-bold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed border-none"
+                        >
+                          <MessageCircle size={15} />
+                          <span>Reactivar por WhatsApp</span>
+                        </button>
+                      )}
+                    </div>
                   </article>
-                </Link>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )
+        ) : (
+          <>
+            <div className="flex justify-between items-center mb-3">
+              <span className="font-mono text-xs font-semibold text-[#947C85] tabular-nums">
+                {filtered.length} {filtered.length === 1 ? 'clienta' : 'clientas'}
+                {sort === 'ultima'
+                  ? ' · ordenadas por última visita'
+                  : sort === 'nombre'
+                    ? ' · A–Z'
+                    : ' · más visitas'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowFilters((v) => !v)}
+                className="min-h-[38px] px-2.5 rounded-lg bg-transparent border-none flex items-center gap-1.5 text-[#6B535C] hover:text-[#3B0D1E] text-xs font-bold cursor-pointer"
+              >
+                <SlidersHorizontal size={13} /> Ordenar
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="space-y-2.5">
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i} className="skeleton-shimmer h-20 rounded-2xl" />
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-12 px-5 bg-white rounded-3xl border border-[#EFE8E4] shadow-velvet">
+                <div className="w-14 h-14 rounded-2xl bg-[#F5EBE8] border border-[#E8CFC8] mx-auto mb-3.5 flex items-center justify-center">
+                  <Users size={24} className="text-[#3B0D1E]" />
+                </div>
+                <h2 className="m-0 font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E]">
+                  {search || filterRizo !== 'todas'
+                    ? 'Sin resultados para este filtro'
+                    : 'Aún no tienes clientas registradas'}
+                </h2>
+                <p className="mt-1.5 mb-5 max-w-sm mx-auto text-xs text-[#6B535C] leading-relaxed">
+                  {search || filterRizo !== 'todas'
+                    ? 'Prueba ajustando el nombre buscado o seleccionando otra textura capilar.'
+                    : 'Cada clienta conserva sus cotizaciones, cierres en silla, diagnósticos y consentimientos digitales.'}
+                </p>
+                {!search && filterRizo === 'todas' && (
+                  <div className="flex flex-wrap justify-center gap-2.5">
+                    <Link href="/clientas/nueva" className="no-underline">
+                      <Btn variant="primary" size="md" icon={<Plus size={14} />}>
+                        Registrar clienta
+                      </Btn>
+                    </Link>
+                    <Link href="/" className="no-underline">
+                      <Btn variant="outline" size="md" icon={<Sparkles size={14} />}>
+                        Ir a Cotizar
+                      </Btn>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {filtered.map((c) => {
+                  const tone = toneFromTipoRizo(c.tipoRizoPrincipal);
+                  return (
+                    <Link
+                      key={c.id}
+                      href={`/clientas/${c.id}`}
+                      className="stagger-item block no-underline"
+                    >
+                      <article className="bg-white rounded-3xl p-4 border border-[#EFE8E4] hover:border-[#E8CFC8] shadow-velvet transition-all flex items-center gap-3.5">
+                        <AvatarV2 nombre={c.nombre} tone={tone} size="md" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-baseline gap-2">
+                            <h3 className="m-0 font-sans text-base font-bold tracking-tight text-[#3B0D1E] truncate">
+                              {c.nombre}
+                            </h3>
+                            {c.ultimaVisita && (
+                              <span className="font-mono text-[11px] font-semibold text-[#947C85] tabular-nums shrink-0">
+                                {formatDate(c.ultimaVisita)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                            {c.tipoRizoPrincipal && (
+                              <span className="px-2.5 py-0.5 rounded-full bg-[#F5EBE8] border border-[#E8CFC8] text-[#3B0D1E] text-[11px] font-bold">
+                                {getRizoLabel(c.tipoRizoPrincipal)}
+                              </span>
+                            )}
+                            {c.edad > 0 && (
+                              <span className="text-xs text-[#6B535C] tabular-nums">
+                                · {c.edad} años
+                              </span>
+                            )}
+                            {c.totalVisitas > 0 && (
+                              <span
+                                className={`ml-auto inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold tabular-nums border ${
+                                  c.totalVisitas >= 5
+                                    ? 'bg-[#F0FDFA] text-[#0D9488] border-[#0D9488]/25'
+                                    : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4]'
+                                }`}
+                              >
+                                {c.totalVisitas}× {c.totalVisitas === 1 ? 'visita' : 'visitas'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <ChevronRight size={17} className="text-[#947C85] shrink-0" />
+                      </article>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </main>
-
-      <BottomNavV2 />
     </div>
   );
 }

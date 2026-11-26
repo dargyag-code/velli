@@ -5,13 +5,13 @@ import CorreoSoporte from '@/components/legal/CorreoSoporte';
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#FAF7F5] text-[#1C1518]">
+    <div className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] font-sans">
       <header className="sticky top-0 z-40 bg-[#FAF7F5]/95 backdrop-blur-md border-b border-[#EFE8E4] px-4 py-3.5">
         <div className="flex items-center gap-3 max-w-2xl mx-auto">
           <Link
             href="/"
             aria-label="Volver"
-            className="w-9 h-9 rounded-full bg-white border border-[#EFE8E4] hover:border-[#3B0D1E] text-[#1C1518] flex items-center justify-center transition-colors no-underline"
+            className="w-9 h-9 rounded-full bg-white border border-[#EFE8E4] hover:border-[#3B0D1E] text-[#3B0D1E] flex items-center justify-center transition-colors no-underline"
           >
             <ArrowLeft size={17} />
           </Link>
@@ -31,10 +31,10 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
               </svg>
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-lg font-bold tracking-tight text-[#1C1518] font-brand">
+              <span className="text-lg font-bold tracking-tight text-[#3B0D1E] font-brand">
                 velli
               </span>
-              <span className="text-[8px] uppercase tracking-[0.2em] font-semibold mt-0.5 text-[#6E6266]">
+              <span className="text-[8px] uppercase tracking-[0.2em] font-semibold mt-0.5 text-[#6B535C]">
                 Business Intelligence
               </span>
             </div>
@@ -44,7 +44,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
 
       <main className="max-w-2xl mx-auto px-4 py-6">
         {children}
-        <p className="text-center text-[11px] text-[#6E6266] mt-8 pb-4">
+        <p className="text-center text-[11px] text-[#6B535C] mt-8 pb-4">
           ¿Dudas o correcciones? <CorreoSoporte />
         </p>
       </main>
