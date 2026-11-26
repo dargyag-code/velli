@@ -12,6 +12,7 @@ import type { AjustesPlantilla } from './precio';
 import type { VariablesCotizacion } from './variables';
 import type { CostoDetalleInmutable } from './costo';
 import type { BaseComision, ComisionDetalleInmutable, ReglaComision, TipoComision } from './comision';
+import { projectQuoteForRole } from '@/lib/organizations/rbac';
 import { CATALOGO_QUIMICO_SEMILLA } from '@/lib/semilla-financiera';
 
 // ── Tipos de dominio (camelCase) ───────────────────────────────────────────
@@ -1178,6 +1179,123 @@ export async function confirmarCobroCotizacion(
 }
 
 export const registrarCobroCotizacion = confirmarCobroCotizacion;
+
+function rowOperativaToCotizacion(
+  r: Record<string, unknown>,
+  organizationId: string
+): Cotizacion {
+  const base: Cotizacion = {
+    id: String(r.id),
+    userId: String(r.organization_id ?? organizationId),
+    clientaId: r.clienta_id ? String(r.clienta_id) : undefined,
+    estilistaId: r.estilista_id ? String(r.estilista_id) : undefined,
+    servicioId: r.servicio_id ? String(r.servicio_id) : undefined,
+    servicioNombre: String(r.servicio_nombre ?? 'Servicio'),
+    estilistaNombre: r.estilista_nombre ? String(r.estilista_nombre) : undefined,
+    variables: (r.variables as VariablesCotizacion) ?? {},
+    precioCalculado: Number(r.precio_cotizado ?? 0),
+    precioCotizado: Number(r.precio_cotizado ?? 0),
+    moneda: 'COP',
+    vigenciaHasta: String(r.vigencia_hasta ?? ''),
+    estado: (r.estado as EstadoCotizacion) ?? 'enviada',
+    conMarcaVelli: true,
+    tokenPublico: String(r.token_publico ?? ''),
+    perfilExtendido: {},
+    createdAt: String(r.created_at ?? ''),
+    updatedAt: String(r.created_at ?? ''),
+  };
+
+  return projectQuoteForRole(base, {
+    organizationId,
+    role: 'specialist',
+    active: true,
+  }) as Cotizacion;
+}
+
+/**
+ * Proyección operativa en Silla para rol `specialist`: consume exclusivamente
+ * la RPC `cotizaciones_operativas_silla(p_org_id)` y redacta cualquier campo de
+ * costos químicos, fórmulas, comisiones o utilidad neta.
+ */
+export async function listarCotizacionesOperativasSilla(
+  organizationId: string,
+  opciones?: {
+    soloPorCobrar?: boolean;
+    clientaId?: string;
+    client?: SupabaseClient;
+  }
+): Promise<Cotizacion[]> {
+  if (!esUuidValido(organizationId)) return [];
+  const supabase = obtenerClienteAutenticado(opciones?.client);
+  const { data, error } = await supabase.rpc('cotizaciones_operativas_silla', {
+    p_org_id: organizationId,
+  });
+
+  if (error) {
+    if (esTablaInexistente(error)) return [];
+    throw error;
+  }
+
+  const filas = Array.isArray(data) ? data : [];
+  let lista = filas.map((r) =>
+    rowOperativaToCotizacion(r as Record<string, unknown>, organizationId)
+  );
+
+  if (opciones?.soloPorCobrar !== false) {
+    lista = lista.filter((c) => c.estado === 'enviada');
+  }
+  if (opciones?.clientaId) {
+    lista = lista.filter((c) => c.clientaId === opciones.clientaId);
+  }
+  return lista;
+}
+
+/**
+ * Crea una cotización operativa en Silla para `specialist` vía RPC
+ * `crear_cotizacion_operativa_silla` sin exponer costos internos ni requerir
+ * permisos de lectura sobre la tabla cruda `public.cotizaciones`.
+ */
+export async function crearCotizacionOperativaSilla(
+  organizationId: string,
+  input: CrearCotizacionInput,
+  client?: SupabaseClient
+): Promise<Cotizacion> {
+  const precioCalc = Math.round(input.precioCalculado);
+  const precioCot = Math.round(input.precioCotizado);
+  const motivo = input.ajusteManualMotivo?.trim() ?? '';
+
+  if (precioCot !== precioCalc && motivo.length < 3) {
+    throw new Error(
+      'MOTIVO_REQUERIDO: Cuando el precio cotizado difiere del calculado por la plantilla, debes indicar un motivo (mínimo 3 caracteres).'
+    );
+  }
+
+  const supabase = obtenerClienteAutenticado(client);
+  const { data, error } = await supabase.rpc('crear_cotizacion_operativa_silla', {
+    p_org_id: organizationId,
+    p_clienta_id: input.clientaId ?? null,
+    p_consulta_id: input.consultaId ?? null,
+    p_estilista_id: input.estilistaId ?? null,
+    p_estilista_nombre: input.estilistaNombre?.trim() || null,
+    p_servicio_id: input.servicioId ?? null,
+    p_plantilla_id: input.plantillaId ?? null,
+    p_plantilla_version: input.plantillaVersion ?? null,
+    p_servicio_nombre: input.servicioNombre.trim(),
+    p_variables: input.variables ?? {},
+    p_precio_calculado: precioCalc,
+    p_precio_cotizado: precioCot,
+    p_ajuste_manual_motivo: motivo || null,
+    p_vigencia_hasta: input.vigenciaHasta,
+    p_con_marca_velli: input.conMarcaVelli ?? true,
+  });
+
+  if (error) throw error;
+  const fila = Array.isArray(data) ? data[0] : data;
+  if (!fila || typeof fila !== 'object') {
+    throw new Error('No se pudo crear la cotización operativa en silla');
+  }
+  return rowOperativaToCotizacion(fila as Record<string, unknown>, organizationId);
+}
 
 /** Corrige el valor cobrado de una cotización ya cobrada (queda en `cotizacion_eventos`). */
 export async function corregirCobroCotizacion(

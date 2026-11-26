@@ -29,6 +29,7 @@ import CameraCapture from '@/components/wizard/CameraCapture';
 import ListaPorCobrar from '@/components/cotizador/ListaPorCobrar';
 import VelvetTopHeader from '@/components/v2/VelvetTopHeader';
 import { showToast } from '@/lib/toast';
+import { obtenerOrganizacionActivaPanel, type OrganizacionPanelResumen } from '@/lib/vitrina';
 import { numeroWhatsApp } from '@/lib/whatsapp';
 import {
   CATALOGO_VARIABLES,
@@ -55,7 +56,9 @@ import {
   listarProductosSalon,
   listarComisionesVigentes,
   listarCotizacionesPorCobrar,
+  listarCotizacionesOperativasSilla,
   crearCotizacion,
+  crearCotizacionOperativaSilla,
   enviarCotizacion,
   type ClaveVariable,
   type ValorLargo,
@@ -222,6 +225,7 @@ function VelliWorkspaceInner() {
 
   const [nombreSalon, setNombreSalon] = useState('Tu Salón');
   const [ciudadSalon, setCiudadSalon] = useState('Colombia');
+  const [orgActiva, setOrgActiva] = useState<OrganizacionPanelResumen | null>(null);
   const [conMarcaVelli, setConMarcaVelli] = useState(true);
   const [tienePlanIA, setTienePlanIA] = useState(true);
   const [cupoIA, setCupoIA] = useState<{ usados: number; tope: number }>({ usados: 0, tope: 150 });
@@ -280,6 +284,10 @@ function VelliWorkspaceInner() {
     setCargando(true);
     try {
       const supabase = createClient();
+      const org = await obtenerOrganizacionActivaPanel().catch(() => null);
+      setOrgActiva(org);
+      const esSpecialistCarga = org?.role === 'specialist';
+
       const [
         prof,
         sub,
@@ -297,24 +305,34 @@ function VelliWorkspaceInner() {
         listarServiciosSalon({ soloActivos: true }).catch(() => [] as ServicioSalon[]),
         listarPlantillasVigentes().catch(() => [] as PlantillaPrecio[]),
         listarEstilistas({ soloActivas: true }).catch(() => [] as EstilistaSalon[]),
-        listarProductosSalon({ soloActivos: true }).catch(() => [] as ProductoSalon[]),
-        listarComisionesVigentes().catch(() => [] as ComisionSalon[]),
+        esSpecialistCarga
+          ? Promise.resolve([] as ProductoSalon[])
+          : listarProductosSalon({ soloActivos: true }).catch(() => [] as ProductoSalon[]),
+        esSpecialistCarga
+          ? Promise.resolve([] as ComisionSalon[])
+          : listarComisionesVigentes().catch(() => [] as ComisionSalon[]),
         getAllClientas().catch(() => [] as Clienta[]),
-        listarCotizacionesPorCobrar().catch(() => []),
+        esSpecialistCarga && org
+          ? listarCotizacionesOperativasSilla(org.id, { soloPorCobrar: true }).catch(() => [])
+          : listarCotizacionesPorCobrar().catch(() => []),
         Promise.resolve(supabase.rpc('ia_analisis_del_mes')).catch(() => ({ data: 0 })),
       ]);
 
-      if (prof && prof.onboardingCompleted === false) {
+      if (!esSpecialistCarga && prof && prof.onboardingCompleted === false) {
         router.replace('/onboarding');
         return;
       }
 
-      if (prof?.nombreSalon?.trim()) {
+      if (org?.name?.trim()) {
+        setNombreSalon(org.name.trim());
+      } else if (prof?.nombreSalon?.trim()) {
         setNombreSalon(prof.nombreSalon.trim());
       } else if (prof?.nombre?.trim()) {
         setNombreSalon(prof.nombre.trim());
       }
-      if (prof?.ciudad?.trim()) {
+      if (org?.city?.trim()) {
+        setCiudadSalon(org.city.trim());
+      } else if (prof?.ciudad?.trim()) {
         setCiudadSalon(prof.ciudad.trim());
       }
 
@@ -331,7 +349,7 @@ function VelliWorkspaceInner() {
       setCupoIA({ usados: usadosMes, tope: topeMes });
 
       let svcs = svcsIniciales;
-      if (svcs.length === 0) {
+      if (!esSpecialistCarga && svcs.length === 0) {
         const semilla =
           prof?.servicios && prof.servicios.length > 0
             ? prof.servicios
@@ -355,20 +373,21 @@ function VelliWorkspaceInner() {
       let prodsEfectivos = prods;
       let comsEfectivas = coms;
       const requiereActualizarSemilla =
-        prods.length === 0 ||
-        ests.length === 0 ||
-        coms.length === 0 ||
-        prods.some((p) => p.tipo === 'oxidante' && p.precioCompra === 95_000) ||
-        !prods.some(
-          (p) => p.tipo === 'tinte' && p.presentacionCantidad === 60 && p.precioCompra === 27_900
-        ) ||
-        coms.some(
-          (c) =>
-            c.estilistaId === null &&
-            c.servicioId === null &&
-            c.tipo === 'porcentaje' &&
-            (c.valor === 35 || (c.valor === 40 && c.base === 'precio'))
-        );
+        !esSpecialistCarga &&
+        (prods.length === 0 ||
+          ests.length === 0 ||
+          coms.length === 0 ||
+          prods.some((p) => p.tipo === 'oxidante' && p.precioCompra === 95_000) ||
+          !prods.some(
+            (p) => p.tipo === 'tinte' && p.presentacionCantidad === 60 && p.precioCompra === 27_900
+          ) ||
+          coms.some(
+            (c) =>
+              c.estilistaId === null &&
+              c.servicioId === null &&
+              c.tipo === 'porcentaje' &&
+              (c.valor === 35 || (c.valor === 40 && c.base === 'precio'))
+          ));
 
       if (requiereActualizarSemilla) {
         const sembrados = await sembrarBaseFinancieraSalon().catch(() => null);
@@ -990,7 +1009,7 @@ function VelliWorkspaceInner() {
       // 2. Asegurar plantilla publicada si el servicio real aún no tenía versión 1
       const esServicioReal = !servicioActual.id.startsWith('local-');
       let plantilla = plantillaActual;
-      if (esServicioReal && !plantilla) {
+      if (esServicioReal && !plantilla && orgActiva?.role !== 'specialist') {
         const baseNum = Math.max(0, Number(precioBaseRapido.replace(/\D/g, '')) || 0);
         try {
           await publicarPlantillaPrecio({
@@ -1016,41 +1035,62 @@ function VelliWorkspaceInner() {
 
       const estObj = estilistas.find((e) => e.id === estilistaId);
 
-      // 3. Crear cotización en Supabase
-      let cotizacion = await crearCotizacion({
-        clientaId: clientaFinal?.id ?? null,
-        consultaId: consultaVigente?.id ?? null,
-        estilistaId: estilistaId || null,
-        estilistaNombre: estObj?.nombre ?? null,
-        servicioId: esServicioReal ? servicioActual.id : null,
-        plantillaId: plantilla?.id ?? null,
-        plantillaVersion: plantilla?.version ?? 1,
-        servicioNombre: servicioActual.nombre,
-        variables: variablesEfectivas,
-        precioCalculado,
-        precioCotizado,
-        ajusteManualMotivo: difierePrecio ? motivoEfectivo : null,
-        vigenciaHasta,
-        estado: modo === 'whatsapp' ? 'borrador' : 'enviada',
-        formula: {
-          clientaNombre: clientaFinal?.nombre || nombreLimpio || undefined,
-          enviadaPorWhatsApp: modo === 'whatsapp',
-          gramosTeoricos: Math.round(calculoCostoTeorico.gramosTinte),
-          gramosTinte: Math.round(calculoCosto.gramosTinte),
-          deltaGramosSilla,
-          mlOxidante: calculoCosto.mlOxidanteRedondeado,
-          insumosFijos: calculoCosto.insumosFijos,
-          pruebaMechonSuperada: pruebaMechonSuperada || undefined,
-        },
-        costoProductoEstimado: calculoCosto.costoTotal,
-        costoDetalle: calculoCosto.detalle,
-        comisionEstimada: calculoComision.comision,
-        comisionDetalle: calculoComision.detalle,
-        conMarcaVelli,
-      });
+      // 3. Crear cotización en Supabase (vía RPC operativa para specialist)
+      const esSpecialistActual = orgActiva?.role === 'specialist';
+      let cotizacion =
+        esSpecialistActual && orgActiva
+          ? await crearCotizacionOperativaSilla(orgActiva.id, {
+              clientaId: clientaFinal?.id ?? null,
+              consultaId: consultaVigente?.id ?? null,
+              estilistaId: estilistaId || null,
+              estilistaNombre: estObj?.nombre ?? null,
+              servicioId: esServicioReal ? servicioActual.id : null,
+              plantillaId: plantilla?.id ?? null,
+              plantillaVersion: plantilla?.version ?? 1,
+              servicioNombre: servicioActual.nombre,
+              variables: variablesEfectivas,
+              precioCalculado,
+              precioCotizado,
+              ajusteManualMotivo: difierePrecio ? motivoEfectivo : null,
+              vigenciaHasta,
+              conMarcaVelli,
+            })
+          : await crearCotizacion({
+              clientaId: clientaFinal?.id ?? null,
+              consultaId: consultaVigente?.id ?? null,
+              estilistaId: estilistaId || null,
+              estilistaNombre: estObj?.nombre ?? null,
+              servicioId: esServicioReal ? servicioActual.id : null,
+              plantillaId: plantilla?.id ?? null,
+              plantillaVersion: plantilla?.version ?? 1,
+              servicioNombre: servicioActual.nombre,
+              variables: variablesEfectivas,
+              precioCalculado,
+              precioCotizado,
+              ajusteManualMotivo: difierePrecio ? motivoEfectivo : null,
+              vigenciaHasta,
+              estado: modo === 'whatsapp' ? 'borrador' : 'enviada',
+              formula: {
+                clientaNombre: clientaFinal?.nombre || nombreLimpio || undefined,
+                enviadaPorWhatsApp: modo === 'whatsapp',
+                gramosTeoricos: Math.round(calculoCostoTeorico.gramosTinte),
+                gramosTinte: Math.round(calculoCosto.gramosTinte),
+                deltaGramosSilla,
+                mlOxidante: calculoCosto.mlOxidanteRedondeado,
+                insumosFijos: calculoCosto.insumosFijos,
+                pruebaMechonSuperada: pruebaMechonSuperada || undefined,
+              },
+              costoProductoEstimado: calculoCosto.costoTotal,
+              costoDetalle: calculoCosto.detalle,
+              comisionEstimada: calculoComision.comision,
+              comisionDetalle: calculoComision.detalle,
+              conMarcaVelli,
+            });
 
       if (modo === 'whatsapp') {
-        cotizacion = await enviarCotizacion(cotizacion.id);
+        if (!esSpecialistActual) {
+          cotizacion = await enviarCotizacion(cotizacion.id);
+        }
         const { urlWhatsApp } = armarEnlaceWhatsAppCotizacion({
           nombreClienta: clientaFinal?.nombre || nombreLimpio || 'clienta',
           telefonoClienta: clientaFinal?.telefono || telLimpio || null,
@@ -1092,6 +1132,8 @@ function VelliWorkspaceInner() {
     ETIQUETA_LARGO_TICKET[variablesEfectivas.largo?.valor ?? 'medio']
   } · ${ETIQUETA_DENSIDAD_TICKET[variablesEfectivas.densidad?.valor ?? 'media']}`;
 
+  const esSpecialist = orgActiva?.role === 'specialist';
+
   return (
     <div className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] pb-12">
       {/* ── 1. HEADER SUPERIOR UNIFICADO (Sin barra inferior fija) ───────── */}
@@ -1100,6 +1142,7 @@ function VelliWorkspaceInner() {
         ciudadSalon={ciudadSalon}
         tienePlanIA={tienePlanIA}
         cupoIA={cupoIA}
+        rolOrganizacion={orgActiva?.role ?? null}
       />
 
       {/* ── 2. SUB-HEADER Y WORKSPACE PRINCIPAL ─────────────────────────── */}
@@ -1151,6 +1194,8 @@ function VelliWorkspaceInner() {
               refreshKey={refreshCierre}
               clientas={todasClientas}
               estilistas={estilistas}
+              organizationId={orgActiva?.id}
+              rolOrganizacion={orgActiva?.role ?? null}
               mostrarVacio
               onIrACotizar={() => setTab('cotizar')}
               onCountChange={setPorCobrarCount}
@@ -1274,20 +1319,24 @@ function VelliWorkspaceInner() {
                       <label className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
                         ESPECIALISTA ASIGNADA
                       </label>
-                      <Link
-                        href="/configuracion/precios"
-                        className="font-sans text-[11px] font-bold text-[#6B535C] hover:text-[#3B0D1E] no-underline"
-                      >
-                        Equipo
-                      </Link>
+                      {!esSpecialist && (
+                        <Link
+                          href="/configuracion/precios"
+                          className="font-sans text-[11px] font-bold text-[#6B535C] hover:text-[#3B0D1E] no-underline"
+                        >
+                          Equipo
+                        </Link>
+                      )}
                     </div>
 
                     {estilistas.length === 0 ? (
                       <div className="px-3 py-2 rounded-xl bg-[#3B0D1E] text-white border border-[#3B0D1E] inline-flex items-center gap-1.5 text-xs font-semibold">
                         <span>Especialista Principal</span>
-                        <span className="font-mono text-[11px] bg-white/20 px-1.5 py-0.5 rounded-md tabular-nums">
-                          40%
-                        </span>
+                        {!esSpecialist && (
+                          <span className="font-mono text-[11px] bg-white/20 px-1.5 py-0.5 rounded-md tabular-nums">
+                            40%
+                          </span>
+                        )}
                       </div>
                     ) : (
                       <div className="flex flex-wrap gap-1.5">
@@ -1306,15 +1355,17 @@ function VelliWorkspaceInner() {
                               }`}
                             >
                               <span className="capitalize">{est.nombre}</span>
-                              <span
-                                className={`font-mono text-[11px] font-bold tabular-nums px-1.5 py-0.5 rounded-md ${
-                                  activa
-                                    ? 'bg-white/20 text-white'
-                                    : 'bg-[#EFE8E4]/80 text-[#6B535C]'
-                                }`}
-                              >
-                                {pctLabel}
-                              </span>
+                              {!esSpecialist && (
+                                <span
+                                  className={`font-mono text-[11px] font-bold tabular-nums px-1.5 py-0.5 rounded-md ${
+                                    activa
+                                      ? 'bg-white/20 text-white'
+                                      : 'bg-[#EFE8E4]/80 text-[#6B535C]'
+                                  }`}
+                                >
+                                  {pctLabel}
+                                </span>
+                              )}
                             </button>
                           );
                         })}
@@ -1425,10 +1476,14 @@ function VelliWorkspaceInner() {
                     onClick={() => {
                       if (!tienePlanIA) {
                         showToast(
-                          'El análisis fotográfico con IA hace parte del Plan Salón Pro + IA ($149.000/mes)',
+                          esSpecialist
+                            ? 'El análisis fotográfico con IA lo habilita la administración del salón'
+                            : 'El análisis fotográfico con IA hace parte del Plan Salón Pro + IA ($149.000/mes)',
                           'info'
                         );
-                        router.push('/planes');
+                        if (!esSpecialist) {
+                          router.push('/planes');
+                        }
                         return;
                       }
                       setCamaraIAAbierta(true);
@@ -1905,15 +1960,19 @@ function VelliWorkspaceInner() {
                     )}
                   </div>
 
-                  {/* Caja Violeta: CÁLCULO QUÍMICO SIN BÁSCULA */}
+                  {/* Caja de Dosificación Sin Báscula (oculta costos internos para specialist) */}
                   <div className="bg-[#F5F3FF] border border-[#DDD6FE] rounded-2xl p-4 space-y-3">
                     <div className="flex items-center justify-between gap-2">
                       <span className="inline-flex items-center gap-1.5 font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#7C3AED]">
                         <FlaskConical size={14} />
-                        <span>CÁLCULO QUÍMICO SIN BÁSCULA</span>
+                        <span>
+                          {esSpecialist
+                            ? 'DOSIFICACIÓN OPERATIVA SIN BÁSCULA'
+                            : 'CÁLCULO QUÍMICO SIN BÁSCULA'}
+                        </span>
                       </span>
                       <span className="px-2 py-0.5 rounded-md bg-white border border-[#DDD6FE] font-mono text-[10px] font-bold text-[#7C3AED]">
-                        LIB/COSTO.TS
+                        {esSpecialist ? 'MEZCLA EN SILLA' : 'LIB/COSTO.TS'}
                       </span>
                     </div>
 
@@ -1932,10 +1991,12 @@ function VelliWorkspaceInner() {
                               + {calculoCosto.mlOxidanteRedondeado}ml
                             </span>
                           )}
-                          <span className="font-mono text-[11px] text-[#947C85] tabular-nums">
-                            ({formatearPrecioCop(Math.round(costoPorGramoRef))}/
-                            {semillaActual.unidadFisica === 'onza_30ml' ? 'ml' : 'g'})
-                          </span>
+                          {!esSpecialist && (
+                            <span className="font-mono text-[11px] text-[#947C85] tabular-nums">
+                              ({formatearPrecioCop(Math.round(costoPorGramoRef))}/
+                              {semillaActual.unidadFisica === 'onza_30ml' ? 'ml' : 'g'})
+                            </span>
+                          )}
                           {deltaGramosSilla !== 0 && (
                             <button
                               type="button"
@@ -1955,13 +2016,15 @@ function VelliWorkspaceInner() {
                           {semillaActual.unidadFisica === 'onza_30ml' ? 'ml' : 'g'} ·{' '}
                           {ticketVivo.equivalenciaFisica}
                         </p>
-                        <p className="font-mono text-[10px] text-[#7C3AED] font-semibold tabular-nums mt-0.5">
-                          Químico {formatearPrecioCop(ticketVivo.subtotalQuimicoPrincipalCop)}
-                          {semillaActual.ratioPeroxido > 0
-                            ? ` + Peróxido ${formatearPrecioCop(ticketVivo.subtotalPeroxidoCop)} ($32/ml)`
-                            : ''}
-                          {` + Insumos ${formatearPrecioCop(ticketVivo.costoInsumosCop)}`}
-                        </p>
+                        {!esSpecialist && (
+                          <p className="font-mono text-[10px] text-[#7C3AED] font-semibold tabular-nums mt-0.5">
+                            Químico {formatearPrecioCop(ticketVivo.subtotalQuimicoPrincipalCop)}
+                            {semillaActual.ratioPeroxido > 0
+                              ? ` + Peróxido ${formatearPrecioCop(ticketVivo.subtotalPeroxidoCop)} ($32/ml)`
+                              : ''}
+                            {` + Insumos ${formatearPrecioCop(ticketVivo.costoInsumosCop)}`}
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-1.5 shrink-0">
@@ -1988,75 +2051,80 @@ function VelliWorkspaceInner() {
                       </div>
                     </div>
 
-                    <div className="border-t border-[#DDD6FE] pt-2 flex items-center justify-between text-xs">
-                      <span className="font-sans font-semibold text-[#3B0D1E]">
-                        Costo Químico Descontado
-                      </span>
-                      <span className="font-mono font-bold text-[#7C3AED] tabular-nums">
-                        -{formatearPrecioCop(calculoCosto.costoTotal)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Fila de Comisión Especialista */}
-                  <div className="px-1 py-1 flex justify-between items-center gap-3">
-                    <div>
-                      <p className="font-sans text-xs font-bold text-[#3B0D1E]">
-                        Comisión Especialista (
-                        <span className="capitalize">
-                          {estSeleccionadaObj?.nombre ?? 'Especialista Principal'}
-                        </span>{' '}
-                        · {etiquetaPctEstilistaActiva})
-                      </p>
-                      <p className="font-sans text-[11px] text-[#6B535C]">
-                        {etiquetaPctEstilistaActiva} sobre base libre de química
-                      </p>
-                    </div>
-                    <span className="font-semibold text-[#D97757] tabular-nums text-xs sm:text-sm shrink-0">
-                      -{formatearPrecioCop(calculoComision.comision)}
-                    </span>
-                  </div>
-
-                  {/* Caja de Utilidad Neta Real del Salón */}
-                  <div
-                    className={`rounded-2xl p-4 border flex items-center justify-between gap-3 ${
-                      esRentabilidadOptima
-                        ? 'bg-[#F0FDFA] border-[#CCFBF1]'
-                        : 'bg-[#FFF7F5] border-[#D97757]/40'
-                    }`}
-                  >
-                    <div>
-                      <span
-                        className={`block font-sans text-[11px] font-bold uppercase ${
-                          esRentabilidadOptima ? 'text-[#0D9488]' : 'text-[#D97757]'
-                        }`}
-                      >
-                        UTILIDAD NETA REAL DEL SALÓN
-                      </span>
-                      <div
-                        className={`font-display text-2xl font-bold tabular-nums mt-0.5 ${
-                          esRentabilidadOptima ? 'text-[#0D9488]' : 'text-[#D97757]'
-                        }`}
-                      >
-                        {formatearPrecioCop(calculoComision.margenSalon)}
+                    {!esSpecialist && (
+                      <div className="border-t border-[#DDD6FE] pt-2 flex items-center justify-between text-xs">
+                        <span className="font-sans font-semibold text-[#3B0D1E]">
+                          Costo Químico Descontado
+                        </span>
+                        <span className="font-mono font-bold text-[#7C3AED] tabular-nums">
+                          -{formatearPrecioCop(calculoCosto.costoTotal)}
+                        </span>
                       </div>
-                    </div>
+                    )}
+                  </div>
 
-                    <div className="text-right shrink-0">
-                      <span
-                        className={`inline-block px-2.5 py-1 rounded-lg text-xs font-bold tabular-nums text-white ${
-                          esRentabilidadOptima ? 'bg-[#0D9488]' : 'bg-[#D97757]'
+                  {/* Fila de Comisión y Caja de Utilidad Neta (exclusivas de owner / manager) */}
+                  {!esSpecialist && (
+                    <>
+                      <div className="px-1 py-1 flex justify-between items-center gap-3">
+                        <div>
+                          <p className="font-sans text-xs font-bold text-[#3B0D1E]">
+                            Comisión Especialista (
+                            <span className="capitalize">
+                              {estSeleccionadaObj?.nombre ?? 'Especialista Principal'}
+                            </span>{' '}
+                            · {etiquetaPctEstilistaActiva})
+                          </p>
+                          <p className="font-sans text-[11px] text-[#6B535C]">
+                            {etiquetaPctEstilistaActiva} sobre base libre de química
+                          </p>
+                        </div>
+                        <span className="font-semibold text-[#D97757] tabular-nums text-xs sm:text-sm shrink-0">
+                          -{formatearPrecioCop(calculoComision.comision)}
+                        </span>
+                      </div>
+
+                      <div
+                        className={`rounded-2xl p-4 border flex items-center justify-between gap-3 ${
+                          esRentabilidadOptima
+                            ? 'bg-[#F0FDFA] border-[#CCFBF1]'
+                            : 'bg-[#FFF7F5] border-[#D97757]/40'
                         }`}
                       >
-                        Margen Neto: {margenPctEntero}%
-                      </span>
-                      <span className="block font-sans text-[11px] text-[#6B535C] mt-1">
-                        {esRentabilidadOptima
-                          ? 'Sembrado financiero activo'
-                          : `Sugerido 35%: ${formatearPrecioCop(ticketVivo.tarifaCalibradaSugeridaCop)}`}
-                      </span>
-                    </div>
-                  </div>
+                        <div>
+                          <span
+                            className={`block font-sans text-[11px] font-bold uppercase ${
+                              esRentabilidadOptima ? 'text-[#0D9488]' : 'text-[#D97757]'
+                            }`}
+                          >
+                            UTILIDAD NETA REAL DEL SALÓN
+                          </span>
+                          <div
+                            className={`font-display text-2xl font-bold tabular-nums mt-0.5 ${
+                              esRentabilidadOptima ? 'text-[#0D9488]' : 'text-[#D97757]'
+                            }`}
+                          >
+                            {formatearPrecioCop(calculoComision.margenSalon)}
+                          </div>
+                        </div>
+
+                        <div className="text-right shrink-0">
+                          <span
+                            className={`inline-block px-2.5 py-1 rounded-lg text-xs font-bold tabular-nums text-white ${
+                              esRentabilidadOptima ? 'bg-[#0D9488]' : 'bg-[#D97757]'
+                            }`}
+                          >
+                            Margen Neto: {margenPctEntero}%
+                          </span>
+                          <span className="block font-sans text-[11px] text-[#6B535C] mt-1">
+                            {esRentabilidadOptima
+                              ? 'Sembrado financiero activo'
+                              : `Sugerido 35%: ${formatearPrecioCop(ticketVivo.tarifaCalibradaSugeridaCop)}`}
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  )}
 
                   {/* Doble Botón de Acción al Pie */}
                   <div className="pt-2 space-y-2.5">

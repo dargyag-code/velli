@@ -295,9 +295,15 @@ export default function ConfiguracionPage() {
   const headerSalon = profile?.nombreSalon?.trim() || profile?.nombre?.trim() || undefined;
   const headerCiudad = profile?.ciudad?.trim() || undefined;
 
+  const esSpecialist = orgActiva?.role === 'specialist';
+
   return (
     <div className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] font-sans pb-16">
-      <VelvetTopHeader nombreSalon={headerSalon} ciudadSalon={headerCiudad} />
+      <VelvetTopHeader
+        nombreSalon={headerSalon}
+        ciudadSalon={headerCiudad}
+        rolOrganizacion={orgActiva?.role ?? null}
+      />
 
       {/* Sub-header Velvet Studio */}
       <div className="border-b border-[#EFE8E4]">
@@ -427,81 +433,82 @@ export default function ConfiguracionPage() {
             />
           )}
 
-          {editingMarca ? (
-            <div className="p-5">
-              {orgActiva ? (
-                <VelvetImageUploader
-                  organizationId={orgActiva.id}
-                  folder="brand"
-                  shape="square"
-                  label="Logotipo oficial del salón"
-                  helperText="JPG, PNG o WebP · máx. 3 MB · visible en tu vitrina pública"
-                  value={marcaLogoActual}
-                  onChange={(nextUrl) => {
-                    setMarcaLogoPreview(null);
-                    setMarcaLogoActual(nextUrl);
-                    setLogoError(false);
-                  }}
-                  disabled={savingMarca}
-                />
-              ) : (
-                <EditorMarca
-                  logoSrc={marcaLogoPreview ?? marcaLogoActual}
-                  onLogo={(dataUrl) => {
-                    if (dataUrl) {
-                      setMarcaLogoPreview(dataUrl);
-                    } else {
+          {!esSpecialist &&
+            (editingMarca ? (
+              <div className="p-5">
+                {orgActiva ? (
+                  <VelvetImageUploader
+                    organizationId={orgActiva.id}
+                    folder="brand"
+                    shape="square"
+                    label="Logotipo oficial del salón"
+                    helperText="JPG, PNG o WebP · máx. 3 MB · visible en tu vitrina pública"
+                    value={marcaLogoActual}
+                    onChange={(nextUrl) => {
                       setMarcaLogoPreview(null);
-                      setMarcaLogoActual(null);
-                    }
-                  }}
-                  nombreSalon={profile?.nombreSalon}
-                />
-              )}
-              <div className="flex items-center gap-2.5 mt-4">
-                <button
-                  type="button"
-                  onClick={cancelarMarca}
-                  disabled={savingMarca}
-                  className="flex-1 min-h-[44px] py-2.5 px-4 rounded-2xl bg-white hover:bg-[#FAF7F5] border border-[#E8CFC8] text-[#6B535C] hover:text-[#3B0D1E] font-sans text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={guardarMarca}
-                  disabled={savingMarca}
-                  className="flex-1 min-h-[44px] py-2.5 px-4 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans text-xs font-bold transition-colors cursor-pointer disabled:opacity-60 border-none"
-                >
-                  {savingMarca ? 'Guardando…' : 'Guardar'}
-                </button>
+                      setMarcaLogoActual(nextUrl);
+                      setLogoError(false);
+                    }}
+                    disabled={savingMarca}
+                  />
+                ) : (
+                  <EditorMarca
+                    logoSrc={marcaLogoPreview ?? marcaLogoActual}
+                    onLogo={(dataUrl) => {
+                      if (dataUrl) {
+                        setMarcaLogoPreview(dataUrl);
+                      } else {
+                        setMarcaLogoPreview(null);
+                        setMarcaLogoActual(null);
+                      }
+                    }}
+                    nombreSalon={profile?.nombreSalon}
+                  />
+                )}
+                <div className="flex items-center gap-2.5 mt-4">
+                  <button
+                    type="button"
+                    onClick={cancelarMarca}
+                    disabled={savingMarca}
+                    className="flex-1 min-h-[44px] py-2.5 px-4 rounded-2xl bg-white hover:bg-[#FAF7F5] border border-[#E8CFC8] text-[#6B535C] hover:text-[#3B0D1E] font-sans text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={guardarMarca}
+                    disabled={savingMarca}
+                    className="flex-1 min-h-[44px] py-2.5 px-4 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans text-xs font-bold transition-colors cursor-pointer disabled:opacity-60 border-none"
+                  >
+                    {savingMarca ? 'Guardando…' : 'Guardar'}
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <RowVelvet
-              icon={<Palette size={16} />}
-              title="Tu marca"
-              sub="Logotipo oficial de tu salón"
-              onClick={() => setEditingMarca(true)}
-              rightEl={
-                <span className="inline-flex items-center gap-2 shrink-0">
-                  {marcaLogoActual && !logoError && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={marcaLogoActual}
-                      alt=""
-                      aria-hidden
-                      onError={() => setLogoError(true)}
-                      className="w-7 h-7 rounded-lg object-cover border border-[#EFE8E4]"
-                    />
-                  )}
-                  <ChevronRight size={15} className="text-[#947C85]" />
-                </span>
-              }
-            />
-          )}
+            ) : (
+              <RowVelvet
+                icon={<Palette size={16} />}
+                title="Tu marca"
+                sub="Logotipo oficial de tu salón"
+                onClick={() => setEditingMarca(true)}
+                rightEl={
+                  <span className="inline-flex items-center gap-2 shrink-0">
+                    {marcaLogoActual && !logoError && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={marcaLogoActual}
+                        alt=""
+                        aria-hidden
+                        onError={() => setLogoError(true)}
+                        className="w-7 h-7 rounded-lg object-cover border border-[#EFE8E4]"
+                      />
+                    )}
+                    <ChevronRight size={15} className="text-[#947C85]" />
+                  </span>
+                }
+              />
+            ))}
 
-          {(flagsActivos(profile?.featureFlags).cotizador || true) && (
+          {!esSpecialist && (flagsActivos(profile?.featureFlags).cotizador || true) && (
             <RowVelvet
               icon={<Calculator size={16} />}
               title="Menú de servicios, química y comisiones"
@@ -510,53 +517,59 @@ export default function ConfiguracionPage() {
             />
           )}
 
-          <RowVelvet
-            icon={<ShoppingBag size={16} />}
-            title="Vitrina pública y pedidos web"
-            sub="Catálogo de tienda, enlace /s/slug y seguimiento de pedidos por WhatsApp"
-            onClick={() => router.push('/vitrina')}
-          />
+          {!esSpecialist && (
+            <RowVelvet
+              icon={<ShoppingBag size={16} />}
+              title="Vitrina pública y pedidos web"
+              sub="Catálogo de tienda, enlace /s/slug y seguimiento de pedidos por WhatsApp"
+              onClick={() => router.push('/vitrina')}
+            />
+          )}
 
-          <RowVelvet
-            icon={<CreditCard size={16} />}
-            title="Tu plan"
-            sub={descripcionSuscripcion(sub)}
-            onClick={() => router.push('/planes')}
-            rightEl={
-              <span className="shrink-0 px-3 py-1.5 rounded-full bg-[#F5EBE8] border border-[#E8CFC8] text-[#3B0D1E] font-sans font-bold text-[11px] whitespace-nowrap">
-                Cambiar de plan
-              </span>
-            }
-          />
+          {!esSpecialist && (
+            <RowVelvet
+              icon={<CreditCard size={16} />}
+              title="Tu plan"
+              sub={descripcionSuscripcion(sub)}
+              onClick={() => router.push('/planes')}
+              rightEl={
+                <span className="shrink-0 px-3 py-1.5 rounded-full bg-[#F5EBE8] border border-[#E8CFC8] text-[#3B0D1E] font-sans font-bold text-[11px] whitespace-nowrap">
+                  Cambiar de plan
+                </span>
+              }
+            />
+          )}
         </SectionVelvet>
 
-        {/* 02 · Respaldo y datos del salón */}
-        <SectionVelvet num="02" eyebrow="Respaldo y datos del salón">
-          <RowVelvet
-            icon={<Download size={16} />}
-            title="Descargar respaldo de datos del salón"
-            sub="Guarda una copia segura de las clientas e historial de tu salón"
-            onClick={handleExport}
-            rightEl={
-              exportLoading ? (
-                <span className="w-4 h-4 rounded-full border-2 border-[#3B0D1E] border-t-transparent animate-spin inline-block shrink-0" />
-              ) : undefined
-            }
-          />
-          <RowVelvet
-            icon={<Upload size={16} />}
-            title="Restaurar respaldo de datos del salón"
-            sub="Recupera una copia previa sin borrar los registros actuales"
-            onClick={handleImport}
-          />
-          <RowVelvet
-            icon={<Trash2 size={16} />}
-            title="Borrar todos los datos"
-            sub="Elimina tus clientas y consultas"
-            onClick={() => setShowClearConfirm(true)}
-            danger
-          />
-        </SectionVelvet>
+        {/* 02 · Respaldo y datos del salón (exclusivo owner / manager) */}
+        {!esSpecialist && (
+          <SectionVelvet num="02" eyebrow="Respaldo y datos del salón">
+            <RowVelvet
+              icon={<Download size={16} />}
+              title="Descargar respaldo de datos del salón"
+              sub="Guarda una copia segura de las clientas e historial de tu salón"
+              onClick={handleExport}
+              rightEl={
+                exportLoading ? (
+                  <span className="w-4 h-4 rounded-full border-2 border-[#3B0D1E] border-t-transparent animate-spin inline-block shrink-0" />
+                ) : undefined
+              }
+            />
+            <RowVelvet
+              icon={<Upload size={16} />}
+              title="Restaurar respaldo de datos del salón"
+              sub="Recupera una copia previa sin borrar los registros actuales"
+              onClick={handleImport}
+            />
+            <RowVelvet
+              icon={<Trash2 size={16} />}
+              title="Borrar todos los datos"
+              sub="Elimina tus clientas y consultas"
+              onClick={() => setShowClearConfirm(true)}
+              danger
+            />
+          </SectionVelvet>
+        )}
 
         {importMsg && (
           <div

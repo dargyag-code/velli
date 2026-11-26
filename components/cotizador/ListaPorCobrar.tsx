@@ -13,10 +13,13 @@ import {
 } from 'lucide-react';
 import type { Clienta } from '@/lib/types';
 import { getAllClientas } from '@/lib/db';
+import type { OrgRole } from '@/lib/organizations';
 import { showToast } from '@/lib/toast';
+import { obtenerOrganizacionActivaPanel } from '@/lib/vitrina';
 import {
   listarCotizacionesPorCobrar,
   listarCotizacionesPorClienta,
+  listarCotizacionesOperativasSilla,
   listarEstilistas,
   listarServiciosSalon,
   listarPlantillasVigentes,
@@ -45,6 +48,8 @@ export interface ListaPorCobrarProps {
   clientaNombre?: string;
   clientas?: Clienta[];
   estilistas?: EstilistaSalon[];
+  organizationId?: string;
+  rolOrganizacion?: OrgRole | null;
   refreshKey?: number;
   mostrarVacio?: boolean;
   onIrACotizar?: () => void;
@@ -57,6 +62,8 @@ export default function ListaPorCobrar({
   clientaNombre,
   clientas: clientasProp,
   estilistas: estilistasProp,
+  organizationId: orgIdProp,
+  rolOrganizacion: rolProp,
   refreshKey = 0,
   mostrarVacio = false,
   onIrACotizar,
@@ -64,6 +71,7 @@ export default function ListaPorCobrar({
   onCountChange,
 }: ListaPorCobrarProps) {
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
+  const [rolEfectivo, setRolEfectivo] = useState<OrgRole | null>(rolProp ?? null);
   const [estilistas, setEstilistas] = useState<EstilistaSalon[]>(estilistasProp ?? []);
   const [serviciosMap, setServiciosMap] = useState<Record<string, ServicioSalon>>({});
   const [plantillasMap, setPlantillasMap] = useState<Record<string, PlantillaPrecio>>({});
@@ -82,6 +90,45 @@ export default function ListaPorCobrar({
   const cargar = useCallback(async () => {
     setCargando(true);
     try {
+      let orgId = orgIdProp;
+      let rolActual = rolProp;
+      if (rolActual === undefined || !orgId) {
+        const orgResuelta = await obtenerOrganizacionActivaPanel().catch(() => null);
+        if (orgResuelta) {
+          orgId = orgId ?? orgResuelta.id;
+          rolActual = rolActual ?? orgResuelta.role;
+        }
+      }
+      setRolEfectivo(rolActual ?? null);
+      const esSpecialist = rolActual === 'specialist';
+
+      if (esSpecialist && orgId) {
+        const [cotsOperativas, estsRemotas] = await Promise.all([
+          listarCotizacionesOperativasSilla(orgId, {
+            soloPorCobrar: true,
+            clientaId,
+          }).catch(() => [] as Cotizacion[]),
+          estilistasProp && estilistasProp.length > 0
+            ? Promise.resolve(estilistasProp)
+            : listarEstilistas({ soloActivas: true }).catch(() => [] as EstilistaSalon[]),
+        ]);
+
+        setCotizaciones(cotsOperativas);
+        onCountChange?.(cotsOperativas.length);
+        setEstilistas(estsRemotas);
+
+        const mapaNombresSpec: Record<string, string> = {};
+        if (clientaId && clientaNombre) mapaNombresSpec[clientaId] = clientaNombre;
+        if (clientasProp && clientasProp.length > 0) {
+          for (const c of clientasProp) mapaNombresSpec[c.id] = c.nombre;
+        } else if (!clientaId && cotsOperativas.length > 0) {
+          const todas = await getAllClientas().catch(() => [] as Clienta[]);
+          for (const c of todas) mapaNombresSpec[c.id] = c.nombre;
+        }
+        setNombresClientas(mapaNombresSpec);
+        return;
+      }
+
       const [cots, estsRemotas, svcs, plants, prodsRemotos, comsRemotas] = await Promise.all([
         clientaId
           ? listarCotizacionesPorClienta(clientaId).then((todas) =>
@@ -149,7 +196,7 @@ export default function ListaPorCobrar({
     } finally {
       setCargando(false);
     }
-  }, [clientaId, clientaNombre, clientasProp, estilistasProp, onCountChange]);
+  }, [clientaId, clientaNombre, clientasProp, estilistasProp, orgIdProp, rolProp, onCountChange]);
 
   useEffect(() => {
     cargar();
@@ -307,8 +354,9 @@ export default function ListaPorCobrar({
           Todo al día en caja
         </h2>
         <p className="font-sans text-sm text-[#6B535C] mt-2 max-w-md mx-auto">
-          No hay cotizaciones pendientes por cobrar en este momento. Crea una cotización en silla
-          para congelar gramos, comisión y utilidad neta en 1 toque.
+          {rolEfectivo === 'specialist'
+            ? 'No hay servicios pendientes de cierre en este momento.'
+            : 'No hay cotizaciones pendientes por cobrar en este momento. Crea una cotización en silla para congelar gramos, comisión y utilidad neta en 1 toque.'}
         </p>
         {onIrACotizar && (
           <button
@@ -329,15 +377,19 @@ export default function ListaPorCobrar({
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
           <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
-            Cierre Financiero en 1 Toque
+            {rolEfectivo === 'specialist'
+              ? 'Cola Operativa de Silla'
+              : 'Cierre Financiero en 1 Toque'}
           </span>
           <h2 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E] mt-0.5 tabular-nums">
             Servicios por Cobrar ({cotizaciones.length})
           </h2>
         </div>
-        <span className="px-3 py-1.5 rounded-full bg-[#F5F3FF] border border-[#DDD6FE] text-[#7C3AED] font-sans text-xs font-semibold">
-          Congela insumos y comisión
-        </span>
+        {rolEfectivo !== 'specialist' && (
+          <span className="px-3 py-1.5 rounded-full bg-[#F5F3FF] border border-[#DDD6FE] text-[#7C3AED] font-sans text-xs font-semibold">
+            Congela insumos y comisión
+          </span>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -429,52 +481,63 @@ export default function ListaPorCobrar({
                     </div>
                   </div>
 
-                  {/* Badge No Punitivo de Rentabilidad */}
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1 shrink-0 tabular-nums ${
-                      esRentable
-                        ? 'bg-[#F0FDFA] text-[#0D9488]'
-                        : 'bg-[#FFF7F5] text-[#D97757]'
-                    }`}
-                  >
-                    <TrendingUp size={13} /> {margenPct}%
-                  </span>
-                </div>
-
-                {/* Resumen BI antes de cerrar */}
-                <div className="mt-4 p-3.5 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] grid grid-cols-3 gap-2 text-xs tabular-nums">
-                  <div>
-                    <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
-                      Química
-                    </span>
-                    <span className="font-bold text-[#7C3AED] mt-0.5 block">
-                      {formatearPrecioCop(snapPreview.costoProductoEstimado)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
-                      Comisión
-                    </span>
-                    <span className="font-bold text-[#3B0D1E] mt-0.5 block">
-                      {formatearPrecioCop(snapPreview.comisionEstimada)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
-                      Utilidad Neta
-                    </span>
+                  {/* Badge No Punitivo de Rentabilidad (oculto para specialist) */}
+                  {rolEfectivo !== 'specialist' ? (
                     <span
-                      className={`font-bold mt-0.5 block ${
-                        esRentable ? 'text-[#0D9488]' : 'text-[#D97757]'
+                      className={`px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1 shrink-0 tabular-nums ${
+                        esRentable
+                          ? 'bg-[#F0FDFA] text-[#0D9488]'
+                          : 'bg-[#FFF7F5] text-[#D97757]'
                       }`}
                     >
-                      {formatearPrecioCop(utilidadNeta)}
+                      <TrendingUp size={13} /> {margenPct}%
                     </span>
-                  </div>
+                  ) : (
+                    <span className="font-display text-lg font-bold text-[#3B0D1E] shrink-0 tabular-nums">
+                      {formatearPrecioCop(cot.precioCotizado)}
+                    </span>
+                  )}
                 </div>
 
+                {/* Resumen BI antes de cerrar (estrictamente oculto para specialist) */}
+                {rolEfectivo !== 'specialist' && (
+                  <div className="mt-4 p-3.5 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] grid grid-cols-3 gap-2 text-xs tabular-nums">
+                    <div>
+                      <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                        Química
+                      </span>
+                      <span className="font-bold text-[#7C3AED] mt-0.5 block">
+                        {formatearPrecioCop(snapPreview.costoProductoEstimado)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                        Comisión
+                      </span>
+                      <span className="font-bold text-[#3B0D1E] mt-0.5 block">
+                        {formatearPrecioCop(snapPreview.comisionEstimada)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                        Utilidad Neta
+                      </span>
+                      <span
+                        className={`font-bold mt-0.5 block ${
+                          esRentable ? 'text-[#0D9488]' : 'text-[#D97757]'
+                        }`}
+                      >
+                        {formatearPrecioCop(utilidadNeta)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Píldoras táctiles cuando la cotización no trae especialista asignada */}
-                {!enEdicion && !cot.estilistaId && estilistas.length > 0 && (
+                {rolEfectivo !== 'specialist' &&
+                  !enEdicion &&
+                  !cot.estilistaId &&
+                  estilistas.length > 0 && (
                   <div className="mt-3.5">
                     <label className="flex items-center gap-1.5 font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-2">
                       <UserCheck size={13} className="text-[#3B0D1E]" />
@@ -506,8 +569,15 @@ export default function ListaPorCobrar({
                 )}
               </div>
 
-              {/* Acciones de Cierre en 1 Toque o Edición */}
-              {!enEdicion ? (
+              {/* Acciones de Cierre en 1 Toque o Vista Operativa de Specialist */}
+              {rolEfectivo === 'specialist' ? (
+                <div className="pt-2 border-t border-[#EFE8E4] flex items-center justify-between gap-2 text-xs text-[#6B535C]">
+                  <span>En espera de cierre en recepción</span>
+                  <span className="font-mono font-semibold text-[#3B0D1E] tabular-nums">
+                    Válida hasta {cot.vigenciaHasta}
+                  </span>
+                </div>
+              ) : !enEdicion ? (
                 <div className="flex items-center gap-2.5 pt-1">
                   <button
                     type="button"

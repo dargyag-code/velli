@@ -8,6 +8,7 @@ import {
 
 export * from './rbac';
 export * from './brand';
+export * from './navegacion';
 
 export async function obtenerMembresiaActiva(
   supabase: SupabaseClient,

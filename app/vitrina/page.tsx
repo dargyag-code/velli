@@ -278,7 +278,11 @@ export default function VitrinaPanelPage() {
 
   return (
     <div className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] font-sans pb-16">
-      <VelvetTopHeader nombreSalon={org?.name} ciudadSalon={org?.city ?? undefined} />
+      <VelvetTopHeader
+        nombreSalon={org?.name}
+        ciudadSalon={org?.city ?? undefined}
+        rolOrganizacion={org?.role ?? null}
+      />
 
       {/* Sub-header Vitrina & Pedidos Web */}
       <div className="border-b border-[#EFE8E4]">
@@ -333,18 +337,20 @@ export default function VitrinaPanelPage() {
               <span>Pedidos Web ({orders.length})</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setTab('productos')}
-              className={`min-h-[42px] px-4 py-2 rounded-xl font-sans text-xs font-bold inline-flex items-center gap-2 transition-all cursor-pointer border-none ${
-                tab === 'productos'
-                  ? 'bg-[#3B0D1E] text-[#FAF7F5]'
-                  : 'bg-transparent text-[#6B535C] hover:text-[#3B0D1E]'
-              }`}
-            >
-              <ShoppingBag size={14} />
-              <span>Catálogo Tienda ({products.length})</span>
-            </button>
+            {esAdmin && (
+              <button
+                type="button"
+                onClick={() => setTab('productos')}
+                className={`min-h-[42px] px-4 py-2 rounded-xl font-sans text-xs font-bold inline-flex items-center gap-2 transition-all cursor-pointer border-none ${
+                  tab === 'productos'
+                    ? 'bg-[#3B0D1E] text-[#FAF7F5]'
+                    : 'bg-transparent text-[#6B535C] hover:text-[#3B0D1E]'
+                }`}
+              >
+                <ShoppingBag size={14} />
+                <span>Catálogo Tienda ({products.length})</span>
+              </button>
+            )}
           </div>
 
           {tab === 'productos' && esAdmin && !mostrarFormProducto && (

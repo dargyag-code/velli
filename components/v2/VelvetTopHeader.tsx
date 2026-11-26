@@ -4,17 +4,16 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Sparkles, Settings } from 'lucide-react';
+import {
+  mostrarAccesoPlanesPorRol,
+  obtenerTabsNavegacionPorRol,
+  type OrgRole,
+} from '@/lib/organizations';
 import { getProfile } from '@/lib/profile';
 import { getSuscripcionEfectiva } from '@/lib/subscription/estado';
+import { obtenerOrganizacionActivaPanel } from '@/lib/vitrina';
 
-const MAIN_TABS = [
-  { key: 'workspace', href: '/', label: 'Workspace (Silla)' },
-  { key: 'agenda', href: '/agenda', label: 'Agenda' },
-  { key: 'clientas', href: '/clientas', label: 'Clientas CRM' },
-  { key: 'vitrina', href: '/vitrina', label: 'Vitrina & Pedidos' },
-  { key: 'reportes', href: '/reportes', label: 'BI & Nómina' },
-  { key: 'calibracion', href: '/configuracion/precios', label: 'Calibración $' },
-] as const;
+let rolOrganizacionCacheado: OrgRole | null | undefined;
 
 // ── Logo Oficial: La Gota Dual (Equilibrio sin Báscula) — Intacto ────────
 function VelliLogo({ variant = 'light' }: { variant?: 'light' | 'dark' }) {
@@ -64,6 +63,7 @@ export interface VelvetTopHeaderProps {
   ciudadSalon?: string;
   tienePlanIA?: boolean;
   cupoIA?: { usados: number; tope: number };
+  rolOrganizacion?: OrgRole | null;
 }
 
 export default function VelvetTopHeader({
@@ -71,26 +71,50 @@ export default function VelvetTopHeader({
   ciudadSalon: ciudadProp,
   tienePlanIA: planIAProp,
   cupoIA,
+  rolOrganizacion: rolProp,
 }: VelvetTopHeaderProps) {
   const pathname = usePathname();
   const [nombreLocal, setNombreLocal] = useState('Tu Salón');
   const [ciudadLocal, setCiudadLocal] = useState('Colombia');
   const [planIALocal, setPlanIALocal] = useState(true);
+  const [rolLocal, setRolLocal] = useState<OrgRole | null | undefined>(
+    rolProp !== undefined ? rolProp : rolOrganizacionCacheado
+  );
+
+  useEffect(() => {
+    if (rolProp !== undefined) {
+      rolOrganizacionCacheado = rolProp;
+      setRolLocal(rolProp);
+    }
+  }, [rolProp]);
 
   useEffect(() => {
     const necesitaPerfil = nombreProp === undefined || ciudadProp === undefined;
     const necesitaSub = planIAProp === undefined;
-    if (!necesitaPerfil && !necesitaSub) return;
+    const necesitaRol = rolProp === undefined && rolOrganizacionCacheado === undefined;
+    if (!necesitaPerfil && !necesitaSub && !necesitaRol) return;
     let cancelado = false;
     Promise.all([
       necesitaPerfil ? getProfile().catch(() => null) : Promise.resolve(null),
       necesitaSub ? getSuscripcionEfectiva().catch(() => null) : Promise.resolve(null),
-    ]).then(([prof, sub]) => {
+      necesitaRol ? obtenerOrganizacionActivaPanel().catch(() => null) : Promise.resolve(null),
+    ]).then(([prof, sub, org]) => {
       if (cancelado) return;
+      if (org) {
+        rolOrganizacionCacheado = org.role;
+        setRolLocal(org.role);
+        if (org.name?.trim()) setNombreLocal(org.name.trim());
+        if (org.city?.trim()) setCiudadLocal(org.city.trim());
+      } else if (necesitaRol) {
+        rolOrganizacionCacheado = null;
+        setRolLocal(null);
+      }
       if (prof) {
-        if (prof.nombreSalon?.trim()) setNombreLocal(prof.nombreSalon.trim());
-        else if (prof.nombre?.trim()) setNombreLocal(prof.nombre.trim());
-        if (prof.ciudad?.trim()) setCiudadLocal(prof.ciudad.trim());
+        if (!org?.name?.trim()) {
+          if (prof.nombreSalon?.trim()) setNombreLocal(prof.nombreSalon.trim());
+          else if (prof.nombre?.trim()) setNombreLocal(prof.nombre.trim());
+        }
+        if (!org?.city?.trim() && prof.ciudad?.trim()) setCiudadLocal(prof.ciudad.trim());
       }
       if (sub) {
         setPlanIALocal(sub.plan === 'pro_ia' || sub.estado === 'trialing');
@@ -99,11 +123,14 @@ export default function VelvetTopHeader({
     return () => {
       cancelado = true;
     };
-  }, [nombreProp, ciudadProp, planIAProp]);
+  }, [nombreProp, ciudadProp, planIAProp, rolProp]);
 
   const nombreEfectivo = nombreProp ?? nombreLocal;
   const ciudadEfectiva = ciudadProp ?? ciudadLocal;
   const tienePlanIA = planIAProp ?? planIALocal;
+  const rolEfectivo = rolProp !== undefined ? rolProp : rolLocal;
+  const tabsVisibles = obtenerTabsNavegacionPorRol(rolEfectivo);
+  const mostrarPlanes = mostrarAccesoPlanesPorRol(rolEfectivo);
 
   const isTabActive = (href: string) => {
     if (href === '/') return pathname === '/';
@@ -111,60 +138,63 @@ export default function VelvetTopHeader({
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-[#FAF7F5]/95 backdrop-blur-md border-b border-[#EFE8E4] px-4 lg:px-8 py-3">
-      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+    <header className="sticky top-0 z-30 bg-[#FAF7F5]/95 backdrop-blur-md border-b border-[#EFE8E4] px-3 sm:px-4 lg:px-8 py-3">
+      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
         {/* Izquierda: Logo actual intacto */}
         <Link href="/" className="no-underline shrink-0">
           <VelliLogo />
         </Link>
 
-        {/* Centro: Navegación principal entre rutas */}
+        {/* Derecha en móvil / tercera columna en escritorio */}
+        <div className="flex items-center gap-2 order-2 lg:order-3">
+          {mostrarPlanes && (
+            <Link
+              href="/planes"
+              className="bg-[#F5EBE8] text-[#3B0D1E] border border-[#E8CFC8] px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-semibold inline-flex items-center gap-1.5 no-underline hover:bg-[#EFE8E4] transition-colors tabular-nums"
+            >
+              <Sparkles size={13} />
+              <span>
+                {tienePlanIA
+                  ? `Pro + IA${cupoIA ? ` · ${cupoIA.usados}/${cupoIA.tope}` : ''}`
+                  : 'Studio BI'}
+              </span>
+            </Link>
+          )}
+
+          <Link
+            href="/configuracion"
+            className="px-2.5 sm:px-3 py-1.5 rounded-full bg-white border border-[#EFE8E4] hover:bg-[#F3ECE8] text-[#3B0D1E] text-[11px] sm:text-xs font-semibold inline-flex items-center gap-1.5 no-underline transition-colors"
+          >
+            <Settings size={13} className="text-[#5C3A47] shrink-0" />
+            <span className="truncate max-w-[115px] sm:max-w-[200px]">
+              {nombreEfectivo} · {ciudadEfectiva}
+            </span>
+          </Link>
+        </div>
+
+        {/* Centro: Navegación principal adaptable a 390px y escritorio */}
         <nav
           aria-label="Navegación principal"
-          className="flex flex-wrap items-center gap-1 bg-[#F3ECE8] p-1 rounded-xl border border-[#EFE8E4]"
+          className="order-3 lg:order-2 w-full lg:w-auto flex items-center gap-1 overflow-x-auto bg-[#F3ECE8] p-1 rounded-xl border border-[#EFE8E4]"
         >
-          {MAIN_TABS.map((tab) => {
+          {tabsVisibles.map((tab) => {
             const active = isTabActive(tab.href);
             return (
               <Link
                 key={tab.key}
                 href={tab.href}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all no-underline ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all no-underline whitespace-nowrap ${
                   active
                     ? 'bg-[#3B0D1E] text-[#FAF7F5] shadow-sm'
                     : 'text-[#5C3A47] hover:text-[#3B0D1E]'
                 }`}
               >
-                {tab.label}
+                <span className="sm:hidden">{tab.shortLabel}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
               </Link>
             );
           })}
         </nav>
-
-        {/* Derecha: Píldora violeta del plan/cupo IA + píldora de sede/configuración */}
-        <div className="flex items-center gap-2">
-          <Link
-            href="/planes"
-            className="bg-[#7C3AED]/10 text-[#7C3AED] border border-[#7C3AED]/30 px-3 py-1.5 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 no-underline hover:bg-[#7C3AED]/15 transition-colors tabular-nums"
-          >
-            <Sparkles size={13} />
-            <span>
-              {tienePlanIA
-                ? `Salón Pro + IA${cupoIA ? ` · ${cupoIA.usados}/${cupoIA.tope}` : ''}`
-                : 'Studio BI'}
-            </span>
-          </Link>
-
-          <Link
-            href="/configuracion"
-            className="px-3 py-1.5 rounded-full bg-white border border-[#EFE8E4] hover:bg-[#F3ECE8] text-[#3B0D1E] text-xs font-semibold inline-flex items-center gap-1.5 no-underline transition-colors"
-          >
-            <Settings size={13} className="text-[#5C3A47] shrink-0" />
-            <span className="truncate max-w-[160px] sm:max-w-[200px]">
-              {nombreEfectivo} · {ciudadEfectiva}
-            </span>
-          </Link>
-        </div>
       </div>
     </header>
   );
