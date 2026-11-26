@@ -6,6 +6,7 @@ import { checkRateLimit, vitrinaPublicaLimiter } from '@/lib/api/rateLimit';
 import { extraerIpDesdeHeaders } from '@/lib/cotizador/whatsapp';
 import { APP_HOST } from '@/lib/sitio';
 import VitrinaPublicaClient from '@/components/vitrina/VitrinaPublicaClient';
+import { construirMetadataVitrinaPublica } from '@/lib/vitrina/metadata';
 import { esSlugVitrinaValido } from '@/lib/vitrina/motor';
 import { cargarVitrinaServidorPorSlug } from '@/lib/vitrina/servidor';
 import type { PublicStorefrontData } from '@/lib/vitrina/tipos';
@@ -51,31 +52,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const { storefront } = await cargarVitrinaEnPeticion(slug);
-
-  if (!storefront) {
-    return {
-      title: 'Vitrina no disponible',
-      robots: { index: false, follow: false },
-    };
-  }
-
-  const title = `${storefront.brand.displayName} · Servicios y Tienda`;
-  const description =
-    storefront.brand.publicTagline ||
-    `Explora el menú de servicios y productos profesionales de ${storefront.brand.displayName}.`;
-
-  return {
-    title,
-    description,
-    robots: { index: false, follow: false },
-    openGraph: {
-      type: 'website',
-      title,
-      description,
-      siteName: storefront.brand.displayName,
-      locale: 'es_CO',
-    },
-  };
+  return construirMetadataVitrinaPublica(storefront);
 }
 
 export default async function StorefrontPublicPage({
