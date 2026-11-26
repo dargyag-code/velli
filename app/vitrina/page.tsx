@@ -16,6 +16,7 @@ import {
   X,
 } from 'lucide-react';
 import VelvetTopHeader from '@/components/v2/VelvetTopHeader';
+import VelvetImageUploader from '@/components/v2/VelvetImageUploader';
 import { formatearPrecioCop } from '@/lib/cotizador/whatsapp';
 import { APP_URL } from '@/lib/sitio';
 import { showToast } from '@/lib/toast';
@@ -612,7 +613,7 @@ export default function VitrinaPanelPage() {
                   </label>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-start">
                   <label className="block">
                     <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
                       Categoría
@@ -626,18 +627,16 @@ export default function VitrinaPanelPage() {
                     />
                   </label>
 
-                  <label className="block">
-                    <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
-                      URL de imagen (opcional)
-                    </span>
-                    <input
-                      type="url"
-                      value={prodImageUrl}
-                      onChange={(e) => setProdImageUrl(e.target.value)}
-                      placeholder="https://…"
-                      className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm text-[#3B0D1E]"
-                    />
-                  </label>
+                  <VelvetImageUploader
+                    organizationId={org.id}
+                    folder="products"
+                    label="Fotografía del producto"
+                    helperText="JPG, PNG o WebP · máx. 3 MB"
+                    shape="landscape"
+                    value={prodImageUrl || null}
+                    onChange={(nextUrl) => setProdImageUrl(nextUrl ?? '')}
+                    disabled={guardandoProducto}
+                  />
                 </div>
 
                 <label className="block">
@@ -804,11 +803,23 @@ export default function VitrinaPanelPage() {
                         </div>
                       </div>
 
-                      <h3 className="m-0 font-sans text-base font-bold text-[#3B0D1E]">
-                        {prod.name}
-                      </h3>
-                      <div className="mt-1 font-display text-xl font-bold text-[#3B0D1E] tabular-nums">
-                        {formatearPrecioCop(prod.priceCop)}
+                      <div className="flex items-start gap-3.5">
+                        {prod.imageUrl && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={prod.imageUrl}
+                            alt={prod.name}
+                            className="w-16 h-16 rounded-2xl object-cover border border-[#EFE8E4] shrink-0 bg-[#FAF7F5]"
+                          />
+                        )}
+                        <div className="min-w-0">
+                          <h3 className="m-0 font-sans text-base font-bold text-[#3B0D1E]">
+                            {prod.name}
+                          </h3>
+                          <div className="mt-1 font-display text-xl font-bold text-[#3B0D1E] tabular-nums">
+                            {formatearPrecioCop(prod.priceCop)}
+                          </div>
+                        </div>
                       </div>
 
                       {prod.variants.length > 0 && (

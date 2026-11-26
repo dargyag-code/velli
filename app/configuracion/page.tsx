@@ -24,6 +24,7 @@ import {
   ShoppingBag,
 } from 'lucide-react';
 import VelvetTopHeader from '@/components/v2/VelvetTopHeader';
+import VelvetImageUploader from '@/components/v2/VelvetImageUploader';
 import {
   getAllClientas,
   getAllConsultas,
@@ -36,6 +37,12 @@ import type { Profile } from '@/lib/profile';
 import { getSuscripcionEfectiva, type SuscripcionEfectiva } from '@/lib/subscription/estado';
 import { PLANES } from '@/lib/subscription/plans';
 import EditorMarca from '@/components/marca/EditorMarca';
+import {
+  actualizarLogoBrandSettings,
+  obtenerBrandSettingsOrganizacion,
+} from '@/lib/organizations';
+import { createClient } from '@/lib/supabase/client';
+import { obtenerOrganizacionActivaPanel, type OrganizacionPanelResumen } from '@/lib/vitrina';
 import { uploadFoto } from '@/lib/storage';
 import { showToast } from '@/lib/toast';
 import { friendlyError } from '@/lib/errors';
@@ -75,19 +82,38 @@ export default function ConfiguracionPage() {
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   const [sub, setSub] = useState<SuscripcionEfectiva | null>(null);
+  const [orgActiva, setOrgActiva] = useState<OrganizacionPanelResumen | null>(null);
 
   useEffect(() => {
     getSuscripcionEfectiva().then(setSub).catch(() => {});
-    getProfile()
-      .then((p) => {
+    Promise.all([
+      getProfile().catch(() => null),
+      obtenerOrganizacionActivaPanel().catch(() => null),
+    ])
+      .then(async ([p, org]) => {
+        setOrgActiva(org);
+        let logoInicial = p?.logoUrl ?? null;
+
+        if (org) {
+          const brand = await obtenerBrandSettingsOrganizacion(createClient(), org.id, {
+            organizationId: org.id,
+            nombreSalon: p?.nombreSalon,
+            logoUrl: p?.logoUrl,
+            colorPrimario: p?.colorPrimario,
+          }).catch(() => null);
+          if (brand?.logoUrl) {
+            logoInicial = brand.logoUrl;
+          }
+        }
+
         if (p) {
-          setProfile(p);
+          setProfile({ ...p, logoUrl: logoInicial ?? p.logoUrl });
           setNombre(p.nombre);
           setNombreSalon(p.nombreSalon ?? '');
           setTelefono(p.telefono ?? '');
           setCiudad(p.ciudad ?? '');
           setPermiteUbicacion(!!p.permiteUbicacion);
-          setMarcaLogoActual(p.logoUrl ?? null);
+          setMarcaLogoActual(logoInicial);
         }
       })
       .finally(() => setProfileLoading(false));
@@ -119,8 +145,15 @@ export default function ConfiguracionPage() {
         logoUrl = await uploadFoto(marcaLogoPreview, 'branding/logo');
       }
       const updated = await updateProfile({ logoUrl, colorPrimario: COLOR_VELLI });
-      setProfile(updated);
-      setMarcaLogoActual(updated.logoUrl ?? null);
+      if (orgActiva) {
+        await actualizarLogoBrandSettings(createClient(), {
+          organizationId: orgActiva.id,
+          displayName: updated.nombreSalon || orgActiva.name || updated.nombre,
+          logoUrl: logoUrl || null,
+        });
+      }
+      setProfile({ ...updated, logoUrl: logoUrl || undefined });
+      setMarcaLogoActual(logoUrl || null);
       setMarcaLogoPreview(null);
       setLogoError(false);
       setEditingMarca(false);
@@ -396,18 +429,35 @@ export default function ConfiguracionPage() {
 
           {editingMarca ? (
             <div className="p-5">
-              <EditorMarca
-                logoSrc={marcaLogoPreview ?? marcaLogoActual}
-                onLogo={(dataUrl) => {
-                  if (dataUrl) {
-                    setMarcaLogoPreview(dataUrl);
-                  } else {
+              {orgActiva ? (
+                <VelvetImageUploader
+                  organizationId={orgActiva.id}
+                  folder="brand"
+                  shape="square"
+                  label="Logotipo oficial del salón"
+                  helperText="JPG, PNG o WebP · máx. 3 MB · visible en tu vitrina pública"
+                  value={marcaLogoActual}
+                  onChange={(nextUrl) => {
                     setMarcaLogoPreview(null);
-                    setMarcaLogoActual(null);
-                  }
-                }}
-                nombreSalon={profile?.nombreSalon}
-              />
+                    setMarcaLogoActual(nextUrl);
+                    setLogoError(false);
+                  }}
+                  disabled={savingMarca}
+                />
+              ) : (
+                <EditorMarca
+                  logoSrc={marcaLogoPreview ?? marcaLogoActual}
+                  onLogo={(dataUrl) => {
+                    if (dataUrl) {
+                      setMarcaLogoPreview(dataUrl);
+                    } else {
+                      setMarcaLogoPreview(null);
+                      setMarcaLogoActual(null);
+                    }
+                  }}
+                  nombreSalon={profile?.nombreSalon}
+                />
+              )}
               <div className="flex items-center gap-2.5 mt-4">
                 <button
                   type="button"

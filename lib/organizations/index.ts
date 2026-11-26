@@ -74,3 +74,30 @@ export async function obtenerBrandSettingsOrganizacion(
     fallback
   );
 }
+
+export async function actualizarLogoBrandSettings(
+  supabase: SupabaseClient,
+  params: {
+    organizationId: string;
+    displayName: string;
+    logoUrl: string | null;
+  }
+): Promise<void> {
+  const nombreLimpio = params.displayName.trim().slice(0, 120) || 'Mi Salón';
+  const { error } = await supabase.from('brand_settings').upsert(
+    {
+      organization_id: params.organizationId,
+      display_name: nombreLimpio,
+      logo_url: params.logoUrl?.trim() || null,
+    },
+    { onConflict: 'organization_id' }
+  );
+  if (
+    error &&
+    error.code !== '42P01' &&
+    error.code !== 'PGRST205' &&
+    error.code !== 'PGRST202'
+  ) {
+    throw error;
+  }
+}

@@ -15,5 +15,7 @@ export type { StatAccent } from './StatTile';
 export { default as Masthead } from './Masthead';
 export { default as InnerHeader } from './InnerHeader';
 export { default as VelvetTopHeader } from './VelvetTopHeader';
+export { default as VelvetImageUploader } from './VelvetImageUploader';
+export type { VelvetImageUploaderProps } from './VelvetImageUploader';
 export { default as StepBarV2 } from './StepBarV2';
 export { default as SettingsIconButton } from './SettingsIconButton';
