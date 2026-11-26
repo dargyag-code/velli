@@ -31,6 +31,7 @@ const nextConfig: NextConfig = {
   turbopack: {},
   allowedDevOrigins: ['192.168.100.100'],
   experimental: {
+    agentUpgrade: 'security',
     // Tope de body buffereado por el proxy. Default 10MB, aquí 5MB.
     // No rechaza el request automáticamente — sólo recorta. La validación
     // por foto vive en cada route handler (1.2MB c/u, 5 fotos máx).
