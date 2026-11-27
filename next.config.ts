@@ -31,6 +31,7 @@ const nextConfig: NextConfig = {
   turbopack: {},
   allowedDevOrigins: ['192.168.100.100'],
   experimental: {
+    agentUpgrade: 'security',
     // Tope de body buffereado por el proxy. Default 10MB, aquí 5MB.
     // No rechaza el request automáticamente — sólo recorta. La validación
     // por foto vive en cada route handler (1.2MB c/u, 5 fotos máx).
@@ -38,8 +39,6 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      { source: '/agenda', destination: '/', permanent: false },
-      { source: '/agenda/:path*', destination: '/', permanent: false },
       { source: '/color', destination: '/', permanent: false },
       { source: '/color/:path*', destination: '/', permanent: false },
       { source: '/cortes', destination: '/', permanent: false },
@@ -57,6 +56,12 @@ const nextConfig: NextConfig = {
         headers: [
           { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate' },
           { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+        ],
+      },
+      {
+        source: '/s/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate' },
         ],
       },
       {

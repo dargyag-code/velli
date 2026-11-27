@@ -98,7 +98,7 @@ const optionColors: Record<string, { bg: string; border: string; text: string }>
   blue: { bg: '#DBEAFE', border: '#3B82F6', text: '#1D4ED8' },
   green: { bg: '#D1FAE5', border: '#10B981', text: '#065F46' },
   orange: { bg: '#FFEDD5', border: '#F97316', text: '#9A3412' },
-  purple: { bg: '#EDE9FE', border: '#7C3AED', text: '#5B21B6' },
+  purple: { bg: '#F4F4F5', border: '#111111', text: '#5B21B6' },
 };
 
 function HelpTooltip({ text, open, onClose }: { text: string; open: boolean; onClose: () => void }) {
@@ -107,7 +107,7 @@ function HelpTooltip({ text, open, onClose }: { text: string; open: boolean; onC
     <div className="fixed inset-0 z-50 flex items-end justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/30" />
       <div
-        className="relative bg-white rounded-2xl p-5 max-w-sm w-full shadow-2xl"
+        className="relative bg-white rounded-xl p-5 max-w-sm w-full shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -181,10 +181,10 @@ export default function StepDiagnostico({ data, onChange, errors }: Props) {
                     type="button"
                     onClick={() => onChange({ [test.key]: opt.value })}
                     className={`
-                      text-left p-3.5 rounded-2xl border-2 transition-all duration-200
+                      text-left p-3.5 rounded-xl border-2 transition-all duration-200
                       ${isSelected
                         ? 'shadow-md scale-[1.01]'
-                        : 'border-[#E5E5E5] bg-white hover:border-[var(--primary-line)] hover:bg-[var(--primary-pale)]'
+                        : 'border-[#E4E4E7] bg-white hover:border-[var(--primary-line)] hover:bg-[var(--primary-pale)]'
                       }
                     `}
                     style={

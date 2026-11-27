@@ -12,6 +12,8 @@ interface ConfirmacionPublicaCotizacionProps {
   precioFormateado: string;
   moneda: string;
   vigente: boolean;
+  confirmadoInicial?: boolean;
+  primaryColor?: string;
 }
 
 export default function ConfirmacionPublicaCotizacion({
@@ -22,15 +24,17 @@ export default function ConfirmacionPublicaCotizacion({
   precioFormateado,
   moneda,
   vigente,
+  confirmadoInicial = false,
+  primaryColor = '#111111',
 }: ConfirmacionPublicaCotizacionProps) {
-  const [aceptoCondiciones, setAceptoCondiciones] = useState(false);
+  const [aceptoCondiciones, setAceptoCondiciones] = useState(confirmadoInicial);
   const [enviando, setEnviando] = useState(false);
-  const [confirmado, setConfirmado] = useState(false);
+  const [confirmado, setConfirmado] = useState(confirmadoInicial);
 
   const numeroSalonValido = numeroWhatsApp(salonWhatsapp);
 
   const handleConfirmar = async () => {
-    if (!aceptoCondiciones || !vigente || enviando) return;
+    if (!aceptoCondiciones || !vigente || enviando || confirmado) return;
     setEnviando(true);
 
     const peticionAceptar = fetch(`/api/cotizaciones/${encodeURIComponent(token)}/aceptar`, {
@@ -39,7 +43,7 @@ export default function ConfirmacionPublicaCotizacion({
     }).catch(() => null);
 
     if (numeroSalonValido) {
-      const mensaje = `Hola ${salon}, acepto las condiciones del diagnóstico y procedimiento capilar y confirmo mi cotización de *${servicio}* por *${precioFormateado} ${moneda}*.`;
+      const mensaje = `Hola ${salon}, acepto las condiciones del diagnóstico y procedimiento y confirmo mi cotización de *${servicio}* por *${precioFormateado} ${moneda}*.`;
       const url = enlaceWhatsApp(numeroSalonValido, mensaje);
       setConfirmado(true);
       setEnviando(false);
@@ -47,17 +51,29 @@ export default function ConfirmacionPublicaCotizacion({
       return;
     }
 
-    // Fallback limpio cuando el salón aún no ha configurado su número WhatsApp en `profiles`
     await peticionAceptar;
     setConfirmado(true);
     setEnviando(false);
   };
 
-  if (!vigente) return null;
+  if (!vigente && !confirmado) return null;
 
   return (
-    <div className="rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] p-4 sm:p-5 space-y-4">
-      <label className="flex items-start gap-3 cursor-pointer select-none">
+    <div className="bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl p-4 space-y-4">
+      <div className="flex items-center gap-1.5">
+        <ShieldCheck size={14} className="text-[#111111] shrink-0" />
+        <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.06em] text-[#52525B]">
+          Consentimiento Informado
+        </span>
+      </div>
+
+      <label
+        className={`min-h-[48px] p-3.5 rounded-lg border flex items-start gap-3 cursor-pointer select-none transition-colors ${
+          aceptoCondiciones
+            ? 'bg-white border-[#111111]'
+            : 'bg-white border-[#E4E4E7] hover:border-[#71717A]'
+        }`}
+      >
         <span className="relative flex items-center justify-center mt-0.5 shrink-0">
           <input
             type="checkbox"
@@ -66,48 +82,63 @@ export default function ConfirmacionPublicaCotizacion({
             onChange={(e) => setAceptoCondiciones(e.target.checked)}
             className="peer sr-only"
           />
-          <span className="w-5 h-5 rounded-md border border-[#DFC5CE] bg-white peer-checked:bg-[#3B0D1E] peer-checked:border-[#3B0D1E] transition-colors flex items-center justify-center">
-            {aceptoCondiciones && <Check size={13} strokeWidth={3} className="text-[#FAF7F5]" />}
+          <span
+            className="w-5 h-5 rounded-md border flex items-center justify-center transition-colors"
+            style={
+              aceptoCondiciones
+                ? { backgroundColor: primaryColor, borderColor: primaryColor }
+                : { backgroundColor: '#FFFFFF', borderColor: '#D4D4D8' }
+            }
+          >
+            {aceptoCondiciones && <Check size={13} strokeWidth={3} className="text-white" />}
           </span>
         </span>
-        <span className="text-xs sm:text-[13px] text-[#1C1518] leading-relaxed font-medium">
-          Acepto las condiciones del diagnóstico y procedimiento capilar
+        <span className="font-sans text-xs sm:text-[13px] text-[#111111] leading-relaxed font-medium">
+          He leído el alcance del servicio y acepto las condiciones del diagnóstico presencial y procedimiento en {salon}.
         </span>
       </label>
 
-      {confirmado && !numeroSalonValido ? (
-        <div className="rounded-xl bg-[#EAF6F4] border border-[#0D9488]/30 p-3.5 flex items-start gap-2.5 text-xs sm:text-[13px] text-[#0D7A70] font-semibold">
-          <CheckCircle2 size={17} className="text-[#0D9488] shrink-0 mt-0.5" />
-          <span>¡Listo! Tu salón ya recibió tu confirmación y consentimiento digital</span>
+      {confirmado ? (
+        <div className="space-y-2">
+          <div className="w-full py-3 px-4 rounded-lg bg-[#F0FDF4] border border-[#15803D]/30 text-[#15803D] font-sans font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 text-center">
+            <CheckCircle2 size={17} className="shrink-0" />
+            <span>Cotización y consentimiento confirmados</span>
+          </div>
+          <p className="font-sans text-xs text-center text-[#15803D] font-medium">
+            {numeroSalonValido
+              ? 'Consentimiento registrado · WhatsApp abierto con el estudio'
+              : 'El estudio ya recibió tu confirmación digital'}
+          </p>
         </div>
       ) : (
         <button
           type="button"
           disabled={!aceptoCondiciones || enviando}
           onClick={handleConfirmar}
-          className="w-full py-3.5 px-5 rounded-full bg-[#3B0D1E] hover:bg-[#6E1E3A] disabled:bg-[#DFC5CE]/60 disabled:text-[#96888C] text-[#FAF7F5] font-bold text-sm tracking-wide shadow-md disabled:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+          style={
+            aceptoCondiciones && !enviando
+              ? { backgroundColor: primaryColor, color: '#FFFFFF' }
+              : undefined
+          }
+          className="disabled:bg-[#F4F4F5] disabled:text-[#71717A] text-white font-sans font-semibold text-sm py-3 px-5 rounded-lg w-full transition-opacity hover:opacity-95 flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed border-0"
         >
-          {numeroSalonValido ? <MessageCircle size={17} /> : <CheckCircle2 size={17} />}
+          {numeroSalonValido ? <MessageCircle size={16} /> : <CheckCircle2 size={16} />}
           <span>
             {enviando
               ? 'Registrando confirmación…'
-              : confirmado
-                ? 'Consentimiento registrado · WhatsApp abierto'
-                : numeroSalonValido
-                  ? 'Confirmar por WhatsApp'
-                  : 'Confirmar cotización y consentimiento'}
+              : numeroSalonValido
+                ? 'Confirmar cotización por WhatsApp'
+                : 'Confirmar cotización y consentimiento'}
           </span>
         </button>
       )}
 
-      <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#6E6266]">
-        <ShieldCheck size={13} className="text-[#0D9488] shrink-0" />
-        <span>
-          {confirmado
-            ? '¡Listo! Tu salón ya recibió tu confirmación y consentimiento digital'
-            : 'Consentimiento digital directo con trazabilidad para el salón'}
-        </span>
-      </div>
+      {!confirmado && (
+        <div className="flex items-center justify-center gap-1.5 font-sans text-[11px] text-[#71717A]">
+          <ShieldCheck size={13} className="text-[#15803D] shrink-0" />
+          <span>Trazabilidad digital instantánea para el estudio</span>
+        </div>
+      )}
     </div>
   );
 }

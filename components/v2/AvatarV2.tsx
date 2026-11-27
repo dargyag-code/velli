@@ -12,26 +12,26 @@ interface AvatarV2Props {
 }
 
 const toneMap: Record<AvatarTone, { bg: string; fg: string }> = {
-  '1': { bg: '#F0EBDF', fg: '#5C544A' },
-  '2': { bg: 'var(--primary-light)', fg: 'var(--primary-mid)' },
-  '3': { bg: 'var(--primary-light)', fg: 'var(--primary)' },
-  '4': { bg: '#FBF4EC', fg: '#8A5A2E' },
+  '1': { bg: '#F4F4F5', fg: '#111111' },
+  '2': { bg: '#E4E4E7', fg: '#111111' },
+  '3': { bg: '#111111', fg: '#FAFAFA' },
+  '4': { bg: '#F4F4F5', fg: '#27272A' },
 };
 
-const sizeMap: Record<AvatarSize, number> = { sm: 32, md: 44, lg: 56, xl: 72 };
+const sizeMap: Record<AvatarSize, number> = { sm: 34, md: 44, lg: 56, xl: 72 };
 
 /** Auto-asigna tono editorial a partir del tipo de rizo si no se pasa explícito */
 export function toneFromTipoRizo(tipoRizo?: string): AvatarTone {
-  if (!tipoRizo) return '3';
+  if (!tipoRizo) return '1';
   const g = tipoRizo[0];
   if (g === '1') return '1';
   if (g === '2') return '2';
   if (g === '3') return '3';
   if (g === '4') return '4';
-  return '3';
+  return '1';
 }
 
-export default function AvatarV2({ nombre, tone = '3', size = 'md', ring }: AvatarV2Props) {
+export default function AvatarV2({ nombre, tone = '1', size = 'md', ring }: AvatarV2Props) {
   const c = toneMap[tone];
   const dim = sizeMap[size];
   const initials = nombre ? getInitials(nombre) : '?';
@@ -46,10 +46,11 @@ export default function AvatarV2({ nombre, tone = '3', size = 'md', ring }: Avat
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontFamily: 'var(--font-serif)',
-        fontSize: dim * 0.42,
+        fontFamily: 'var(--font-display)',
+        fontWeight: 600,
+        fontSize: dim * 0.4,
         flexShrink: 0,
-        boxShadow: ring ? `0 0 0 3px ${ring}, 0 0 0 4px var(--bg-card)` : undefined,
+        boxShadow: ring ? `0 0 0 3px ${ring}, 0 0 0 4px #FFFFFF` : undefined,
       }}
     >
       {initials}

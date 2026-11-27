@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Check, Sparkles, ShieldCheck, TrendingUp } from 'lucide-react';
-import BottomNavV2 from '@/components/v2/BottomNavV2';
+import VelvetTopHeader from '@/components/v2/VelvetTopHeader';
 import {
   PLANES,
   PLAN_IDS_COMERCIALES,
@@ -20,23 +20,23 @@ const ESTADO_LABEL: Record<
 > = {
   trialing: {
     texto: 'Prueba gratuita activa',
-    classes: 'bg-[#F5EFFB] text-[#7C3AED] border-[#7C3AED]/25',
+    classes: 'bg-[#F4F4F5] text-[#111111] border-[#E4E4E7]',
   },
   active: {
     texto: 'Suscripción activa',
-    classes: 'bg-[#EAF6F4] text-[#0D7A70] border-[#0D9488]/30',
+    classes: 'bg-[#F0FDF4] text-[#15803D] border-[#15803D]/30',
   },
   past_due: {
     texto: 'En días de gracia',
-    classes: 'bg-[#FDF2EC] text-[#B85D3B] border-[#D97757]/30',
+    classes: 'bg-[#FFFBEB] text-[#B45309] border-[#B45309]/30',
   },
   expired: {
     texto: 'Vencida',
-    classes: 'bg-[#FAF7F5] text-[#6E6266] border-[#EFE8E4]',
+    classes: 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7]',
   },
   canceled: {
     texto: 'Cancelada',
-    classes: 'bg-[#FAF7F5] text-[#6E6266] border-[#EFE8E4]',
+    classes: 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7]',
   },
 };
 
@@ -78,56 +78,42 @@ export default function PlanesPage() {
   const necesitaPagar = sub && (sub.estado === 'past_due' || sub.estado === 'expired');
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] text-[#1C1518] pb-32">
-      {/* Cabecera */}
-      <header className="sticky top-0 z-30 bg-[#FAF7F5]/90 backdrop-blur-md border-b border-[#EFE8E4]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/configuracion"
-            className="inline-flex items-center gap-2 text-xs font-bold text-[#6E6266] hover:text-[#3B0D1E] no-underline transition-colors"
-          >
-            <ArrowLeft size={16} />
-            Volver a Salón
-          </Link>
-          <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#6E1E3A]">
-            Velli Business Intelligence
-          </span>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#FAFAFA] text-[#111111] font-sans pb-32">
+      <VelvetTopHeader />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-8">
         <div className="mb-7">
-          <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#6E1E3A]">
+          <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
             Planes & Rentabilidad
           </span>
-          <h1 className="text-3xl sm:text-4xl font-bold text-[#1C1518] tracking-tight mt-1">
+          <h1 className="m-0 mt-1 font-display text-2xl md:text-3xl font-semibold text-[#111111] tracking-tight">
             Elige el plan para tu salón
           </h1>
-          <p className="text-sm text-[#6E6266] mt-2 max-w-2xl">
+          <p className="text-sm text-[#52525B] mt-2 max-w-2xl leading-relaxed">
             Elimina el cálculo al ojo en silla, protege tu margen neto por servicio y cobra con transparencia en un solo toque.
           </p>
         </div>
 
         {/* Estado actual de la suscripción */}
-        <div className="bg-white rounded-2xl border border-[#EFE8E4] p-4 sm:p-5 mb-7 flex flex-wrap items-center justify-between gap-3 shadow-[0_12px_32px_-8px_rgba(59,13,30,0.05)]">
+        <div className="bg-white rounded-xl border border-[#E4E4E7] p-4 sm:p-5 mb-7 flex flex-wrap items-center justify-between gap-3 ">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#6E6266]">
+            <p className="m-0 font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
               Estado de tu cuenta
             </p>
             {subLoading ? (
-              <p className="text-sm text-[#6E6266] mt-1">Consultando suscripción…</p>
+              <p className="m-0 text-sm text-[#52525B] mt-1">Consultando suscripción…</p>
             ) : sub ? (
-              <p className="text-sm font-bold text-[#1C1518] mt-0.5">
+              <p className="m-0 text-sm font-bold text-[#111111] mt-0.5 tabular-nums">
                 {sub.plan ? `Plan ${PLANES[sub.plan].nombre}` : 'Periodo de prueba activo'}
                 {sub.vence && (
-                  <span className="font-normal text-[#6E6266]">
+                  <span className="font-normal text-[#52525B]">
                     {' · '}
                     {sub.estado === 'expired' ? 'venció el' : 'vence el'} {formatDate(sub.vence)}
                   </span>
                 )}
               </p>
             ) : (
-              <p className="text-sm text-[#6E6266] mt-0.5">
+              <p className="m-0 text-sm text-[#52525B] mt-0.5">
                 No se pudo consultar el estado de tu suscripción
               </p>
             )}
@@ -143,20 +129,20 @@ export default function PlanesPage() {
         </div>
 
         {/* Recordatorio ejecutivo de retorno de inversión (ROI en 1 servicio) */}
-        <div className="mb-7 rounded-2xl bg-[#EAF6F4] border border-[#0D9488]/25 p-4 sm:p-5 flex items-start gap-3.5 shadow-[0_10px_28px_-10px_rgba(13,148,136,0.12)]">
-          <div className="w-10 h-10 rounded-xl bg-white border border-[#0D9488]/20 text-[#0D9488] flex items-center justify-center shrink-0">
-            <TrendingUp size={19} />
+        <div className="mb-7 rounded-xl bg-[#F0FDF4] border border-[#15803D]/25 p-4 sm:p-5 flex items-start gap-3.5 ">
+          <div className="w-11 h-11 rounded-xl bg-white border border-[#15803D]/20 text-[#15803D] flex items-center justify-center shrink-0">
+            <TrendingUp size={20} />
           </div>
           <div className="min-w-0">
-            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#0D7A70] block">
+            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#15803D] block">
               Retorno desde la primera silla
             </span>
-            <p className="text-sm sm:text-[15px] font-bold text-[#1C1518] mt-0.5 leading-snug">
+            <p className="m-0 text-sm sm:text-[15px] font-bold text-[#111111] mt-0.5 leading-snug">
               Un solo servicio de color bien cotizado recupera el 100% de tu inversión mensual en{' '}
-              <span className="text-[#3B0D1E] tabular-nums">Plan Studio BI ($89.000 COP/mes)</span> o{' '}
-              <span className="text-[#3B0D1E] tabular-nums">Salón Pro + IA ($149.000 COP/mes)</span>.
+              <span className="text-[#15803D] tabular-nums">Plan Studio BI ($89.000 COP/mes)</span> o{' '}
+              <span className="text-[#15803D] tabular-nums">Salón Pro + IA ($149.000 COP/mes)</span>.
             </p>
-            <p className="text-xs text-[#6E6266] mt-1 leading-relaxed">
+            <p className="m-0 text-xs text-[#52525B] mt-1 leading-relaxed">
               Dejar de absorber gramos extra de decolorante y revelador en cabellos largos o de alta densidad paga todo tu mes desde el primer cierre.
             </p>
           </div>
@@ -173,14 +159,14 @@ export default function PlanesPage() {
             return (
               <section
                 key={id}
-                className={`rounded-3xl p-6 sm:p-7 flex flex-col justify-between relative transition-all ${
+                className={`rounded-xl p-6 sm:p-7 flex flex-col justify-between relative transition-all ${
                   esDestacado
-                    ? 'bg-[#3B0D1E] text-[#FAF7F5] border-2 border-[#3B0D1E] shadow-[0_24px_55px_-14px_rgba(59,13,30,0.28)]'
-                    : 'bg-white text-[#1C1518] border border-[#EFE8E4] shadow-[0_14px_34px_-10px_rgba(59,13,30,0.07)]'
+                    ? 'bg-[#111111] text-white border-2 border-[#111111] shadow-[0_24px_55px_-14px_rgba(59,13,30,0.28)]'
+                    : 'bg-white text-[#111111] border border-[#E4E4E7] '
                 }`}
               >
                 {esDestacado && (
-                  <span className="absolute -top-3.5 right-6 inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#E8CFC8] text-[#3B0D1E] text-[10px] font-bold uppercase tracking-widest shadow-xs">
+                  <span className="absolute -top-3.5 right-6 inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#E4E4E7] text-[#111111] text-[10px] font-bold uppercase tracking-[0.08em] shadow-xs">
                     <Sparkles size={11} />
                     Más elegido por salones
                   </span>
@@ -189,16 +175,20 @@ export default function PlanesPage() {
                 <div>
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-xl font-bold tracking-tight">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2
+                          className={`m-0 font-display text-2xl font-semibold tracking-tight ${
+                            esDestacado ? '!text-white' : 'text-[#111111]'
+                          }`}
+                        >
                           Plan {def.nombre}
                         </h2>
                         {esActual && (
                           <span
                             className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                               esDestacado
-                                ? 'bg-[#0D9488]/30 text-[#5EEAD4]'
-                                : 'bg-[#EAF6F4] text-[#0D7A70]'
+                                ? 'bg-[#15803D]/30 !text-white'
+                                : 'bg-[#F0FDF4] text-[#15803D]'
                             }`}
                           >
                             Tu plan
@@ -207,7 +197,7 @@ export default function PlanesPage() {
                       </div>
                       <p
                         className={`text-xs mt-1 leading-relaxed ${
-                          esDestacado ? 'text-[#E8CFC8]/85' : 'text-[#6E6266]'
+                          esDestacado ? '!text-[#E4E4E7]' : 'text-[#52525B]'
                         }`}
                       >
                         {def.tagline}
@@ -217,16 +207,20 @@ export default function PlanesPage() {
 
                   <div
                     className={`mt-5 pb-5 border-b ${
-                      esDestacado ? 'border-[#FAF7F5]/15' : 'border-[#EFE8E4]'
+                      esDestacado ? 'border-[#FAFAFA]/15' : 'border-[#E4E4E7]'
                     }`}
                   >
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-4xl font-bold tracking-tight">
+                    <div className="flex items-baseline gap-2">
+                      <span
+                        className={`font-display text-3xl sm:text-4xl font-bold tabular-nums tracking-tight ${
+                          esDestacado ? '!text-white' : 'text-[#111111]'
+                        }`}
+                      >
                         {formatearCop(def.precioCop)}
                       </span>
                       <span
-                        className={`text-xs font-semibold uppercase tracking-wider ${
-                          esDestacado ? 'text-[#E8CFC8]/80' : 'text-[#6E6266]'
+                        className={`text-xs font-bold uppercase tracking-[0.08em] ${
+                          esDestacado ? '!text-[#E4E4E7]' : 'text-[#52525B]'
                         }`}
                       >
                         COP / mes
@@ -234,17 +228,20 @@ export default function PlanesPage() {
                     </div>
                   </div>
 
-                  <ul className="mt-5 space-y-3 mb-7">
+                  <ul className="mt-5 space-y-3 mb-7 pl-0 list-none">
                     {def.beneficios.map((beneficio, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-xs sm:text-[13px] leading-relaxed">
+                      <li
+                        key={i}
+                        className="flex items-start gap-2.5 text-xs sm:text-[13px] leading-relaxed"
+                      >
                         <Check
                           size={15}
                           strokeWidth={2.6}
                           className={`shrink-0 mt-0.5 ${
-                            esDestacado ? 'text-[#E8CFC8]' : 'text-[#0D9488]'
+                            esDestacado ? 'text-[#E4E4E7]' : 'text-[#15803D]'
                           }`}
                         />
-                        <span className={esDestacado ? 'text-[#FAF7F5]/95' : 'text-[#1C1518]'}>
+                        <span className={esDestacado ? 'text-white/95' : 'text-[#111111]'}>
                           {beneficio}
                         </span>
                       </li>
@@ -256,10 +253,10 @@ export default function PlanesPage() {
                   type="button"
                   disabled={payingPlan !== null}
                   onClick={() => pagar(id)}
-                  className={`w-full py-3.5 px-5 rounded-full font-bold text-sm tracking-wide transition-all cursor-pointer disabled:opacity-50 ${
+                  className={`w-full min-h-[48px] py-3.5 px-5 rounded-xl font-bold text-sm transition-all cursor-pointer disabled:opacity-50 border-none ${
                     esDestacado
-                      ? 'bg-[#E8CFC8] hover:bg-[#FAF7F5] text-[#3B0D1E] shadow-md'
-                      : 'bg-[#3B0D1E] hover:bg-[#6E1E3A] text-[#FAF7F5] shadow-sm'
+                      ? 'bg-[#E4E4E7] hover:bg-[#FAFAFA] text-[#111111] shadow-md'
+                      : 'bg-[#111111] hover:bg-[#27272A] text-white shadow-[0_10px_24px_-6px_rgba(59,13,30,0.22)]'
                   }`}
                 >
                   {payingPlan === id
@@ -274,15 +271,13 @@ export default function PlanesPage() {
         </div>
 
         {/* Nota de confianza Bold */}
-        <div className="mt-7 flex items-start gap-2.5 text-xs text-[#6E6266] leading-relaxed px-1">
-          <ShieldCheck size={16} className="text-[#3B0D1E] shrink-0 mt-0.5" />
-          <p>
+        <div className="mt-7 flex items-start gap-2.5 text-xs text-[#52525B] leading-relaxed px-1">
+          <ShieldCheck size={16} className="text-[#111111] shrink-0 mt-0.5" />
+          <p className="m-0">
             Pago seguro procesado por Bold (PSE, Nequi y tarjetas). Modelo prepago de 30 días sin débitos automáticos: tus plantillas de precios, clientas y métricas siempre permanecen resguardadas.
           </p>
         </div>
       </main>
-
-      <BottomNavV2 />
     </div>
   );
 }

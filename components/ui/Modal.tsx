@@ -14,7 +14,9 @@ export default function Modal({ open, onClose, title, children, size = 'md' }: M
   useEffect(() => {
     if (open) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [open]);
 
   if (!open) return null;
@@ -26,30 +28,29 @@ export default function Modal({ open, onClose, title, children, size = 'md' }: M
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-[#111111]/45 backdrop-blur-sm" />
       <div
-        className={`relative bg-white w-full ${maxW} rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto`}
+        className={`relative bg-white border border-[#E4E4E7] w-full ${maxW} rounded-t-3xl sm:rounded-xl shadow-[0_20px_50px_-10px_rgba(59,13,30,0.22)] max-h-[90vh] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle bar for mobile */}
         <div className="flex justify-center pt-3 sm:hidden">
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          <div className="w-10 h-1 bg-[#E4E4E7] rounded-full" />
         </div>
 
-        <div className="p-5">
+        <div className="p-5 sm:p-6">
           {title && (
-            <div className="flex items-center justify-between mb-4">
-              <h3
-                className="text-lg font-bold text-[#2D2D2D]"
-                style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
-              >
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h3 className="m-0 font-display text-xl font-semibold tracking-tight text-[#111111]">
                 {title}
               </h3>
               <button
+                type="button"
                 onClick={onClose}
-                className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                aria-label="Cerrar"
+                className="min-w-[44px] min-h-[44px] rounded-full bg-[#FAFAFA] hover:bg-[#F4F4F5] border border-[#E4E4E7] flex items-center justify-center transition-colors cursor-pointer"
               >
-                <X size={18} className="text-gray-500" />
+                <X size={18} className="text-[#52525B]" />
               </button>
             </div>
           )}

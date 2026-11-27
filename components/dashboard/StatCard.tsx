@@ -45,13 +45,13 @@ export default function StatCard({ title, value, icon, color = 'green', subtitle
 
   return (
     <div
-      className="bg-white rounded-2xl p-4 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-0.5"
+      className="bg-white rounded-xl p-4 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-0.5"
       style={{
         boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
         borderLeft: `4px solid ${c.border}`,
-        borderTop: '1px solid #E5E5E5',
-        borderRight: '1px solid #E5E5E5',
-        borderBottom: '1px solid #E5E5E5',
+        borderTop: '1px solid #E4E4E7',
+        borderRight: '1px solid #E4E4E7',
+        borderBottom: '1px solid #E4E4E7',
         borderRadius: 16,
       }}
     >

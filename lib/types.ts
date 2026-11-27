@@ -21,6 +21,7 @@ export interface Clienta {
   // de sensibilidad negativa dentro de la ventana de 48 h.
   nuevaEnColor?: boolean;
   cambioMarcaQuimica?: boolean;
+  lastReactivationContactAt?: string;
 }
 
 export interface ProductosActuales {

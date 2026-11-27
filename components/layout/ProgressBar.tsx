@@ -16,7 +16,7 @@ export default function ProgressBar({ currentStep, totalSteps, stepLabels }: Pro
 
   return (
     <div
-      className="bg-white border-b border-[#E5E5E5] px-4 pt-4 pb-4"
+      className="bg-white border-b border-[#E4E4E7] px-4 pt-4 pb-4"
       style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.05)' }}
     >
       {/* Step indicators */}
@@ -34,7 +34,7 @@ export default function ProgressBar({ currentStep, totalSteps, stepLabels }: Pro
                     borderRadius: 2,
                     background: i <= currentStep
                       ? 'linear-gradient(90deg, var(--primary), var(--primary-hover))'
-                      : '#E5E5E5',
+                      : '#E4E4E7',
                   }}
                 />
               )}
@@ -68,7 +68,7 @@ export default function ProgressBar({ currentStep, totalSteps, stepLabels }: Pro
       </div>
 
       {/* Progress line */}
-      <div className="h-1 bg-[#E5E5E5] rounded-full overflow-hidden max-w-2xl mx-auto">
+      <div className="h-1 bg-[#E4E4E7] rounded-full overflow-hidden max-w-2xl mx-auto">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{

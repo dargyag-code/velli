@@ -29,7 +29,13 @@ export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isAuthRoute = path.startsWith('/auth');
   const isPublicQuoteRoute = path === '/c' || path.startsWith('/c/');
-  const isPublicRoute = isAuthRoute || path.startsWith('/legal') || isPublicQuoteRoute;
+  const isPublicStorefrontRoute = path === '/s' || path.startsWith('/s/');
+  const isPublicRoute =
+    isAuthRoute ||
+    path.startsWith('/legal') ||
+    path.startsWith('/icon') ||
+    isPublicQuoteRoute ||
+    isPublicStorefrontRoute;
   // /auth/reset-password necesita una sesión de recuperación activa: no debe
   // redirigirse a / aunque el usuario ya esté "autenticado" por el token de
   // recuperación.

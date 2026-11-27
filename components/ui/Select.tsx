@@ -29,7 +29,7 @@ export default function Select({ label, error, hint, options, placeholder, class
           w-full px-4 py-2.5 rounded-xl border text-sm bg-white text-[#2D2D2D]
           appearance-none cursor-pointer
           transition-all duration-200
-          ${error ? 'border-[#8E2D2D]' : 'border-[#E5E5E5]'}
+          ${error ? 'border-[#8E2D2D]' : 'border-[#E4E4E7]'}
           ${props.value === '' ? 'text-[#BBBBBB]' : ''}
           ${className}
         `}

@@ -46,7 +46,7 @@ export default function CheckboxGroup({
                 ${
                   isSelected
                     ? 'border-[var(--primary)] bg-[var(--primary-light)] text-[var(--primary)]'
-                    : 'border-[#E5E5E5] bg-white text-[#2D2D2D] hover:border-[var(--primary-line)] hover:bg-[var(--primary-pale)]'
+                    : 'border-[#E4E4E7] bg-white text-[#2D2D2D] hover:border-[var(--primary-line)] hover:bg-[var(--primary-pale)]'
                 }
               `}
             >

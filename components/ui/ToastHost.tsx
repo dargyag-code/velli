@@ -42,7 +42,7 @@ export default function ToastHost() {
         return (
           <div
             key={t.id}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl shadow-lg pointer-events-auto velli-toast-enter max-w-sm"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg pointer-events-auto velli-toast-enter max-w-sm"
             style={{ backgroundColor: palette.bg, color: palette.fg }}
           >
             <span className="shrink-0">{palette.icon}</span>

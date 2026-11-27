@@ -66,14 +66,14 @@ const patterns: Record<string, React.ReactNode> = {
     <svg viewBox="0 0 80 50" fill="none" className="w-16 h-10">
       <path
         d="M10 8 Q30 8 30 25 Q30 42 10 42 Q15 42 20 35 Q25 28 25 20 Q25 12 15 10"
-        stroke="#7C3AED"
+        stroke="#111111"
         strokeWidth="2.5"
         strokeLinecap="round"
         fill="none"
       />
       <path
         d="M45 8 Q65 8 65 25 Q65 42 45 42 Q50 42 55 35 Q60 28 60 20 Q60 12 50 10"
-        stroke="#7C3AED"
+        stroke="#111111"
         strokeWidth="2.5"
         strokeLinecap="round"
         fill="none"
@@ -84,14 +84,14 @@ const patterns: Record<string, React.ReactNode> = {
     <svg viewBox="0 0 80 50" fill="none" className="w-16 h-10">
       <path
         d="M12 6 Q26 6 26 20 Q26 34 12 34 Q16 34 20 28 Q22 22 22 16 Q22 10 16 8"
-        stroke="#7C3AED"
+        stroke="#111111"
         strokeWidth="2.5"
         strokeLinecap="round"
         fill="none"
       />
       <path
         d="M40 6 Q54 6 54 20 Q54 34 40 34 Q44 34 48 28 Q50 22 50 16 Q50 10 44 8"
-        stroke="#7C3AED"
+        stroke="#111111"
         strokeWidth="2.5"
         strokeLinecap="round"
         fill="none"
@@ -102,21 +102,21 @@ const patterns: Record<string, React.ReactNode> = {
     <svg viewBox="0 0 80 50" fill="none" className="w-16 h-10">
       <path
         d="M14 5 Q23 5 23 14 Q23 23 14 23 Q23 23 23 32 Q23 41 14 41"
-        stroke="#7C3AED"
+        stroke="#111111"
         strokeWidth="2.5"
         strokeLinecap="round"
         fill="none"
       />
       <path
         d="M38 5 Q47 5 47 14 Q47 23 38 23 Q47 23 47 32 Q47 41 38 41"
-        stroke="#7C3AED"
+        stroke="#111111"
         strokeWidth="2.5"
         strokeLinecap="round"
         fill="none"
       />
       <path
         d="M62 5 Q71 5 71 14 Q71 23 62 23 Q71 23 71 32 Q71 41 62 41"
-        stroke="#7C3AED"
+        stroke="#111111"
         strokeWidth="2.5"
         strokeLinecap="round"
         fill="none"
@@ -219,7 +219,7 @@ export const rizoTypes = [
   },
   {
     group: 'RIZADO',
-    groupColor: '#7C3AED',
+    groupColor: '#111111',
     types: [
       { id: '3A', desc: 'Espiral suelta, diámetro de tiza gruesa' },
       { id: '3B', desc: 'Espiral media, diámetro de marcador' },

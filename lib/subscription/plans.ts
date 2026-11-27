@@ -111,7 +111,7 @@ export const PLANES: Record<PlanId, PlanDef> = {
       'Todo lo de Plan Studio BI',
       'Diagnóstico fotográfico con IA (hasta 150 análisis/mes)',
       'Asistente visual IA de porosidad, densidad y canas',
-      'Comprobante público sin marca Velli',
+      'Comprobante público sin marca Veli',
       'Soporte prioritario',
     ],
     features: {

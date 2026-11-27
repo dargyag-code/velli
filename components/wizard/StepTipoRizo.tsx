@@ -77,7 +77,7 @@ export default function StepTipoRizo({ data, onChange, errors }: Props) {
       <button
         type="button"
         onClick={() => setShowCamera(true)}
-        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border-2 border-dashed border-[var(--primary)] bg-[var(--primary-pale)] hover:bg-[var(--primary-light)] active:scale-[0.98] transition-all duration-200"
+        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 border-dashed border-[var(--primary)] bg-[var(--primary-pale)] hover:bg-[var(--primary-light)] active:scale-[0.98] transition-all duration-200"
       >
         <div className="w-10 h-10 rounded-xl bg-[var(--primary)] flex items-center justify-center shrink-0">
           <Camera size={20} className="text-white" />
@@ -118,12 +118,12 @@ export default function StepTipoRizo({ data, onChange, errors }: Props) {
                   type="button"
                   onClick={() => selectPrincipal(id)}
                   className={`
-                    relative flex flex-col items-center gap-2 p-3 rounded-2xl border-2
+                    relative flex flex-col items-center gap-2 p-3 rounded-xl border-2
                     transition-all duration-200 text-center
                     ${
                       isPrimary
                         ? 'border-[var(--primary)] bg-[var(--primary-light)] shadow-md shadow-green-100'
-                        : 'border-[#E5E5E5] bg-white hover:border-[var(--primary-line)] hover:bg-[var(--primary-pale)]'
+                        : 'border-[#E4E4E7] bg-white hover:border-[var(--primary-line)] hover:bg-[var(--primary-pale)]'
                     }
                   `}
                 >

@@ -12,6 +12,8 @@ import type { AjustesPlantilla } from './precio';
 import type { VariablesCotizacion } from './variables';
 import type { CostoDetalleInmutable } from './costo';
 import type { BaseComision, ComisionDetalleInmutable, ReglaComision, TipoComision } from './comision';
+import { projectQuoteForRole } from '@/lib/organizations/rbac';
+import { CATALOGO_QUIMICO_SEMILLA } from '@/lib/semilla-financiera';
 
 // ── Tipos de dominio (camelCase) ───────────────────────────────────────────
 
@@ -751,10 +753,11 @@ let sembrandoBaseFinancieraLock: Promise<{
 
 /**
  * Evita el «Margen Falso del 100%» en salones recién creados sembrando:
- * - 2 insumos base del mercado colombiano (`Decolorante / Tinte Estándar` a $320 COP/g y
- *   `Peróxido / Revelador Estándar` a $95 COP/ml) si `productos_salon` está vacío.
+ * - El catálogo químico semilla de referencia Colombia 2026 (`CATALOGO_QUIMICO_SEMILLA`,
+ *   incluyendo Polvo Decolorante a $320/g, Tinte Permanente a $465/g, Matizante a $440/g,
+ *   Peróxido a $32/ml, Alisado Orgánico a $280/ml y Máscara Backbar a $180/g) si `productos_salon` está vacío.
  * - 1 especialista inicial (`Especialista Principal`) si `estilistas` está vacío.
- * - 1 regla general de comisión (`35%` sobre precio menos producto) si `comisiones` está vacío.
+ * - 1 regla general de comisión (`40%` sobre precio menos producto / base libre de química) si `comisiones` está vacío.
  */
 export async function sembrarBaseFinancieraSalon(client?: SupabaseClient): Promise<{
   productos: ProductoSalon[];
@@ -771,34 +774,132 @@ export async function sembrarBaseFinancieraSalon(client?: SupabaseClient): Promi
       listarComisionesVigentes(supabase),
     ]);
 
+    const mapTipoProducto = (
+      cat: (typeof CATALOGO_QUIMICO_SEMILLA)[number]['categoria'],
+      codigo: string
+    ): TipoProductoSalon => {
+      if (cat === 'decolorante') return 'decolorante';
+      if (cat === 'tinte') return codigo.startsWith('MAT-') ? 'matizador' : 'tinte';
+      if (cat === 'peroxido') return 'oxidante';
+      if (cat === 'tratamiento' || cat === 'alisado') return 'tratamiento';
+      return 'otro';
+    };
+
     if (prodsTodos.length === 0) {
+      const filasSemilla = CATALOGO_QUIMICO_SEMILLA.map((item) => ({
+        user_id: userId,
+        nombre: item.nombre,
+        tipo: mapTipoProducto(item.categoria, item.codigo),
+        presentacion_cantidad: item.presentacionCantidad,
+        unidad: item.unidadMedida === 'kit' ? 'unidad' : item.unidadMedida,
+        precio_compra: item.costoEnvaseCop,
+        activo: true,
+        perfil_extendido: {
+          codigo: item.codigo,
+          proporcionPeroxido: item.proporcionPeroxido,
+          unidadFisica: item.unidadFisica,
+          gramosPorUnidadFisica: item.gramosPorUnidadFisica,
+        },
+      }));
+
       const { data, error } = await supabase
         .from('productos_salon')
-        .insert([
-          {
-            user_id: userId,
-            nombre: 'Decolorante / Tinte Estándar',
-            tipo: 'tinte',
-            presentacion_cantidad: 60,
-            unidad: 'g',
-            precio_compra: 19_200, // $320 COP / g
-            activo: true,
-          },
-          {
-            user_id: userId,
-            nombre: 'Peróxido / Revelador Estándar',
-            tipo: 'oxidante',
-            presentacion_cantidad: 1_000,
-            unidad: 'ml',
-            precio_compra: 95_000, // $95 COP / ml
-            activo: true,
-          },
-        ])
+        .insert(filasSemilla)
         .select('*');
       if (!error && data) {
         prodsTodos = data.map((r) => rowToProducto(r as Record<string, unknown>));
       } else if (error && !esTablaInexistente(error)) {
         throw error;
+      }
+    } else {
+      // 1. Corregir automáticamente el peróxido semilla anterior ($95.000 / 1000ml -> $32.000 / 1000ml)
+      const oxLegado = prodsTodos.find(
+        (p) =>
+          p.tipo === 'oxidante' &&
+          p.presentacionCantidad === 1000 &&
+          p.precioCompra === 95_000
+      );
+      if (oxLegado) {
+        try {
+          const actualizado = await actualizarProductoSalon(
+            oxLegado.id,
+            {
+              nombre: 'Loción Activadora / Peróxido 10V-20V-30V (Botella 1 Litro)',
+              precioCompra: 32_000,
+            },
+            supabase
+          );
+          prodsTodos = prodsTodos.map((p) => (p.id === actualizado.id ? actualizado : p));
+        } catch {
+          // Continúa con la lista existente
+        }
+      }
+
+      // 2. Migrar el antiguo "Decolorante / Tinte Estándar" (60g / $19.200) a Polvo Decolorante 450g ($144.000 = $320/g)
+      const decoLegado = prodsTodos.find(
+        (p) =>
+          p.presentacionCantidad === 60 &&
+          p.precioCompra === 19_200 &&
+          p.nombre.toLowerCase().includes('decolorante')
+      );
+      if (decoLegado) {
+        try {
+          const actualizado = await actualizarProductoSalon(
+            decoLegado.id,
+            {
+              nombre: 'Polvo Decolorante Profesional (Ref. BlondMe / Vario Blond)',
+              tipo: 'decolorante',
+              presentacionCantidad: 450,
+              unidad: 'g',
+              precioCompra: 144_000,
+            },
+            supabase
+          );
+          prodsTodos = prodsTodos.map((p) => (p.id === actualizado.id ? actualizado : p));
+        } catch {
+          // Continúa con la lista existente
+        }
+      }
+
+      // 3. Si falta Tinte Permanente Profesional ($465/g) o Máscara Capilar ($180/g), sembrar los faltantes del catálogo
+      const tieneTinte465 = prodsTodos.some(
+        (p) => p.tipo === 'tinte' && p.presentacionCantidad === 60 && p.precioCompra === 27_900
+      );
+      const tieneMascara180 = prodsTodos.some(
+        (p) => p.tipo === 'tratamiento' && p.unidad === 'g' && p.presentacionCantidad === 500
+      );
+      if (!tieneTinte465 || !tieneMascara180) {
+        const nombresExistentes = new Set(prodsTodos.map((p) => p.nombre.toLowerCase()));
+        const faltantes = CATALOGO_QUIMICO_SEMILLA.filter(
+          (item) => !nombresExistentes.has(item.nombre.toLowerCase())
+        ).map((item) => ({
+          user_id: userId,
+          nombre: item.nombre,
+          tipo: mapTipoProducto(item.categoria, item.codigo),
+          presentacion_cantidad: item.presentacionCantidad,
+          unidad: item.unidadMedida === 'kit' ? 'unidad' : item.unidadMedida,
+          precio_compra: item.costoEnvaseCop,
+          activo: true,
+          perfil_extendido: {
+            codigo: item.codigo,
+            proporcionPeroxido: item.proporcionPeroxido,
+            unidadFisica: item.unidadFisica,
+            gramosPorUnidadFisica: item.gramosPorUnidadFisica,
+          },
+        }));
+
+        if (faltantes.length > 0) {
+          const { data } = await supabase
+            .from('productos_salon')
+            .insert(faltantes)
+            .select('*');
+          if (data) {
+            prodsTodos = [
+              ...prodsTodos,
+              ...data.map((r) => rowToProducto(r as Record<string, unknown>)),
+            ];
+          }
+        }
       }
     }
 
@@ -821,7 +922,7 @@ export async function sembrarBaseFinancieraSalon(client?: SupabaseClient): Promi
             estilistaId: null,
             servicioId: null,
             tipo: 'porcentaje',
-            valor: 35,
+            valor: 40,
             base: 'precio_menos_producto',
           },
           supabase
@@ -829,6 +930,32 @@ export async function sembrarBaseFinancieraSalon(client?: SupabaseClient): Promi
         comsVigentes = [regla];
       } catch (err) {
         if (!esTablaInexistente(err as { code?: string })) throw err;
+      }
+    } else {
+      const reglaGeneralLegada = comsVigentes.find(
+        (c) =>
+          c.estilistaId === null &&
+          c.servicioId === null &&
+          c.tipo === 'porcentaje' &&
+          (c.valor === 35 || (c.valor === 40 && c.base === 'precio'))
+      );
+      if (reglaGeneralLegada) {
+        try {
+          const { data } = await supabase
+            .from('comisiones')
+            .update({ valor: 40, base: 'precio_menos_producto' })
+            .eq('id', reglaGeneralLegada.id)
+            .select('*')
+            .single();
+          if (data) {
+            const actualizada = rowToComision(data as Record<string, unknown>);
+            comsVigentes = comsVigentes.map((c) =>
+              c.id === actualizada.id ? actualizada : c
+            );
+          }
+        } catch {
+          // Continúa con la comisión existente
+        }
       }
     }
 
@@ -1052,6 +1179,123 @@ export async function confirmarCobroCotizacion(
 }
 
 export const registrarCobroCotizacion = confirmarCobroCotizacion;
+
+function rowOperativaToCotizacion(
+  r: Record<string, unknown>,
+  organizationId: string
+): Cotizacion {
+  const base: Cotizacion = {
+    id: String(r.id),
+    userId: String(r.organization_id ?? organizationId),
+    clientaId: r.clienta_id ? String(r.clienta_id) : undefined,
+    estilistaId: r.estilista_id ? String(r.estilista_id) : undefined,
+    servicioId: r.servicio_id ? String(r.servicio_id) : undefined,
+    servicioNombre: String(r.servicio_nombre ?? 'Servicio'),
+    estilistaNombre: r.estilista_nombre ? String(r.estilista_nombre) : undefined,
+    variables: (r.variables as VariablesCotizacion) ?? {},
+    precioCalculado: Number(r.precio_cotizado ?? 0),
+    precioCotizado: Number(r.precio_cotizado ?? 0),
+    moneda: 'COP',
+    vigenciaHasta: String(r.vigencia_hasta ?? ''),
+    estado: (r.estado as EstadoCotizacion) ?? 'enviada',
+    conMarcaVelli: true,
+    tokenPublico: String(r.token_publico ?? ''),
+    perfilExtendido: {},
+    createdAt: String(r.created_at ?? ''),
+    updatedAt: String(r.created_at ?? ''),
+  };
+
+  return projectQuoteForRole(base, {
+    organizationId,
+    role: 'specialist',
+    active: true,
+  }) as Cotizacion;
+}
+
+/**
+ * Proyección operativa en Silla para rol `specialist`: consume exclusivamente
+ * la RPC `cotizaciones_operativas_silla(p_org_id)` y redacta cualquier campo de
+ * costos químicos, fórmulas, comisiones o utilidad neta.
+ */
+export async function listarCotizacionesOperativasSilla(
+  organizationId: string,
+  opciones?: {
+    soloPorCobrar?: boolean;
+    clientaId?: string;
+    client?: SupabaseClient;
+  }
+): Promise<Cotizacion[]> {
+  if (!esUuidValido(organizationId)) return [];
+  const supabase = obtenerClienteAutenticado(opciones?.client);
+  const { data, error } = await supabase.rpc('cotizaciones_operativas_silla', {
+    p_org_id: organizationId,
+  });
+
+  if (error) {
+    if (esTablaInexistente(error)) return [];
+    throw error;
+  }
+
+  const filas = Array.isArray(data) ? data : [];
+  let lista = filas.map((r) =>
+    rowOperativaToCotizacion(r as Record<string, unknown>, organizationId)
+  );
+
+  if (opciones?.soloPorCobrar !== false) {
+    lista = lista.filter((c) => c.estado === 'enviada');
+  }
+  if (opciones?.clientaId) {
+    lista = lista.filter((c) => c.clientaId === opciones.clientaId);
+  }
+  return lista;
+}
+
+/**
+ * Crea una cotización operativa en Silla para `specialist` vía RPC
+ * `crear_cotizacion_operativa_silla` sin exponer costos internos ni requerir
+ * permisos de lectura sobre la tabla cruda `public.cotizaciones`.
+ */
+export async function crearCotizacionOperativaSilla(
+  organizationId: string,
+  input: CrearCotizacionInput,
+  client?: SupabaseClient
+): Promise<Cotizacion> {
+  const precioCalc = Math.round(input.precioCalculado);
+  const precioCot = Math.round(input.precioCotizado);
+  const motivo = input.ajusteManualMotivo?.trim() ?? '';
+
+  if (precioCot !== precioCalc && motivo.length < 3) {
+    throw new Error(
+      'MOTIVO_REQUERIDO: Cuando el precio cotizado difiere del calculado por la plantilla, debes indicar un motivo (mínimo 3 caracteres).'
+    );
+  }
+
+  const supabase = obtenerClienteAutenticado(client);
+  const { data, error } = await supabase.rpc('crear_cotizacion_operativa_silla', {
+    p_org_id: organizationId,
+    p_clienta_id: input.clientaId ?? null,
+    p_consulta_id: input.consultaId ?? null,
+    p_estilista_id: input.estilistaId ?? null,
+    p_estilista_nombre: input.estilistaNombre?.trim() || null,
+    p_servicio_id: input.servicioId ?? null,
+    p_plantilla_id: input.plantillaId ?? null,
+    p_plantilla_version: input.plantillaVersion ?? null,
+    p_servicio_nombre: input.servicioNombre.trim(),
+    p_variables: input.variables ?? {},
+    p_precio_calculado: precioCalc,
+    p_precio_cotizado: precioCot,
+    p_ajuste_manual_motivo: motivo || null,
+    p_vigencia_hasta: input.vigenciaHasta,
+    p_con_marca_velli: input.conMarcaVelli ?? true,
+  });
+
+  if (error) throw error;
+  const fila = Array.isArray(data) ? data[0] : data;
+  if (!fila || typeof fila !== 'object') {
+    throw new Error('No se pudo crear la cotización operativa en silla');
+  }
+  return rowOperativaToCotizacion(fila as Record<string, unknown>, organizationId);
+}
 
 /** Corrige el valor cobrado de una cotización ya cobrada (queda en `cotizacion_eventos`). */
 export async function corregirCobroCotizacion(

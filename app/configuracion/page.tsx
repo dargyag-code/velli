@@ -1,12 +1,30 @@
 'use client';
+
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  ArrowLeft, Edit3, Database, Download, Upload, Trash2,
-  Heart, FileText, Shield, Phone, ChevronRight, Check,
-  AlertCircle, LogOut, CreditCard, Palette, Clock, Calculator,
+  ArrowLeft,
+  Edit3,
+  Database,
+  Download,
+  Upload,
+  Trash2,
+  Heart,
+  FileText,
+  Shield,
+  Phone,
+  ChevronRight,
+  Check,
+  AlertCircle,
+  LogOut,
+  CreditCard,
+  Palette,
+  Calculator,
+  ShoppingBag,
 } from 'lucide-react';
-import { BottomNavV2 } from '@/components/v2';
+import VelvetTopHeader from '@/components/v2/VelvetTopHeader';
+import VelvetImageUploader from '@/components/v2/VelvetImageUploader';
 import {
   getAllClientas,
   getAllConsultas,
@@ -19,6 +37,12 @@ import type { Profile } from '@/lib/profile';
 import { getSuscripcionEfectiva, type SuscripcionEfectiva } from '@/lib/subscription/estado';
 import { PLANES } from '@/lib/subscription/plans';
 import EditorMarca from '@/components/marca/EditorMarca';
+import {
+  actualizarLogoBrandSettings,
+  obtenerBrandSettingsOrganizacion,
+} from '@/lib/organizations';
+import { createClient } from '@/lib/supabase/client';
+import { obtenerOrganizacionActivaPanel, type OrganizacionPanelResumen } from '@/lib/vitrina';
 import { uploadFoto } from '@/lib/storage';
 import { showToast } from '@/lib/toast';
 import { friendlyError } from '@/lib/errors';
@@ -26,11 +50,7 @@ import { getInitials } from '@/lib/utils';
 import { enlaceSoporte } from '@/lib/sitio';
 import { flagsActivos } from '@/lib/flags';
 
-const MAILTO_SOPORTE = enlaceSoporte('Soporte Velli Pro');
-
-// ─── Página de Configuración (Ajustes / Tu cuenta) ────────────────────────
-// Layout editorial alineado a Mejoras.html → SettingsScreen:
-// top bar serif + identity card + secciones numeradas + filas editoriales.
+const MAILTO_SOPORTE = enlaceSoporte('Soporte Veli');
 
 export default function ConfiguracionPage() {
   const router = useRouter();
@@ -45,23 +65,14 @@ export default function ConfiguracionPage() {
   const [saveOk, setSaveOk] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Toggle independiente: opt-in de geolocalización en fotos del wizard.
-  // Se persiste inmediatamente al cambiar (sin botón "guardar").
   const [permiteUbicacion, setPermiteUbicacion] = useState(false);
   const [savingGeo, setSavingGeo] = useState(false);
 
-  // Marca del salón (logo + color): editable aquí en cualquier momento, sin
-  // repetir el onboarding. Mismo editor que el paso 2 del wizard.
   const [editingMarca, setEditingMarca] = useState(false);
-  const [marcaLogoPreview, setMarcaLogoPreview] = useState<string | null>(null); // dataURL nueva
-  const [marcaLogoActual, setMarcaLogoActual] = useState<string | null>(null);   // URL guardada
+  const [marcaLogoPreview, setMarcaLogoPreview] = useState<string | null>(null);
+  const [marcaLogoActual, setMarcaLogoActual] = useState<string | null>(null);
   const [savingMarca, setSavingMarca] = useState(false);
   const [logoError, setLogoError] = useState(false);
-
-  // Bloque que la agenda reserva para "día de lavado tipo 4" e "instalación
-  // de peinado protector" (validación técnica 6.P7): 2–4 h por salón.
-  const [bloqueoTipo4, setBloqueoTipo4] = useState(180);
-  const [savingBloqueo, setSavingBloqueo] = useState(false);
 
   const [exportLoading, setExportLoading] = useState(false);
   const [importMsg, setImportMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
@@ -70,25 +81,39 @@ export default function ConfiguracionPage() {
   const [signingOut, setSigningOut] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
-  // Estado efectivo de la suscripción para la fila "Tu plan". Punto de
-  // entrada permanente a /planes: visible en cualquier estado (trial,
-  // activa, gracia, vencida), a diferencia del banner que solo aparece
-  // cuando hay algo accionable.
   const [sub, setSub] = useState<SuscripcionEfectiva | null>(null);
+  const [orgActiva, setOrgActiva] = useState<OrganizacionPanelResumen | null>(null);
 
   useEffect(() => {
     getSuscripcionEfectiva().then(setSub).catch(() => {});
-    getProfile()
-      .then((p) => {
+    Promise.all([
+      getProfile().catch(() => null),
+      obtenerOrganizacionActivaPanel().catch(() => null),
+    ])
+      .then(async ([p, org]) => {
+        setOrgActiva(org);
+        let logoInicial = p?.logoUrl ?? null;
+
+        if (org) {
+          const brand = await obtenerBrandSettingsOrganizacion(createClient(), org.id, {
+            organizationId: org.id,
+            nombreSalon: p?.nombreSalon,
+            logoUrl: p?.logoUrl,
+            colorPrimario: p?.colorPrimario,
+          }).catch(() => null);
+          if (brand?.logoUrl) {
+            logoInicial = brand.logoUrl;
+          }
+        }
+
         if (p) {
-          setProfile(p);
+          setProfile({ ...p, logoUrl: logoInicial ?? p.logoUrl });
           setNombre(p.nombre);
           setNombreSalon(p.nombreSalon ?? '');
           setTelefono(p.telefono ?? '');
           setCiudad(p.ciudad ?? '');
           setPermiteUbicacion(!!p.permiteUbicacion);
-          setMarcaLogoActual(p.logoUrl ?? null);
-          setBloqueoTipo4(p.bloqueoTipo4Minutos ?? 180);
+          setMarcaLogoActual(logoInicial);
         }
       })
       .finally(() => setProfileLoading(false));
@@ -97,7 +122,6 @@ export default function ConfiguracionPage() {
   const toggleGeo = async () => {
     if (savingGeo) return;
     const next = !permiteUbicacion;
-    // Optimistic update con rollback si falla.
     setPermiteUbicacion(next);
     setSavingGeo(true);
     try {
@@ -113,35 +137,23 @@ export default function ConfiguracionPage() {
     }
   };
 
-  const cambiarBloqueoTipo4 = async (minutos: number) => {
-    if (savingBloqueo) return;
-    const anterior = bloqueoTipo4;
-    setBloqueoTipo4(minutos);
-    setSavingBloqueo(true);
-    try {
-      const updated = await updateProfile({ bloqueoTipo4Minutos: minutos });
-      setProfile(updated);
-      showToast('Bloque de agenda actualizado', 'success');
-    } catch (e) {
-      console.error('[profile.bloqueoTipo4]', e);
-      setBloqueoTipo4(anterior);
-      showToast('No se pudo guardar el bloque', 'error');
-    } finally {
-      setSavingBloqueo(false);
-    }
-  };
-
   const guardarMarca = async () => {
     setSavingMarca(true);
     try {
-      // '' persiste null (logo quitado); una URL existente se conserva.
       let logoUrl = marcaLogoActual ?? '';
       if (marcaLogoPreview) {
         logoUrl = await uploadFoto(marcaLogoPreview, 'branding/logo');
       }
       const updated = await updateProfile({ logoUrl, colorPrimario: COLOR_VELLI });
-      setProfile(updated);
-      setMarcaLogoActual(updated.logoUrl ?? null);
+      if (orgActiva) {
+        await actualizarLogoBrandSettings(createClient(), {
+          organizationId: orgActiva.id,
+          displayName: updated.nombreSalon || orgActiva.name || updated.nombre,
+          logoUrl: logoUrl || null,
+        });
+      }
+      setProfile({ ...updated, logoUrl: logoUrl || undefined });
+      setMarcaLogoActual(logoUrl || null);
       setMarcaLogoPreview(null);
       setLogoError(false);
       setEditingMarca(false);
@@ -226,7 +238,10 @@ export default function ConfiguracionPage() {
         const data = JSON.parse(text);
 
         if (!data.clientas || !data.consultas) {
-          setImportMsg({ type: 'error', text: 'Archivo inválido: debe contener clientas y consultas.' });
+          setImportMsg({
+            type: 'error',
+            text: 'Archivo inválido: debe contener clientas y consultas.',
+          });
           return;
         }
 
@@ -239,7 +254,10 @@ export default function ConfiguracionPage() {
         });
         setTimeout(() => setImportMsg(null), 4000);
       } catch {
-        setImportMsg({ type: 'error', text: 'Error al leer el archivo. Verifica que sea un respaldo válido del salón.' });
+        setImportMsg({
+          type: 'error',
+          text: 'Error al leer el archivo. Verifica que sea un respaldo válido del salón.',
+        });
         setTimeout(() => setImportMsg(null), 4000);
       }
     };
@@ -272,184 +290,119 @@ export default function ConfiguracionPage() {
   };
 
   const profileName = profile?.nombre || 'Tu nombre';
-  const profileSub = profile?.nombreSalon || 'Velli Business Intelligence';
+  const profileSub = profile?.nombreSalon || 'Veli';
   const initials = profile?.nombre ? getInitials(profile.nombre) : '?';
+  const headerSalon = profile?.nombreSalon?.trim() || profile?.nombre?.trim() || undefined;
+  const headerCiudad = profile?.ciudad?.trim() || undefined;
+
+  const esSpecialist = orgActiva?.role === 'specialist';
 
   return (
-    <div
-      className="v-grain"
-      style={{ minHeight: '100vh', background: 'var(--bg)', position: 'relative', paddingBottom: 140 }}
-    >
-      {/* ── Top bar editorial ─────────────────────────────────────────── */}
-      <div style={{ padding: '54px 22px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <button
-          type="button"
-          onClick={() => router.push('/')}
-          aria-label="Volver"
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-soft)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--text-main)',
-            cursor: 'pointer',
-            flexShrink: 0,
-          }}
-        >
-          <ArrowLeft size={16} />
-        </button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <span className="v-caps">Ajustes</span>
-          <h1
-            style={{
-              margin: '2px 0 0',
-              fontFamily: 'var(--font-serif)',
-              fontSize: 26,
-              lineHeight: 1.05,
-              letterSpacing: '-0.02em',
-              color: 'var(--text-main)',
-            }}
+    <div className="min-h-screen bg-[#FAFAFA] text-[#111111] font-sans pb-16">
+      <VelvetTopHeader
+        nombreSalon={headerSalon}
+        ciudadSalon={headerCiudad}
+        rolOrganizacion={orgActiva?.role ?? null}
+      />
+
+      {/* Sub-header Velvet Studio */}
+      <div className="border-b border-[#E4E4E7]">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between gap-3">
+          <div>
+            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
+              Ajustes · Administración del Salón
+            </span>
+            <h1 className="m-0 mt-0.5 font-display text-2xl md:text-3xl font-semibold tracking-tight text-[#111111]">
+              Tu cuenta
+            </h1>
+          </div>
+
+          <Link
+            href="/"
+            className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E4E4E7] hover:bg-[#F4F4F5] text-xs font-bold text-[#111111] no-underline transition-colors shrink-0"
           >
-            Tu{' '}
-            <span style={{ fontStyle: 'italic', color: 'var(--secondary-deep)' }}>cuenta</span>
-          </h1>
+            <ArrowLeft size={14} />
+            <span>Ir a Silla</span>
+          </Link>
         </div>
       </div>
 
-      <main style={{ maxWidth: 768, margin: '0 auto', padding: '0 16px' }}>
-
-        {/* ── Identity card ─────────────────────────────────────────── */}
-        <div style={{ padding: '8px 6px 18px' }}>
-          <div
-            className="v-card"
-            style={{ padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}
-          >
-            {profile?.logoUrl && !logoError ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={profile.logoUrl}
-                alt="Logo del salón"
-                onError={() => setLogoError(true)}
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  border: '1px solid var(--border-soft)',
-                  flexShrink: 0,
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: '50%',
-                  background: '#F7ECEF',
-                  color: '#3B0D1E',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 20,
-                  flexShrink: 0,
-                }}
-              >
-                {initials}
-              </div>
-            )}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 16,
-                  lineHeight: 1.1,
-                  color: 'var(--text-main)',
-                }}
-              >
-                {profileName}
-              </div>
-              <div
-                style={{
-                  fontSize: 11.5,
-                  color: 'var(--text-tertiary)',
-                  marginTop: 3,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {profileSub}
-              </div>
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 space-y-7">
+        {/* Identity Card */}
+        <section className="bg-white rounded-xl border border-[#E4E4E7] p-5 flex items-center gap-4">
+          {profile?.logoUrl && !logoError ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={profile.logoUrl}
+              alt="Logo del salón"
+              onError={() => setLogoError(true)}
+              className="w-12 h-12 rounded-xl object-cover border border-[#E4E4E7] shrink-0"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-xl bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] font-display text-xl font-semibold flex items-center justify-center shrink-0">
+              {initials}
             </div>
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '4px 10px',
-                borderRadius: 999,
-                background: 'var(--primary-light)',
-                color: 'var(--primary)',
-                fontFamily: 'var(--font-sans)',
-                fontWeight: 600,
-                fontSize: 10.5,
-                letterSpacing: '0.04em',
-                flexShrink: 0,
-              }}
-            >
-              <span
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: '50%',
-                  background: 'var(--primary)',
-                }}
-              />
-              activa
-            </span>
-          </div>
-        </div>
+          )}
 
-        {/* ── 01 Cuenta ─────────────────────────────────────────────── */}
-        <SectionEditorial num="01" eyebrow="Cuenta">
+          <div className="flex-1 min-w-0">
+            <div className="font-display text-lg font-semibold text-[#111111] leading-tight truncate">
+              {profileName}
+            </div>
+            <div className="font-sans text-xs text-[#52525B] mt-0.5 truncate">
+              {profileSub}
+            </div>
+          </div>
+
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F0FDF4] border border-[#15803D]/25 text-[#15803D] font-sans text-[11px] font-bold shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#15803D]" />
+            Activa
+          </span>
+        </section>
+
+        {/* 01 · Cuenta */}
+        <SectionVelvet num="01" eyebrow="Cuenta">
           {profileLoading ? (
-            <div style={{ padding: '14px 16px', display: 'flex', gap: 12, alignItems: 'center' }}>
-              <div className="skeleton-shimmer" style={{ width: 34, height: 34, borderRadius: 10 }} />
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <div className="skeleton-shimmer" style={{ height: 12, width: '40%' }} />
-                <div className="skeleton-shimmer" style={{ height: 10, width: '70%' }} />
+            <div className="p-4 flex items-center gap-3">
+              <div className="skeleton-shimmer w-9 h-9 rounded-xl shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="skeleton-shimmer h-3 w-2/5 rounded-md" />
+                <div className="skeleton-shimmer h-2.5 w-3/5 rounded-md" />
               </div>
             </div>
           ) : editingProfile ? (
-            <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <FieldEditorial label="Nombre" value={nombre} onChange={setNombre} placeholder="Tu nombre" />
-              <FieldEditorial label="Nombre del salón" value={nombreSalon} onChange={setNombreSalon} placeholder="Ej. Atelier Camila Studio" />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <FieldEditorial label="Teléfono" value={telefono} onChange={setTelefono} placeholder="+57 ..." />
-                <FieldEditorial label="Ciudad" value={ciudad} onChange={setCiudad} placeholder="Bogotá" />
+            <div className="p-5 space-y-3.5">
+              <FieldVelvet
+                label="Nombre"
+                value={nombre}
+                onChange={setNombre}
+                placeholder="Tu nombre"
+              />
+              <FieldVelvet
+                label="Nombre del salón"
+                value={nombreSalon}
+                onChange={setNombreSalon}
+                placeholder="Ej. Atelier Camila Studio"
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <FieldVelvet
+                  label="Teléfono"
+                  value={telefono}
+                  onChange={setTelefono}
+                  placeholder="+57 ..."
+                />
+                <FieldVelvet
+                  label="Ciudad"
+                  value={ciudad}
+                  onChange={setCiudad}
+                  placeholder="Bogotá"
+                />
               </div>
-              <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+              <div className="flex items-center gap-2.5 pt-1">
                 <button
                   type="button"
                   onClick={() => setEditingProfile(false)}
                   disabled={saving}
-                  style={{
-                    flex: 1,
-                    padding: '12px 0',
-                    borderRadius: 999,
-                    background: 'transparent',
-                    border: '1px solid var(--border-strong)',
-                    color: 'var(--text-secondary)',
-                    fontFamily: 'var(--font-sans)',
-                    fontWeight: 600,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                  }}
+                  className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-white hover:bg-[#FAFAFA] border border-[#E4E4E7] text-[#52525B] hover:text-[#111111] font-sans text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -457,254 +410,187 @@ export default function ConfiguracionPage() {
                   type="button"
                   onClick={saveProfile}
                   disabled={saving}
-                  style={{
-                    flex: 1,
-                    padding: '12px 0',
-                    borderRadius: 999,
-                    background: 'var(--primary)',
-                    border: 'none',
-                    color: '#fff',
-                    fontFamily: 'var(--font-sans)',
-                    fontWeight: 700,
-                    fontSize: 13,
-                    cursor: saving ? 'not-allowed' : 'pointer',
-                    opacity: saving ? 0.6 : 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                  }}
+                  className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white font-sans text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60 border-none"
                 >
-                  {saveOk ? <><Check size={14} /> Guardado</> : saving ? 'Guardando…' : 'Guardar'}
+                  {saveOk ? (
+                    <>
+                      <Check size={14} /> Guardado
+                    </>
+                  ) : saving ? (
+                    'Guardando…'
+                  ) : (
+                    'Guardar'
+                  )}
                 </button>
               </div>
             </div>
           ) : (
-            <RowEditorial
+            <RowVelvet
               icon={<Edit3 size={16} />}
               title="Perfil profesional"
               sub="Salón, especialidades, contacto"
               onClick={() => setEditingProfile(true)}
             />
           )}
-          {editingMarca ? (
-            <div style={{ padding: 16, borderBottom: '1px solid var(--border-soft)' }}>
-              <EditorMarca
-                logoSrc={marcaLogoPreview ?? marcaLogoActual}
-                onLogo={(dataUrl) => {
-                  if (dataUrl) {
-                    setMarcaLogoPreview(dataUrl);
-                  } else {
-                    setMarcaLogoPreview(null);
-                    setMarcaLogoActual(null);
-                  }
-                }}
-                nombreSalon={profile?.nombreSalon}
-              />
-              <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-                <button
-                  type="button"
-                  onClick={cancelarMarca}
-                  disabled={savingMarca}
-                  style={{
-                    flex: 1,
-                    padding: '12px 0',
-                    borderRadius: 999,
-                    background: 'transparent',
-                    border: '1px solid var(--border-strong)',
-                    color: 'var(--text-secondary)',
-                    fontFamily: 'var(--font-sans)',
-                    fontWeight: 600,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={guardarMarca}
-                  disabled={savingMarca}
-                  style={{
-                    flex: 1,
-                    padding: '12px 0',
-                    borderRadius: 999,
-                    background: 'var(--primary)',
-                    border: 'none',
-                    color: '#fff',
-                    fontFamily: 'var(--font-sans)',
-                    fontWeight: 700,
-                    fontSize: 13,
-                    cursor: savingMarca ? 'not-allowed' : 'pointer',
-                    opacity: savingMarca ? 0.6 : 1,
-                  }}
-                >
-                  {savingMarca ? 'Guardando…' : 'Guardar'}
-                </button>
+
+          {!esSpecialist &&
+            (editingMarca ? (
+              <div className="p-5">
+                {orgActiva ? (
+                  <VelvetImageUploader
+                    organizationId={orgActiva.id}
+                    folder="brand"
+                    shape="square"
+                    label="Logotipo oficial del salón"
+                    helperText="JPG, PNG o WebP · máx. 3 MB · visible en tu vitrina pública"
+                    value={marcaLogoActual}
+                    onChange={(nextUrl) => {
+                      setMarcaLogoPreview(null);
+                      setMarcaLogoActual(nextUrl);
+                      setLogoError(false);
+                    }}
+                    disabled={savingMarca}
+                  />
+                ) : (
+                  <EditorMarca
+                    logoSrc={marcaLogoPreview ?? marcaLogoActual}
+                    onLogo={(dataUrl) => {
+                      if (dataUrl) {
+                        setMarcaLogoPreview(dataUrl);
+                      } else {
+                        setMarcaLogoPreview(null);
+                        setMarcaLogoActual(null);
+                      }
+                    }}
+                    nombreSalon={profile?.nombreSalon}
+                  />
+                )}
+                <div className="flex items-center gap-2.5 mt-4">
+                  <button
+                    type="button"
+                    onClick={cancelarMarca}
+                    disabled={savingMarca}
+                    className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-white hover:bg-[#FAFAFA] border border-[#E4E4E7] text-[#52525B] hover:text-[#111111] font-sans text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={guardarMarca}
+                    disabled={savingMarca}
+                    className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white font-sans text-xs font-bold transition-colors cursor-pointer disabled:opacity-60 border-none"
+                  >
+                    {savingMarca ? 'Guardando…' : 'Guardar'}
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <RowEditorial
-              icon={<Palette size={16} />}
-              title="Tu marca"
-              sub="Logotipo oficial de tu salón"
-              onClick={() => setEditingMarca(true)}
-              rightEl={
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                  {marcaLogoActual && !logoError && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={marcaLogoActual}
-                      alt=""
-                      aria-hidden
-                      onError={() => setLogoError(true)}
-                      style={{
-                        width: 26,
-                        height: 26,
-                        borderRadius: 8,
-                        objectFit: 'cover',
-                        border: '1px solid var(--border-soft)',
-                      }}
-                    />
-                  )}
-                  <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
-                </span>
-              }
-            />
-          )}
-          {(flagsActivos(profile?.featureFlags).cotizador || true) && (
-            <RowEditorial
+            ) : (
+              <RowVelvet
+                icon={<Palette size={16} />}
+                title="Tu marca"
+                sub="Logotipo oficial de tu salón"
+                onClick={() => setEditingMarca(true)}
+                rightEl={
+                  <span className="inline-flex items-center gap-2 shrink-0">
+                    {marcaLogoActual && !logoError && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={marcaLogoActual}
+                        alt=""
+                        aria-hidden
+                        onError={() => setLogoError(true)}
+                        className="w-7 h-7 rounded-lg object-cover border border-[#E4E4E7]"
+                      />
+                    )}
+                    <ChevronRight size={15} className="text-[#71717A]" />
+                  </span>
+                }
+              />
+            ))}
+
+          {!esSpecialist && (flagsActivos(profile?.featureFlags).cotizador || true) && (
+            <RowVelvet
               icon={<Calculator size={16} />}
               title="Menú de servicios, química y comisiones"
               sub="Tarifas por servicio, costos de química ($/g y $/ml) y liquidación"
               onClick={() => router.push('/configuracion/precios')}
             />
           )}
-          {/* Bloque reservado para servicios tipo 4 (validación técnica 6.P7) */}
-          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-soft)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-              <Clock size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-main)' }}>
-                Bloque para servicios tipo 4
-              </div>
-            </div>
-            <p style={{ margin: '0 0 10px 26px', fontSize: 11, color: 'var(--text-tertiary)', lineHeight: 1.45 }}>
-              Día de lavado tipo 4 e instalación de peinado protector reservan
-              este tiempo y bloquean citas encima.
-            </p>
-            <div style={{ display: 'flex', gap: 6, marginLeft: 26 }}>
-              {[120, 180, 240].map((m) => {
-                const on = bloqueoTipo4 === m;
-                return (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => cambiarBloqueoTipo4(m)}
-                    disabled={savingBloqueo}
-                    style={{
-                      flex: 1,
-                      padding: '9px 8px',
-                      borderRadius: 12,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      fontFamily: 'var(--font-sans)',
-                      background: on ? 'var(--primary-pale)' : 'var(--bg-card)',
-                      color: on ? 'var(--primary)' : 'var(--text-secondary)',
-                      border: `1px solid ${on ? 'rgba(59, 13, 30, 0.3)' : 'var(--border-soft)'}`,
-                      cursor: savingBloqueo ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    {m / 60} horas
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <RowEditorial
-            icon={<CreditCard size={16} />}
-            title="Tu plan"
-            sub={descripcionSuscripcion(sub)}
-            onClick={() => router.push('/planes')}
-            rightEl={
-              <span
-                style={{
-                  flexShrink: 0,
-                  padding: '6px 12px',
-                  borderRadius: 999,
-                  background: 'var(--primary-pale)',
-                  color: 'var(--primary)',
-                  fontFamily: 'var(--font-sans)',
-                  fontWeight: 700,
-                  fontSize: 11,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                Cambiar de plan
-              </span>
-            }
-          />
-        </SectionEditorial>
 
-        {/* ── 02 Backup y datos ─────────────────────────────────────── */}
-        <SectionEditorial num="02" eyebrow="Respaldo y datos del salón">
-          <RowEditorial
-            icon={<Download size={16} />}
-            title="Descargar respaldo de datos del salón"
-            sub="Guarda una copia segura de las clientas e historial de tu salón"
-            onClick={handleExport}
-            rightEl={exportLoading ? (
-              <span
-                style={{
-                  width: 14,
-                  height: 14,
-                  border: '2px solid var(--primary)',
-                  borderTopColor: 'transparent',
-                  borderRadius: '50%',
-                  animation: 'spin 700ms linear infinite',
-                }}
-              />
-            ) : undefined}
-          />
-          <RowEditorial
-            icon={<Upload size={16} />}
-            title="Restaurar respaldo de datos del salón"
-            sub="Recupera una copia previa sin borrar los registros actuales"
-            onClick={handleImport}
-          />
-          <RowEditorial
-            icon={<Trash2 size={16} />}
-            title="Borrar todos los datos"
-            sub="Elimina tus clientas y consultas"
-            onClick={() => setShowClearConfirm(true)}
-            danger
-          />
-        </SectionEditorial>
+          {!esSpecialist && (
+            <RowVelvet
+              icon={<ShoppingBag size={16} />}
+              title="Vitrina pública y pedidos web"
+              sub="Catálogo de tienda, enlace /s/slug y seguimiento de pedidos por WhatsApp"
+              onClick={() => router.push('/vitrina')}
+            />
+          )}
+
+          {!esSpecialist && (
+            <RowVelvet
+              icon={<CreditCard size={16} />}
+              title="Tu plan"
+              sub={descripcionSuscripcion(sub)}
+              onClick={() => router.push('/planes')}
+              rightEl={
+                <span className="shrink-0 px-3 py-1.5 rounded-full bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] font-sans font-bold text-[11px] whitespace-nowrap">
+                  Cambiar de plan
+                </span>
+              }
+            />
+          )}
+        </SectionVelvet>
+
+        {/* 02 · Respaldo y datos del salón (exclusivo owner / manager) */}
+        {!esSpecialist && (
+          <SectionVelvet num="02" eyebrow="Respaldo y datos del salón">
+            <RowVelvet
+              icon={<Download size={16} />}
+              title="Descargar respaldo de datos del salón"
+              sub="Guarda una copia segura de las clientas e historial de tu salón"
+              onClick={handleExport}
+              rightEl={
+                exportLoading ? (
+                  <span className="w-4 h-4 rounded-full border-2 border-[#111111] border-t-transparent animate-spin inline-block shrink-0" />
+                ) : undefined
+              }
+            />
+            <RowVelvet
+              icon={<Upload size={16} />}
+              title="Restaurar respaldo de datos del salón"
+              sub="Recupera una copia previa sin borrar los registros actuales"
+              onClick={handleImport}
+            />
+            <RowVelvet
+              icon={<Trash2 size={16} />}
+              title="Borrar todos los datos"
+              sub="Elimina tus clientas y consultas"
+              onClick={() => setShowClearConfirm(true)}
+              danger
+            />
+          </SectionVelvet>
+        )}
 
         {importMsg && (
           <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 8,
-              padding: '10px 12px',
-              borderRadius: 12,
-              margin: '0 6px 14px',
-              background: importMsg.type === 'ok' ? '#EEF7EE' : '#FCEEEE',
-              border: `1px solid ${importMsg.type === 'ok' ? '#C8DDC4' : 'rgba(178,58,58,0.18)'}`,
-              color: importMsg.type === 'ok' ? '#2F6B30' : '#7A1F1F',
-            }}
+            className={`flex items-start gap-2.5 p-4 rounded-xl border text-xs leading-relaxed ${
+              importMsg.type === 'ok'
+                ? 'bg-[#F0FDF4] border-[#15803D]/30 text-[#15803D]'
+                : 'bg-[#FFFBEB] border-[#B45309]/35 text-[#B45309]'
+            }`}
           >
-            {importMsg.type === 'ok'
-              ? <Check size={14} style={{ marginTop: 2, flexShrink: 0 }} />
-              : <AlertCircle size={14} style={{ marginTop: 2, flexShrink: 0 }} />
-            }
-            <p style={{ margin: 0, fontSize: 12, lineHeight: 1.4 }}>{importMsg.text}</p>
+            {importMsg.type === 'ok' ? (
+              <Check size={15} className="mt-0.5 shrink-0" />
+            ) : (
+              <AlertCircle size={15} className="mt-0.5 shrink-0" />
+            )}
+            <p className="m-0 font-medium">{importMsg.text}</p>
           </div>
         )}
 
-        {/* ── 03 Privacidad ─────────────────────────────────────────── */}
-        <SectionEditorial num="03" eyebrow="Privacidad">
-          <ToggleRowEditorial
+        {/* 03 · Privacidad */}
+        <SectionVelvet num="03" eyebrow="Privacidad">
+          <ToggleRowVelvet
             icon={<Shield size={16} />}
             title="Permitir capturar ubicación aproximada en fotos"
             sub="Si lo activas, registramos la ubicación aproximada al tomar fotos. No se comparte con terceros, solo queda en tu base de datos."
@@ -712,141 +598,105 @@ export default function ConfiguracionPage() {
             onChange={toggleGeo}
             saving={savingGeo}
           />
-          <RowEditorial
+          <RowVelvet
             icon={<Heart size={16} />}
             title="Política de privacidad"
             sub="Cómo cuidamos los datos de tus clientas"
             onClick={() => router.push('/legal/privacidad')}
           />
-          <RowEditorial
+          <RowVelvet
             icon={<Shield size={16} />}
             title="Tratamiento de datos"
             sub="Consentimientos, retención, derechos ARCO"
             onClick={() => router.push('/legal/privacidad')}
           />
-          <RowEditorial
+          <RowVelvet
             icon={<FileText size={16} />}
             title="Términos y condiciones"
-            sub="Uso de la plataforma Velli Business Intelligence"
+            sub="Uso de la plataforma Veli"
             onClick={() => router.push('/legal/terminos')}
           />
-          <RowEditorial
+          <RowVelvet
             icon={<FileText size={16} />}
             title="Consentimiento · servicios químicos"
             sub="Lo firma cada clienta en su ficha antes de decolorar"
             onClick={() => router.push('/legal/consentimiento-quimico')}
           />
-          <RowEditorial
+          <RowVelvet
             icon={<FileText size={16} />}
             title="Consentimiento · imágenes"
             sub="Requisito para activar la cámara en alopecia y químicos"
             onClick={() => router.push('/legal/consentimiento-imagenes')}
           />
-        </SectionEditorial>
+        </SectionVelvet>
 
-        {/* ── 04 Soporte ────────────────────────────────────────────── */}
-        <SectionEditorial num="04" eyebrow="Soporte">
-          {/* Sin NEXT_PUBLIC_SUPPORT_EMAIL no hay a dónde escribir: la fila se oculta. */}
+        {/* 04 · Soporte */}
+        <SectionVelvet num="04" eyebrow="Soporte">
           {MAILTO_SOPORTE && (
-            <RowEditorial
+            <RowVelvet
               icon={<Phone size={16} />}
               title="Centro de ayuda"
               sub="Tutoriales y contacto"
-              onClick={() => { window.location.href = MAILTO_SOPORTE; }}
+              onClick={() => {
+                window.location.href = MAILTO_SOPORTE;
+              }}
             />
           )}
-          <RowEditorial
+          <RowVelvet
             icon={<Database size={16} />}
             title="Versión de la app"
             sub="v1.0 · al día"
           />
-        </SectionEditorial>
+        </SectionVelvet>
 
-        {/* ── Acerca de Velli (hero editorial) ──────────────────────── */}
-        <div style={{ padding: '14px 6px 4px' }}>
-          <div className="bg-white rounded-3xl border border-[#EFE8E4] p-6 text-center shadow-[0_8px_24px_-10px_rgba(59,13,30,0.06)]">
-            <div className="w-14 h-14 rounded-2xl bg-[#3B0D1E] mx-auto mb-3 flex items-center justify-center shadow-md">
-              <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19.2 33.5C13.2 29.8 7.5 21.8 9.2 13.8C10.5 7.8 16.5 7.2 19.2 14.5C20.2 17.2 20.2 27.5 19.2 33.5Z" fill="#FAF7F5" />
-                <path d="M20.8 33.5C26.8 29.8 32.5 21.8 30.8 13.8C29.5 7.8 23.5 7.2 20.8 14.5C19.8 17.2 19.8 27.5 20.8 33.5Z" fill="#E8CFC8" fillOpacity="0.88" />
-                <circle cx="20" cy="6.5" r="2.5" fill="#D97757" />
-              </svg>
-            </div>
-            <div className="text-lg font-bold text-[#1C1518] font-brand tracking-tight">
-              velli <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6E1E3A] ml-1">Business Intelligence</span>
-            </div>
-            <p className="text-xs text-[#6E6266] mt-2 max-w-xs mx-auto leading-relaxed">
-              Cotización capilar sin báscula, cierre financiero en un toque y rentabilidad real por servicio.
-            </p>
+        {/* Acerca de Veli */}
+        <section className="bg-white rounded-xl border border-[#E4E4E7] p-6 text-center">
+          <div className="w-14 h-14 rounded-xl bg-[#111111] mx-auto mb-3 flex items-center justify-center">
+            <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M19.2 33.5C13.2 29.8 7.5 21.8 9.2 13.8C10.5 7.8 16.5 7.2 19.2 14.5C20.2 17.2 20.2 27.5 19.2 33.5Z"
+                fill="#FAFAFA"
+              />
+              <path
+                d="M20.8 33.5C26.8 29.8 32.5 21.8 30.8 13.8C29.5 7.8 23.5 7.2 20.8 14.5C19.8 17.2 19.8 27.5 20.8 33.5Z"
+                fill="#E4E4E7"
+                fillOpacity="0.88"
+              />
+              <circle cx="20" cy="6.5" r="2.5" fill="#B45309" />
+            </svg>
           </div>
-        </div>
+          <div className="text-lg font-bold text-[#111111] font-display tracking-tight">
+            velli{' '}
+            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] ml-1">
+              Business Intelligence
+            </span>
+          </div>
+          <p className="text-xs text-[#52525B] mt-2 max-w-xs mx-auto leading-relaxed">
+            Cotización capilar sin báscula, cierre financiero en un toque y rentabilidad real por servicio.
+          </p>
+        </section>
 
-        {/* ── Cerrar sesión ── prominente al final ─────────────────── */}
-        <div style={{ padding: '12px 6px 22px' }}>
-          <div
-            style={{
-              height: 1,
-              background: 'linear-gradient(to right, var(--border-strong), transparent)',
-              marginBottom: 18,
-            }}
-          />
+        {/* Cerrar sesión */}
+        <section className="pt-1 pb-4">
           <button
             type="button"
             onClick={() => setShowSignOutConfirm(true)}
-            style={{
-              width: '100%',
-              background: '#FCEEEE',
-              border: '1px solid rgba(178,58,58,0.18)',
-              borderRadius: 16,
-              padding: '14px 18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 10,
-              color: '#B23A3A',
-              fontFamily: 'var(--font-sans)',
-              fontWeight: 700,
-              fontSize: 14,
-              letterSpacing: '0.01em',
-              cursor: 'pointer',
-              transition: 'transform 120ms ease',
-            }}
-            onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.98)'; }}
-            onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+            className="w-full min-h-[48px] py-3.5 px-5 rounded-xl bg-[#FFFBEB] hover:bg-[#F4F4F5] border border-[#B45309]/35 text-[#B45309] font-sans font-bold text-sm inline-flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] cursor-pointer"
           >
-            <span
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                background: '#B23A3A',
-                boxShadow: '0 0 0 4px rgba(178,58,58,0.32)',
-              }}
-            />
-            Cerrar sesión
+            <LogOut size={16} />
+            <span>Cerrar sesión</span>
           </button>
-          <div
-            className="v-mono"
-            style={{
-              textAlign: 'center',
-              marginTop: 10,
-              fontSize: 11,
-              color: 'var(--text-muted)',
-            }}
-          >
+          <div className="font-mono text-center mt-2.5 text-[11px] text-[#71717A] tabular-nums">
             · {profile ? `sesión activa como ${profile.nombre}` : 'sesión activa'} ·
           </div>
-        </div>
-
+        </section>
       </main>
 
       {showSignOutConfirm && (
         <ConfirmSheet
-          tone="red"
           icon={<LogOut size={22} />}
-          eyebrow="Confirmación,"
-          title={<>¿Cerrar <span style={{ fontStyle: 'italic', color: '#B23A3A' }}>sesión</span>?</>}
+          eyebrow="Confirmación"
+          title="¿Cerrar sesión?"
           description="Volverás a la pantalla de inicio de sesión. Los diagnósticos sin guardar se perderán."
           confirmLabel="Sí, cerrar sesión"
           loading={signingOut}
@@ -857,31 +707,19 @@ export default function ConfiguracionPage() {
 
       {showClearConfirm && (
         <ConfirmSheet
-          tone="red"
           icon={<Trash2 size={22} />}
-          eyebrow="Atención,"
-          title={<>¿Borrar <span style={{ fontStyle: 'italic', color: '#B23A3A' }}>todo</span>?</>}
+          eyebrow="Atención"
+          title="¿Borrar todos los datos?"
           description="Se eliminarán todas tus clientas y consultas. No se puede deshacer. Descarga un respaldo de datos del salón antes si deseas conservarlas."
           confirmLabel="Sí, borrar todo"
           onCancel={() => setShowClearConfirm(false)}
           onConfirm={handleClearAll}
         />
       )}
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg) } }
-        @keyframes velliFadeIn { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes velliSlideUp { from { transform: translateY(40px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
-      `}</style>
-
-      <BottomNavV2 />
     </div>
   );
 }
 
-// Subtítulo de la fila "Tu plan": plan actual + días restantes en todos los
-// estados. null = RPC aún sin responder (o migración no aplicada) → texto
-// genérico para que la fila siga siendo un punto de entrada útil.
 function descripcionSuscripcion(sub: SuscripcionEfectiva | null): string {
   if (!sub) return 'Suscripción, renovación y pagos';
 
@@ -909,9 +747,7 @@ function descripcionSuscripcion(sub: SuscripcionEfectiva | null): string {
   }
 }
 
-// ─── Subcomponentes editoriales ───────────────────────────────────────────
-
-function SectionEditorial({
+function SectionVelvet({
   num,
   eyebrow,
   children,
@@ -921,19 +757,23 @@ function SectionEditorial({
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ padding: '14px 6px 4px' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
-        <span className="v-num">· {num}</span>
-        <span className="v-caps">{eyebrow}</span>
+    <section className="space-y-2.5">
+      <div className="flex items-baseline gap-2 px-1">
+        <span className="font-mono text-[11px] font-semibold text-[#71717A] tabular-nums">
+          {num} ·
+        </span>
+        <h2 className="m-0 font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
+          {eyebrow}
+        </h2>
       </div>
-      <div className="v-card" style={{ padding: 0, overflow: 'hidden' }}>
+      <div className="bg-white rounded-xl border border-[#E4E4E7] overflow-hidden divide-y divide-[#E4E4E7]">
         {children}
       </div>
-    </div>
+    </section>
   );
 }
 
-function RowEditorial({
+function RowVelvet({
   icon,
   title,
   sub,
@@ -948,64 +788,40 @@ function RowEditorial({
   onClick?: () => void;
   danger?: boolean;
 }) {
-  const interactive = !!onClick;
+  const interactive = Boolean(onClick);
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={!interactive}
-      style={{
-        width: '100%',
-        background: 'transparent',
-        border: 'none',
-        cursor: interactive ? 'pointer' : 'default',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        padding: '12px 14px',
-        borderBottom: '1px solid var(--border-soft)',
-        textAlign: 'left',
-        color: danger ? '#B23A3A' : 'var(--text-main)',
-        fontFamily: 'var(--font-sans)',
-      }}
+      className={`w-full bg-transparent border-none flex items-center gap-3.5 min-h-[56px] px-5 py-3.5 text-left font-sans transition-colors ${
+        interactive ? 'hover:bg-[#FAFAFA] cursor-pointer' : 'cursor-default'
+      } ${danger ? 'text-[#B45309]' : 'text-[#111111]'}`}
     >
       <span
-        style={{
-          width: 34,
-          height: 34,
-          borderRadius: 10,
-          background: danger ? '#FCEEEE' : 'var(--primary-pale)',
-          color: danger ? '#B23A3A' : 'var(--primary)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}
+        className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
+          danger
+            ? 'bg-[#FFFBEB] border-[#B45309]/25 text-[#B45309]'
+            : 'bg-[#FAFAFA] border-[#E4E4E7] text-[#111111]'
+        }`}
       >
         {icon}
       </span>
-      <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: 'block', fontSize: 14, fontWeight: 600, lineHeight: 1.15 }}>{title}</span>
+      <span className="flex-1 min-w-0">
+        <span className="block text-sm font-semibold leading-snug">{title}</span>
         {sub && (
-          <span
-            style={{
-              display: 'block',
-              fontSize: 11.5,
-              color: 'var(--text-tertiary)',
-              marginTop: 2,
-              fontWeight: 400,
-            }}
-          >
+          <span className="block text-xs text-[#52525B] mt-0.5 font-normal leading-relaxed">
             {sub}
           </span>
         )}
       </span>
-      {rightEl ?? (interactive ? <ChevronRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} /> : null)}
+      {rightEl ??
+        (interactive ? <ChevronRight size={15} className="text-[#71717A] shrink-0" /> : null)}
     </button>
   );
 }
 
-function ToggleRowEditorial({
+function ToggleRowVelvet({
   icon,
   title,
   sub,
@@ -1025,86 +841,40 @@ function ToggleRowEditorial({
       type="button"
       onClick={onChange}
       disabled={saving}
-      style={{
-        width: '100%',
-        background: 'transparent',
-        border: 'none',
-        cursor: saving ? 'wait' : 'pointer',
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 12,
-        padding: '12px 14px',
-        borderBottom: '1px solid var(--border-soft)',
-        textAlign: 'left',
-        color: 'var(--text-main)',
-        fontFamily: 'var(--font-sans)',
-        opacity: saving ? 0.7 : 1,
-      }}
+      role="switch"
+      aria-checked={value}
+      className={`w-full bg-transparent border-none flex items-start gap-3.5 min-h-[56px] px-5 py-4 text-left text-[#111111] font-sans hover:bg-[#FAFAFA] transition-colors ${
+        saving ? 'opacity-70 cursor-wait' : 'cursor-pointer'
+      }`}
     >
-      <span
-        style={{
-          width: 34,
-          height: 34,
-          borderRadius: 10,
-          background: 'var(--primary-pale)',
-          color: 'var(--primary)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}
-      >
+      <span className="w-9 h-9 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] text-[#111111] flex items-center justify-center shrink-0">
         {icon}
       </span>
-      <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: 'block', fontSize: 14, fontWeight: 600, lineHeight: 1.2 }}>{title}</span>
+      <span className="flex-1 min-w-0">
+        <span className="block text-sm font-semibold leading-snug">{title}</span>
         {sub && (
-          <span
-            style={{
-              display: 'block',
-              fontSize: 11.5,
-              color: 'var(--text-tertiary)',
-              marginTop: 4,
-              fontWeight: 400,
-              lineHeight: 1.45,
-            }}
-          >
+          <span className="block text-xs text-[#52525B] mt-1 font-normal leading-relaxed">
             {sub}
           </span>
         )}
       </span>
       <span
         aria-hidden
-        style={{
-          width: 38,
-          height: 22,
-          borderRadius: 999,
-          background: value ? 'var(--primary)' : 'var(--border-strong)',
-          position: 'relative',
-          flexShrink: 0,
-          transition: 'background 160ms ease',
-          marginTop: 4,
-        }}
+        className={`w-10 h-6 rounded-full relative shrink-0 mt-0.5 transition-colors ${
+          value ? 'bg-[#111111]' : 'bg-[#E4E4E7]'
+        }`}
       >
         <span
-          style={{
-            position: 'absolute',
-            top: 2,
-            left: value ? 18 : 2,
-            width: 18,
-            height: 18,
-            borderRadius: '50%',
-            background: '#fff',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-            transition: 'left 160ms ease',
-          }}
+          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-xs transition-transform ${
+            value ? 'translate-x-4' : 'translate-x-0'
+          }`}
         />
       </span>
     </button>
   );
 }
 
-function FieldEditorial({
+function FieldVelvet({
   label,
   value,
   onChange,
@@ -1116,17 +886,8 @@ function FieldEditorial({
   placeholder?: string;
 }) {
   return (
-    <label style={{ display: 'block' }}>
-      <span
-        style={{
-          display: 'block',
-          fontSize: 11,
-          color: 'var(--text-tertiary)',
-          marginBottom: 4,
-          fontFamily: 'var(--font-serif)',
-          fontStyle: 'italic',
-        }}
-      >
+    <label className="block">
+      <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1.5">
         {label}
       </span>
       <input
@@ -1134,25 +895,13 @@ function FieldEditorial({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        style={{
-          width: '100%',
-          background: 'var(--bg)',
-          border: '1px solid var(--border)',
-          borderRadius: 12,
-          padding: '10px 12px',
-          fontSize: 13,
-          color: 'var(--text-main)',
-          fontFamily: 'var(--font-sans)',
-          outline: 'none',
-        }}
+        className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm text-[#111111] font-sans placeholder-[#71717A]"
       />
     </label>
   );
 }
 
-// ─── Bottom-sheet de confirmación reutilizable ────────────────────────────
 function ConfirmSheet({
-  tone = 'red',
   icon,
   eyebrow,
   title,
@@ -1162,135 +911,48 @@ function ConfirmSheet({
   onCancel,
   onConfirm,
 }: {
-  tone?: 'red' | 'amber';
   icon: React.ReactNode;
   eyebrow: string;
-  title: React.ReactNode;
+  title: string;
   description: string;
   confirmLabel: string;
   loading?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
-  const tones = {
-    red: {
-      fg: '#B23A3A',
-      bg: '#FCEEEE',
-      bd: 'rgba(178,58,58,0.18)',
-      shadow: 'rgba(178,58,58,0.32)',
-      gradient: 'linear-gradient(180deg, #B23A3A, #7A1F1F)',
-    },
-    amber: {
-      fg: '#B47900',
-      bg: '#FFF6E0',
-      bd: 'rgba(180,121,0,0.20)',
-      shadow: 'rgba(180,121,0,0.32)',
-      gradient: 'linear-gradient(180deg, #B47900, #5C3A00)',
-    },
-  } as const;
-  const t = tones[tone];
-
   return (
     <div
       onClick={() => !loading && onCancel()}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 60,
-        background: 'rgba(20,15,10,0.55)',
-        backdropFilter: 'blur(6px)',
-        WebkitBackdropFilter: 'blur(6px)',
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
-        animation: 'velliFadeIn 180ms ease',
-      }}
+      className="fixed inset-0 z-50 bg-[#111111]/45 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 fade-in"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="v-grain"
-        style={{
-          width: '100%',
-          maxWidth: 460,
-          background: 'var(--bg-card)',
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
-          padding: '22px 22px calc(28px + env(safe-area-inset-bottom))',
-          boxShadow: '0 -8px 30px rgba(20,15,10,0.18)',
-          animation: 'velliSlideUp 220ms cubic-bezier(0.2,0.8,0.2,1)',
-        }}
+        className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-xl border border-[#E4E4E7] p-6 sm:p-7 pb-safe"
       >
-        <div
-          style={{
-            width: 42,
-            height: 4,
-            background: 'var(--border-strong)',
-            borderRadius: 4,
-            margin: '0 auto 16px',
-          }}
-        />
-        <div
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: '50%',
-            background: t.bg,
-            border: `1px solid ${t.bd}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 14px',
-            color: t.fg,
-          }}
-        >
+        <div className="w-10 h-1 rounded-full bg-[#E4E4E7] mx-auto mb-5 sm:hidden" />
+
+        <div className="w-14 h-14 rounded-xl bg-[#FFFBEB] border border-[#B45309]/30 text-[#B45309] flex items-center justify-center mx-auto mb-3.5">
           {icon}
         </div>
-        <div className="v-eyebrow" style={{ textAlign: 'center', display: 'block' }}>
+
+        <span className="block text-center font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
           {eyebrow}
-        </div>
-        <h3
-          style={{
-            margin: '4px 0 6px',
-            textAlign: 'center',
-            fontFamily: 'var(--font-serif)',
-            fontSize: 26,
-            lineHeight: 1.1,
-            letterSpacing: '-0.02em',
-            color: 'var(--text-main)',
-          }}
-        >
+        </span>
+
+        <h3 className="m-0 mt-1 mb-2 text-center font-display text-2xl font-semibold tracking-tight text-[#111111]">
           {title}
         </h3>
-        <p
-          style={{
-            textAlign: 'center',
-            margin: '0 auto 18px',
-            maxWidth: 320,
-            fontSize: 13,
-            color: 'var(--text-secondary)',
-            lineHeight: 1.45,
-          }}
-        >
+
+        <p className="m-0 mb-6 text-center text-xs sm:text-sm text-[#52525B] leading-relaxed max-w-xs mx-auto">
           {description}
         </p>
-        <div style={{ display: 'flex', gap: 10 }}>
+
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={onCancel}
             disabled={loading}
-            style={{
-              flex: 1,
-              padding: '14px 0',
-              borderRadius: 999,
-              background: 'transparent',
-              border: '1px solid var(--border-strong)',
-              color: 'var(--text-main)',
-              fontFamily: 'var(--font-sans)',
-              fontWeight: 600,
-              fontSize: 13.5,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.6 : 1,
-            }}
+            className="flex-1 min-h-[46px] py-3 px-4 rounded-xl bg-white hover:bg-[#FAFAFA] border border-[#E4E4E7] text-[#111111] font-sans font-bold text-xs sm:text-sm transition-colors cursor-pointer disabled:opacity-60"
           >
             Cancelar
           </button>
@@ -1298,36 +960,10 @@ function ConfirmSheet({
             type="button"
             onClick={onConfirm}
             disabled={loading}
-            style={{
-              flex: 1,
-              padding: '14px 0',
-              borderRadius: 999,
-              background: t.gradient,
-              border: 'none',
-              color: '#fff',
-              fontFamily: 'var(--font-sans)',
-              fontWeight: 700,
-              fontSize: 13.5,
-              letterSpacing: '0.02em',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              boxShadow: `0 6px 18px ${t.shadow}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-            }}
+            className="flex-1 min-h-[46px] py-3 px-4 rounded-xl bg-[#B45309] hover:opacity-95 text-white font-sans font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 transition-opacity cursor-pointer disabled:opacity-60 border-none"
           >
             {loading ? (
-              <span
-                style={{
-                  width: 16,
-                  height: 16,
-                  border: '2px solid rgba(255,255,255,0.6)',
-                  borderTopColor: '#fff',
-                  borderRadius: '50%',
-                  animation: 'spin 700ms linear infinite',
-                }}
-              />
+              <span className="w-4 h-4 rounded-full border-2 border-white/60 border-t-white animate-spin inline-block" />
             ) : (
               confirmLabel
             )}

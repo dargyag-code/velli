@@ -8,7 +8,7 @@ export default function Footer() {
         className="text-xs text-[#CCCCCC]"
         style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}
       >
-        Velli Pro • Inteligencia capilar a tu alcance
+        Veli • Inteligencia capilar a tu alcance
       </p>
       <p className="text-[11px] mt-1.5">
         <Link href="/legal/terminos" className="text-[#999999] hover:text-[var(--primary)] underline-offset-2 hover:underline">

@@ -155,7 +155,7 @@ export function construirMetadataCotizacion(cotizacion: CotizacionPublica | null
   const vigenciaTexto = formatearFechaVigencia(cotizacion.vigenciaHasta);
   const descripcionBase = `${cotizacion.servicio}: ${precioTexto} ${cotizacion.moneda} · Válida hasta el ${vigenciaTexto}.`;
   const descripcion = cotizacion.conMarcaVelli
-    ? `${descripcionBase} Cotización hecha con Velli.`
+    ? `${descripcionBase} Cotización hecha con Veli.`
     : descripcionBase;
 
   return {
@@ -166,7 +166,7 @@ export function construirMetadataCotizacion(cotizacion: CotizacionPublica | null
       type: 'website',
       title: titulo,
       description: descripcion,
-      siteName: cotizacion.conMarcaVelli ? 'Velli' : cotizacion.salon,
+      siteName: cotizacion.conMarcaVelli ? 'Veli' : cotizacion.salon,
       locale: 'es_CO',
     },
     twitter: {

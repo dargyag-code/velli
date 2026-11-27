@@ -15,44 +15,44 @@ interface BtnProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, '
 
 const variantStyles: Record<BtnVariant, React.CSSProperties> = {
   primary: {
-    background: 'linear-gradient(180deg, var(--primary-hover), var(--primary))',
-    color: '#fff',
-    boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(59, 13, 30, 0.32)',
-    border: 'none',
+    background: '#111111',
+    color: '#FAFAFA',
+    boxShadow: '0 10px 24px -6px rgba(59, 13, 30, 0.25)',
+    border: '1px solid #111111',
   },
   gold: {
-    background: 'linear-gradient(180deg, #D8A878, #B47E4D)',
-    color: '#fff',
-    boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(180, 126, 77, 0.32)',
-    border: 'none',
+    background: '#F4F4F5',
+    color: '#111111',
+    boxShadow: '0 4px 14px -4px rgba(59, 13, 30, 0.08)',
+    border: '1px solid #E4E4E7',
   },
   dark: {
-    background: 'linear-gradient(180deg, var(--primary-mid), var(--primary-deep))',
-    color: '#F5EDDC',
-    boxShadow: '0 1px 0 rgba(255,255,255,0.06) inset, 0 4px 14px rgba(31, 5, 15, 0.4)',
+    background: 'linear-gradient(180deg, #27272A, #111111)',
+    color: '#FAFAFA',
+    boxShadow: '0 10px 24px -6px rgba(59, 13, 30, 0.28)',
     border: 'none',
   },
   ghost: {
     background: 'transparent',
-    color: 'var(--primary)',
+    color: '#111111',
     border: 'none',
   },
   outline: {
-    background: 'transparent',
-    color: 'var(--text-main)',
-    border: '1px solid var(--border-strong)',
+    background: '#FFFFFF',
+    color: '#111111',
+    border: '1px solid #E4E4E7',
   },
   soft: {
-    background: 'var(--primary-pale)',
-    color: 'var(--primary)',
-    border: 'none',
+    background: '#F4F4F5',
+    color: '#111111',
+    border: '1px solid #E4E4E7',
   },
 };
 
 const sizeStyles: Record<BtnSize, React.CSSProperties> = {
-  sm: { padding: '7px 14px', fontSize: 12, borderRadius: 999 },
-  md: { padding: '10px 18px', fontSize: 13, borderRadius: 999 },
-  lg: { padding: '14px 22px', fontSize: 14, borderRadius: 999 },
+  sm: { minHeight: 40, padding: '8px 16px', fontSize: 12, borderRadius: 12 },
+  md: { minHeight: 44, padding: '10px 18px', fontSize: 13, borderRadius: 14 },
+  lg: { minHeight: 48, padding: '12px 22px', fontSize: 14, borderRadius: 16 },
 };
 
 export default function Btn({
@@ -72,7 +72,7 @@ export default function Btn({
   return (
     <button
       disabled={disabled}
-      className={`active:scale-95 transition-transform ${className}`}
+      className={`active:scale-[0.98] transition-all hover:opacity-95 ${className}`}
       style={{
         display: 'inline-flex',
         alignItems: 'center',

@@ -77,7 +77,7 @@ export async function POST(req: Request) {
     const checkout = await provider.createCheckout({
       referencia,
       montoCop: def.precioCop,
-      descripcion: `Velli Pro — plan ${def.nombre} (30 días)`,
+      descripcion: `Veli — plan ${def.nombre} (30 días)`,
       emailPagador: user.email ?? undefined,
       urlRetorno: `${origin}/planes/confirmacion?ref=${referencia}`,
     });

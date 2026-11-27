@@ -66,7 +66,7 @@ export const CATALOGO_VARIABLES: {
   largo: [
     { valor: 'corto', etiqueta: 'Corto', guia: 'Hasta el mentón (referencia)', esReferencia: true },
     { valor: 'medio', etiqueta: 'Medio', guia: 'Hasta los hombros o la clavícula' },
-    { valor: 'largo', etiqueta: 'Largo', guia: 'Hasta la media espalda o la tira del brasier' },
+    { valor: 'largo', etiqueta: 'Largo', guia: 'Hasta la media espalda' },
     { valor: 'extra_largo', etiqueta: 'Extra largo', guia: 'Hasta la cintura o más' },
   ],
   densidad: [

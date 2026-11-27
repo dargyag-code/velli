@@ -2,8 +2,6 @@
 import { useEffect } from 'react';
 import * as Sentry from '@sentry/nextjs';
 
-// Último recurso: errores de render no capturados en todo el árbol.
-// Reemplaza al layout raíz, por eso lleva <html>/<body> propios.
 export default function GlobalError({
   error,
 }: {
@@ -22,58 +20,63 @@ export default function GlobalError({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'var(--bg, #FAF7F5)',
-          color: '#2A241C',
-          fontFamily: "Georgia, 'Times New Roman', serif",
+          background: '#FAFAFA',
+          color: '#111111',
+          fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif",
           textAlign: 'center',
           padding: 24,
         }}
       >
-        <main>
+        <main
+          style={{
+            background: '#FFFFFF',
+            border: '1px solid #E4E4E7',
+            borderRadius: 12,
+            padding: '32px 24px',
+            maxWidth: 380,
+            width: '100%',
+          }}
+        >
           <div
             style={{
-              width: 56,
-              height: 56,
-              borderRadius: 13,
-              background: 'linear-gradient(160deg, var(--primary, #3B0D1E) 0%, var(--primary-deep, #1F050F) 100%)',
+              width: 44,
+              height: 44,
+              borderRadius: 8,
+              background: '#111111',
               margin: '0 auto 16px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontStyle: 'italic',
-              fontSize: 34,
-              color: '#E8C290',
+              fontWeight: 700,
+              fontSize: 20,
+              color: '#FFFFFF',
             }}
           >
             V
           </div>
-          <h1 style={{ fontSize: 24, margin: '0 0 8px', letterSpacing: '-0.02em' }}>
-            Algo salió <em style={{ color: '#8A5A2E' }}>mal</em>
+          <h1 style={{ fontSize: 20, fontWeight: 700, margin: '0 0 8px', letterSpacing: '-0.02em' }}>
+            Algo salió mal
           </h1>
           <p
             style={{
-              fontFamily: "-apple-system, 'Segoe UI', sans-serif",
               fontSize: 14,
-              color: '#6B6256',
-              maxWidth: 320,
+              color: '#52525B',
               margin: '0 auto 20px',
               lineHeight: 1.5,
             }}
           >
-            Ya registramos el error y vamos a revisarlo. Tus datos están a salvo —
-            intenta recargar la página.
+            Ya registramos el error para revisarlo. Tus datos están seguros; intenta recargar la página.
           </p>
           <button
             onClick={() => window.location.reload()}
             style={{
-              fontFamily: "-apple-system, 'Segoe UI', sans-serif",
-              fontWeight: 700,
+              fontWeight: 600,
               fontSize: 14,
-              color: '#fff',
-              background: 'var(--primary, #3B0D1E)',
+              color: '#FFFFFF',
+              background: '#111111',
               border: 'none',
-              borderRadius: 999,
-              padding: '13px 28px',
+              borderRadius: 8,
+              padding: '10px 20px',
               cursor: 'pointer',
             }}
           >

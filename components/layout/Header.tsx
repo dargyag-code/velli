@@ -33,7 +33,7 @@ export default function Header({ showBack, title, rightAction }: HeaderProps) {
   if (showBack) {
     return (
       <header
-        className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-[#E5E5E5] px-4 py-3"
+        className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-[#E4E4E7] px-4 py-3"
         style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}
       >
         <div className="flex items-center gap-3 max-w-2xl mx-auto">

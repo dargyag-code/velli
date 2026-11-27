@@ -49,7 +49,7 @@ export async function POST(
     const admin = createAdminClient();
     const { data: fila, error: selectErr } = await admin
       .from('cotizaciones')
-      .select('id, user_id, clienta_id, estado, vigencia_hasta, perfil_extendido')
+      .select('id, user_id, organization_id, clienta_id, estado, vigencia_hasta, perfil_extendido')
       .eq('token_publico', token.trim())
       .maybeSingle();
 
@@ -60,6 +60,7 @@ export async function POST(
     const row = fila as {
       id: string;
       user_id: string;
+      organization_id?: string | null;
       clienta_id: string | null;
       estado: string;
       vigencia_hasta: string;
@@ -106,12 +107,12 @@ export async function POST(
     // Sincronizar con `consentimientos_clienta` si la cotización tiene `clienta_id`
     if (row.clienta_id) {
       try {
+        const orgIdEfectivo = row.organization_id || row.user_id;
         const versionQuimico = CONSENTIMIENTO_VERSIONES.consentimiento_quimico;
         const { data: existente } = await admin
           .from('consentimientos_clienta')
           .select('id')
           .eq('clienta_id', row.clienta_id)
-          .eq('user_id', row.user_id)
           .eq('tipo', 'consentimiento_quimico')
           .eq('version_aceptada', versionQuimico)
           .eq('aceptado', true)
@@ -121,32 +122,39 @@ export async function POST(
         if (!existente) {
           const { data: clientaRow } = await admin
             .from('clientas')
-            .select('nombre')
+            .select('nombre, user_id, organization_id')
             .eq('id', row.clienta_id)
-            .eq('user_id', row.user_id)
+            .or(`organization_id.eq.${orgIdEfectivo},user_id.eq.${orgIdEfectivo}`)
             .maybeSingle();
 
-          const nombreBase = (
-            (clientaRow as { nombre?: string | null } | null)?.nombre ?? ''
-          ).trim();
-          // Cumple el CHECK `char_length(btrim(nombre_firmante)) >= 5`
-          const nombreFirmante =
-            nombreBase.length >= 5
-              ? `${nombreBase} (Aceptación digital)`
-              : `${nombreBase || 'Clienta'} · Aceptación digital`;
+          const clientaTyped = clientaRow as {
+            nombre?: string | null;
+            user_id?: string;
+            organization_id?: string | null;
+          } | null;
 
-          const { error: consErr } = await admin.from('consentimientos_clienta').insert({
-            user_id: row.user_id,
-            clienta_id: row.clienta_id,
-            tipo: 'consentimiento_quimico',
-            version_aceptada: versionQuimico,
-            nombre_firmante: nombreFirmante,
-            aceptado: true,
-            firmado_at: aceptadoAt,
-          });
+          if (clientaTyped) {
+            const nombreBase = (clientaTyped.nombre ?? '').trim();
+            // Cumple el CHECK `char_length(btrim(nombre_firmante)) >= 5`
+            const nombreFirmante =
+              nombreBase.length >= 5
+                ? `${nombreBase} (Aceptación digital)`
+                : `${nombreBase || 'Clienta'} · Aceptación digital`;
 
-          if (consErr && consErr.code !== '42P01') {
-            console.warn('[cotizacion.aceptar.consentimiento_clienta]', consErr);
+            const { error: consErr } = await admin.from('consentimientos_clienta').insert({
+              user_id: clientaTyped.user_id || row.user_id,
+              organization_id: clientaTyped.organization_id || orgIdEfectivo,
+              clienta_id: row.clienta_id,
+              tipo: 'consentimiento_quimico',
+              version_aceptada: versionQuimico,
+              nombre_firmante: nombreFirmante,
+              aceptado: true,
+              firmado_at: aceptadoAt,
+            });
+
+            if (consErr && consErr.code !== '42P01') {
+              console.warn('[cotizacion.aceptar.consentimiento_clienta]', consErr);
+            }
           }
         }
       } catch (syncErr) {
