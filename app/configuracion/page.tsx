@@ -23,7 +23,7 @@ import {
   Calculator,
   ShoppingBag,
 } from 'lucide-react';
-import VelvetTopHeader from '@/components/v2/VelvetTopHeader';
+import VelvetTopHeader, { VeliLogoMark } from '@/components/v2/VelvetTopHeader';
 import VelvetImageUploader from '@/components/v2/VelvetImageUploader';
 import {
   getAllClientas,
@@ -651,28 +651,14 @@ export default function ConfiguracionPage() {
 
         {/* Acerca de Veli */}
         <section className="bg-white rounded-xl border border-[#E4E4E7] p-6 text-center">
-          <div className="w-14 h-14 rounded-xl bg-[#111111] mx-auto mb-3 flex items-center justify-center">
-            <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M19.2 33.5C13.2 29.8 7.5 21.8 9.2 13.8C10.5 7.8 16.5 7.2 19.2 14.5C20.2 17.2 20.2 27.5 19.2 33.5Z"
-                fill="#FAFAFA"
-              />
-              <path
-                d="M20.8 33.5C26.8 29.8 32.5 21.8 30.8 13.8C29.5 7.8 23.5 7.2 20.8 14.5C19.8 17.2 19.8 27.5 20.8 33.5Z"
-                fill="#E4E4E7"
-                fillOpacity="0.88"
-              />
-              <circle cx="20" cy="6.5" r="2.5" fill="#B45309" />
-            </svg>
+          <div className="mx-auto mb-3 flex items-center justify-center">
+            <VeliLogoMark collapsed size={48} />
           </div>
           <div className="text-lg font-bold text-[#111111] font-display tracking-tight">
-            velli{' '}
-            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] ml-1">
-              Business Intelligence
-            </span>
+            Veli
           </div>
           <p className="text-xs text-[#52525B] mt-2 max-w-xs mx-auto leading-relaxed">
-            Cotización capilar sin báscula, cierre financiero en un toque y rentabilidad real por servicio.
+            Control operativo sin báscula, agenda conectada a WhatsApp y rentabilidad real por servicio.
           </p>
         </section>
 

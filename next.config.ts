@@ -30,6 +30,20 @@ const CSP = [
 const nextConfig: NextConfig = {
   turbopack: {},
   allowedDevOrigins: ['192.168.100.100'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.supabase.co',
+        pathname: '/storage/v1/object/public/vitrina-media/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.supabase.in',
+        pathname: '/storage/v1/object/public/vitrina-media/**',
+      },
+    ],
+  },
   experimental: {
     agentUpgrade: 'security',
     // Tope de body buffereado por el proxy. Default 10MB, aquí 5MB.

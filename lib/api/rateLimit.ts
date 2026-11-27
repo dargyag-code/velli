@@ -7,14 +7,20 @@ let _redis: Redis | null | undefined;
 
 function getRedis(): Redis | null {
   if (_redis !== undefined) return _redis;
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) {
+  const url = process.env.UPSTASH_REDIS_REST_URL?.trim();
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
+  if (!url || !token || (!url.startsWith('https://') && !url.startsWith('http://'))) {
     _redis = null;
     return null;
   }
-  _redis = new Redis({ url, token });
-  return _redis;
+  try {
+    new URL(url);
+    _redis = new Redis({ url, token, retry: false });
+    return _redis;
+  } catch {
+    _redis = null;
+    return null;
+  }
 }
 
 // ── Limiters (lazy, cacheados) ─────────────────────────────────────────────
@@ -139,6 +145,7 @@ export interface RateLimitResult {
 }
 
 let _warned = false;
+let _errorWarned = false;
 
 export async function checkRateLimit(
   limiter: Ratelimit | null,
@@ -153,6 +160,18 @@ export async function checkRateLimit(
     }
     return { ok: true, remaining: Number.MAX_SAFE_INTEGER, reset: Date.now() };
   }
-  const { success, remaining, reset } = await limiter.limit(userId);
-  return { ok: success, remaining, reset };
+
+  try {
+    const { success, remaining, reset } = await limiter.limit(userId);
+    return { ok: success, remaining, reset };
+  } catch (err) {
+    if (!_errorWarned) {
+      console.warn(
+        '[rateLimit] Fallo de red o DNS consultando Upstash — degradando en modo fail-open:',
+        err
+      );
+      _errorWarned = true;
+    }
+    return { ok: true, remaining: Number.MAX_SAFE_INTEGER, reset: Date.now() };
+  }
 }
