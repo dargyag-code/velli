@@ -437,10 +437,21 @@ BEGIN
         'idx_' || t || '_organization_id',
         t
       );
+      -- Pausa temporalmente triggers de usuario (ej. plantillas_precio_inmutables,
+      -- cotizacion_eventos_inmutables y guardias de suscripción) durante el backfill
+      -- de `organization_id` sin usar `ALL` (compatible con rol de Supabase SQL Editor).
+      EXECUTE format(
+        'ALTER TABLE public.%I DISABLE TRIGGER USER',
+        t
+      );
       EXECUTE format(
         'UPDATE public.%I SET organization_id = user_id
           WHERE organization_id IS NULL
             AND EXISTS (SELECT 1 FROM public.organizations o WHERE o.id = user_id)',
+        t
+      );
+      EXECUTE format(
+        'ALTER TABLE public.%I ENABLE TRIGGER USER',
         t
       );
       -- Prefijo `aa_` garantiza orden alfabético previo a cualquier otro trigger BEFORE INSERT

@@ -156,6 +156,10 @@ describe('1. Endurecimiento de migraciones SQL para Postgres real', () => {
     const sqlRbac = leerSqlSinComentarios('migration-multitenant-rbac.sql');
 
     expect(sqlRbac).toMatch(/'aa_set_default_org_'\s*\|\|\s*t/);
+    expect(sqlRbac).toMatch(
+      /ALTER TABLE public\.%I DISABLE TRIGGER USER[\s\S]*?UPDATE public\.%I SET organization_id = user_id[\s\S]*?ALTER TABLE public\.%I ENABLE TRIGGER USER/
+    );
+    expect(sqlRbac).not.toMatch(/DISABLE TRIGGER ALL/i);
     expect('aa_set_default_org_appointments' < 'appointments_guard_bogota_trg').toBe(true);
     expect('aa_set_default_org_cotizaciones' < 'cotizaciones_eventos_trg').toBe(true);
     expect('aa_set_default_org_clientas' < 'guard_write_clientas').toBe(true);
