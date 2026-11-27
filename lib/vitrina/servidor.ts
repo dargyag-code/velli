@@ -72,7 +72,7 @@ export async function cargarVitrinaServidorPorSlug(
   }
 
   // Respaldo con proyección explícita de columnas públicas si la RPC aún no está desplegada
-  const [{ data: brandRow }, { data: srvRows }, { data: prodRows }] = await Promise.all([
+  const [brandRes, srvRes, prodRes] = await Promise.all([
     admin
       .from('brand_settings')
       .select(
@@ -95,6 +95,10 @@ export async function cargarVitrinaServidorPorSlug(
       .eq('active', true)
       .order('sort_order', { ascending: true }),
   ]);
+
+  const brandRow = brandRes.error ? null : brandRes.data;
+  const srvRows = !srvRes.error && Array.isArray(srvRes.data) ? srvRes.data : [];
+  const prodRows = !prodRes.error && Array.isArray(prodRes.data) ? prodRes.data : [];
 
   const serviceIds = (srvRows ?? []).map((r) => String((r as { id: unknown }).id));
   const preciosMap = new Map<string, number>();

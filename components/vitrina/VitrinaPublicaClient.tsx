@@ -74,10 +74,19 @@ export default function VitrinaPublicaClient({
   data: PublicStorefrontData;
   appHost: string;
 }) {
-  const tieneServicios = data.services.length > 0;
+  const servicios = useMemo(
+    () => (Array.isArray(data.services) ? data.services : []),
+    [data.services]
+  );
+  const productos = useMemo(
+    () => (Array.isArray(data.products) ? data.products : []),
+    [data.products]
+  );
+  const tieneServicios = servicios.length > 0;
+  const tieneProductos = productos.length > 0;
 
   const [tab, setTab] = useState<'servicios' | 'tienda'>(
-    tieneServicios ? 'servicios' : 'tienda'
+    tieneServicios ? 'servicios' : tieneProductos ? 'tienda' : 'servicios'
   );
   const [busqueda, setBusqueda] = useState('');
   const [categoriaActiva, setCategoriaActiva] = useState<string>('todas');
@@ -246,17 +255,20 @@ export default function VitrinaPublicaClient({
     }
   };
 
+  const tabActiva: 'servicios' | 'tienda' =
+    tab === 'tienda' && !tieneProductos && tieneServicios ? 'servicios' : tab;
+
   const categoriasDisponibles = useMemo(() => {
     const origen =
-      tab === 'servicios'
-        ? data.services.map((s) => formatearCategoria(s.category))
-        : data.products.map((p) => p.category);
+      tabActiva === 'servicios'
+        ? servicios.map((s) => formatearCategoria(s.category))
+        : productos.map((p) => p.category);
     return Array.from(new Set(origen.filter(Boolean)));
-  }, [tab, data.services, data.products]);
+  }, [tabActiva, servicios, productos]);
 
   const serviciosFiltrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
-    return data.services.filter((s) => {
+    return servicios.filter((s) => {
       const catLabel = formatearCategoria(s.category);
       if (categoriaActiva !== 'todas' && catLabel !== categoriaActiva) return false;
       if (q && !s.name.toLowerCase().includes(q) && !catLabel.toLowerCase().includes(q)) {
@@ -264,11 +276,11 @@ export default function VitrinaPublicaClient({
       }
       return true;
     });
-  }, [data.services, busqueda, categoriaActiva]);
+  }, [servicios, busqueda, categoriaActiva]);
 
   const productosFiltrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
-    return data.products.filter((p) => {
+    return productos.filter((p) => {
       if (categoriaActiva !== 'todas' && p.category !== categoriaActiva) return false;
       if (
         q &&
@@ -280,17 +292,18 @@ export default function VitrinaPublicaClient({
       }
       return true;
     });
-  }, [data.products, busqueda, categoriaActiva]);
+  }, [productos, busqueda, categoriaActiva]);
 
   const obtenerVarianteSeleccionada = (
     prod: PublicCatalogProduct
   ): CatalogProductVariant | undefined => {
-    if (prod.variants.length === 0) return undefined;
+    const variantes = Array.isArray(prod.variants) ? prod.variants : [];
+    if (variantes.length === 0) return undefined;
     const elegidaId = variantePorProducto[prod.id];
     return (
-      prod.variants.find((v) => v.id === elegidaId) ??
-      prod.variants.find((v) => v.inStock !== false) ??
-      prod.variants[0]
+      variantes.find((v) => v.id === elegidaId) ??
+      variantes.find((v) => v.inStock !== false) ??
+      variantes[0]
     );
   };
 
@@ -472,36 +485,53 @@ export default function VitrinaPublicaClient({
             </div>
           </div>
 
-          {/* Selector de Pestañas: Servicios / Tienda */}
-          <div className="mt-5 grid grid-cols-2 gap-1.5 p-1.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7]">
-            <button
-              type="button"
-              onClick={() => cambiarTab('servicios')}
-              className={`min-h-[44px] py-2 px-3 rounded-xl font-sans text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all cursor-pointer border-none ${
-                tab === 'servicios'
-                  ? 'text-white shadow-xs'
-                  : 'bg-transparent text-[#52525B] hover:text-[#111111]'
-              }`}
-              style={tab === 'servicios' ? { backgroundColor: primaryColor } : undefined}
-            >
-              <Sparkles size={15} />
-              <span>Servicios ({data.services.length})</span>
-            </button>
+          {/* Selector de Pestañas: Servicios / Tienda (oculta pestaña vacía si catalog_products está vacío) */}
+          {tieneProductos && tieneServicios ? (
+            <div className="mt-5 grid grid-cols-2 gap-1.5 p-1.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7]">
+              <button
+                type="button"
+                onClick={() => cambiarTab('servicios')}
+                className={`min-h-[44px] py-2 px-3 rounded-xl font-sans text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all cursor-pointer border-none ${
+                  tabActiva === 'servicios'
+                    ? 'text-white shadow-xs'
+                    : 'bg-transparent text-[#52525B] hover:text-[#111111]'
+                }`}
+                style={tabActiva === 'servicios' ? { backgroundColor: primaryColor } : undefined}
+              >
+                <Sparkles size={15} />
+                <span>Servicios ({servicios.length})</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => cambiarTab('tienda')}
-              className={`min-h-[44px] py-2 px-3 rounded-xl font-sans text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all cursor-pointer border-none ${
-                tab === 'tienda'
-                  ? 'text-white shadow-xs'
-                  : 'bg-transparent text-[#52525B] hover:text-[#111111]'
-              }`}
-              style={tab === 'tienda' ? { backgroundColor: primaryColor } : undefined}
-            >
-              <ShoppingBag size={15} />
-              <span>Tienda ({data.products.length})</span>
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => cambiarTab('tienda')}
+                className={`min-h-[44px] py-2 px-3 rounded-xl font-sans text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all cursor-pointer border-none ${
+                  tabActiva === 'tienda'
+                    ? 'text-white shadow-xs'
+                    : 'bg-transparent text-[#52525B] hover:text-[#111111]'
+                }`}
+                style={tabActiva === 'tienda' ? { backgroundColor: primaryColor } : undefined}
+              >
+                <ShoppingBag size={15} />
+                <span>Tienda ({productos.length})</span>
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7]">
+              <span className="inline-flex items-center gap-2 font-sans text-xs sm:text-sm font-bold text-[#111111]">
+                {tabActiva === 'tienda' ? <ShoppingBag size={15} /> : <Sparkles size={15} />}
+                <span>
+                  {tabActiva === 'tienda' ? 'Tienda profesional' : 'Menú de servicios'}
+                </span>
+              </span>
+              <span className="font-mono text-xs font-semibold text-[#52525B] tabular-nums">
+                {tabActiva === 'tienda' ? productos.length : servicios.length}{' '}
+                {(tabActiva === 'tienda' ? productos.length : servicios.length) === 1
+                  ? 'opción'
+                  : 'opciones'}
+              </span>
+            </div>
+          )}
         </div>
       </header>
 
@@ -514,7 +544,7 @@ export default function VitrinaPublicaClient({
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder={
-              tab === 'servicios'
+              tabActiva === 'servicios'
                 ? placeholderServicios
                 : 'Buscar producto, línea o beneficio…'
             }
@@ -558,7 +588,7 @@ export default function VitrinaPublicaClient({
 
       {/* Contenido de Pestañas */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-5 space-y-3.5">
-        {tab === 'servicios' ? (
+        {tabActiva === 'servicios' ? (
           serviciosFiltrados.length === 0 ? (
             <section className="bg-white rounded-xl border border-[#E4E4E7] p-8 text-center">
               <Sparkles size={24} className="text-[#71717A] mx-auto mb-2.5" />

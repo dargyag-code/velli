@@ -3,13 +3,49 @@ import { APP_URL } from '@/lib/sitio';
 import { sanitizarPayloadVitrinaPublica } from './motor';
 import type { PublicStorefrontData } from './tipos';
 
-function esUrlImagenPublicaSegura(url: string | null | undefined): string | null {
+/**
+ * Resuelve de forma defensiva la URL base pública (por ejemplo cuando
+ * `NEXT_PUBLIC_APP_URL` viene sin protocolo `https://` o con barra final)
+ * sin lanzar excepciones en tiempo de render.
+ */
+export function resolverUrlBasePublica(rawUrl?: string | null): string {
+  const candidataRaw = (rawUrl ?? process.env.NEXT_PUBLIC_APP_URL ?? '').trim();
+  if (!candidataRaw) return APP_URL;
+
+  const conProtocolo = /^https?:\/\//i.test(candidataRaw)
+    ? candidataRaw
+    : `https://${candidataRaw.replace(/^\/+/, '')}`;
+
+  try {
+    const parsed = new URL(conProtocolo);
+    if (
+      (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') ||
+      (!parsed.hostname.includes('.') && parsed.hostname !== 'localhost')
+    ) {
+      return APP_URL;
+    }
+    return parsed.origin;
+  } catch {
+    return APP_URL;
+  }
+}
+
+function esUrlImagenPublicaSegura(
+  url: string | null | undefined,
+  baseUrl: string
+): string | null {
   if (typeof url !== 'string') return null;
   const limpia = url.trim();
   if (!limpia || limpia.length > 1024) return null;
-  if (limpia.startsWith('https://')) return limpia;
+  if (limpia.startsWith('https://')) {
+    try {
+      return new URL(limpia).toString();
+    } catch {
+      return null;
+    }
+  }
   if (limpia.startsWith('/') && !limpia.startsWith('//')) {
-    return `${APP_URL}${limpia}`;
+    return `${baseUrl}${limpia}`;
   }
   return null;
 }
@@ -21,7 +57,8 @@ function esUrlImagenPublicaSegura(url: string | null | undefined): string | null
  * retorna `noindex, nofollow`.
  */
 export function construirMetadataVitrinaPublica(
-  storefront: PublicStorefrontData | null | undefined
+  storefront: PublicStorefrontData | null | undefined,
+  options?: { baseUrl?: string | null }
 ): Metadata {
   const seguro = storefront ? sanitizarPayloadVitrinaPublica(storefront) : null;
 
@@ -32,11 +69,12 @@ export function construirMetadataVitrinaPublica(
     };
   }
 
+  const baseUrl = resolverUrlBasePublica(options?.baseUrl);
   const displayName = seguro.brand.displayName.trim() || seguro.organization.name.trim();
   const city = seguro.organization.city?.trim() || null;
   const publicTagline = seguro.brand.publicTagline?.trim() || null;
-  const logoUrl = esUrlImagenPublicaSegura(seguro.brand.logoUrl);
-  const canonicalUrl = `${APP_URL}/s/${encodeURIComponent(seguro.organization.slug)}`;
+  const logoUrl = esUrlImagenPublicaSegura(seguro.brand.logoUrl, baseUrl);
+  const canonicalUrl = `${baseUrl}/s/${encodeURIComponent(seguro.organization.slug)}`;
 
   const title = city
     ? `${displayName} · ${city} | Servicios y Tienda`

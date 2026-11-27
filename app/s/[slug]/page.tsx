@@ -26,11 +26,15 @@ const cargarVitrinaEnPeticion = cache(async (slug: string): Promise<EstadoCargaV
     return { estado: 'no_encontrada', storefront: null };
   }
 
-  const hdrs = await headers();
-  const ip = extraerIpDesdeHeaders(hdrs);
-  const rl = await checkRateLimit(vitrinaPublicaLimiter(), `vitrina:${ip}`);
-  if (!rl.ok) {
-    return { estado: 'rate_limited', storefront: null };
+  try {
+    const hdrs = await headers();
+    const ip = extraerIpDesdeHeaders(hdrs);
+    const rl = await checkRateLimit(vitrinaPublicaLimiter(), `vitrina:${ip}`);
+    if (!rl.ok) {
+      return { estado: 'rate_limited', storefront: null };
+    }
+  } catch (rlErr) {
+    console.warn('[vitrina-publica] Rate limit degradado por fallo de red:', rlErr);
   }
 
   try {
@@ -50,9 +54,17 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
-  const { storefront } = await cargarVitrinaEnPeticion(slug);
-  return construirMetadataVitrinaPublica(storefront);
+  try {
+    const { slug } = await params;
+    const { storefront } = await cargarVitrinaEnPeticion(slug);
+    return construirMetadataVitrinaPublica(storefront);
+  } catch (err) {
+    console.error('[vitrina-publica:metadata]', err);
+    return {
+      title: 'Vitrina digital · Veli',
+      robots: { index: false, follow: false },
+    };
+  }
 }
 
 export default async function StorefrontPublicPage({
