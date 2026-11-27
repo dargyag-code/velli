@@ -119,7 +119,15 @@ export default function VitrinaPublicaClient({
     timeLabel: string;
   } | null>(null);
 
-  const primaryColor = normalizarHexVelvet(data.brand.primaryColor, '#3B0D1E');
+  const primaryColor = normalizarHexVelvet(data.brand.primaryColor, '#111111');
+  const placeholderServicios =
+    data.organization.vertical === 'barber_studio'
+      ? 'Buscar corte, barba o ritual…'
+      : data.organization.vertical === 'nail_bar'
+        ? 'Buscar servicio o diseño…'
+        : data.organization.vertical === 'spa_estetica'
+          ? 'Buscar protocolo o tratamiento…'
+          : 'Buscar servicio por nombre o categoría…';
 
   const cambiarTab = (next: 'servicios' | 'tienda') => {
     setTab(next);
@@ -423,11 +431,11 @@ export default function VitrinaPublicaClient({
 
   return (
     <div
-      className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] font-sans pb-32"
+      className="min-h-screen bg-[#FAFAFA] text-[#111111] font-sans pb-32"
       style={{ ['--brand-accent' as string]: primaryColor }}
     >
       {/* Cabecera Editorial de Marca */}
-      <header className="bg-white border-b border-[#EFE8E4] pt-7 pb-5 px-4 sm:px-6">
+      <header className="bg-white border-b border-[#E4E4E7] pt-7 pb-5 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-4">
             {data.brand.logoUrl ? (
@@ -435,11 +443,11 @@ export default function VitrinaPublicaClient({
               <img
                 src={data.brand.logoUrl}
                 alt={data.brand.displayName}
-                className="w-14 h-14 rounded-2xl object-cover border border-[#EFE8E4] shrink-0"
+                className="w-14 h-14 rounded-xl object-cover border border-[#E4E4E7] shrink-0"
               />
             ) : (
               <div
-                className="w-14 h-14 rounded-2xl text-[#FAF7F5] font-display text-2xl font-semibold flex items-center justify-center shrink-0"
+                className="w-14 h-14 rounded-xl text-white font-display text-2xl font-semibold flex items-center justify-center shrink-0"
                 style={{ backgroundColor: primaryColor }}
               >
                 {data.brand.displayName.slice(0, 1).toUpperCase()}
@@ -448,16 +456,16 @@ export default function VitrinaPublicaClient({
 
             <div className="min-w-0 flex-1">
               {data.organization.city && (
-                <span className="inline-flex items-center gap-1 font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                <span className="inline-flex items-center gap-1 font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                   <MapPin size={12} />
                   {data.organization.city}
                 </span>
               )}
-              <h1 className="m-0 font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#3B0D1E] leading-tight truncate">
+              <h1 className="m-0 font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#111111] leading-tight truncate">
                 {data.brand.displayName}
               </h1>
               {data.brand.publicTagline && (
-                <p className="m-0 mt-1 text-xs sm:text-sm text-[#6B535C] leading-relaxed">
+                <p className="m-0 mt-1 text-xs sm:text-sm text-[#52525B] leading-relaxed">
                   {data.brand.publicTagline}
                 </p>
               )}
@@ -465,14 +473,14 @@ export default function VitrinaPublicaClient({
           </div>
 
           {/* Selector de Pestañas: Servicios / Tienda */}
-          <div className="mt-5 grid grid-cols-2 gap-1.5 p-1.5 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4]">
+          <div className="mt-5 grid grid-cols-2 gap-1.5 p-1.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7]">
             <button
               type="button"
               onClick={() => cambiarTab('servicios')}
               className={`min-h-[44px] py-2 px-3 rounded-xl font-sans text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all cursor-pointer border-none ${
                 tab === 'servicios'
-                  ? 'text-[#FAF7F5] shadow-xs'
-                  : 'bg-transparent text-[#6B535C] hover:text-[#3B0D1E]'
+                  ? 'text-white shadow-xs'
+                  : 'bg-transparent text-[#52525B] hover:text-[#111111]'
               }`}
               style={tab === 'servicios' ? { backgroundColor: primaryColor } : undefined}
             >
@@ -485,8 +493,8 @@ export default function VitrinaPublicaClient({
               onClick={() => cambiarTab('tienda')}
               className={`min-h-[44px] py-2 px-3 rounded-xl font-sans text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all cursor-pointer border-none ${
                 tab === 'tienda'
-                  ? 'text-[#FAF7F5] shadow-xs'
-                  : 'bg-transparent text-[#6B535C] hover:text-[#3B0D1E]'
+                  ? 'text-white shadow-xs'
+                  : 'bg-transparent text-[#52525B] hover:text-[#111111]'
               }`}
               style={tab === 'tienda' ? { backgroundColor: primaryColor } : undefined}
             >
@@ -499,25 +507,25 @@ export default function VitrinaPublicaClient({
 
       {/* Buscador + Filtros de Categoría */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-5">
-        <div className="min-h-[46px] flex items-center gap-2.5 px-4 bg-white border border-[#EFE8E4] rounded-2xl shadow-velvet">
-          <Search size={16} className="text-[#947C85] shrink-0" />
+        <div className="min-h-[46px] flex items-center gap-2.5 px-4 bg-white border border-[#E4E4E7] rounded-xl">
+          <Search size={16} className="text-[#71717A] shrink-0" />
           <input
             type="search"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder={
               tab === 'servicios'
-                ? 'Buscar servicio (ej. Balayage, Hidratación)…'
+                ? placeholderServicios
                 : 'Buscar producto, línea o beneficio…'
             }
-            className="flex-1 min-w-0 py-2.5 border-none bg-transparent outline-none text-sm font-sans text-[#3B0D1E] placeholder-[#947C85]"
+            className="flex-1 min-w-0 py-2.5 border-none bg-transparent outline-none text-sm font-sans text-[#111111] placeholder-[#71717A]"
           />
           {busqueda && (
             <button
               type="button"
               onClick={() => setBusqueda('')}
               aria-label="Limpiar búsqueda"
-              className="p-1 rounded-full bg-transparent border-none text-[#947C85] hover:text-[#3B0D1E] cursor-pointer"
+              className="p-1 rounded-full bg-transparent border-none text-[#71717A] hover:text-[#111111] cursor-pointer"
             >
               <X size={14} />
             </button>
@@ -535,8 +543,8 @@ export default function VitrinaPublicaClient({
                   onClick={() => setCategoriaActiva(cat)}
                   className={`min-h-[38px] shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all whitespace-nowrap cursor-pointer ${
                     activa
-                      ? 'text-[#FAF7F5] border-transparent'
-                      : 'bg-white text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8] hover:text-[#3B0D1E]'
+                      ? 'text-white border-transparent'
+                      : 'bg-white text-[#52525B] border-[#E4E4E7] hover:bg-[#F4F4F5] hover:text-[#111111]'
                   }`}
                   style={activa ? { backgroundColor: primaryColor } : undefined}
                 >
@@ -552,12 +560,12 @@ export default function VitrinaPublicaClient({
       <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-5 space-y-3.5">
         {tab === 'servicios' ? (
           serviciosFiltrados.length === 0 ? (
-            <section className="bg-white rounded-3xl border border-[#EFE8E4] p-8 text-center shadow-velvet">
-              <Sparkles size={24} className="text-[#947C85] mx-auto mb-2.5" />
-              <h2 className="m-0 font-sans text-base font-bold text-[#3B0D1E]">
+            <section className="bg-white rounded-xl border border-[#E4E4E7] p-8 text-center">
+              <Sparkles size={24} className="text-[#71717A] mx-auto mb-2.5" />
+              <h2 className="m-0 font-sans text-base font-bold text-[#111111]">
                 No hay servicios para mostrar
               </h2>
-              <p className="m-0 mt-1 text-xs text-[#6B535C]">
+              <p className="m-0 mt-1 text-xs text-[#52525B]">
                 Ajusta el término de búsqueda o consulta directamente por WhatsApp.
               </p>
             </section>
@@ -567,33 +575,33 @@ export default function VitrinaPublicaClient({
               return (
                 <article
                   key={srv.id}
-                  className="bg-white rounded-3xl border border-[#EFE8E4] p-5 shadow-velvet flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  className="bg-white rounded-xl border border-[#E4E4E7] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] px-2.5 py-0.5 rounded-full bg-[#FAF7F5] border border-[#EFE8E4] text-[#6B535C]">
+                      <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] px-2.5 py-0.5 rounded-full bg-[#FAFAFA] border border-[#E4E4E7] text-[#52525B]">
                         {formatearCategoria(srv.category)}
                       </span>
                       {srv.durationMinutes && (
-                        <span className="inline-flex items-center gap-1 font-mono text-[11px] text-[#947C85] tabular-nums">
+                        <span className="inline-flex items-center gap-1 font-mono text-[11px] text-[#71717A] tabular-nums">
                           <Clock size={12} />
                           {srv.durationMinutes} min
                         </span>
                       )}
                     </div>
 
-                    <h2 className="m-0 font-sans text-base sm:text-lg font-bold tracking-tight text-[#3B0D1E]">
+                    <h2 className="m-0 font-sans text-base sm:text-lg font-bold tracking-tight text-[#111111]">
                       {srv.name}
                     </h2>
 
                     <div className="mt-2 flex items-baseline gap-1.5">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#947C85]">
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#71717A]">
                         Desde
                       </span>
-                      <span className="font-display text-xl font-bold text-[#3B0D1E] tabular-nums">
+                      <span className="font-display text-xl font-bold text-[#111111] tabular-nums">
                         {formatearPrecioCop(srv.priceCop)}
                       </span>
-                      <span className="text-[11px] text-[#947C85] font-semibold">COP</span>
+                      <span className="text-[11px] text-[#71717A] font-semibold">COP</span>
                     </div>
                   </div>
 
@@ -601,7 +609,7 @@ export default function VitrinaPublicaClient({
                     <button
                       type="button"
                       onClick={() => abrirModalCita(srv)}
-                      className="min-h-[44px] px-4 py-2.5 rounded-2xl text-[#FAF7F5] font-sans text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-opacity hover:opacity-95 cursor-pointer border-none"
+                      className="min-h-[44px] px-4 py-2.5 rounded-xl text-white font-sans text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-opacity hover:opacity-95 cursor-pointer border-none"
                       style={{ backgroundColor: primaryColor }}
                     >
                       <Calendar size={14} />
@@ -609,23 +617,23 @@ export default function VitrinaPublicaClient({
                     </button>
 
                     {enCarrito ? (
-                      <div className="inline-flex items-center gap-1.5 bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl p-1">
+                      <div className="inline-flex items-center gap-1.5 bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl p-1">
                         <button
                           type="button"
                           onClick={() => cambiarCantidad(enCarrito.key, -1)}
                           aria-label="Disminuir"
-                          className="w-8 h-8 rounded-xl bg-white border border-[#EFE8E4] text-[#3B0D1E] flex items-center justify-center cursor-pointer"
+                          className="w-8 h-8 rounded-xl bg-white border border-[#E4E4E7] text-[#111111] flex items-center justify-center cursor-pointer"
                         >
                           <Minus size={13} />
                         </button>
-                        <span className="w-5 text-center font-mono text-xs font-bold tabular-nums text-[#3B0D1E]">
+                        <span className="w-5 text-center font-mono text-xs font-bold tabular-nums text-[#111111]">
                           {enCarrito.quantity}
                         </span>
                         <button
                           type="button"
                           onClick={() => cambiarCantidad(enCarrito.key, 1)}
                           aria-label="Aumentar"
-                          className="w-8 h-8 rounded-xl bg-white border border-[#EFE8E4] text-[#3B0D1E] flex items-center justify-center cursor-pointer"
+                          className="w-8 h-8 rounded-xl bg-white border border-[#E4E4E7] text-[#111111] flex items-center justify-center cursor-pointer"
                         >
                           <Plus size={13} />
                         </button>
@@ -634,7 +642,7 @@ export default function VitrinaPublicaClient({
                       <button
                         type="button"
                         onClick={() => agregarServicio(srv)}
-                        className="min-h-[44px] px-3.5 py-2.5 rounded-2xl bg-[#FAF7F5] hover:bg-[#F5EBE8] border border-[#EFE8E4] text-[#3B0D1E] font-sans text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        className="min-h-[44px] px-3.5 py-2.5 rounded-xl bg-[#FAFAFA] hover:bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] font-sans text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                       >
                         <Plus size={13} />
                         <span>Al resumen</span>
@@ -646,12 +654,12 @@ export default function VitrinaPublicaClient({
             })
           )
         ) : productosFiltrados.length === 0 ? (
-          <section className="bg-white rounded-3xl border border-[#EFE8E4] p-8 text-center shadow-velvet">
-            <Package size={24} className="text-[#947C85] mx-auto mb-2.5" />
-            <h2 className="m-0 font-sans text-base font-bold text-[#3B0D1E]">
+          <section className="bg-white rounded-xl border border-[#E4E4E7] p-8 text-center">
+            <Package size={24} className="text-[#71717A] mx-auto mb-2.5" />
+            <h2 className="m-0 font-sans text-base font-bold text-[#111111]">
               Aún no hay productos publicados en tienda
             </h2>
-            <p className="m-0 mt-1 text-xs text-[#6B535C]">
+            <p className="m-0 mt-1 text-xs text-[#52525B]">
               Explora nuestros servicios en la pestaña contigua o escríbenos para asesoría personalizada.
             </p>
           </section>
@@ -667,11 +675,11 @@ export default function VitrinaPublicaClient({
               return (
                 <article
                   key={prod.id}
-                  className="bg-white rounded-3xl border border-[#EFE8E4] p-5 shadow-velvet flex flex-col justify-between gap-4"
+                  className="bg-white rounded-xl border border-[#E4E4E7] p-5 flex flex-col justify-between gap-4"
                 >
                   <div>
                     {prod.imageUrl && (
-                      <div className="w-full h-44 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] overflow-hidden mb-3.5">
+                      <div className="w-full h-44 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] overflow-hidden mb-3.5">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={prod.imageUrl}
@@ -682,22 +690,22 @@ export default function VitrinaPublicaClient({
                     )}
 
                     <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                      <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                         {prod.category}
                       </span>
                       {agotado && (
-                        <span className="px-2 py-0.5 rounded-full bg-[#FFF7F5] border border-[#D97757]/30 text-[#D97757] text-[10px] font-bold">
+                        <span className="px-2 py-0.5 rounded-full bg-[#FFFBEB] border border-[#B45309]/30 text-[#B45309] text-[10px] font-bold">
                           Agotado
                         </span>
                       )}
                     </div>
 
-                    <h2 className="m-0 font-sans text-base font-bold tracking-tight text-[#3B0D1E] leading-snug">
+                    <h2 className="m-0 font-sans text-base font-bold tracking-tight text-[#111111] leading-snug">
                       {prod.name}
                     </h2>
 
                     {prod.description && (
-                      <p className="m-0 mt-1.5 text-xs text-[#6B535C] leading-relaxed line-clamp-2">
+                      <p className="m-0 mt-1.5 text-xs text-[#52525B] leading-relaxed line-clamp-2">
                         {prod.description}
                       </p>
                     )}
@@ -719,8 +727,8 @@ export default function VitrinaPublicaClient({
                               }
                               className={`px-2.5 py-1 rounded-lg font-mono text-[11px] font-semibold tabular-nums border transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
                                 activa
-                                  ? 'bg-[#F5EBE8] text-[#3B0D1E] border-[#3B0D1E]'
-                                  : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:border-[#E8CFC8]'
+                                  ? 'bg-[#F4F4F5] text-[#111111] border-[#111111]'
+                                  : 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7] hover:border-[#E4E4E7]'
                               }`}
                             >
                               {v.label}
@@ -731,29 +739,29 @@ export default function VitrinaPublicaClient({
                     )}
                   </div>
 
-                  <div className="pt-3 border-t border-[#EFE8E4] flex items-center justify-between gap-3">
-                    <div className="font-display text-xl font-bold text-[#3B0D1E] tabular-nums">
+                  <div className="pt-3 border-t border-[#E4E4E7] flex items-center justify-between gap-3">
+                    <div className="font-display text-xl font-bold text-[#111111] tabular-nums">
                       {formatearPrecioCop(precioActual)}
                     </div>
 
                     {enCarrito ? (
-                      <div className="inline-flex items-center gap-1.5 bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl p-1">
+                      <div className="inline-flex items-center gap-1.5 bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl p-1">
                         <button
                           type="button"
                           onClick={() => cambiarCantidad(keyCarrito, -1)}
                           aria-label="Restar unidad"
-                          className="w-8 h-8 rounded-xl bg-white border border-[#EFE8E4] text-[#3B0D1E] flex items-center justify-center cursor-pointer"
+                          className="w-8 h-8 rounded-xl bg-white border border-[#E4E4E7] text-[#111111] flex items-center justify-center cursor-pointer"
                         >
                           <Minus size={13} />
                         </button>
-                        <span className="w-6 text-center font-mono text-xs font-bold tabular-nums text-[#3B0D1E]">
+                        <span className="w-6 text-center font-mono text-xs font-bold tabular-nums text-[#111111]">
                           {enCarrito.quantity}
                         </span>
                         <button
                           type="button"
                           onClick={() => cambiarCantidad(keyCarrito, 1)}
                           aria-label="Sumar unidad"
-                          className="w-8 h-8 rounded-xl bg-white border border-[#EFE8E4] text-[#3B0D1E] flex items-center justify-center cursor-pointer"
+                          className="w-8 h-8 rounded-xl bg-white border border-[#E4E4E7] text-[#111111] flex items-center justify-center cursor-pointer"
                         >
                           <Plus size={13} />
                         </button>
@@ -763,7 +771,7 @@ export default function VitrinaPublicaClient({
                         type="button"
                         disabled={agotado}
                         onClick={() => agregarProducto(prod)}
-                        className="min-h-[40px] px-4 py-2 rounded-2xl text-[#FAF7F5] font-sans text-xs font-bold inline-flex items-center gap-1.5 transition-opacity hover:opacity-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed border-none"
+                        className="min-h-[40px] px-4 py-2 rounded-xl text-white font-sans text-xs font-bold inline-flex items-center gap-1.5 transition-opacity hover:opacity-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed border-none"
                         style={{ backgroundColor: primaryColor }}
                       >
                         <Plus size={14} />
@@ -779,13 +787,13 @@ export default function VitrinaPublicaClient({
 
         <footer className="pt-8 pb-4 text-center space-y-1.5">
           {data.brand.legalFooter && (
-            <p className="m-0 text-[11px] text-[#6B535C] leading-relaxed">
+            <p className="m-0 text-[11px] text-[#52525B] leading-relaxed">
               {data.brand.legalFooter}
             </p>
           )}
           {data.organization.conMarcaVelli && (
-            <p className="m-0 font-sans text-[11px] text-[#947C85]">
-              Vitrina digital con respaldo de Velli · {appHost}
+            <p className="m-0 font-sans text-[11px] text-[#71717A]">
+              Vitrina digital con respaldo de Veli · {appHost}
             </p>
           )}
         </footer>
@@ -802,7 +810,7 @@ export default function VitrinaPublicaClient({
                 setErrorCheckout(null);
                 setDrawerAbierto(true);
               }}
-              className="w-full min-h-[56px] px-5 py-3.5 rounded-3xl text-[#FAF7F5] shadow-velvet flex items-center justify-between gap-3 cursor-pointer border-none transition-transform active:scale-[0.99]"
+              className="w-full min-h-[56px] px-5 py-3.5 rounded-xl text-white flex items-center justify-between gap-3 cursor-pointer border-none transition-transform active:scale-[0.99]"
               style={{ backgroundColor: primaryColor }}
             >
               <span className="inline-flex items-center gap-2.5 font-sans text-sm font-bold">
@@ -823,18 +831,18 @@ export default function VitrinaPublicaClient({
       {servicioAgendando && (
         <div
           onClick={() => !guardandoCita && setServicioAgendando(null)}
-          className="fixed inset-0 z-50 bg-[#1F050F]/45 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 fade-in"
+          className="fixed inset-0 z-50 bg-[#111111]/45 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 fade-in"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-3xl border border-[#EFE8E4] p-6 sm:p-7 shadow-velvet pb-safe"
+            className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-xl border border-[#E4E4E7] p-6 sm:p-7 pb-safe"
           >
             <div className="flex items-start justify-between gap-3 mb-4">
               <div>
-                <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
                   {citaConfirmada ? 'Solicitud registrada' : 'Reserva de cita en línea'}
                 </span>
-                <h2 className="m-0 font-display text-2xl font-semibold tracking-tight text-[#3B0D1E]">
+                <h2 className="m-0 font-display text-2xl font-semibold tracking-tight text-[#111111]">
                   {servicioAgendando.name}
                 </h2>
               </div>
@@ -842,7 +850,7 @@ export default function VitrinaPublicaClient({
                 type="button"
                 onClick={() => setServicioAgendando(null)}
                 aria-label="Cerrar reserva"
-                className="w-9 h-9 rounded-full bg-[#FAF7F5] border border-[#EFE8E4] text-[#6B535C] hover:text-[#3B0D1E] flex items-center justify-center cursor-pointer"
+                className="w-9 h-9 rounded-full bg-[#FAFAFA] border border-[#E4E4E7] text-[#52525B] hover:text-[#111111] flex items-center justify-center cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -850,15 +858,15 @@ export default function VitrinaPublicaClient({
 
             {citaConfirmada ? (
               <div className="space-y-4 text-center py-3">
-                <div className="w-14 h-14 rounded-2xl bg-[#F0FDFA] border border-[#0D9488]/25 text-[#0D9488] flex items-center justify-center mx-auto">
+                <div className="w-14 h-14 rounded-xl bg-[#F0FDF4] border border-[#15803D]/25 text-[#15803D] flex items-center justify-center mx-auto">
                   <Check size={26} />
                 </div>
                 <div className="space-y-1">
-                  <p className="m-0 font-sans text-sm font-bold text-[#3B0D1E]">
+                  <p className="m-0 font-sans text-sm font-bold text-[#111111]">
                     {citaConfirmada.specialistName} · {citaConfirmada.dateLabel} a las{' '}
                     <span className="font-mono tabular-nums">{citaConfirmada.timeLabel}</span>
                   </p>
-                  <p className="m-0 text-xs text-[#6B535C] leading-relaxed">
+                  <p className="m-0 text-xs text-[#52525B] leading-relaxed">
                     Tu solicitud ya quedó agendada en el salón. Confírmala en un toque por WhatsApp.
                   </p>
                 </div>
@@ -866,7 +874,7 @@ export default function VitrinaPublicaClient({
                   href={citaConfirmada.whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full min-h-[48px] py-3.5 px-5 rounded-2xl text-[#FAF7F5] font-sans text-sm font-bold inline-flex items-center justify-center gap-2 no-underline"
+                  className="w-full min-h-[48px] py-3.5 px-5 rounded-xl text-white font-sans text-sm font-bold inline-flex items-center justify-center gap-2 no-underline"
                   style={{ backgroundColor: primaryColor }}
                 >
                   <MessageCircle size={17} />
@@ -877,7 +885,7 @@ export default function VitrinaPublicaClient({
               <form onSubmit={confirmarSolicitudCita} className="space-y-4">
                 {/* 1. Fecha */}
                 <label className="block">
-                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                     1. Elige la fecha (hora Colombia)
                   </span>
                   <input
@@ -885,19 +893,19 @@ export default function VitrinaPublicaClient({
                     min={hoyBogota}
                     value={fechaCita}
                     onChange={(e) => setFechaCita(e.target.value)}
-                    className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#3B0D1E]"
+                    className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#111111]"
                   />
                 </label>
 
                 {/* 2. Especialista */}
                 <div>
-                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1.5">
+                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1.5">
                     2. Especialista
                   </span>
                   {cargandoSlots ? (
-                    <div className="skeleton-shimmer h-11 rounded-2xl" />
+                    <div className="skeleton-shimmer h-11 rounded-xl" />
                   ) : especialistasAgenda.length === 0 ? (
-                    <p className="m-0 text-xs text-[#6B535C] p-3 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4]">
+                    <p className="m-0 text-xs text-[#52525B] p-3 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7]">
                       No hay especialistas activas para agendar en línea en este momento.
                     </p>
                   ) : (
@@ -912,10 +920,10 @@ export default function VitrinaPublicaClient({
                               setSpecialistIdElegida(sp.id);
                               setHoraElegida('');
                             }}
-                            className={`min-h-[40px] px-3.5 py-2 rounded-2xl text-xs font-bold inline-flex items-center gap-1.5 border transition-all cursor-pointer ${
+                            className={`min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 border transition-all cursor-pointer ${
                               activa
-                                ? 'text-[#FAF7F5] border-transparent'
-                                : 'bg-[#FAF7F5] text-[#3B0D1E] border-[#EFE8E4] hover:bg-[#F5EBE8]'
+                                ? 'text-white border-transparent'
+                                : 'bg-[#FAFAFA] text-[#111111] border-[#E4E4E7] hover:bg-[#F4F4F5]'
                             }`}
                             style={activa ? { backgroundColor: primaryColor } : undefined}
                           >
@@ -931,11 +939,11 @@ export default function VitrinaPublicaClient({
                 {/* 3. Horas disponibles */}
                 {especialistaActual && (
                   <div>
-                    <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1.5">
+                    <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1.5">
                       3. Hora disponible
                     </span>
                     {especialistaActual.slots.length === 0 ? (
-                      <p className="m-0 text-xs text-[#6B535C] p-3 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4]">
+                      <p className="m-0 text-xs text-[#52525B] p-3 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7]">
                         Sin cupos disponibles en esta fecha. Prueba seleccionando otro día.
                       </p>
                     ) : (
@@ -949,8 +957,8 @@ export default function VitrinaPublicaClient({
                               onClick={() => setHoraElegida(slot.label)}
                               className={`min-h-[38px] py-1.5 px-2 rounded-xl font-mono text-xs font-semibold tabular-nums border transition-all cursor-pointer ${
                                 activo
-                                  ? 'text-[#FAF7F5] border-transparent'
-                                  : 'bg-[#FAF7F5] text-[#3B0D1E] border-[#EFE8E4] hover:border-[#E8CFC8]'
+                                  ? 'text-white border-transparent'
+                                  : 'bg-[#FAFAFA] text-[#111111] border-[#E4E4E7] hover:border-[#E4E4E7]'
                               }`}
                               style={activo ? { backgroundColor: primaryColor } : undefined}
                             >
@@ -966,7 +974,7 @@ export default function VitrinaPublicaClient({
                 {/* 4. Datos de contacto */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                   <label className="block">
-                    <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                    <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                       Tu nombre *
                     </span>
                     <input
@@ -976,12 +984,12 @@ export default function VitrinaPublicaClient({
                       value={citaNombre}
                       onChange={(e) => setCitaNombre(e.target.value)}
                       placeholder="Nombre y apellido"
-                      className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm text-[#3B0D1E]"
+                      className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm text-[#111111]"
                     />
                   </label>
 
                   <label className="block">
-                    <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                    <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                       Tu WhatsApp *
                     </span>
                     <input
@@ -990,13 +998,13 @@ export default function VitrinaPublicaClient({
                       value={citaTelefono}
                       onChange={(e) => setCitaTelefono(e.target.value)}
                       placeholder="300 123 4567"
-                      className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#3B0D1E]"
+                      className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#111111]"
                     />
                   </label>
                 </div>
 
                 <label className="block">
-                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                     Comentario opcional
                   </span>
                   <input
@@ -1005,12 +1013,12 @@ export default function VitrinaPublicaClient({
                     value={citaNotas}
                     onChange={(e) => setCitaNotas(e.target.value)}
                     placeholder="Ej. Tengo tinte previo o largo medio"
-                    className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm text-[#3B0D1E]"
+                    className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm text-[#111111]"
                   />
                 </label>
 
                 {errorCita && (
-                  <div className="p-3 rounded-2xl bg-[#FFF7F5] border border-[#D97757]/35 text-xs font-semibold text-[#D97757]">
+                  <div className="p-3 rounded-xl bg-[#FFFBEB] border border-[#B45309]/35 text-xs font-semibold text-[#B45309]">
                     {errorCita}
                   </div>
                 )}
@@ -1018,7 +1026,7 @@ export default function VitrinaPublicaClient({
                 <button
                   type="submit"
                   disabled={guardandoCita || !horaElegida || !especialistaActual}
-                  className="w-full min-h-[50px] py-3.5 px-5 rounded-2xl text-[#FAF7F5] font-sans text-sm font-bold inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 border-none"
+                  className="w-full min-h-[50px] py-3.5 px-5 rounded-xl text-white font-sans text-sm font-bold inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 border-none"
                   style={{ backgroundColor: primaryColor }}
                 >
                   <MessageCircle size={17} />
@@ -1041,18 +1049,18 @@ export default function VitrinaPublicaClient({
               setPedidoConfirmado(null);
             }
           }}
-          className="fixed inset-0 z-50 bg-[#1F050F]/45 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 fade-in"
+          className="fixed inset-0 z-50 bg-[#111111]/45 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 fade-in"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-3xl border border-[#EFE8E4] p-6 sm:p-7 shadow-velvet pb-safe"
+            className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-xl border border-[#E4E4E7] p-6 sm:p-7 pb-safe"
           >
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
-                <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
                   {pedidoConfirmado ? 'Pedido registrado' : 'Resumen de solicitud'}
                 </span>
-                <h2 className="m-0 font-display text-2xl font-semibold tracking-tight text-[#3B0D1E]">
+                <h2 className="m-0 font-display text-2xl font-semibold tracking-tight text-[#111111]">
                   {pedidoConfirmado ? '¡Listo para enviar!' : data.brand.displayName}
                 </h2>
               </div>
@@ -1063,7 +1071,7 @@ export default function VitrinaPublicaClient({
                   setPedidoConfirmado(null);
                 }}
                 aria-label="Cerrar"
-                className="w-9 h-9 rounded-full bg-[#FAF7F5] border border-[#EFE8E4] text-[#6B535C] hover:text-[#3B0D1E] flex items-center justify-center cursor-pointer"
+                className="w-9 h-9 rounded-full bg-[#FAFAFA] border border-[#E4E4E7] text-[#52525B] hover:text-[#111111] flex items-center justify-center cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -1071,16 +1079,16 @@ export default function VitrinaPublicaClient({
 
             {pedidoConfirmado ? (
               <div className="space-y-4 text-center py-3">
-                <div className="w-14 h-14 rounded-2xl bg-[#F0FDFA] border border-[#0D9488]/25 text-[#0D9488] flex items-center justify-center mx-auto">
+                <div className="w-14 h-14 rounded-xl bg-[#F0FDF4] border border-[#15803D]/25 text-[#15803D] flex items-center justify-center mx-auto">
                   <Check size={26} />
                 </div>
                 <div>
-                  <span className="font-mono text-xs font-bold px-3 py-1 rounded-full bg-[#FAF7F5] border border-[#EFE8E4] text-[#3B0D1E] tabular-nums">
+                  <span className="font-mono text-xs font-bold px-3 py-1 rounded-full bg-[#FAFAFA] border border-[#E4E4E7] text-[#111111] tabular-nums">
                     {pedidoConfirmado.orderCode}
                   </span>
-                  <p className="mt-3 mb-0 text-sm text-[#6B535C] leading-relaxed">
+                  <p className="mt-3 mb-0 text-sm text-[#52525B] leading-relaxed">
                     Registramos tu solicitud por{' '}
-                    <strong className="text-[#3B0D1E] tabular-nums">
+                    <strong className="text-[#111111] tabular-nums">
                       {formatearPrecioCop(pedidoConfirmado.totalCop)} COP
                     </strong>
                     . Si WhatsApp no se abrió automáticamente, toca el botón para continuar.
@@ -1090,7 +1098,7 @@ export default function VitrinaPublicaClient({
                   href={pedidoConfirmado.whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full min-h-[48px] py-3.5 px-5 rounded-2xl text-[#FAF7F5] font-sans text-sm font-bold inline-flex items-center justify-center gap-2 no-underline"
+                  className="w-full min-h-[48px] py-3.5 px-5 rounded-xl text-white font-sans text-sm font-bold inline-flex items-center justify-center gap-2 no-underline"
                   style={{ backgroundColor: primaryColor }}
                 >
                   <MessageCircle size={17} />
@@ -1103,13 +1111,13 @@ export default function VitrinaPublicaClient({
                   {carrito.map((it) => (
                     <div
                       key={it.key}
-                      className="p-3.5 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] flex items-center justify-between gap-3"
+                      className="p-3.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] flex items-center justify-between gap-3"
                     >
                       <div className="min-w-0 flex-1">
-                        <div className="font-sans text-xs sm:text-sm font-bold text-[#3B0D1E] truncate">
+                        <div className="font-sans text-xs sm:text-sm font-bold text-[#111111] truncate">
                           {it.name}
                         </div>
-                        <div className="font-mono text-[11px] text-[#6B535C] tabular-nums mt-0.5">
+                        <div className="font-mono text-[11px] text-[#52525B] tabular-nums mt-0.5">
                           {it.variantLabel ? `${it.variantLabel} · ` : ''}
                           {formatearPrecioCop(it.unitPriceCop)} c/u
                         </div>
@@ -1120,7 +1128,7 @@ export default function VitrinaPublicaClient({
                           type="button"
                           onClick={() => cambiarCantidad(it.key, -1)}
                           aria-label="Restar"
-                          className="w-7 h-7 rounded-lg bg-white border border-[#EFE8E4] text-[#3B0D1E] flex items-center justify-center cursor-pointer"
+                          className="w-7 h-7 rounded-lg bg-white border border-[#E4E4E7] text-[#111111] flex items-center justify-center cursor-pointer"
                         >
                           {it.quantity === 1 ? <Trash2 size={12} /> : <Minus size={12} />}
                         </button>
@@ -1131,7 +1139,7 @@ export default function VitrinaPublicaClient({
                           type="button"
                           onClick={() => cambiarCantidad(it.key, 1)}
                           aria-label="Sumar"
-                          className="w-7 h-7 rounded-lg bg-white border border-[#EFE8E4] text-[#3B0D1E] flex items-center justify-center cursor-pointer"
+                          className="w-7 h-7 rounded-lg bg-white border border-[#E4E4E7] text-[#111111] flex items-center justify-center cursor-pointer"
                         >
                           <Plus size={12} />
                         </button>
@@ -1140,20 +1148,20 @@ export default function VitrinaPublicaClient({
                   ))}
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] flex items-center justify-between">
-                  <span className="font-sans text-xs font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                <div className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] flex items-center justify-between">
+                  <span className="font-sans text-xs font-bold uppercase tracking-[0.08em] text-[#52525B]">
                     {tipoPedidoInferido === 'service_inquiry'
                       ? 'Total orientativo'
                       : 'Total del pedido'}
                   </span>
-                  <span className="font-display text-2xl font-bold text-[#3B0D1E] tabular-nums">
+                  <span className="font-display text-2xl font-bold text-[#111111] tabular-nums">
                     {formatearPrecioCop(totalCarritoCop)}
                   </span>
                 </div>
 
                 <div className="space-y-3">
                   <label className="block">
-                    <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                    <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                       Tu nombre *
                     </span>
                     <input
@@ -1164,12 +1172,12 @@ export default function VitrinaPublicaClient({
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
                       placeholder="Ej. Valentina Gómez"
-                      className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm text-[#3B0D1E] font-sans placeholder-[#947C85]"
+                      className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm text-[#111111] font-sans placeholder-[#71717A]"
                     />
                   </label>
 
                   <label className="block">
-                    <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                    <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                       Tu WhatsApp / Celular *
                     </span>
                     <input
@@ -1178,12 +1186,12 @@ export default function VitrinaPublicaClient({
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
                       placeholder="Ej. 300 123 4567"
-                      className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm text-[#3B0D1E] font-mono tabular-nums placeholder-[#947C85]"
+                      className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm text-[#111111] font-mono tabular-nums placeholder-[#71717A]"
                     />
                   </label>
 
                   <label className="block">
-                    <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                    <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                       Notas opcionales (día sugerido, dirección o comentario)
                     </span>
                     <textarea
@@ -1192,13 +1200,13 @@ export default function VitrinaPublicaClient({
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       placeholder="Opcional…"
-                      className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm text-[#3B0D1E] font-sans placeholder-[#947C85] resize-none"
+                      className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm text-[#111111] font-sans placeholder-[#71717A] resize-none"
                     />
                   </label>
                 </div>
 
                 {errorCheckout && (
-                  <div className="p-3 rounded-2xl bg-[#FFF7F5] border border-[#D97757]/35 text-xs font-semibold text-[#D97757]">
+                  <div className="p-3 rounded-xl bg-[#FFFBEB] border border-[#B45309]/35 text-xs font-semibold text-[#B45309]">
                     {errorCheckout}
                   </div>
                 )}
@@ -1206,7 +1214,7 @@ export default function VitrinaPublicaClient({
                 <button
                   type="submit"
                   disabled={enviando || carrito.length === 0}
-                  className="w-full min-h-[50px] py-3.5 px-5 rounded-2xl text-[#FAF7F5] font-sans text-sm font-bold inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 border-none"
+                  className="w-full min-h-[50px] py-3.5 px-5 rounded-xl text-white font-sans text-sm font-bold inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 border-none"
                   style={{ backgroundColor: primaryColor }}
                 >
                   <MessageCircle size={17} />

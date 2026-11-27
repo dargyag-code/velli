@@ -9,7 +9,7 @@ export interface HorarioAtencion {
   hasta: string; // "18:00"
 }
 
-export const COLOR_VELLI = '#3B0D1E';
+export const COLOR_VELLI = '#111111';
 
 export interface Profile {
   id: string;

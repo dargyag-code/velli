@@ -17,7 +17,7 @@ export default function SearchBar({ value, onChange, placeholder = 'Buscar clien
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-[#E5E5E5] bg-white text-sm text-[#2D2D2D] placeholder-[#BBBBBB] transition-all duration-200"
+        className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-[#E4E4E7] bg-white text-sm text-[#2D2D2D] placeholder-[#BBBBBB] transition-all duration-200"
         style={{ fontFamily: "'DM Sans', sans-serif" }}
       />
       {value && (

@@ -26,7 +26,7 @@ export default function Card({
     <div
       onClick={onClick}
       className={`
-        bg-white rounded-2xl shadow-sm border border-[#E5E5E5]
+        bg-white rounded-xl shadow-sm border border-[#E4E4E7]
         ${paddingMap[padding]}
         ${hoverable ? 'card-hover cursor-pointer' : ''}
         ${className}

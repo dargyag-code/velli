@@ -6,7 +6,7 @@ import { showToast } from '@/lib/toast';
 // ─── Editor de marca del salón (solo logo) ─────────────────────────────────
 // Compartido entre el paso 2 del onboarding y Configuración → "Tu marca".
 // Desde 2026-10-24 el salón solo personaliza su logotipo: el color de acento
-// es siempre la paleta oficial de Velli Business Intelligence (COLOR_VELLI).
+// es siempre la paleta oficial de Veli (COLOR_VELLI).
 // Presentacional: el padre decide cuándo subir el logo y persistir el perfil.
 
 const MAX_LOGO_BYTES = 3 * 1024 * 1024;
@@ -74,7 +74,7 @@ export default function EditorMarca({ logoSrc, onLogo, nombreSalon }: Props) {
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
               Toca el recuadro para {logoSrc ? 'cambiar tu logo' : 'subir tu logo'}. Sin logo,
-              tus PDF salen con la marca Velli{nombreSalon ? ` y el nombre ${nombreSalon}` : ''}.
+              tus PDF salen con la marca Veli{nombreSalon ? ` y el nombre ${nombreSalon}` : ''}.
             </p>
             {logoSrc && (
               <button
@@ -102,7 +102,7 @@ export default function EditorMarca({ logoSrc, onLogo, nombreSalon }: Props) {
         </div>
       </div>
       <p style={{ margin: 0, fontSize: 11, color: 'var(--text-tertiary)', lineHeight: 1.45 }}>
-        Tus PDF y cotizaciones usan la paleta oficial de Velli Business Intelligence.
+        Tus PDF y cotizaciones usan la paleta oficial de Veli.
       </p>
     </div>
   );

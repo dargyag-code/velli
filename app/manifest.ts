@@ -2,14 +2,14 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Velli Business Intelligence',
-    short_name: 'Velli BI',
+    name: 'Veli',
+    short_name: 'Veli',
     description:
-      'Cotización capilar sin báscula, cierre financiero en un toque y rentabilidad real para salones.',
+      'Control financiero sin báscula, agenda conectada a WhatsApp y rentabilidad real por servicio.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#FAF7F5',
-    theme_color: '#3B0D1E',
+    background_color: '#FAFAFA',
+    theme_color: '#111111',
     orientation: 'portrait',
     lang: 'es-CO',
     categories: ['business', 'finance', 'productivity'],
@@ -36,7 +36,7 @@ export default function manifest(): MetadataRoute.Manifest {
     shortcuts: [
       {
         name: 'Cotizar en silla',
-        short_name: 'Cotizar',
+        short_name: 'Silla',
         description: 'Iniciar diagnóstico y cotización sin báscula',
         url: '/',
       },
@@ -47,10 +47,10 @@ export default function manifest(): MetadataRoute.Manifest {
         url: '/?tab=cierre',
       },
       {
-        name: 'Métricas BI',
-        short_name: 'Métricas',
-        description: 'Ver utilidad neta y liquidación de especialistas',
-        url: '/reportes',
+        name: 'Agenda',
+        short_name: 'Agenda',
+        description: 'Ver citas del día y pasar a silla',
+        url: '/agenda',
       },
     ],
   };

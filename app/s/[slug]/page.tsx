@@ -65,12 +65,12 @@ export default async function StorefrontPublicPage({
 
   if (estado === 'rate_limited') {
     return (
-      <main className="min-h-screen bg-[#FAF7F5] flex items-center justify-center p-4">
-        <section className="w-full max-w-md mx-auto bg-white rounded-3xl border border-[#EFE8E4] p-7 text-center shadow-velvet">
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-[#3B0D1E] mb-2">
+      <main className="min-h-screen bg-[#FAFAFA] flex items-center justify-center p-4">
+        <section className="w-full max-w-md mx-auto bg-white rounded-xl border border-[#E4E4E7] p-7 text-center">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-[#111111] mb-2">
             Demasiadas consultas
           </h1>
-          <p className="font-sans text-sm text-[#6B535C]">
+          <p className="font-sans text-sm text-[#52525B]">
             Por favor espera unos minutos antes de volver a abrir esta vitrina.
           </p>
         </section>
@@ -80,12 +80,12 @@ export default async function StorefrontPublicPage({
 
   if (!storefront) {
     return (
-      <main className="min-h-screen bg-[#FAF7F5] flex items-center justify-center p-4">
-        <section className="w-full max-w-md mx-auto bg-white rounded-3xl border border-[#EFE8E4] p-7 text-center shadow-velvet">
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-[#3B0D1E] mb-2">
+      <main className="min-h-screen bg-[#FAFAFA] flex items-center justify-center p-4">
+        <section className="w-full max-w-md mx-auto bg-white rounded-xl border border-[#E4E4E7] p-7 text-center">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-[#111111] mb-2">
             Vitrina no encontrada
           </h1>
-          <p className="font-sans text-sm text-[#6B535C]">
+          <p className="font-sans text-sm text-[#52525B]">
             Verifica el enlace compartido por tu salón o solicita uno actualizado.
           </p>
         </section>

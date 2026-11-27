@@ -12,10 +12,10 @@ interface AvatarV2Props {
 }
 
 const toneMap: Record<AvatarTone, { bg: string; fg: string }> = {
-  '1': { bg: '#F5EBE8', fg: '#3B0D1E' },
-  '2': { bg: '#E8CFC8', fg: '#3B0D1E' },
-  '3': { bg: '#3B0D1E', fg: '#FAF7F5' },
-  '4': { bg: '#F5F3FF', fg: '#52142B' },
+  '1': { bg: '#F4F4F5', fg: '#111111' },
+  '2': { bg: '#E4E4E7', fg: '#111111' },
+  '3': { bg: '#111111', fg: '#FAFAFA' },
+  '4': { bg: '#F4F4F5', fg: '#27272A' },
 };
 
 const sizeMap: Record<AvatarSize, number> = { sm: 34, md: 44, lg: 56, xl: 72 };

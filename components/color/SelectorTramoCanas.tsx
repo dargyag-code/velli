@@ -25,13 +25,13 @@ export default function SelectorTramoCanas({
     <div role="group" aria-labelledby="tramo-canas" className="mb-3 font-sans">
       <span
         id="tramo-canas"
-        className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block"
+        className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block"
       >
         Tramo preciso de canas (CO-05)
       </span>
       <p
         className={`mt-1 mb-2 text-xs leading-relaxed ${
-          pendiente ? 'text-[#52142B] font-medium' : 'text-[#6B535C]'
+          pendiente ? 'text-[#27272A] font-medium' : 'text-[#52525B]'
         }`}
       >
         {pendiente
@@ -49,8 +49,8 @@ export default function SelectorTramoCanas({
               onClick={() => onChange(v)}
               className={`min-h-[46px] px-3 py-2 rounded-xl text-xs font-bold tabular-nums border transition-all cursor-pointer ${
                 on
-                  ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E]'
-                  : 'bg-white text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8] hover:text-[#3B0D1E]'
+                  ? 'bg-[#111111] text-white border-[#111111]'
+                  : 'bg-white text-[#52525B] border-[#E4E4E7] hover:bg-[#F4F4F5] hover:text-[#111111]'
               }`}
             >
               {label}

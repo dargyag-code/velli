@@ -249,8 +249,8 @@ describe('2. Brand Settings: resolución, sanitización Velvet Studio y proyecci
       colorPrimario: '#2D5A27',
     });
     expect(fallback.displayName).toBe('Salón Clásico');
-    expect(fallback.primaryColor).toBe('#3B0D1E');
-    expect(fallback.accentColor).toBe('#E8CFC8');
+    expect(fallback.primaryColor).toBe('#111111');
+    expect(fallback.accentColor).toBe('#F4F4F5');
   });
 
   it('genera slugs deterministas sin tildes ni caracteres especiales y consulta brand_settings desde Supabase', async () => {

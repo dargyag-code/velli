@@ -67,27 +67,27 @@ const STATUS_BADGE: Record<
 > = {
   pending: {
     label: 'Por confirmar',
-    classes: 'bg-[#F5EBE8] text-[#3B0D1E] border-[#E8CFC8]',
+    classes: 'bg-[#F4F4F5] text-[#111111] border-[#E4E4E7]',
   },
   confirmed: {
     label: 'Confirmada',
-    classes: 'bg-[#F5F3FF] text-[#7C3AED] border-[#DDD6FE]',
+    classes: 'bg-[#F4F4F5] text-[#111111] border-[#E4E4E7]',
   },
   in_chair: {
     label: 'En silla',
-    classes: 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E]',
+    classes: 'bg-[#111111] text-white border-[#111111]',
   },
   completed: {
     label: 'Completada',
-    classes: 'bg-[#F0FDFA] text-[#0D9488] border-[#0D9488]/30',
+    classes: 'bg-[#F0FDF4] text-[#15803D] border-[#15803D]/30',
   },
   no_show: {
     label: 'No asistió',
-    classes: 'bg-[#FFF7F5] text-[#D97757] border-[#D97757]/30',
+    classes: 'bg-[#FFFBEB] text-[#B45309] border-[#B45309]/30',
   },
   cancelled: {
     label: 'Cancelada',
-    classes: 'bg-[#FAF7F5] text-[#947C85] border-[#EFE8E4]',
+    classes: 'bg-[#FAFAFA] text-[#71717A] border-[#E4E4E7]',
   },
 };
 
@@ -338,17 +338,17 @@ export default function AgendaPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] font-sans pb-16">
+    <div className="min-h-screen bg-[#FAFAFA] text-[#111111] font-sans pb-16">
       <VelvetTopHeader nombreSalon={org?.name} ciudadSalon={org?.city ?? undefined} />
 
       {/* Sub-header Agenda */}
-      <div className="border-b border-[#EFE8E4]">
+      <div className="border-b border-[#E4E4E7]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
               Puente Operativo · Zona Horaria Bogotá (UTC-5)
             </span>
-            <h1 className="m-0 mt-0.5 font-display text-2xl md:text-3xl font-semibold tracking-tight text-[#3B0D1E]">
+            <h1 className="m-0 mt-0.5 font-display text-2xl md:text-3xl font-semibold tracking-tight text-[#111111]">
               Agenda & Silla
             </h1>
           </div>
@@ -358,7 +358,7 @@ export default function AgendaPage() {
               <button
                 type="button"
                 onClick={() => setModalHorarios(true)}
-                className="min-h-[42px] px-3.5 py-2 rounded-2xl bg-white hover:bg-[#F5EBE8] border border-[#EFE8E4] text-xs font-bold text-[#3B0D1E] inline-flex items-center gap-1.5 cursor-pointer"
+                className="min-h-[42px] px-3.5 py-2 rounded-xl bg-white hover:bg-[#F4F4F5] border border-[#E4E4E7] text-xs font-bold text-[#111111] inline-flex items-center gap-1.5 cursor-pointer"
               >
                 <SlidersHorizontal size={14} />
                 <span>Horarios equipo</span>
@@ -371,7 +371,7 @@ export default function AgendaPage() {
                 setNuevaFecha(fechaBaseYmd);
                 setModalNueva(true);
               }}
-              className="min-h-[42px] px-4 py-2 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer border-none"
+              className="min-h-[42px] px-4 py-2 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer border-none"
             >
               <Plus size={14} />
               <span>Nueva cita</span>
@@ -383,14 +383,14 @@ export default function AgendaPage() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
         {/* Controles de vista (Diaria / Semanal), Navegación de fecha y Filtro por especialista */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-[#F5EBE8] border border-[#EFE8E4]">
+          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-[#F4F4F5] border border-[#E4E4E7]">
             <button
               type="button"
               onClick={() => setVista('dia')}
               className={`min-h-[40px] px-4 py-1.5 rounded-xl font-sans text-xs font-bold cursor-pointer border-none ${
                 vista === 'dia'
-                  ? 'bg-[#3B0D1E] text-[#FAF7F5]'
-                  : 'bg-transparent text-[#6B535C] hover:text-[#3B0D1E]'
+                  ? 'bg-[#111111] text-white'
+                  : 'bg-transparent text-[#52525B] hover:text-[#111111]'
               }`}
             >
               Vista diaria
@@ -400,27 +400,27 @@ export default function AgendaPage() {
               onClick={() => setVista('semana')}
               className={`min-h-[40px] px-4 py-1.5 rounded-xl font-sans text-xs font-bold cursor-pointer border-none ${
                 vista === 'semana'
-                  ? 'bg-[#3B0D1E] text-[#FAF7F5]'
-                  : 'bg-transparent text-[#6B535C] hover:text-[#3B0D1E]'
+                  ? 'bg-[#111111] text-white'
+                  : 'bg-transparent text-[#52525B] hover:text-[#111111]'
               }`}
             >
               Vista semanal
             </button>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 bg-white border border-[#EFE8E4] rounded-2xl p-1 shadow-velvet">
+          <div className="inline-flex items-center gap-1.5 bg-white border border-[#E4E4E7] rounded-xl p-1">
             <button
               type="button"
               onClick={() => moverPeriodo(-1)}
               aria-label="Periodo anterior"
-              className="w-9 h-9 rounded-xl bg-transparent hover:bg-[#FAF7F5] border-none text-[#3B0D1E] flex items-center justify-center cursor-pointer"
+              className="w-9 h-9 rounded-xl bg-transparent hover:bg-[#FAFAFA] border-none text-[#111111] flex items-center justify-center cursor-pointer"
             >
               <ChevronLeft size={16} />
             </button>
             <button
               type="button"
               onClick={() => setFechaBaseYmd(formatearFechaBogotaYmd(new Date()))}
-              className="px-3 py-1.5 rounded-xl bg-transparent hover:bg-[#FAF7F5] border-none font-sans text-xs font-bold text-[#3B0D1E] cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-transparent hover:bg-[#FAFAFA] border-none font-sans text-xs font-bold text-[#111111] cursor-pointer"
             >
               {vista === 'dia'
                 ? formatearTituloDia(fechaBaseYmd)
@@ -430,7 +430,7 @@ export default function AgendaPage() {
               type="button"
               onClick={() => moverPeriodo(1)}
               aria-label="Periodo siguiente"
-              className="w-9 h-9 rounded-xl bg-transparent hover:bg-[#FAF7F5] border-none text-[#3B0D1E] flex items-center justify-center cursor-pointer"
+              className="w-9 h-9 rounded-xl bg-transparent hover:bg-[#FAFAFA] border-none text-[#111111] flex items-center justify-center cursor-pointer"
             >
               <ChevronRight size={16} />
             </button>
@@ -445,8 +445,8 @@ export default function AgendaPage() {
               onClick={() => setFiltroEspecialistaId('todas')}
               className={`min-h-[38px] shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer ${
                 filtroEspecialistaId === 'todas'
-                  ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E]'
-                  : 'bg-white text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8]'
+                  ? 'bg-[#111111] text-white border-[#111111]'
+                  : 'bg-white text-[#52525B] border-[#E4E4E7] hover:bg-[#F4F4F5]'
               }`}
             >
               Todo el equipo
@@ -460,8 +460,8 @@ export default function AgendaPage() {
                   onClick={() => setFiltroEspecialistaId(est.id)}
                   className={`min-h-[38px] shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold border inline-flex items-center gap-1.5 cursor-pointer ${
                     activa
-                      ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E]'
-                      : 'bg-white text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8]'
+                      ? 'bg-[#111111] text-white border-[#111111]'
+                      : 'bg-white text-[#52525B] border-[#E4E4E7] hover:bg-[#F4F4F5]'
                   }`}
                 >
                   <UserCheck size={13} />
@@ -476,17 +476,17 @@ export default function AgendaPage() {
         {cargando ? (
           <div className="space-y-3">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="skeleton-shimmer h-28 rounded-3xl" />
+              <div key={i} className="skeleton-shimmer h-28 rounded-xl" />
             ))}
           </div>
         ) : vista === 'dia' ? (
           citasFiltradas.length === 0 ? (
-            <section className="bg-white rounded-3xl border border-[#EFE8E4] p-10 text-center shadow-velvet">
-              <CalendarIcon size={26} className="text-[#947C85] mx-auto mb-3" />
-              <h2 className="m-0 font-display text-xl font-semibold text-[#3B0D1E]">
+            <section className="bg-white rounded-xl border border-[#E4E4E7] p-10 text-center">
+              <CalendarIcon size={26} className="text-[#71717A] mx-auto mb-3" />
+              <h2 className="m-0 font-display text-xl font-semibold text-[#111111]">
                 Sin citas programadas para este día
               </h2>
-              <p className="mt-1.5 mb-0 text-xs text-[#6B535C] max-w-sm mx-auto leading-relaxed">
+              <p className="mt-1.5 mb-0 text-xs text-[#52525B] max-w-sm mx-auto leading-relaxed">
                 Las reservas confirmadas desde tu vitrina pública `/s/{org?.slug ?? 'salon'}` o registradas manualmente aparecerán aquí listas para abrir en silla.
               </p>
             </section>
@@ -522,8 +522,8 @@ export default function AgendaPage() {
               return (
                 <section
                   key={diaYmd}
-                  className={`bg-white rounded-3xl border p-3.5 shadow-velvet flex flex-col gap-2.5 min-h-[220px] ${
-                    esHoy ? 'border-[#3B0D1E]' : 'border-[#EFE8E4]'
+                  className={`bg-white rounded-xl border p-3.5 flex flex-col gap-2.5 min-h-[220px] ${
+                    esHoy ? 'border-[#111111]' : 'border-[#E4E4E7]'
                   }`}
                 >
                   <button
@@ -532,41 +532,41 @@ export default function AgendaPage() {
                       setFechaBaseYmd(diaYmd);
                       setVista('dia');
                     }}
-                    className="w-full text-left bg-transparent border-none p-0 pb-2 border-b border-[#EFE8E4] flex items-baseline justify-between cursor-pointer"
+                    className="w-full text-left bg-transparent border-none p-0 pb-2 border-b border-[#E4E4E7] flex items-baseline justify-between cursor-pointer"
                   >
-                    <span className="font-sans text-xs font-bold uppercase tracking-[0.06em] text-[#6B535C]">
+                    <span className="font-sans text-xs font-bold uppercase tracking-[0.06em] text-[#52525B]">
                       {DIAS_SEMANA_CORTOS[dow]}
                     </span>
-                    <span className="font-mono text-xs font-bold text-[#3B0D1E] tabular-nums">
+                    <span className="font-mono text-xs font-bold text-[#111111] tabular-nums">
                       {dd}/{mm}
                     </span>
                   </button>
 
                   {citasDia.length === 0 ? (
-                    <span className="text-[11px] text-[#947C85] py-4 text-center">Libre</span>
+                    <span className="text-[11px] text-[#71717A] py-4 text-center">Libre</span>
                   ) : (
                     <div className="space-y-2">
                       {citasDia.map((c) => (
                         <div
                           key={c.id}
-                          className="p-2.5 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] space-y-1.5"
+                          className="p-2.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] space-y-1.5"
                         >
                           <div className="flex items-center justify-between gap-1">
-                            <span className="font-mono text-[11px] font-bold text-[#3B0D1E] tabular-nums">
+                            <span className="font-mono text-[11px] font-bold text-[#111111] tabular-nums">
                               {formatearHoraBogotaHm(c.startsAt)}
                             </span>
-                            <span className="text-[10px] font-semibold text-[#6B535C] truncate">
+                            <span className="text-[10px] font-semibold text-[#52525B] truncate">
                               {c.specialistName ?? estilistaMap[c.specialistId] ?? ''}
                             </span>
                           </div>
-                          <div className="font-sans text-xs font-bold text-[#3B0D1E] truncate">
+                          <div className="font-sans text-xs font-bold text-[#111111] truncate">
                             {c.customerName}
                           </div>
                           {c.status !== 'cancelled' && c.status !== 'no_show' && (
                             <button
                               type="button"
                               onClick={() => abrirEnSilla(c)}
-                              className="w-full py-1 px-2 rounded-xl bg-[#3B0D1E] text-[#FAF7F5] font-sans text-[10px] font-bold cursor-pointer border-none"
+                              className="w-full py-1 px-2 rounded-xl bg-[#111111] text-white font-sans text-[10px] font-bold cursor-pointer border-none"
                             >
                               Abrir en Silla
                             </button>
@@ -586,20 +586,20 @@ export default function AgendaPage() {
       {modalNueva && (
         <div
           onClick={() => !guardandoCita && setModalNueva(false)}
-          className="fixed inset-0 z-50 bg-[#1F050F]/45 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 fade-in"
+          className="fixed inset-0 z-50 bg-[#111111]/45 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 fade-in"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-3xl border border-[#EFE8E4] p-6 sm:p-7 shadow-velvet pb-safe"
+            className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-xl border border-[#E4E4E7] p-6 sm:p-7 pb-safe"
           >
             <div className="flex items-center justify-between gap-2 mb-4">
-              <h2 className="m-0 font-display text-2xl font-semibold text-[#3B0D1E]">
+              <h2 className="m-0 font-display text-2xl font-semibold text-[#111111]">
                 Agendar cita en salón
               </h2>
               <button
                 type="button"
                 onClick={() => setModalNueva(false)}
-                className="w-9 h-9 rounded-full bg-[#FAF7F5] border border-[#EFE8E4] text-[#6B535C] flex items-center justify-center cursor-pointer"
+                className="w-9 h-9 rounded-full bg-[#FAFAFA] border border-[#E4E4E7] text-[#52525B] flex items-center justify-center cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -608,7 +608,7 @@ export default function AgendaPage() {
             <form onSubmit={crearCitaManual} className="space-y-3.5">
               {clientas.length > 0 && (
                 <label className="block">
-                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                     Clienta registrada (opcional)
                   </span>
                   <select
@@ -622,7 +622,7 @@ export default function AgendaPage() {
                         setNuevoTelefono(cli.telefono);
                       }
                     }}
-                    className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm text-[#3B0D1E]"
+                    className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm text-[#111111]"
                   >
                     <option value="">— Nueva / ingreso rápido —</option>
                     {clientas.map((c) => (
@@ -636,7 +636,7 @@ export default function AgendaPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label className="block">
-                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                     Nombre clienta *
                   </span>
                   <input
@@ -646,12 +646,12 @@ export default function AgendaPage() {
                     value={nuevoNombre}
                     onChange={(e) => setNuevoNombre(e.target.value)}
                     placeholder="Nombre completo"
-                    className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm text-[#3B0D1E]"
+                    className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm text-[#111111]"
                   />
                 </label>
 
                 <label className="block">
-                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                     Teléfono / WhatsApp *
                   </span>
                   <input
@@ -660,21 +660,21 @@ export default function AgendaPage() {
                     value={nuevoTelefono}
                     onChange={(e) => setNuevoTelefono(e.target.value)}
                     placeholder="300 123 4567"
-                    className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#3B0D1E]"
+                    className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#111111]"
                   />
                 </label>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label className="block">
-                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                     Especialista *
                   </span>
                   <select
                     required
                     value={nuevaEspecialistaId}
                     onChange={(e) => setNuevaEspecialistaId(e.target.value)}
-                    className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm text-[#3B0D1E]"
+                    className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm text-[#111111]"
                   >
                     {estilistas.map((e) => (
                       <option key={e.id} value={e.id}>
@@ -685,13 +685,13 @@ export default function AgendaPage() {
                 </label>
 
                 <label className="block">
-                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                     Servicio
                   </span>
                   <select
                     value={nuevoServicioId}
                     onChange={(e) => setNuevoServicioId(e.target.value)}
-                    className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm text-[#3B0D1E]"
+                    className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm text-[#111111]"
                   >
                     {servicios.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -704,7 +704,7 @@ export default function AgendaPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label className="block">
-                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                     Fecha *
                   </span>
                   <input
@@ -712,12 +712,12 @@ export default function AgendaPage() {
                     required
                     value={nuevaFecha}
                     onChange={(e) => setNuevaFecha(e.target.value)}
-                    className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#3B0D1E]"
+                    className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#111111]"
                   />
                 </label>
 
                 <label className="block">
-                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                     Hora disponible *
                   </span>
                   {slotsModalNueva.length > 0 ? (
@@ -728,7 +728,7 @@ export default function AgendaPage() {
                           : slotsModalNueva[0].label
                       }
                       onChange={(e) => setNuevaHora(e.target.value)}
-                      className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#3B0D1E]"
+                      className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#111111]"
                     >
                       {slotsModalNueva.map((slot) => (
                         <option key={slot.label} value={slot.label}>
@@ -742,14 +742,14 @@ export default function AgendaPage() {
                       required
                       value={nuevaHora}
                       onChange={(e) => setNuevaHora(e.target.value)}
-                      className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#3B0D1E]"
+                      className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#111111]"
                     />
                   )}
                 </label>
               </div>
 
               <label className="block">
-                <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                   Notas
                 </span>
                 <input
@@ -758,14 +758,14 @@ export default function AgendaPage() {
                   value={nuevasNotas}
                   onChange={(e) => setNuevasNotas(e.target.value)}
                   placeholder="Opcional…"
-                  className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm text-[#3B0D1E]"
+                  className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm text-[#111111]"
                 />
               </label>
 
               <button
                 type="submit"
                 disabled={guardandoCita || estilistas.length === 0}
-                className="w-full min-h-[48px] py-3 px-5 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans text-sm font-bold cursor-pointer disabled:opacity-50 border-none"
+                className="w-full min-h-[48px] py-3 px-5 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white font-sans text-sm font-bold cursor-pointer disabled:opacity-50 border-none"
               >
                 {guardandoCita ? 'Guardando cita…' : 'Guardar cita'}
               </button>
@@ -778,20 +778,20 @@ export default function AgendaPage() {
       {modalHorarios && esAdmin && (
         <div
           onClick={() => setModalHorarios(false)}
-          className="fixed inset-0 z-50 bg-[#1F050F]/45 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 fade-in"
+          className="fixed inset-0 z-50 bg-[#111111]/45 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 fade-in"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-3xl border border-[#EFE8E4] p-6 sm:p-7 shadow-velvet pb-safe space-y-4"
+            className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-xl border border-[#E4E4E7] p-6 sm:p-7 pb-safe space-y-4"
           >
             <div className="flex items-center justify-between gap-2">
-              <h2 className="m-0 font-display text-2xl font-semibold text-[#3B0D1E]">
+              <h2 className="m-0 font-display text-2xl font-semibold text-[#111111]">
                 Horarios por especialista
               </h2>
               <button
                 type="button"
                 onClick={() => setModalHorarios(false)}
-                className="w-9 h-9 rounded-full bg-[#FAF7F5] border border-[#EFE8E4] text-[#6B535C] flex items-center justify-center cursor-pointer"
+                className="w-9 h-9 rounded-full bg-[#FAFAFA] border border-[#E4E4E7] text-[#52525B] flex items-center justify-center cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -800,7 +800,7 @@ export default function AgendaPage() {
             <select
               value={horarioSpecId}
               onChange={(e) => setHorarioSpecId(e.target.value)}
-              className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm font-bold text-[#3B0D1E]"
+              className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm font-bold text-[#111111]"
             >
               {estilistas.map((e) => (
                 <option key={e.id} value={e.id}>
@@ -815,9 +815,9 @@ export default function AgendaPage() {
                 return (
                   <div
                     key={dow}
-                    className="p-3 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] flex flex-wrap items-center justify-between gap-2"
+                    className="p-3 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] flex flex-wrap items-center justify-between gap-2"
                   >
-                    <label className="inline-flex items-center gap-2 text-xs font-bold text-[#3B0D1E] cursor-pointer min-w-[105px]">
+                    <label className="inline-flex items-center gap-2 text-xs font-bold text-[#111111] cursor-pointer min-w-[105px]">
                       <input
                         type="checkbox"
                         checked={regla.active}
@@ -835,18 +835,18 @@ export default function AgendaPage() {
                           onChange={(e) =>
                             actualizarReglaDia(dow, { startTime: e.target.value })
                           }
-                          className="bg-white border border-[#EFE8E4] rounded-xl px-2 py-1 text-xs text-[#3B0D1E]"
+                          className="bg-white border border-[#E4E4E7] rounded-xl px-2 py-1 text-xs text-[#111111]"
                         />
                         <span>–</span>
                         <input
                           type="time"
                           value={regla.endTime}
                           onChange={(e) => actualizarReglaDia(dow, { endTime: e.target.value })}
-                          className="bg-white border border-[#EFE8E4] rounded-xl px-2 py-1 text-xs text-[#3B0D1E]"
+                          className="bg-white border border-[#E4E4E7] rounded-xl px-2 py-1 text-xs text-[#111111]"
                         />
                       </div>
                     ) : (
-                      <span className="text-xs text-[#947C85]">Día libre</span>
+                      <span className="text-xs text-[#71717A]">Día libre</span>
                     )}
                   </div>
                 );
@@ -884,34 +884,34 @@ function TarjetaCitaAgenda({
   const activaParaSilla = cita.status !== 'cancelled' && cita.status !== 'no_show';
 
   return (
-    <article className="bg-white rounded-3xl border border-[#EFE8E4] p-5 sm:p-6 shadow-velvet flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <article className="bg-white rounded-xl border border-[#E4E4E7] p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div className="space-y-2 min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] font-mono text-xs font-bold text-[#3B0D1E] tabular-nums">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] font-mono text-xs font-bold text-[#111111] tabular-nums">
             <Clock size={13} />
             {horaInicio} – {horaFin}
           </span>
           <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${badge.classes}`}>
             {badge.label}
           </span>
-          <span className="px-2.5 py-0.5 rounded-full bg-[#FAF7F5] border border-[#EFE8E4] text-[11px] font-semibold text-[#6B535C]">
+          <span className="px-2.5 py-0.5 rounded-full bg-[#FAFAFA] border border-[#E4E4E7] text-[11px] font-semibold text-[#52525B]">
             {cita.source === 'web_vitrina' ? 'Vitrina Web' : 'Salón'}
           </span>
         </div>
 
         <div>
-          <h3 className="m-0 font-sans text-base sm:text-lg font-bold text-[#3B0D1E]">
+          <h3 className="m-0 font-sans text-base sm:text-lg font-bold text-[#111111]">
             {cita.customerName}{' '}
-            <span className="font-mono text-xs font-normal text-[#6B535C] tabular-nums">
+            <span className="font-mono text-xs font-normal text-[#52525B] tabular-nums">
               · {cita.customerPhone}
             </span>
           </h3>
-          <p className="m-0 mt-0.5 text-xs text-[#6B535C]">
-            <strong className="text-[#3B0D1E]">{serviceName}</strong> · Especialista:{' '}
-            <span className="font-semibold text-[#3B0D1E]">{specialistName}</span>
+          <p className="m-0 mt-0.5 text-xs text-[#52525B]">
+            <strong className="text-[#111111]">{serviceName}</strong> · Especialista:{' '}
+            <span className="font-semibold text-[#111111]">{specialistName}</span>
           </p>
           {cita.notes && (
-            <p className="m-0 mt-1 text-xs text-[#947C85] italic">“{cita.notes}”</p>
+            <p className="m-0 mt-1 text-xs text-[#71717A] italic">“{cita.notes}”</p>
           )}
         </div>
       </div>
@@ -921,7 +921,7 @@ function TarjetaCitaAgenda({
           <button
             type="button"
             onClick={onAbrirEnSilla}
-            className="min-h-[44px] px-4 py-2.5 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans text-xs font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer border-none"
+            className="min-h-[44px] px-4 py-2.5 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white font-sans text-xs font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer border-none"
           >
             <Sparkles size={14} />
             <span>Abrir en Silla</span>
@@ -933,7 +933,7 @@ function TarjetaCitaAgenda({
           <button
             type="button"
             onClick={() => onCambiarEstado('confirmed')}
-            className="min-h-[40px] px-3 py-2 rounded-xl bg-[#F0FDFA] hover:opacity-95 border border-[#0D9488]/30 text-[#0D9488] font-sans text-xs font-bold inline-flex items-center gap-1 cursor-pointer"
+            className="min-h-[40px] px-3 py-2 rounded-xl bg-[#F0FDF4] hover:opacity-95 border border-[#15803D]/30 text-[#15803D] font-sans text-xs font-bold inline-flex items-center gap-1 cursor-pointer"
           >
             <Check size={14} />
             <span>Confirmar</span>
@@ -944,7 +944,7 @@ function TarjetaCitaAgenda({
           <button
             type="button"
             onClick={() => onCambiarEstado('completed')}
-            className="min-h-[40px] px-3 py-2 rounded-xl bg-[#F0FDFA] border border-[#0D9488]/30 text-[#0D9488] font-sans text-xs font-bold cursor-pointer"
+            className="min-h-[40px] px-3 py-2 rounded-xl bg-[#F0FDF4] border border-[#15803D]/30 text-[#15803D] font-sans text-xs font-bold cursor-pointer"
           >
             Completada
           </button>
@@ -956,7 +956,7 @@ function TarjetaCitaAgenda({
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Escribir por WhatsApp"
-            className="w-10 h-10 rounded-xl bg-[#FAF7F5] hover:bg-[#F5EBE8] border border-[#EFE8E4] text-[#3B0D1E] flex items-center justify-center no-underline"
+            className="w-10 h-10 rounded-xl bg-[#FAFAFA] hover:bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] flex items-center justify-center no-underline"
           >
             <MessageCircle size={15} />
           </a>
@@ -966,7 +966,7 @@ function TarjetaCitaAgenda({
           <button
             type="button"
             onClick={() => onCambiarEstado('cancelled')}
-            className="min-h-[40px] px-3 py-2 rounded-xl bg-[#FFF7F5] border border-[#D97757]/30 text-[#D97757] font-sans text-xs font-bold cursor-pointer"
+            className="min-h-[40px] px-3 py-2 rounded-xl bg-[#FFFBEB] border border-[#B45309]/30 text-[#B45309] font-sans text-xs font-bold cursor-pointer"
           >
             Cancelar
           </button>

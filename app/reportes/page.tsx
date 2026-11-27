@@ -334,23 +334,23 @@ export default function ReportesBIPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] pb-32 lg:pb-12">
+    <div className="min-h-screen bg-[#FAFAFA] text-[#111111] pb-32 lg:pb-12">
       <VelvetTopHeader nombreSalon={nombreSalon} ciudadSalon={ciudadSalon} />
       {/* ── Sub-header Ejecutivo Velvet Studio ─────────────────────────── */}
-      <div className="border-b border-[#EFE8E4]">
+      <div className="border-b border-[#E4E4E7]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-3">
           <div>
-            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
-              Velli Business Intelligence
+            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
+              Veli
             </span>
-            <h1 className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-[#3B0D1E] mt-0.5">
+            <h1 className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-[#111111] mt-0.5">
               Rentabilidad & Liquidación · {nombreSalon}
             </h1>
           </div>
 
           <Link
             href="/configuracion/precios"
-            className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-[#EFE8E4] hover:bg-[#F5EBE8] font-sans text-xs font-bold text-[#3B0D1E] shadow-[0_2px_8px_-2px_rgba(59,13,30,0.05)] no-underline transition-colors shrink-0"
+            className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E4E4E7] hover:bg-[#F4F4F5] font-sans text-xs font-bold text-[#111111] shadow-[0_2px_8px_-2px_rgba(59,13,30,0.05)] no-underline transition-colors shrink-0"
           >
             <Settings size={14} />
             <span className="hidden sm:inline">Calibrar Servicios & Comisiones</span>
@@ -362,7 +362,7 @@ export default function ReportesBIPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
         {/* ── Barra de Periodo (Segmented Control) + Acceso a Por Cobrar ── */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex flex-wrap items-center gap-1 p-1 rounded-2xl bg-[#F5EBE8] border border-[#EFE8E4]">
+          <div className="inline-flex flex-wrap items-center gap-1 p-1 rounded-xl bg-[#F4F4F5] border border-[#E4E4E7]">
             {OPCIONES_PERIODO.map((op) => {
               const activo = periodo === op.key;
               return (
@@ -372,8 +372,8 @@ export default function ReportesBIPage() {
                   onClick={() => setPeriodo(op.key)}
                   className={`min-h-[44px] px-4 py-2 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer ${
                     activo
-                      ? 'bg-[#3B0D1E] text-[#FAF7F5] shadow-[0_6px_16px_-4px_rgba(59,13,30,0.22)]'
-                      : 'text-[#6B535C] hover:text-[#3B0D1E]'
+                      ? 'bg-[#111111] text-white shadow-[0_6px_16px_-4px_rgba(59,13,30,0.22)]'
+                      : 'text-[#52525B] hover:text-[#111111]'
                   }`}
                 >
                   {op.label}
@@ -385,7 +385,7 @@ export default function ReportesBIPage() {
           {kpis.cantidadPorCobrar > 0 && (
             <Link
               href="/?tab=cierre"
-              className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-[#EFE8E4] hover:bg-[#3B0D1E] text-[#3B0D1E] hover:text-[#FAF7F5] font-sans text-xs font-bold no-underline transition-colors tabular-nums shadow-[0_4px_14px_-4px_rgba(59,13,30,0.06)]"
+              className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E4E4E7] hover:bg-[#111111] text-[#111111] hover:text-white font-sans text-xs font-bold no-underline transition-colors tabular-nums shadow-[0_4px_14px_-4px_rgba(59,13,30,0.06)]"
             >
               <CheckCircle2 size={14} />
               {kpis.cantidadPorCobrar} por cobrar ({formatearPrecioCop(kpis.montoPorCobrar)})
@@ -397,24 +397,24 @@ export default function ReportesBIPage() {
         {/* ── 1. Bento Grid Financiero Superior (3 Tarjetas) ───────────── */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Tarjeta 1: Ingresos Cerrados */}
-          <article className="bg-white rounded-3xl p-6 border border-[#EFE8E4] shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] flex flex-col justify-between gap-4">
+          <article className="bg-white rounded-xl p-6 border border-[#E4E4E7]  flex flex-col justify-between gap-4">
             <div className="flex items-center justify-between">
-              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                 01 · Ingresos Cerrados
               </span>
-              <span className="w-9 h-9 rounded-xl bg-[#F0FDFA] text-[#0D9488] flex items-center justify-center">
+              <span className="w-9 h-9 rounded-xl bg-[#F0FDF4] text-[#15803D] flex items-center justify-center">
                 <TrendingUp size={18} />
               </span>
             </div>
 
             <div>
-              <div className="font-display text-2xl md:text-3xl font-bold tabular-nums tracking-tight text-[#3B0D1E]">
+              <div className="font-display text-2xl md:text-3xl font-bold tabular-nums tracking-tight text-[#111111]">
                 {cargando ? '…' : formatearPrecioCop(kpis.ingresosCobrados)}
               </div>
-              <p className="font-sans text-xs text-[#6B535C] mt-2 tabular-nums">
-                <strong className="text-[#3B0D1E]">{kpis.cantidadCerrados}</strong>{' '}
+              <p className="font-sans text-xs text-[#52525B] mt-2 tabular-nums">
+                <strong className="text-[#111111]">{kpis.cantidadCerrados}</strong>{' '}
                 {kpis.cantidadCerrados === 1 ? 'servicio cobrado' : 'servicios cobrados'} ·{' '}
-                <span className="text-[#947C85]">
+                <span className="text-[#71717A]">
                   {kpis.cantidadPorCobrar} pendientes en caja
                 </span>
               </p>
@@ -422,31 +422,31 @@ export default function ReportesBIPage() {
           </article>
 
           {/* Tarjeta 2: Costo Químico + Nómina */}
-          <article className="bg-white rounded-3xl p-6 border border-[#EFE8E4] shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] flex flex-col justify-between gap-4">
+          <article className="bg-white rounded-xl p-6 border border-[#E4E4E7]  flex flex-col justify-between gap-4">
             <div className="flex items-center justify-between">
-              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                 02 · Costo Químico + Nómina
               </span>
-              <span className="w-9 h-9 rounded-xl bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center">
+              <span className="w-9 h-9 rounded-xl bg-[#F4F4F5] text-[#111111] flex items-center justify-center">
                 <FlaskConical size={18} />
               </span>
             </div>
 
             <div>
-              <div className="font-display text-2xl md:text-3xl font-bold tabular-nums tracking-tight text-[#3B0D1E]">
+              <div className="font-display text-2xl md:text-3xl font-bold tabular-nums tracking-tight text-[#111111]">
                 {cargando ? '…' : formatearPrecioCop(kpis.costoQuimicoMasNomina)}
               </div>
 
-              <div className="mt-3 pt-3 border-t border-[#EFE8E4] grid grid-cols-2 gap-2 text-xs tabular-nums">
+              <div className="mt-3 pt-3 border-t border-[#E4E4E7] grid grid-cols-2 gap-2 text-xs tabular-nums">
                 <div>
-                  <span className="text-[11px] text-[#6B535C] block">Química ({kpis.pctQuimicaSobreVentas}%)</span>
-                  <span className="font-bold text-[#7C3AED]">
+                  <span className="text-[11px] text-[#52525B] block">Química ({kpis.pctQuimicaSobreVentas}%)</span>
+                  <span className="font-bold text-[#111111]">
                     {formatearPrecioCop(kpis.inversionQuimica)}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[11px] text-[#6B535C] block">Comisiones equipo</span>
-                  <span className="font-bold text-[#3B0D1E]">
+                  <span className="text-[11px] text-[#52525B] block">Comisiones equipo</span>
+                  <span className="font-bold text-[#111111]">
                     {formatearPrecioCop(kpis.comisionesEspecialistas)}
                   </span>
                 </div>
@@ -455,16 +455,16 @@ export default function ReportesBIPage() {
           </article>
 
           {/* Tarjeta 3 (Protagonista): Utilidad Neta Real */}
-          <article className="bg-[#3B0D1E] rounded-3xl p-6 text-[#FAF7F5] shadow-[0_16px_40px_-8px_rgba(59,13,30,0.22)] flex flex-col justify-between gap-4">
+          <article className="bg-[#111111] rounded-xl p-6 text-white shadow-[0_16px_40px_-8px_rgba(59,13,30,0.22)] flex flex-col justify-between gap-4">
             <div className="flex items-center justify-between gap-2">
-              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#E8CFC8]">
+              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#E4E4E7]">
                 03 · Utilidad Neta Real
               </span>
               <span
                 className={`px-3 py-1 rounded-full font-mono text-xs font-semibold tabular-nums ${
                   kpis.esOptimo
-                    ? 'bg-[#0D9488] text-white'
-                    : 'bg-[#D97757] text-white'
+                    ? 'bg-[#15803D] text-white'
+                    : 'bg-[#B45309] text-white'
                 }`}
               >
                 {kpis.margenPromedioPct}% margen
@@ -472,10 +472,10 @@ export default function ReportesBIPage() {
             </div>
 
             <div>
-              <div className="font-display text-3xl md:text-4xl font-bold tabular-nums tracking-tight text-[#FAF7F5]">
+              <div className="font-display text-3xl md:text-4xl font-bold tabular-nums tracking-tight text-white">
                 {cargando ? '…' : formatearPrecioCop(kpis.utilidadNetaSalon)}
               </div>
-              <p className="font-sans text-xs text-[#E8CFC8] mt-2 leading-relaxed">
+              <p className="font-sans text-xs text-[#E4E4E7] mt-2 leading-relaxed">
                 Capital libre para el salón tras descontar insumos químicos sin báscula y liquidación de especialistas (meta saludable ≥ 30%).
               </p>
             </div>
@@ -483,27 +483,27 @@ export default function ReportesBIPage() {
         </section>
 
         {!cargando && cobradasPeriodo.length === 0 ? (
-          <section className="bg-white rounded-3xl p-10 border border-[#EFE8E4] text-center shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]">
-            <div className="w-12 h-12 rounded-2xl bg-[#F5EBE8] text-[#3B0D1E] mx-auto flex items-center justify-center mb-4">
+          <section className="bg-white rounded-xl p-10 border border-[#E4E4E7] text-center ">
+            <div className="w-12 h-12 rounded-xl bg-[#F4F4F5] text-[#111111] mx-auto flex items-center justify-center mb-4">
               <Sparkles size={22} />
             </div>
-            <h2 className="font-display text-2xl font-semibold tracking-tight text-[#3B0D1E]">
+            <h2 className="font-display text-2xl font-semibold tracking-tight text-[#111111]">
               Aún no hay servicios cerrados en este periodo
             </h2>
-            <p className="font-sans text-sm text-[#6B535C] mt-2 max-w-md mx-auto">
+            <p className="font-sans text-sm text-[#52525B] mt-2 max-w-md mx-auto">
               Cuando confirmes un cobro en 1 toque desde «Por Cobrar», aquí verás al instante la calibración de gramos en silla, la liquidación por especialista y el ranking de rentabilidad.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
                 href="/"
-                className="min-h-[46px] inline-flex items-center px-6 py-3 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans text-xs font-bold tracking-wide no-underline transition-colors"
+                className="min-h-[46px] inline-flex items-center px-6 py-3 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white font-sans text-xs font-bold tracking-wide no-underline transition-colors"
               >
                 Ir al Cotizador en Silla
               </Link>
               {kpis.cantidadPorCobrar > 0 && (
                 <Link
                   href="/?tab=cierre"
-                  className="min-h-[46px] inline-flex items-center px-6 py-3 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] text-[#3B0D1E] font-sans text-xs font-bold tracking-wide no-underline hover:bg-[#F5EBE8] transition-colors tabular-nums"
+                  className="min-h-[46px] inline-flex items-center px-6 py-3 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] text-[#111111] font-sans text-xs font-bold tracking-wide no-underline hover:bg-[#F4F4F5] transition-colors tabular-nums"
                 >
                   Cerrar {kpis.cantidadPorCobrar} pendiente(s)
                 </Link>
@@ -513,13 +513,13 @@ export default function ReportesBIPage() {
         ) : (
           <>
             {/* ── 2. Calibración en Silla (Gramos Teóricos vs. Gramos Reales) ── */}
-            <section className="bg-white rounded-3xl border border-[#EFE8E4] p-6 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] space-y-5">
+            <section className="bg-white rounded-xl border border-[#E4E4E7] p-6  space-y-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                     Control de Consumo sin Báscula
                   </span>
-                  <h2 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E] mt-0.5">
+                  <h2 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#111111] mt-0.5">
                     Calibración en Silla · Gramos Teóricos vs. Reales
                   </h2>
                 </div>
@@ -528,8 +528,8 @@ export default function ReportesBIPage() {
                   <span
                     className={`px-3 py-1 rounded-full font-mono text-xs font-semibold tabular-nums ${
                       kpis.desvioGramos > 0
-                        ? 'bg-[#FFF7F5] border border-[#D97757]/40 text-[#D97757]'
-                        : 'bg-[#F0FDFA] border border-[#0D9488]/30 text-[#0D9488]'
+                        ? 'bg-[#FFFBEB] border border-[#B45309]/40 text-[#B45309]'
+                        : 'bg-[#F0FDF4] border border-[#15803D]/30 text-[#15803D]'
                     }`}
                   >
                     <SlidersHorizontal size={12} className="inline mr-1" />
@@ -543,8 +543,8 @@ export default function ReportesBIPage() {
                   <span
                     className={`px-3 py-1 rounded-full font-sans text-xs font-bold tabular-nums ${
                       kpis.ajusteNetoEnSilla < 0
-                        ? 'bg-[#FFF7F5] text-[#D97757]'
-                        : 'bg-[#F5EBE8] text-[#3B0D1E]'
+                        ? 'bg-[#FFFBEB] text-[#B45309]'
+                        : 'bg-[#F4F4F5] text-[#111111]'
                     }`}
                   >
                     Caja vs. cotizado:{' '}
@@ -555,7 +555,7 @@ export default function ReportesBIPage() {
               </div>
 
               {serviciosConGramos.length === 0 ? (
-                <p className="font-sans text-xs text-[#6B535C]">
+                <p className="font-sans text-xs text-[#52525B]">
                   Los servicios cerrados en este periodo no registraron fórmula de color en gramos.
                 </p>
               ) : (
@@ -570,28 +570,28 @@ export default function ReportesBIPage() {
                     return (
                       <div
                         key={`cal-${srv.servicioNombre}`}
-                        className="p-4 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] space-y-3"
+                        className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] space-y-3"
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div>
-                            <h3 className="font-sans text-sm font-bold text-[#3B0D1E] capitalize">
+                            <h3 className="font-sans text-sm font-bold text-[#111111] capitalize">
                               {srv.servicioNombre}
                             </h3>
-                            <span className="font-sans text-[11px] text-[#6B535C] tabular-nums">
+                            <span className="font-sans text-[11px] text-[#52525B] tabular-nums">
                               {srv.serviciosCerrados}{' '}
                               {srv.serviciosCerrados === 1 ? 'aplicación' : 'aplicaciones'}
                             </span>
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className="px-2.5 py-1 rounded-lg bg-[#F5F3FF] border border-[#DDD6FE] text-[#7C3AED] font-mono text-xs font-semibold tabular-nums">
+                            <span className="px-2.5 py-1 rounded-lg bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] font-mono text-xs font-semibold tabular-nums">
                               Teórico: {srv.gramosTeoricos}g
                             </span>
                             <span
                               className={`px-2.5 py-1 rounded-lg border font-mono text-xs font-semibold tabular-nums ${
                                 tieneSobreconsumo
-                                  ? 'bg-[#FFF7F5] border-[#D97757] text-[#D97757]'
-                                  : 'bg-[#F0FDFA] border-[#0D9488]/40 text-[#0D9488]'
+                                  ? 'bg-[#FFFBEB] border-[#B45309] text-[#B45309]'
+                                  : 'bg-[#F0FDF4] border-[#15803D]/40 text-[#15803D]'
                               }`}
                             >
                               Real: {srv.gramosReales}g
@@ -604,25 +604,25 @@ export default function ReportesBIPage() {
 
                         <div className="space-y-1.5">
                           <div className="flex items-center gap-3">
-                            <span className="w-16 font-sans text-[11px] font-semibold text-[#6B535C] shrink-0">
+                            <span className="w-16 font-sans text-[11px] font-semibold text-[#52525B] shrink-0">
                               Teórico
                             </span>
-                            <div className="flex-1 h-2.5 rounded-full bg-[#EFE8E4] overflow-hidden">
+                            <div className="flex-1 h-2.5 rounded-full bg-[#E4E4E7] overflow-hidden">
                               <div
-                                className="h-full rounded-full bg-[#7C3AED]"
+                                className="h-full rounded-full bg-[#111111]"
                                 style={{ width: `${pctTeorico}%` }}
                               />
                             </div>
                           </div>
 
                           <div className="flex items-center gap-3">
-                            <span className="w-16 font-sans text-[11px] font-semibold text-[#6B535C] shrink-0">
+                            <span className="w-16 font-sans text-[11px] font-semibold text-[#52525B] shrink-0">
                               Real silla
                             </span>
-                            <div className="flex-1 h-2.5 rounded-full bg-[#EFE8E4] overflow-hidden">
+                            <div className="flex-1 h-2.5 rounded-full bg-[#E4E4E7] overflow-hidden">
                               <div
                                 className={`h-full rounded-full ${
-                                  tieneSobreconsumo ? 'bg-[#D97757]' : 'bg-[#0D9488]'
+                                  tieneSobreconsumo ? 'bg-[#B45309]' : 'bg-[#15803D]'
                                 }`}
                                 style={{ width: `${pctReal}%` }}
                               />
@@ -640,14 +640,14 @@ export default function ReportesBIPage() {
             <section className="space-y-4">
               <div className="flex flex-wrap items-end justify-between gap-2">
                 <div>
-                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                     Nómina & Productividad
                   </span>
-                  <h2 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E] mt-0.5">
+                  <h2 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#111111] mt-0.5">
                     Liquidación por Especialista
                   </h2>
                 </div>
-                <span className="font-sans text-xs text-[#6B535C]">
+                <span className="font-sans text-xs text-[#52525B]">
                   Calculado sobre servicios efectivamente cobrados
                 </span>
               </div>
@@ -666,7 +666,7 @@ export default function ReportesBIPage() {
                     `Química capilar empleada: ${formatearPrecioCop(item.quimicaUtilizada)} COP`,
                     `*Total comisión a liquidar: ${formatearPrecioCop(item.comisionPagar)} COP*`,
                     ``,
-                    `_Resumen generado con Velli Business Intelligence_`,
+                    `_Resumen generado con Veli_`,
                   ].join('\n');
 
                   const enviarColillaWA = () => {
@@ -689,19 +689,19 @@ export default function ReportesBIPage() {
                   return (
                     <article
                       key={item.clave}
-                      className="bg-white rounded-3xl p-6 border border-[#EFE8E4] shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] flex flex-col justify-between gap-5"
+                      className="bg-white rounded-xl p-6 border border-[#E4E4E7]  flex flex-col justify-between gap-5"
                     >
                       <div className="space-y-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-11 h-11 rounded-2xl bg-[#F5EBE8] text-[#3B0D1E] flex items-center justify-center shrink-0">
+                            <div className="w-11 h-11 rounded-xl bg-[#F4F4F5] text-[#111111] flex items-center justify-center shrink-0">
                               <UserCheck size={20} />
                             </div>
                             <div>
-                              <h3 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E] capitalize">
+                              <h3 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#111111] capitalize">
                                 {item.nombre}
                               </h3>
-                              <span className="font-sans text-xs text-[#6B535C] tabular-nums">
+                              <span className="font-sans text-xs text-[#52525B] tabular-nums">
                                 {item.serviciosCerrados}{' '}
                                 {item.serviciosCerrados === 1
                                   ? 'servicio cerrado'
@@ -713,8 +713,8 @@ export default function ReportesBIPage() {
                           <span
                             className={`px-3 py-1 rounded-full font-mono text-xs font-semibold tabular-nums ${
                               optimo
-                                ? 'bg-[#F0FDFA] text-[#0D9488]'
-                                : 'bg-[#FFF7F5] text-[#D97757]'
+                                ? 'bg-[#F0FDF4] text-[#15803D]'
+                                : 'bg-[#FFFBEB] text-[#B45309]'
                             }`}
                           >
                             {item.margenPct}% salón
@@ -722,45 +722,45 @@ export default function ReportesBIPage() {
                         </div>
 
                         {/* Comisión Neta Protagonista */}
-                        <div className="rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] p-4 flex items-center justify-between gap-3">
+                        <div className="rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] p-4 flex items-center justify-between gap-3">
                           <div>
-                            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
                               Comisión Neta a Liquidar
                             </span>
-                            <span className="font-sans text-xs text-[#947C85]">
+                            <span className="font-sans text-xs text-[#71717A]">
                               Lista para pago de nómina
                             </span>
                           </div>
-                          <div className="font-display text-2xl font-bold tabular-nums tracking-tight text-[#3B0D1E]">
+                          <div className="font-display text-2xl font-bold tabular-nums tracking-tight text-[#111111]">
                             {formatearPrecioCop(item.comisionPagar)}
                           </div>
                         </div>
 
                         {/* Desglose secundario */}
                         <div className="grid grid-cols-3 gap-2 text-xs tabular-nums">
-                          <div className="p-2.5 rounded-xl bg-[#FAF7F5]/70 border border-[#EFE8E4]">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                          <div className="p-2.5 rounded-xl bg-[#FAFAFA]/70 border border-[#E4E4E7]">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
                               Facturado
                             </span>
-                            <span className="font-bold text-[#3B0D1E] mt-0.5 block">
+                            <span className="font-bold text-[#111111] mt-0.5 block">
                               {formatearPrecioCop(item.totalFacturado)}
                             </span>
                           </div>
-                          <div className="p-2.5 rounded-xl bg-[#F5F3FF]/60 border border-[#DDD6FE]">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#7C3AED] block">
+                          <div className="p-2.5 rounded-xl bg-[#F4F4F5]/60 border border-[#E4E4E7]">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#111111] block">
                               Química
                             </span>
-                            <span className="font-bold text-[#7C3AED] mt-0.5 block">
+                            <span className="font-bold text-[#111111] mt-0.5 block">
                               {formatearPrecioCop(item.quimicaUtilizada)}
                             </span>
                           </div>
-                          <div className="p-2.5 rounded-xl bg-[#F0FDFA]/70 border border-[#0D9488]/20">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0D9488] block">
+                          <div className="p-2.5 rounded-xl bg-[#F0FDF4]/70 border border-[#15803D]/20">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#15803D] block">
                               Utilidad Salón
                             </span>
                             <span
                               className={`font-bold mt-0.5 block ${
-                                optimo ? 'text-[#0D9488]' : 'text-[#D97757]'
+                                optimo ? 'text-[#15803D]' : 'text-[#B45309]'
                               }`}
                             >
                               {formatearPrecioCop(item.utilidadSalon)}
@@ -774,7 +774,7 @@ export default function ReportesBIPage() {
                         <button
                           type="button"
                           onClick={enviarColillaWA}
-                          className="flex-1 min-h-[46px] px-4 py-2.5 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans text-xs font-bold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                          className="flex-1 min-h-[46px] px-4 py-2.5 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white font-sans text-xs font-bold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
                         >
                           <MessageCircle size={15} />
                           Resumen WA
@@ -784,7 +784,7 @@ export default function ReportesBIPage() {
                           onClick={copiarColilla}
                           aria-label={`Copiar colilla de ${item.nombre}`}
                           title="Copiar resumen de liquidación"
-                          className="min-w-[46px] min-h-[46px] rounded-2xl bg-[#FAF7F5] hover:bg-[#F5EBE8] border border-[#EFE8E4] text-[#6B535C] hover:text-[#3B0D1E] inline-flex items-center justify-center transition-colors cursor-pointer"
+                          className="min-w-[46px] min-h-[46px] rounded-xl bg-[#FAFAFA] hover:bg-[#F4F4F5] border border-[#E4E4E7] text-[#52525B] hover:text-[#111111] inline-flex items-center justify-center transition-colors cursor-pointer"
                         >
                           <Copy size={16} />
                         </button>
@@ -796,17 +796,17 @@ export default function ReportesBIPage() {
             </section>
 
             {/* ── 4. Ranking de Rentabilidad por Servicio ──────────────── */}
-            <section className="bg-white rounded-3xl border border-[#EFE8E4] p-6 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]">
+            <section className="bg-white rounded-xl border border-[#E4E4E7] p-6 ">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-5">
                 <div>
-                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                     Ingeniería de Menú
                   </span>
-                  <h2 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E] mt-0.5">
+                  <h2 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#111111] mt-0.5">
                     Ranking de Rentabilidad por Servicio
                   </h2>
                 </div>
-                <Award size={18} className="text-[#3B0D1E]" />
+                <Award size={18} className="text-[#111111]" />
               </div>
 
               <div className="space-y-4">
@@ -820,22 +820,22 @@ export default function ReportesBIPage() {
                   return (
                     <div
                       key={srv.servicioNombre}
-                      className="p-4 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] space-y-3"
+                      className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] space-y-3"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <span className="w-7 h-7 rounded-full bg-[#3B0D1E] text-[#FAF7F5] font-mono text-xs font-semibold tabular-nums flex items-center justify-center shrink-0">
+                          <span className="w-7 h-7 rounded-full bg-[#111111] text-white font-mono text-xs font-semibold tabular-nums flex items-center justify-center shrink-0">
                             {idx + 1}
                           </span>
                           <div>
-                            <h3 className="font-sans font-bold text-base text-[#3B0D1E] capitalize">
+                            <h3 className="font-sans font-bold text-base text-[#111111] capitalize">
                               {srv.servicioNombre}
                             </h3>
-                            <p className="font-sans text-xs text-[#6B535C] tabular-nums">
+                            <p className="font-sans text-xs text-[#52525B] tabular-nums">
                               {srv.serviciosCerrados}{' '}
                               {srv.serviciosCerrados === 1 ? 'cierre' : 'cierres'} · Utilidad
                               promedio{' '}
-                              <strong className="text-[#3B0D1E]">
+                              <strong className="text-[#111111]">
                                 {formatearPrecioCop(srv.utilidadPromedioPorServicio)}
                               </strong>{' '}
                               / servicio
@@ -846,22 +846,22 @@ export default function ReportesBIPage() {
                         <div className="text-right tabular-nums">
                           <div
                             className={`font-display text-lg font-bold ${
-                              optimo ? 'text-[#0D9488]' : 'text-[#D97757]'
+                              optimo ? 'text-[#15803D]' : 'text-[#B45309]'
                             }`}
                           >
                             {formatearPrecioCop(srv.utilidadNetaTotal)} netos
                           </div>
-                          <span className="font-sans text-xs text-[#6B535C]">
+                          <span className="font-sans text-xs text-[#52525B]">
                             {srv.margenPct}% margen · Facturado{' '}
                             {formatearPrecioCop(srv.totalFacturado)}
                           </span>
                         </div>
                       </div>
 
-                      <div className="w-full h-2.5 rounded-full bg-[#EFE8E4] overflow-hidden">
+                      <div className="w-full h-2.5 rounded-full bg-[#E4E4E7] overflow-hidden">
                         <div
                           className={`h-full rounded-full ${
-                            optimo ? 'bg-[#0D9488]' : 'bg-[#D97757]'
+                            optimo ? 'bg-[#15803D]' : 'bg-[#B45309]'
                           }`}
                           style={{ width: `${anchoBarra}%` }}
                         />

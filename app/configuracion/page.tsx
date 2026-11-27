@@ -50,7 +50,7 @@ import { getInitials } from '@/lib/utils';
 import { enlaceSoporte } from '@/lib/sitio';
 import { flagsActivos } from '@/lib/flags';
 
-const MAILTO_SOPORTE = enlaceSoporte('Soporte Velli Pro');
+const MAILTO_SOPORTE = enlaceSoporte('Soporte Veli');
 
 export default function ConfiguracionPage() {
   const router = useRouter();
@@ -290,7 +290,7 @@ export default function ConfiguracionPage() {
   };
 
   const profileName = profile?.nombre || 'Tu nombre';
-  const profileSub = profile?.nombreSalon || 'Velli Business Intelligence';
+  const profileSub = profile?.nombreSalon || 'Veli';
   const initials = profile?.nombre ? getInitials(profile.nombre) : '?';
   const headerSalon = profile?.nombreSalon?.trim() || profile?.nombre?.trim() || undefined;
   const headerCiudad = profile?.ciudad?.trim() || undefined;
@@ -298,7 +298,7 @@ export default function ConfiguracionPage() {
   const esSpecialist = orgActiva?.role === 'specialist';
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] font-sans pb-16">
+    <div className="min-h-screen bg-[#FAFAFA] text-[#111111] font-sans pb-16">
       <VelvetTopHeader
         nombreSalon={headerSalon}
         ciudadSalon={headerCiudad}
@@ -306,20 +306,20 @@ export default function ConfiguracionPage() {
       />
 
       {/* Sub-header Velvet Studio */}
-      <div className="border-b border-[#EFE8E4]">
+      <div className="border-b border-[#E4E4E7]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between gap-3">
           <div>
-            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
               Ajustes · Administración del Salón
             </span>
-            <h1 className="m-0 mt-0.5 font-display text-2xl md:text-3xl font-semibold tracking-tight text-[#3B0D1E]">
+            <h1 className="m-0 mt-0.5 font-display text-2xl md:text-3xl font-semibold tracking-tight text-[#111111]">
               Tu cuenta
             </h1>
           </div>
 
           <Link
             href="/"
-            className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-[#EFE8E4] hover:bg-[#F5EBE8] text-xs font-bold text-[#3B0D1E] no-underline transition-colors shrink-0 shadow-velvet"
+            className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E4E4E7] hover:bg-[#F4F4F5] text-xs font-bold text-[#111111] no-underline transition-colors shrink-0"
           >
             <ArrowLeft size={14} />
             <span>Ir a Silla</span>
@@ -329,32 +329,32 @@ export default function ConfiguracionPage() {
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 space-y-7">
         {/* Identity Card */}
-        <section className="bg-white rounded-3xl border border-[#EFE8E4] p-5 shadow-velvet flex items-center gap-4">
+        <section className="bg-white rounded-xl border border-[#E4E4E7] p-5 flex items-center gap-4">
           {profile?.logoUrl && !logoError ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={profile.logoUrl}
               alt="Logo del salón"
               onError={() => setLogoError(true)}
-              className="w-12 h-12 rounded-2xl object-cover border border-[#EFE8E4] shrink-0"
+              className="w-12 h-12 rounded-xl object-cover border border-[#E4E4E7] shrink-0"
             />
           ) : (
-            <div className="w-12 h-12 rounded-2xl bg-[#F5EBE8] border border-[#E8CFC8] text-[#3B0D1E] font-display text-xl font-semibold flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] font-display text-xl font-semibold flex items-center justify-center shrink-0">
               {initials}
             </div>
           )}
 
           <div className="flex-1 min-w-0">
-            <div className="font-display text-lg font-semibold text-[#3B0D1E] leading-tight truncate">
+            <div className="font-display text-lg font-semibold text-[#111111] leading-tight truncate">
               {profileName}
             </div>
-            <div className="font-sans text-xs text-[#6B535C] mt-0.5 truncate">
+            <div className="font-sans text-xs text-[#52525B] mt-0.5 truncate">
               {profileSub}
             </div>
           </div>
 
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F0FDFA] border border-[#0D9488]/25 text-[#0D9488] font-sans text-[11px] font-bold shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#0D9488]" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F0FDF4] border border-[#15803D]/25 text-[#15803D] font-sans text-[11px] font-bold shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#15803D]" />
             Activa
           </span>
         </section>
@@ -402,7 +402,7 @@ export default function ConfiguracionPage() {
                   type="button"
                   onClick={() => setEditingProfile(false)}
                   disabled={saving}
-                  className="flex-1 min-h-[44px] py-2.5 px-4 rounded-2xl bg-white hover:bg-[#FAF7F5] border border-[#E8CFC8] text-[#6B535C] hover:text-[#3B0D1E] font-sans text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                  className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-white hover:bg-[#FAFAFA] border border-[#E4E4E7] text-[#52525B] hover:text-[#111111] font-sans text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -410,7 +410,7 @@ export default function ConfiguracionPage() {
                   type="button"
                   onClick={saveProfile}
                   disabled={saving}
-                  className="flex-1 min-h-[44px] py-2.5 px-4 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60 border-none"
+                  className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white font-sans text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60 border-none"
                 >
                   {saveOk ? (
                     <>
@@ -470,7 +470,7 @@ export default function ConfiguracionPage() {
                     type="button"
                     onClick={cancelarMarca}
                     disabled={savingMarca}
-                    className="flex-1 min-h-[44px] py-2.5 px-4 rounded-2xl bg-white hover:bg-[#FAF7F5] border border-[#E8CFC8] text-[#6B535C] hover:text-[#3B0D1E] font-sans text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                    className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-white hover:bg-[#FAFAFA] border border-[#E4E4E7] text-[#52525B] hover:text-[#111111] font-sans text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
                   >
                     Cancelar
                   </button>
@@ -478,7 +478,7 @@ export default function ConfiguracionPage() {
                     type="button"
                     onClick={guardarMarca}
                     disabled={savingMarca}
-                    className="flex-1 min-h-[44px] py-2.5 px-4 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans text-xs font-bold transition-colors cursor-pointer disabled:opacity-60 border-none"
+                    className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white font-sans text-xs font-bold transition-colors cursor-pointer disabled:opacity-60 border-none"
                   >
                     {savingMarca ? 'Guardando…' : 'Guardar'}
                   </button>
@@ -499,10 +499,10 @@ export default function ConfiguracionPage() {
                         alt=""
                         aria-hidden
                         onError={() => setLogoError(true)}
-                        className="w-7 h-7 rounded-lg object-cover border border-[#EFE8E4]"
+                        className="w-7 h-7 rounded-lg object-cover border border-[#E4E4E7]"
                       />
                     )}
-                    <ChevronRight size={15} className="text-[#947C85]" />
+                    <ChevronRight size={15} className="text-[#71717A]" />
                   </span>
                 }
               />
@@ -533,7 +533,7 @@ export default function ConfiguracionPage() {
               sub={descripcionSuscripcion(sub)}
               onClick={() => router.push('/planes')}
               rightEl={
-                <span className="shrink-0 px-3 py-1.5 rounded-full bg-[#F5EBE8] border border-[#E8CFC8] text-[#3B0D1E] font-sans font-bold text-[11px] whitespace-nowrap">
+                <span className="shrink-0 px-3 py-1.5 rounded-full bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] font-sans font-bold text-[11px] whitespace-nowrap">
                   Cambiar de plan
                 </span>
               }
@@ -551,7 +551,7 @@ export default function ConfiguracionPage() {
               onClick={handleExport}
               rightEl={
                 exportLoading ? (
-                  <span className="w-4 h-4 rounded-full border-2 border-[#3B0D1E] border-t-transparent animate-spin inline-block shrink-0" />
+                  <span className="w-4 h-4 rounded-full border-2 border-[#111111] border-t-transparent animate-spin inline-block shrink-0" />
                 ) : undefined
               }
             />
@@ -573,10 +573,10 @@ export default function ConfiguracionPage() {
 
         {importMsg && (
           <div
-            className={`flex items-start gap-2.5 p-4 rounded-2xl border text-xs leading-relaxed ${
+            className={`flex items-start gap-2.5 p-4 rounded-xl border text-xs leading-relaxed ${
               importMsg.type === 'ok'
-                ? 'bg-[#F0FDFA] border-[#0D9488]/30 text-[#0D9488]'
-                : 'bg-[#FFF7F5] border-[#D97757]/35 text-[#D97757]'
+                ? 'bg-[#F0FDF4] border-[#15803D]/30 text-[#15803D]'
+                : 'bg-[#FFFBEB] border-[#B45309]/35 text-[#B45309]'
             }`}
           >
             {importMsg.type === 'ok' ? (
@@ -613,7 +613,7 @@ export default function ConfiguracionPage() {
           <RowVelvet
             icon={<FileText size={16} />}
             title="Términos y condiciones"
-            sub="Uso de la plataforma Velli Business Intelligence"
+            sub="Uso de la plataforma Veli"
             onClick={() => router.push('/legal/terminos')}
           />
           <RowVelvet
@@ -649,29 +649,29 @@ export default function ConfiguracionPage() {
           />
         </SectionVelvet>
 
-        {/* Acerca de Velli */}
-        <section className="bg-white rounded-3xl border border-[#EFE8E4] p-6 text-center shadow-velvet">
-          <div className="w-14 h-14 rounded-2xl bg-[#3B0D1E] mx-auto mb-3 flex items-center justify-center">
+        {/* Acerca de Veli */}
+        <section className="bg-white rounded-xl border border-[#E4E4E7] p-6 text-center">
+          <div className="w-14 h-14 rounded-xl bg-[#111111] mx-auto mb-3 flex items-center justify-center">
             <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M19.2 33.5C13.2 29.8 7.5 21.8 9.2 13.8C10.5 7.8 16.5 7.2 19.2 14.5C20.2 17.2 20.2 27.5 19.2 33.5Z"
-                fill="#FAF7F5"
+                fill="#FAFAFA"
               />
               <path
                 d="M20.8 33.5C26.8 29.8 32.5 21.8 30.8 13.8C29.5 7.8 23.5 7.2 20.8 14.5C19.8 17.2 19.8 27.5 20.8 33.5Z"
-                fill="#E8CFC8"
+                fill="#E4E4E7"
                 fillOpacity="0.88"
               />
-              <circle cx="20" cy="6.5" r="2.5" fill="#D97757" />
+              <circle cx="20" cy="6.5" r="2.5" fill="#B45309" />
             </svg>
           </div>
-          <div className="text-lg font-bold text-[#3B0D1E] font-display tracking-tight">
+          <div className="text-lg font-bold text-[#111111] font-display tracking-tight">
             velli{' '}
-            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] ml-1">
+            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] ml-1">
               Business Intelligence
             </span>
           </div>
-          <p className="text-xs text-[#6B535C] mt-2 max-w-xs mx-auto leading-relaxed">
+          <p className="text-xs text-[#52525B] mt-2 max-w-xs mx-auto leading-relaxed">
             Cotización capilar sin báscula, cierre financiero en un toque y rentabilidad real por servicio.
           </p>
         </section>
@@ -681,12 +681,12 @@ export default function ConfiguracionPage() {
           <button
             type="button"
             onClick={() => setShowSignOutConfirm(true)}
-            className="w-full min-h-[48px] py-3.5 px-5 rounded-2xl bg-[#FFF7F5] hover:bg-[#F5EBE8] border border-[#D97757]/35 text-[#D97757] font-sans font-bold text-sm inline-flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] cursor-pointer"
+            className="w-full min-h-[48px] py-3.5 px-5 rounded-xl bg-[#FFFBEB] hover:bg-[#F4F4F5] border border-[#B45309]/35 text-[#B45309] font-sans font-bold text-sm inline-flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] cursor-pointer"
           >
             <LogOut size={16} />
             <span>Cerrar sesión</span>
           </button>
-          <div className="font-mono text-center mt-2.5 text-[11px] text-[#947C85] tabular-nums">
+          <div className="font-mono text-center mt-2.5 text-[11px] text-[#71717A] tabular-nums">
             · {profile ? `sesión activa como ${profile.nombre}` : 'sesión activa'} ·
           </div>
         </section>
@@ -759,14 +759,14 @@ function SectionVelvet({
   return (
     <section className="space-y-2.5">
       <div className="flex items-baseline gap-2 px-1">
-        <span className="font-mono text-[11px] font-semibold text-[#947C85] tabular-nums">
+        <span className="font-mono text-[11px] font-semibold text-[#71717A] tabular-nums">
           {num} ·
         </span>
-        <h2 className="m-0 font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+        <h2 className="m-0 font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
           {eyebrow}
         </h2>
       </div>
-      <div className="bg-white rounded-3xl border border-[#EFE8E4] shadow-velvet overflow-hidden divide-y divide-[#EFE8E4]">
+      <div className="bg-white rounded-xl border border-[#E4E4E7] overflow-hidden divide-y divide-[#E4E4E7]">
         {children}
       </div>
     </section>
@@ -795,14 +795,14 @@ function RowVelvet({
       onClick={onClick}
       disabled={!interactive}
       className={`w-full bg-transparent border-none flex items-center gap-3.5 min-h-[56px] px-5 py-3.5 text-left font-sans transition-colors ${
-        interactive ? 'hover:bg-[#FAF7F5] cursor-pointer' : 'cursor-default'
-      } ${danger ? 'text-[#D97757]' : 'text-[#3B0D1E]'}`}
+        interactive ? 'hover:bg-[#FAFAFA] cursor-pointer' : 'cursor-default'
+      } ${danger ? 'text-[#B45309]' : 'text-[#111111]'}`}
     >
       <span
         className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
           danger
-            ? 'bg-[#FFF7F5] border-[#D97757]/25 text-[#D97757]'
-            : 'bg-[#FAF7F5] border-[#EFE8E4] text-[#3B0D1E]'
+            ? 'bg-[#FFFBEB] border-[#B45309]/25 text-[#B45309]'
+            : 'bg-[#FAFAFA] border-[#E4E4E7] text-[#111111]'
         }`}
       >
         {icon}
@@ -810,13 +810,13 @@ function RowVelvet({
       <span className="flex-1 min-w-0">
         <span className="block text-sm font-semibold leading-snug">{title}</span>
         {sub && (
-          <span className="block text-xs text-[#6B535C] mt-0.5 font-normal leading-relaxed">
+          <span className="block text-xs text-[#52525B] mt-0.5 font-normal leading-relaxed">
             {sub}
           </span>
         )}
       </span>
       {rightEl ??
-        (interactive ? <ChevronRight size={15} className="text-[#947C85] shrink-0" /> : null)}
+        (interactive ? <ChevronRight size={15} className="text-[#71717A] shrink-0" /> : null)}
     </button>
   );
 }
@@ -843,17 +843,17 @@ function ToggleRowVelvet({
       disabled={saving}
       role="switch"
       aria-checked={value}
-      className={`w-full bg-transparent border-none flex items-start gap-3.5 min-h-[56px] px-5 py-4 text-left text-[#3B0D1E] font-sans hover:bg-[#FAF7F5] transition-colors ${
+      className={`w-full bg-transparent border-none flex items-start gap-3.5 min-h-[56px] px-5 py-4 text-left text-[#111111] font-sans hover:bg-[#FAFAFA] transition-colors ${
         saving ? 'opacity-70 cursor-wait' : 'cursor-pointer'
       }`}
     >
-      <span className="w-9 h-9 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] text-[#3B0D1E] flex items-center justify-center shrink-0">
+      <span className="w-9 h-9 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] text-[#111111] flex items-center justify-center shrink-0">
         {icon}
       </span>
       <span className="flex-1 min-w-0">
         <span className="block text-sm font-semibold leading-snug">{title}</span>
         {sub && (
-          <span className="block text-xs text-[#6B535C] mt-1 font-normal leading-relaxed">
+          <span className="block text-xs text-[#52525B] mt-1 font-normal leading-relaxed">
             {sub}
           </span>
         )}
@@ -861,7 +861,7 @@ function ToggleRowVelvet({
       <span
         aria-hidden
         className={`w-10 h-6 rounded-full relative shrink-0 mt-0.5 transition-colors ${
-          value ? 'bg-[#3B0D1E]' : 'bg-[#E8CFC8]'
+          value ? 'bg-[#111111]' : 'bg-[#E4E4E7]'
         }`}
       >
         <span
@@ -887,7 +887,7 @@ function FieldVelvet({
 }) {
   return (
     <label className="block">
-      <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1.5">
+      <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1.5">
         {label}
       </span>
       <input
@@ -895,7 +895,7 @@ function FieldVelvet({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm text-[#3B0D1E] font-sans placeholder-[#947C85]"
+        className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm text-[#111111] font-sans placeholder-[#71717A]"
       />
     </label>
   );
@@ -923,27 +923,27 @@ function ConfirmSheet({
   return (
     <div
       onClick={() => !loading && onCancel()}
-      className="fixed inset-0 z-50 bg-[#1F050F]/45 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 fade-in"
+      className="fixed inset-0 z-50 bg-[#111111]/45 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 fade-in"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl border border-[#EFE8E4] p-6 sm:p-7 shadow-velvet pb-safe"
+        className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-xl border border-[#E4E4E7] p-6 sm:p-7 pb-safe"
       >
-        <div className="w-10 h-1 rounded-full bg-[#E8CFC8] mx-auto mb-5 sm:hidden" />
+        <div className="w-10 h-1 rounded-full bg-[#E4E4E7] mx-auto mb-5 sm:hidden" />
 
-        <div className="w-14 h-14 rounded-2xl bg-[#FFF7F5] border border-[#D97757]/30 text-[#D97757] flex items-center justify-center mx-auto mb-3.5">
+        <div className="w-14 h-14 rounded-xl bg-[#FFFBEB] border border-[#B45309]/30 text-[#B45309] flex items-center justify-center mx-auto mb-3.5">
           {icon}
         </div>
 
-        <span className="block text-center font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+        <span className="block text-center font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
           {eyebrow}
         </span>
 
-        <h3 className="m-0 mt-1 mb-2 text-center font-display text-2xl font-semibold tracking-tight text-[#3B0D1E]">
+        <h3 className="m-0 mt-1 mb-2 text-center font-display text-2xl font-semibold tracking-tight text-[#111111]">
           {title}
         </h3>
 
-        <p className="m-0 mb-6 text-center text-xs sm:text-sm text-[#6B535C] leading-relaxed max-w-xs mx-auto">
+        <p className="m-0 mb-6 text-center text-xs sm:text-sm text-[#52525B] leading-relaxed max-w-xs mx-auto">
           {description}
         </p>
 
@@ -952,7 +952,7 @@ function ConfirmSheet({
             type="button"
             onClick={onCancel}
             disabled={loading}
-            className="flex-1 min-h-[46px] py-3 px-4 rounded-2xl bg-white hover:bg-[#FAF7F5] border border-[#EFE8E4] text-[#3B0D1E] font-sans font-bold text-xs sm:text-sm transition-colors cursor-pointer disabled:opacity-60"
+            className="flex-1 min-h-[46px] py-3 px-4 rounded-xl bg-white hover:bg-[#FAFAFA] border border-[#E4E4E7] text-[#111111] font-sans font-bold text-xs sm:text-sm transition-colors cursor-pointer disabled:opacity-60"
           >
             Cancelar
           </button>
@@ -960,7 +960,7 @@ function ConfirmSheet({
             type="button"
             onClick={onConfirm}
             disabled={loading}
-            className="flex-1 min-h-[46px] py-3 px-4 rounded-2xl bg-[#D97757] hover:opacity-95 text-white font-sans font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 transition-opacity cursor-pointer disabled:opacity-60 border-none"
+            className="flex-1 min-h-[46px] py-3 px-4 rounded-xl bg-[#B45309] hover:opacity-95 text-white font-sans font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 transition-opacity cursor-pointer disabled:opacity-60 border-none"
           >
             {loading ? (
               <span className="w-4 h-4 rounded-full border-2 border-white/60 border-t-white animate-spin inline-block" />

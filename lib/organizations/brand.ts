@@ -7,8 +7,10 @@
 // y rechazando colores inválidos, negro puro (`#000000`) o valores maliciosos.
 // ══════════════════════════════════════════════════════════════════════════
 
-export const VELVET_DEFAULT_PRIMARY_COLOR = '#3B0D1E';
-export const VELVET_DEFAULT_ACCENT_COLOR = '#E8CFC8';
+export const VELVET_DEFAULT_PRIMARY_COLOR = '#111111';
+export const VELVET_DEFAULT_ACCENT_COLOR = '#F4F4F5';
+export const VELI_DEFAULT_PRIMARY_COLOR = VELVET_DEFAULT_PRIMARY_COLOR;
+export const VELI_DEFAULT_ACCENT_COLOR = VELVET_DEFAULT_ACCENT_COLOR;
 
 const HEX_6_REGEX = /^#[0-9A-Fa-f]{6}$/;
 const DOMINIO_SEGURO_REGEX =

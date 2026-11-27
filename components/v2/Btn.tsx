@@ -15,37 +15,37 @@ interface BtnProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, '
 
 const variantStyles: Record<BtnVariant, React.CSSProperties> = {
   primary: {
-    background: '#3B0D1E',
-    color: '#FAF7F5',
+    background: '#111111',
+    color: '#FAFAFA',
     boxShadow: '0 10px 24px -6px rgba(59, 13, 30, 0.25)',
-    border: '1px solid #3B0D1E',
+    border: '1px solid #111111',
   },
   gold: {
-    background: '#F5EBE8',
-    color: '#3B0D1E',
+    background: '#F4F4F5',
+    color: '#111111',
     boxShadow: '0 4px 14px -4px rgba(59, 13, 30, 0.08)',
-    border: '1px solid #E8CFC8',
+    border: '1px solid #E4E4E7',
   },
   dark: {
-    background: 'linear-gradient(180deg, #52142B, #3B0D1E)',
-    color: '#FAF7F5',
+    background: 'linear-gradient(180deg, #27272A, #111111)',
+    color: '#FAFAFA',
     boxShadow: '0 10px 24px -6px rgba(59, 13, 30, 0.28)',
     border: 'none',
   },
   ghost: {
     background: 'transparent',
-    color: '#3B0D1E',
+    color: '#111111',
     border: 'none',
   },
   outline: {
     background: '#FFFFFF',
-    color: '#3B0D1E',
-    border: '1px solid #EFE8E4',
+    color: '#111111',
+    border: '1px solid #E4E4E7',
   },
   soft: {
-    background: '#F5EBE8',
-    color: '#3B0D1E',
-    border: '1px solid #E8CFC8',
+    background: '#F4F4F5',
+    color: '#111111',
+    border: '1px solid #E4E4E7',
   },
 };
 

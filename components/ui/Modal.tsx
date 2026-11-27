@@ -28,29 +28,29 @@ export default function Modal({ open, onClose, title, children, size = 'md' }: M
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-[#1F050F]/45 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-[#111111]/45 backdrop-blur-sm" />
       <div
-        className={`relative bg-white border border-[#EFE8E4] w-full ${maxW} rounded-t-3xl sm:rounded-3xl shadow-[0_20px_50px_-10px_rgba(59,13,30,0.22)] max-h-[90vh] overflow-y-auto`}
+        className={`relative bg-white border border-[#E4E4E7] w-full ${maxW} rounded-t-3xl sm:rounded-xl shadow-[0_20px_50px_-10px_rgba(59,13,30,0.22)] max-h-[90vh] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle bar for mobile */}
         <div className="flex justify-center pt-3 sm:hidden">
-          <div className="w-10 h-1 bg-[#E8CFC8] rounded-full" />
+          <div className="w-10 h-1 bg-[#E4E4E7] rounded-full" />
         </div>
 
         <div className="p-5 sm:p-6">
           {title && (
             <div className="flex items-center justify-between gap-3 mb-4">
-              <h3 className="m-0 font-display text-xl font-semibold tracking-tight text-[#3B0D1E]">
+              <h3 className="m-0 font-display text-xl font-semibold tracking-tight text-[#111111]">
                 {title}
               </h3>
               <button
                 type="button"
                 onClick={onClose}
                 aria-label="Cerrar"
-                className="min-w-[44px] min-h-[44px] rounded-full bg-[#FAF7F5] hover:bg-[#F5EBE8] border border-[#EFE8E4] flex items-center justify-center transition-colors cursor-pointer"
+                className="min-w-[44px] min-h-[44px] rounded-full bg-[#FAFAFA] hover:bg-[#F4F4F5] border border-[#E4E4E7] flex items-center justify-center transition-colors cursor-pointer"
               >
-                <X size={18} className="text-[#6B535C]" />
+                <X size={18} className="text-[#52525B]" />
               </button>
             </div>
           )}

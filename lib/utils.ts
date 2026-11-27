@@ -44,7 +44,7 @@ export function getRizoColor(tipo: string): string {
 export function getRizoColorHex(tipo: string): string {
   if (['1A', '1B', '1C'].includes(tipo)) return '#64748B';
   if (['2A', '2B', '2C'].includes(tipo)) return '#3B82F6';
-  if (['3A', '3B', '3C'].includes(tipo)) return '#7C3AED';
+  if (['3A', '3B', '3C'].includes(tipo)) return '#52525B';
   if (['4A', '4B', '4C'].includes(tipo)) return '#F59E0B';
   return '#9CA3AF';
 }

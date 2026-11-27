@@ -35,7 +35,7 @@ const CronogramaCard = ({ semana, tratamiento }: { semana: string; tratamiento: 
   const color = getTratamientoTextColor(tratamiento);
   return (
     <div
-      className="flex-1 rounded-2xl p-3 text-center border-2"
+      className="flex-1 rounded-xl p-3 text-center border-2"
       style={{ backgroundColor: bg, borderColor: color + '50' }}
     >
       <p className="text-xs font-bold text-[#999999] mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
@@ -85,20 +85,20 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
   const handleWhatsApp = () => {
     const nombre = clienta?.nombre || 'clienta';
     const msg =
-      `Hola ${nombre}! 🌸 Aquí tu resumen de diagnóstico capilar de Velli — Inteligencia capilar a tu alcance:\n\n` +
+      `Hola ${nombre}! 🌸 Aquí tu resumen de diagnóstico capilar de Veli — Inteligencia capilar a tu alcance:\n\n` +
       `✨ Tipo de cabello: ${getRizoLabel(consulta.tipoRizoPrincipal)}\n` +
       `💧 Porosidad: ${consulta.porosidad}\n` +
       `⚖️ Balance: ${consulta.balanceHP}\n\n` +
       `🎯 Tratamiento: ${resultado.tratamientoPrincipal}\n\n` +
       `📅 Próxima cita sugerida: ${formatDate(proximaCita)}\n\n` +
-      `Con amor por tu cabello — Velli Pro, Inteligencia capilar a tu alcance 💚`;
+      `Con amor por tu cabello — Veli, Inteligencia capilar a tu alcance 💚`;
     window.open(enlaceWhatsApp(clienta?.telefono, msg), '_blank');
   };
 
   return (
     <div className="flex flex-col gap-5 step-enter">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[var(--primary)] to-[var(--primary-hover)] rounded-3xl p-5 text-white">
+      <div className="bg-gradient-to-br from-[var(--primary)] to-[var(--primary-hover)] rounded-xl p-5 text-white">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles size={18} className="text-[#C9956B]" />
           <span className="text-sm font-semibold text-[#B8D4B5]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
@@ -114,12 +114,12 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
       </div>
 
       {/* 1. Resumen del diagnóstico */}
-      <div className="bg-[var(--primary-light)] rounded-3xl p-4">
+      <div className="bg-[var(--primary-light)] rounded-xl p-4">
         <SectionTitle icon={<Star size={16} />} title="Diagnóstico" />
 
         {/* Rizo type */}
         <div className="flex items-center gap-3 mb-4">
-          <div className="bg-white rounded-2xl p-3 shadow-sm">
+          <div className="bg-white rounded-xl p-3 shadow-sm">
             <RizoPattern tipo={consulta.tipoRizoPrincipal} />
           </div>
           <div>
@@ -151,7 +151,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
 
         {/* Balance */}
         <div
-          className={`rounded-2xl p-3 text-center font-bold text-sm ${
+          className={`rounded-xl p-3 text-center font-bold text-sm ${
             consulta.balanceHP === 'proteina'
               ? 'bg-orange-100 text-orange-700'
               : consulta.balanceHP === 'hidratacion'
@@ -192,11 +192,11 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
       </div>
 
       {/* 2. Tratamiento */}
-      <div className="bg-white rounded-3xl p-4 border-2 border-[#C9956B] shadow-sm">
+      <div className="bg-white rounded-xl p-4 border-2 border-[#C9956B] shadow-sm">
         <SectionTitle icon={<Zap size={16} />} title="Tratamiento recomendado" />
 
         <div
-          className="rounded-2xl p-3 mb-3 text-center font-bold text-base"
+          className="rounded-xl p-3 mb-3 text-center font-bold text-base"
           style={{
             backgroundColor: getTratamientoBg(resultado.tratamientoPrincipal),
             color: getTratamientoTextColor(resultado.tratamientoPrincipal),
@@ -226,7 +226,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
       </div>
 
       {/* 3. Cronograma */}
-      <div className="bg-white rounded-3xl p-4 border border-[#E5E5E5] shadow-sm">
+      <div className="bg-white rounded-xl p-4 border border-[#E4E4E7] shadow-sm">
         <SectionTitle icon={<Calendar size={16} />} title="Cronograma 4 semanas" />
         <div className="flex gap-2">
           <CronogramaCard semana="Sem 1" tratamiento={resultado.cronograma.semana1} />
@@ -237,10 +237,10 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
       </div>
 
       {/* 4. Técnica */}
-      <div className="bg-white rounded-3xl p-4 border border-[#E5E5E5] shadow-sm">
+      <div className="bg-white rounded-xl p-4 border border-[#E4E4E7] shadow-sm">
         <SectionTitle icon={<Sparkles size={16} />} title="Técnica de definición" />
 
-        <div className="bg-[#FBF4EC] rounded-2xl p-3 mb-3">
+        <div className="bg-[#FBF4EC] rounded-xl p-3 mb-3">
           <p className="text-base font-bold text-[#C9956B]" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             {resultado.tecnicaDefinicion}
           </p>
@@ -259,7 +259,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
       </div>
 
       {/* 5. Rutina en casa */}
-      <div className="bg-white rounded-3xl p-4 border border-[#E5E5E5] shadow-sm">
+      <div className="bg-white rounded-xl p-4 border border-[#E4E4E7] shadow-sm">
         <SectionTitle icon={<Leaf size={16} />} title="Rutina para casa" />
 
         {[
@@ -296,7 +296,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
         ))}
 
         {/* Evitar */}
-        <div className="bg-red-50 rounded-2xl p-3">
+        <div className="bg-red-50 rounded-xl p-3">
           <p className="text-xs font-bold text-[#8E2D2D] mb-2" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             ❌ Evitar:
           </p>
@@ -310,7 +310,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
       </div>
 
       {/* 6. Productos */}
-      <div className="bg-white rounded-3xl p-4 border border-[#E5E5E5] shadow-sm">
+      <div className="bg-white rounded-xl p-4 border border-[#E4E4E7] shadow-sm">
         <SectionTitle icon={<Star size={16} />} title="Productos recomendados" />
         <div className="flex flex-col gap-2">
           {resultado.productosPonto.map((p, i) => (
@@ -326,7 +326,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
 
       {/* 7. Notas adicionales */}
       {resultado.notasAdicionales.length > 0 && (
-        <div className="bg-amber-50 rounded-3xl p-4 border border-amber-200">
+        <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
           <SectionTitle icon={<AlertCircle size={16} />} title="Notas importantes" />
           <div className="flex flex-col gap-2">
             {resultado.notasAdicionales.map((n, i) => (
@@ -340,10 +340,10 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
       )}
 
       {/* 8. Próxima cita */}
-      <div className="bg-white rounded-3xl p-4 border-2 border-[var(--primary)] shadow-sm">
+      <div className="bg-white rounded-xl p-4 border-2 border-[var(--primary)] shadow-sm">
         <SectionTitle icon={<Clock size={16} />} title="Próxima cita" />
 
-        <div className="bg-[var(--primary-light)] rounded-2xl p-3 mb-4">
+        <div className="bg-[var(--primary-light)] rounded-xl p-3 mb-4">
           <p className="text-xs text-[#999999] mb-1" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             Intervalo recomendado:
           </p>
@@ -364,7 +364,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
               type="date"
               value={proximaCita}
               onChange={(e) => setProximaCita(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-[#E5E5E5] text-sm bg-white"
+              className="w-full px-4 py-2.5 rounded-xl border border-[#E4E4E7] text-sm bg-white"
               min={todayISO()}
             />
           </div>
@@ -379,7 +379,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
               placeholder="Observaciones adicionales, reacciones, recordatorios..."
-              className="w-full px-4 py-2.5 rounded-xl border border-[#E5E5E5] text-sm bg-white resize-none"
+              className="w-full px-4 py-2.5 rounded-xl border border-[#E4E4E7] text-sm bg-white resize-none"
               rows={3}
             />
           </div>
@@ -401,7 +401,7 @@ export default function ResultadoDiagnostico({ consulta, clienta, wizardData, on
       )}
       <div className="flex flex-col gap-3 pb-6">
         {saved ? (
-          <div className="flex items-center justify-center gap-2 bg-green-50 border border-green-200 rounded-2xl p-4">
+          <div className="flex items-center justify-center gap-2 bg-green-50 border border-green-200 rounded-xl p-4">
             <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center success-bounce">
               <Check size={18} className="text-white" />
             </div>

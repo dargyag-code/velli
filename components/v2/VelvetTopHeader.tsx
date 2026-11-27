@@ -3,10 +3,23 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sparkles, Settings } from 'lucide-react';
+import {
+  BarChart3,
+  Calendar,
+  ExternalLink,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Scissors,
+  Settings,
+  SlidersHorizontal,
+  Sparkles,
+  Store,
+  Users,
+} from 'lucide-react';
 import {
   mostrarAccesoPlanesPorRol,
   obtenerTabsNavegacionPorRol,
+  type MainNavTabItem,
   type OrgRole,
 } from '@/lib/organizations';
 import { getProfile } from '@/lib/profile';
@@ -14,49 +27,55 @@ import { getSuscripcionEfectiva } from '@/lib/subscription/estado';
 import { obtenerOrganizacionActivaPanel } from '@/lib/vitrina';
 
 let rolOrganizacionCacheado: OrgRole | null | undefined;
+let slugOrganizacionCacheado: string | null | undefined;
 
-// ── Logo Oficial: La Gota Dual (Equilibrio sin Báscula) — Intacto ────────
-function VelliLogo({ variant = 'light' }: { variant?: 'light' | 'dark' }) {
-  const isDark = variant === 'dark';
+export function VeliLogoMark({
+  collapsed = false,
+  size = 28,
+}: {
+  collapsed?: boolean;
+  size?: number;
+}) {
   return (
-    <div className="inline-flex items-center gap-3 select-none">
-      <div
-        className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${
-          isDark ? 'bg-[#FAF7F5]/10' : 'bg-[#3B0D1E]'
-        }`}
+    <span className="inline-flex items-center gap-2.5 select-none">
+      <span
+        className="rounded-lg bg-[#111111] text-white flex items-center justify-center shrink-0"
+        style={{ width: `${size}px`, height: `${size}px` }}
       >
-        <svg width="26" height="26" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          width={Math.round(size * 0.58)}
+          height={Math.round(size * 0.58)}
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
           <path
-            d="M19.2 33.5C13.2 29.8 7.5 21.8 9.2 13.8C10.5 7.8 16.5 7.2 19.2 14.5C20.2 17.2 20.2 27.5 19.2 33.5Z"
-            fill="#FAF7F5"
+            d="M3.2 3.8H6.7L10 12.6L13.3 3.8H16.8L11.6 16.4H8.4L3.2 3.8Z"
+            fill="#FFFFFF"
           />
-          <path
-            d="M20.8 33.5C26.8 29.8 32.5 21.8 30.8 13.8C29.5 7.8 23.5 7.2 20.8 14.5C19.8 17.2 19.8 27.5 20.8 33.5Z"
-            fill="#E8CFC8"
-            fillOpacity="0.85"
-          />
-          <circle cx="20" cy="6.5" r="2.5" fill="#D97757" />
         </svg>
-      </div>
-      <div className="flex flex-col leading-none">
-        <span
-          className={`text-2xl font-bold tracking-tight font-brand ${
-            isDark ? 'text-[#FAF7F5]' : 'text-[#1C1518]'
-          }`}
-        >
-          velli
+      </span>
+      {!collapsed && (
+        <span className="text-lg font-bold tracking-tight text-[#111111] leading-none">
+          Veli
         </span>
-        <span
-          className={`text-[9px] uppercase tracking-[0.22em] font-semibold mt-0.5 ${
-            isDark ? 'text-[#E8CFC8]' : 'text-[#6E6266]'
-          }`}
-        >
-          Business Intelligence
-        </span>
-      </div>
-    </div>
+      )}
+    </span>
   );
 }
+
+const TAB_ICONS: Record<
+  MainNavTabItem['key'],
+  React.ComponentType<{ size?: number; className?: string }>
+> = {
+  workspace: Scissors,
+  agenda: Calendar,
+  clientas: Users,
+  vitrina: Store,
+  reportes: BarChart3,
+  calibracion: SlidersHorizontal,
+};
 
 export interface VelvetTopHeaderProps {
   nombreSalon?: string;
@@ -74,12 +93,37 @@ export default function VelvetTopHeader({
   rolOrganizacion: rolProp,
 }: VelvetTopHeaderProps) {
   const pathname = usePathname();
-  const [nombreLocal, setNombreLocal] = useState('Tu Salón');
+  const [collapsed, setCollapsed] = useState(false);
+  const [nombreLocal, setNombreLocal] = useState('Tu Estudio');
   const [ciudadLocal, setCiudadLocal] = useState('Colombia');
   const [planIALocal, setPlanIALocal] = useState(true);
+  const [slugLocal, setSlugLocal] = useState<string | null>(
+    slugOrganizacionCacheado ?? null
+  );
   const [rolLocal, setRolLocal] = useState<OrgRole | null | undefined>(
     rolProp !== undefined ? rolProp : rolOrganizacionCacheado
   );
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem('veli.sidebar.collapsed');
+      if (saved === '1') setCollapsed(true);
+    } catch {
+      // Ignorar restricciones de almacenamiento privado
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    document.body.classList.add('veli-has-sidebar');
+    document.documentElement.style.setProperty(
+      '--veli-sidebar-w',
+      collapsed ? '72px' : '240px'
+    );
+    return () => {
+      document.body.classList.remove('veli-has-sidebar');
+    };
+  }, [collapsed]);
 
   useEffect(() => {
     if (rolProp !== undefined) {
@@ -91,22 +135,28 @@ export default function VelvetTopHeader({
   useEffect(() => {
     const necesitaPerfil = nombreProp === undefined || ciudadProp === undefined;
     const necesitaSub = planIAProp === undefined;
-    const necesitaRol = rolProp === undefined && rolOrganizacionCacheado === undefined;
-    if (!necesitaPerfil && !necesitaSub && !necesitaRol) return;
+    const necesitaOrg =
+      (rolProp === undefined && rolOrganizacionCacheado === undefined) ||
+      slugOrganizacionCacheado === undefined;
+    if (!necesitaPerfil && !necesitaSub && !necesitaOrg) return;
+
     let cancelado = false;
     Promise.all([
       necesitaPerfil ? getProfile().catch(() => null) : Promise.resolve(null),
       necesitaSub ? getSuscripcionEfectiva().catch(() => null) : Promise.resolve(null),
-      necesitaRol ? obtenerOrganizacionActivaPanel().catch(() => null) : Promise.resolve(null),
+      necesitaOrg ? obtenerOrganizacionActivaPanel().catch(() => null) : Promise.resolve(null),
     ]).then(([prof, sub, org]) => {
       if (cancelado) return;
       if (org) {
         rolOrganizacionCacheado = org.role;
+        slugOrganizacionCacheado = org.slug || null;
         setRolLocal(org.role);
+        setSlugLocal(org.slug || null);
         if (org.name?.trim()) setNombreLocal(org.name.trim());
         if (org.city?.trim()) setCiudadLocal(org.city.trim());
-      } else if (necesitaRol) {
+      } else if (necesitaOrg) {
         rolOrganizacionCacheado = null;
+        slugOrganizacionCacheado = null;
         setRolLocal(null);
       }
       if (prof) {
@@ -125,6 +175,18 @@ export default function VelvetTopHeader({
     };
   }, [nombreProp, ciudadProp, planIAProp, rolProp]);
 
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem('veli.sidebar.collapsed', next ? '1' : '0');
+      } catch {
+        // Ignorar
+      }
+      return next;
+    });
+  };
+
   const nombreEfectivo = nombreProp ?? nombreLocal;
   const ciudadEfectiva = ciudadProp ?? ciudadLocal;
   const tienePlanIA = planIAProp ?? planIALocal;
@@ -134,68 +196,224 @@ export default function VelvetTopHeader({
 
   const isTabActive = (href: string) => {
     if (href === '/') return pathname === '/';
-    return pathname.startsWith(href);
+    return pathname === href || pathname.startsWith(`${href}/`);
   };
 
-  return (
-    <header className="sticky top-0 z-30 bg-[#FAF7F5]/95 backdrop-blur-md border-b border-[#EFE8E4] px-3 sm:px-4 lg:px-8 py-3">
-      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
-        {/* Izquierda: Logo actual intacto */}
-        <Link href="/" className="no-underline shrink-0">
-          <VelliLogo />
-        </Link>
+  const hrefVitrinaRapida = slugLocal ? `/s/${slugLocal}` : '/vitrina';
+  const mostrarAccesoVitrinaTop =
+    Boolean(slugLocal) || rolEfectivo !== 'specialist';
 
-        {/* Derecha en móvil / tercera columna en escritorio */}
-        <div className="flex items-center gap-2 order-2 lg:order-3">
+  return (
+    <>
+      {/* ── SIDEBAR IZQUIERDO BLANCO COLAPSABLE (240px / 72px · Desktop) ── */}
+      <aside
+        aria-label="Menú lateral"
+        className={`hidden lg:flex fixed inset-y-0 left-0 z-40 flex-col justify-between bg-white border-r border-[#E4E4E7] transition-[width] duration-150 ${
+          collapsed ? 'w-[72px]' : 'w-[240px]'
+        }`}
+      >
+        <div className="p-3.5 space-y-4">
+          <div
+            className={`h-10 flex items-center ${
+              collapsed ? 'justify-center' : 'justify-between px-1.5'
+            }`}
+          >
+            <Link href="/" className="no-underline">
+              <VeliLogoMark collapsed={collapsed} size={28} />
+            </Link>
+            {!collapsed && mostrarPlanes && (
+              <span className="px-2 py-0.5 rounded-md bg-[#F4F4F5] border border-[#E4E4E7] text-[11px] font-semibold text-[#52525B]">
+                {tienePlanIA ? 'Pro+IA' : 'Pro'}
+              </span>
+            )}
+          </div>
+
+          {!collapsed && (
+            <div className="px-3 py-2.5 rounded-lg bg-[#FAFAFA] border border-[#E4E4E7]">
+              <div className="text-xs font-semibold text-[#111111] truncate">
+                {nombreEfectivo}
+              </div>
+              <div className="text-[11px] text-[#71717A] truncate mt-0.5">
+                {ciudadEfectiva}
+              </div>
+            </div>
+          )}
+
+          <nav aria-label="Navegación principal" className="space-y-1">
+            {tabsVisibles.map((tab) => {
+              const Icon = TAB_ICONS[tab.key];
+              const active = isTabActive(tab.href);
+              return (
+                <Link
+                  key={tab.key}
+                  href={tab.href}
+                  title={collapsed ? tab.label : undefined}
+                  className={`relative h-10 rounded-lg flex items-center ${
+                    collapsed ? 'justify-center px-0' : 'gap-3 px-3'
+                  } text-xs no-underline transition-colors ${
+                    active
+                      ? 'bg-[#F4F4F5] text-[#111111] font-semibold'
+                      : 'text-[#52525B] hover:bg-[#F4F4F5] hover:text-[#111111] font-medium'
+                  }`}
+                >
+                  {active && (
+                    <span className="absolute left-0 top-2 bottom-2 w-[2px] rounded-r bg-[#111111]" />
+                  )}
+                  <Icon
+                    size={17}
+                    className={
+                      active ? 'text-[#111111] shrink-0' : 'text-[#71717A] shrink-0'
+                    }
+                  />
+                  {!collapsed && <span className="truncate">{tab.label}</span>}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="p-3 border-t border-[#E4E4E7] space-y-1">
           {mostrarPlanes && (
             <Link
               href="/planes"
-              className="bg-[#F5EBE8] text-[#3B0D1E] border border-[#E8CFC8] px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-semibold inline-flex items-center gap-1.5 no-underline hover:bg-[#EFE8E4] transition-colors tabular-nums"
+              title={collapsed ? 'Planes y suscripción' : undefined}
+              className={`h-9 rounded-lg flex items-center ${
+                collapsed ? 'justify-center px-0' : 'justify-between px-3'
+              } text-xs no-underline transition-colors ${
+                pathname.startsWith('/planes')
+                  ? 'bg-[#F4F4F5] text-[#111111] font-semibold'
+                  : 'text-[#52525B] hover:bg-[#F4F4F5] hover:text-[#111111] font-medium'
+              }`}
             >
-              <Sparkles size={13} />
-              <span>
-                {tienePlanIA
-                  ? `Pro + IA${cupoIA ? ` · ${cupoIA.usados}/${cupoIA.tope}` : ''}`
-                  : 'Studio BI'}
+              <span className="inline-flex items-center gap-2.5 truncate">
+                <Sparkles size={16} className="text-[#71717A] shrink-0" />
+                {!collapsed && (
+                  <span>
+                    {tienePlanIA
+                      ? `Plan Pro + IA${cupoIA ? ` (${cupoIA.usados}/${cupoIA.tope})` : ''}`
+                      : 'Planes'}
+                  </span>
+                )}
               </span>
             </Link>
           )}
 
           <Link
             href="/configuracion"
-            className="px-2.5 sm:px-3 py-1.5 rounded-full bg-white border border-[#EFE8E4] hover:bg-[#F3ECE8] text-[#3B0D1E] text-[11px] sm:text-xs font-semibold inline-flex items-center gap-1.5 no-underline transition-colors"
+            title={collapsed ? 'Configuración' : undefined}
+            className={`h-9 rounded-lg flex items-center ${
+              collapsed ? 'justify-center px-0' : 'gap-2.5 px-3'
+            } text-xs no-underline transition-colors ${
+              pathname === '/configuracion'
+                ? 'bg-[#F4F4F5] text-[#111111] font-semibold'
+                : 'text-[#52525B] hover:bg-[#F4F4F5] hover:text-[#111111] font-medium'
+            }`}
           >
-            <Settings size={13} className="text-[#5C3A47] shrink-0" />
-            <span className="truncate max-w-[115px] sm:max-w-[200px]">
-              {nombreEfectivo} · {ciudadEfectiva}
-            </span>
+            <Settings size={16} className="text-[#71717A] shrink-0" />
+            {!collapsed && <span>Configuración</span>}
           </Link>
+
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            className={`w-full h-9 rounded-lg flex items-center ${
+              collapsed ? 'justify-center px-0' : 'justify-between px-3'
+            } text-xs font-medium text-[#71717A] hover:bg-[#F4F4F5] hover:text-[#111111] bg-transparent border-0 cursor-pointer transition-colors`}
+            title={collapsed ? 'Expandir barra lateral' : 'Colapsar barra lateral'}
+          >
+            {!collapsed && <span>Recoger menú</span>}
+            {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+          </button>
+        </div>
+      </aside>
+
+      {/* ── TOP BAR BLANCA (56px) ────────────────────────────────────────── */}
+      <header className="sticky top-0 z-30 h-14 bg-white border-b border-[#E4E4E7] px-4 lg:px-8 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <Link href="/" className="lg:hidden no-underline shrink-0">
+            <VeliLogoMark size={26} />
+          </Link>
+          <span className="lg:hidden h-4 w-px bg-[#E4E4E7] shrink-0" />
+          <div className="min-w-0">
+            <span className="text-xs sm:text-sm font-semibold text-[#111111] truncate block sm:inline">
+              {nombreEfectivo}
+            </span>
+            <span className="hidden sm:inline text-[#E4E4E7] mx-2">·</span>
+            <span className="hidden sm:inline text-xs text-[#71717A] truncate">
+              {ciudadEfectiva}
+            </span>
+          </div>
         </div>
 
-        {/* Centro: Navegación principal adaptable a 390px y escritorio */}
-        <nav
-          aria-label="Navegación principal"
-          className="order-3 lg:order-2 w-full lg:w-auto flex items-center gap-1 overflow-x-auto bg-[#F3ECE8] p-1 rounded-xl border border-[#EFE8E4]"
+        <div className="flex items-center gap-2 shrink-0">
+          {mostrarAccesoVitrinaTop && (
+            <Link
+              href={hrefVitrinaRapida}
+              target={slugLocal ? '_blank' : undefined}
+              rel={slugLocal ? 'noopener noreferrer' : undefined}
+              className="h-9 px-3 rounded-lg bg-white hover:bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] text-xs font-medium inline-flex items-center gap-1.5 no-underline transition-colors"
+            >
+              <span>Mi vitrina</span>
+              <ExternalLink size={13} className="text-[#52525B]" />
+            </Link>
+          )}
+
+          <Link
+            href={pathname === '/' ? '/agenda' : '/'}
+            className="h-9 px-3.5 rounded-lg bg-[#111111] hover:bg-[#27272A] text-white text-xs font-semibold inline-flex items-center gap-1.5 no-underline transition-colors"
+          >
+            {pathname === '/' ? (
+              <>
+                <Calendar size={14} />
+                <span>Agenda</span>
+              </>
+            ) : (
+              <>
+                <Scissors size={14} />
+                <span>Abrir silla</span>
+              </>
+            )}
+          </Link>
+        </div>
+      </header>
+
+      {/* ── BARRA INFERIOR LIMPIA MÓVIL (390px) ──────────────────────────── */}
+      <nav
+        aria-label="Navegación móvil"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 h-16 bg-white border-t border-[#E4E4E7] px-1.5 flex items-center justify-around"
+      >
+        {tabsVisibles.slice(0, 5).map((tab) => {
+          const Icon = TAB_ICONS[tab.key];
+          const active = isTabActive(tab.href);
+          return (
+            <Link
+              key={tab.key}
+              href={tab.href}
+              className={`flex-1 py-1.5 rounded-lg flex flex-col items-center justify-center gap-1 no-underline transition-colors ${
+                active
+                  ? 'text-[#111111] font-semibold'
+                  : 'text-[#71717A] font-medium'
+              }`}
+            >
+              <Icon size={17} />
+              <span className="text-[10px] leading-none truncate max-w-[64px]">
+                {tab.shortLabel}
+              </span>
+            </Link>
+          );
+        })}
+        <Link
+          href="/configuracion"
+          className={`flex-1 py-1.5 rounded-lg flex flex-col items-center justify-center gap-1 no-underline transition-colors ${
+            pathname === '/configuracion'
+              ? 'text-[#111111] font-semibold'
+              : 'text-[#71717A] font-medium'
+          }`}
         >
-          {tabsVisibles.map((tab) => {
-            const active = isTabActive(tab.href);
-            return (
-              <Link
-                key={tab.key}
-                href={tab.href}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all no-underline whitespace-nowrap ${
-                  active
-                    ? 'bg-[#3B0D1E] text-[#FAF7F5] shadow-sm'
-                    : 'text-[#5C3A47] hover:text-[#3B0D1E]'
-                }`}
-              >
-                <span className="sm:hidden">{tab.shortLabel}</span>
-                <span className="hidden sm:inline">{tab.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-    </header>
+          <Settings size={17} />
+          <span className="text-[10px] leading-none">Ajustes</span>
+        </Link>
+      </nav>
+    </>
   );
 }

@@ -46,7 +46,7 @@ export default function ClientaCard({ clienta, ultimoTratamiento }: ClientaCardP
   return (
     <Link href={`/clientas/${clienta.id}`} className="stagger-item block">
       <div
-        className="flex items-center gap-3 p-3.5 bg-white rounded-2xl border border-[#E5E5E5] card-hover"
+        className="flex items-center gap-3 p-3.5 bg-white rounded-xl border border-[#E4E4E7] card-hover"
         style={{ boxShadow: '0 1px 6px rgba(0,0,0,0.05)' }}
       >
         <Avatar nombre={clienta.nombre} tipoRizo={clienta.tipoRizoPrincipal} size="md" />

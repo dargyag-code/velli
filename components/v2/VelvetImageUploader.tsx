@@ -153,18 +153,18 @@ export default function VelvetImageUploader({
     <div className="space-y-2">
       <label
         htmlFor={inputId}
-        className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C]"
+        className="block font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B]"
       >
         {label}
       </label>
 
-      <div className="p-3.5 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] flex flex-col sm:flex-row sm:items-center gap-3.5">
+      <div className="p-3.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] flex flex-col sm:flex-row sm:items-center gap-3.5">
         <button
           type="button"
           onClick={abrirSelector}
           disabled={ocupado}
           aria-label={imagenVisible ? 'Cambiar imagen' : 'Seleccionar imagen'}
-          className={`relative overflow-hidden rounded-2xl border border-dashed border-[#E8CFC8] bg-white hover:border-[#3B0D1E]/40 transition-colors flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-60 ${
+          className={`relative overflow-hidden rounded-xl border border-dashed border-[#E4E4E7] bg-white hover:border-[#111111]/40 transition-colors flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-60 ${
             shape === 'square' ? 'w-20 h-20' : 'w-full sm:w-28 h-24'
           }`}
         >
@@ -176,12 +176,12 @@ export default function VelvetImageUploader({
               className="w-full h-full object-cover"
             />
           ) : (
-            <ImagePlus size={22} className="text-[#947C85]" />
+            <ImagePlus size={22} className="text-[#71717A]" />
           )}
 
           {(subiendo || eliminando) && (
-            <div className="absolute inset-0 bg-[#FAF7F5]/85 flex items-center justify-center">
-              <Loader2 size={18} className="text-[#3B0D1E] animate-spin" />
+            <div className="absolute inset-0 bg-[#FAFAFA]/85 flex items-center justify-center">
+              <Loader2 size={18} className="text-[#111111] animate-spin" />
             </div>
           )}
         </button>
@@ -192,7 +192,7 @@ export default function VelvetImageUploader({
               type="button"
               onClick={abrirSelector}
               disabled={ocupado}
-              className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#F5EBE8] border border-[#EFE8E4] font-sans text-xs font-bold text-[#3B0D1E] inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60"
+              className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#F4F4F5] border border-[#E4E4E7] font-sans text-xs font-bold text-[#111111] inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60"
             >
               <Upload size={13} />
               <span>
@@ -209,7 +209,7 @@ export default function VelvetImageUploader({
                 type="button"
                 onClick={eliminarImagenActual}
                 disabled={ocupado}
-                className="min-h-[38px] px-3 py-1.5 rounded-xl bg-[#FFF7F5] hover:bg-[#F5EBE8] border border-[#D97757]/30 font-sans text-xs font-bold text-[#D97757] inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60"
+                className="min-h-[38px] px-3 py-1.5 rounded-xl bg-[#FFFBEB] hover:bg-[#F4F4F5] border border-[#B45309]/30 font-sans text-xs font-bold text-[#B45309] inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60"
               >
                 <Trash2 size={13} />
                 <span>{eliminando ? 'Quitando…' : 'Eliminar'}</span>
@@ -217,12 +217,12 @@ export default function VelvetImageUploader({
             )}
           </div>
 
-          <p className="m-0 font-mono text-[11px] text-[#6B535C] tabular-nums">
+          <p className="m-0 font-mono text-[11px] text-[#52525B] tabular-nums">
             {helperText}
           </p>
 
           {errorLocal && (
-            <p className="m-0 font-sans text-xs font-semibold text-[#D97757]">
+            <p className="m-0 font-sans text-xs font-semibold text-[#B45309]">
               {errorLocal}
             </p>
           )}

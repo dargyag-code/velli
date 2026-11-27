@@ -180,7 +180,7 @@ export default function ConfiguracionPreciosPage() {
   const [simTinteId, setSimTinteId] = useState<string>('');
   const [simOxidanteId, setSimOxidanteId] = useState<string>('');
 
-  // Todo salón activo en Velli Business Intelligence tiene acceso completo
+  // Todo salón activo en Veli tiene acceso completo
   // a Costos de Química y Liquidación de Especialistas (el candado Pro+IA se
   // reserva exclusivamente para el diagnóstico fotográfico con IA).
   const tienePlanPro = true;
@@ -668,24 +668,24 @@ export default function ConfiguracionPreciosPage() {
   }, [prodCantidad, prodCosto]);
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] font-sans pb-36 lg:pb-12">
+    <div className="min-h-screen bg-[#FAFAFA] text-[#111111] font-sans pb-36 lg:pb-12">
       <VelvetTopHeader />
       {/* Sub-cabecera ejecutiva */}
-      <div className="border-b border-[#EFE8E4] px-4 sm:px-6 pt-6 pb-4">
+      <div className="border-b border-[#E4E4E7] px-4 sm:px-6 pt-6 pb-4">
         <div className="max-w-5xl mx-auto flex items-center gap-3.5">
           <button
             type="button"
             onClick={() => router.push('/configuracion')}
             aria-label="Volver a Configuración"
-            className="min-w-[44px] min-h-[44px] rounded-full bg-white hover:bg-[#F5EBE8] border border-[#EFE8E4] text-[#3B0D1E] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(59,13,30,0.05)] cursor-pointer shrink-0 transition-colors"
+            className="min-w-[44px] min-h-[44px] rounded-full bg-white hover:bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(59,13,30,0.05)] cursor-pointer shrink-0 transition-colors"
           >
             <ArrowLeft size={18} />
           </button>
           <div className="min-w-0">
-            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
-              Velli Business Intelligence · Calibración del Salón
+            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
+              Veli · Calibración del Salón
             </span>
-            <h1 className="m-0 mt-0.5 font-display text-2xl md:text-3xl font-semibold tracking-tight text-[#3B0D1E] leading-tight truncate">
+            <h1 className="m-0 mt-0.5 font-display text-2xl md:text-3xl font-semibold tracking-tight text-[#111111] leading-tight truncate">
               Servicios, catálogo químico y comisiones
             </h1>
           </div>
@@ -694,14 +694,14 @@ export default function ConfiguracionPreciosPage() {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-5 space-y-5">
         {/* Segmented Control de las 3 Pestañas */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 p-1.5 rounded-2xl bg-white border border-[#EFE8E4] shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 p-1.5 rounded-xl bg-white border border-[#E4E4E7] ">
           <button
             type="button"
             onClick={() => setPestana('servicios')}
             className={`min-h-[46px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border-none ${
               pestana === 'servicios'
-                ? 'bg-[#3B0D1E] text-[#FAF7F5] shadow-[0_6px_16px_-4px_rgba(59,13,30,0.22)]'
-                : 'bg-transparent text-[#6B535C] hover:bg-[#FAF7F5] hover:text-[#3B0D1E]'
+                ? 'bg-[#111111] text-white shadow-[0_6px_16px_-4px_rgba(59,13,30,0.22)]'
+                : 'bg-transparent text-[#52525B] hover:bg-[#FAFAFA] hover:text-[#111111]'
             }`}
           >
             1. Servicios y Tarifas
@@ -712,8 +712,8 @@ export default function ConfiguracionPreciosPage() {
             onClick={() => setPestana('quimica')}
             className={`min-h-[46px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border-none inline-flex items-center justify-center gap-1.5 ${
               pestana === 'quimica'
-                ? 'bg-[#3B0D1E] text-[#FAF7F5] shadow-[0_6px_16px_-4px_rgba(59,13,30,0.22)]'
-                : 'bg-transparent text-[#6B535C] hover:bg-[#FAF7F5] hover:text-[#3B0D1E]'
+                ? 'bg-[#111111] text-white shadow-[0_6px_16px_-4px_rgba(59,13,30,0.22)]'
+                : 'bg-transparent text-[#52525B] hover:bg-[#FAFAFA] hover:text-[#111111]'
             }`}
           >
             <span>2. Catálogo Químico ($/g y $/ml)</span>
@@ -725,8 +725,8 @@ export default function ConfiguracionPreciosPage() {
             onClick={() => setPestana('comisiones')}
             className={`min-h-[46px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border-none inline-flex items-center justify-center gap-1.5 ${
               pestana === 'comisiones'
-                ? 'bg-[#3B0D1E] text-[#FAF7F5] shadow-[0_6px_16px_-4px_rgba(59,13,30,0.22)]'
-                : 'bg-transparent text-[#6B535C] hover:bg-[#FAF7F5] hover:text-[#3B0D1E]'
+                ? 'bg-[#111111] text-white shadow-[0_6px_16px_-4px_rgba(59,13,30,0.22)]'
+                : 'bg-transparent text-[#52525B] hover:bg-[#FAFAFA] hover:text-[#111111]'
             }`}
           >
             <span>3. Equipo y Comisiones</span>
@@ -736,24 +736,24 @@ export default function ConfiguracionPreciosPage() {
 
         {/* Selector horizontal de servicio activo (visible en Pestaña 1 y 2) */}
         {(pestana === 'servicios' || pestana === 'quimica') && (
-          <section className="bg-white rounded-3xl border border-[#EFE8E4] p-5 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] space-y-3.5">
+          <section className="bg-white rounded-xl border border-[#E4E4E7] p-5  space-y-3.5">
             <div className="flex justify-between items-center gap-2">
-              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                 Servicios de tu salón
               </span>
               <button
                 type="button"
                 onClick={() => setCreandoServicio((v) => !v)}
-                className="min-h-[40px] px-3.5 rounded-xl bg-[#F5EBE8] hover:bg-[#E8CFC8]/60 border border-[#E8CFC8] text-[#3B0D1E] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                className="min-h-[40px] px-3.5 rounded-xl bg-[#F4F4F5] hover:bg-[#E4E4E7]/60 border border-[#E4E4E7] text-[#111111] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
               >
                 <Plus size={14} /> Nuevo servicio
               </button>
             </div>
 
             {creandoServicio && (
-              <div className="p-4 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] space-y-3">
+              <div className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] space-y-3">
                 <div>
-                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                     Nombre del servicio
                   </label>
                   <input
@@ -761,11 +761,11 @@ export default function ConfiguracionPreciosPage() {
                     value={nuevoServicioNombre}
                     onChange={(e) => setNuevoServicioNombre(e.target.value)}
                     placeholder="Ej. Balayage Alta Precisión, Hidratación profunda…"
-                    className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#EFE8E4] bg-white text-sm text-[#3B0D1E] placeholder-[#947C85]"
+                    className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#E4E4E7] bg-white text-sm text-[#111111] placeholder-[#71717A]"
                   />
                 </div>
                 <div>
-                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                     Categoría técnica
                   </span>
                   <div className="flex flex-wrap gap-2">
@@ -778,8 +778,8 @@ export default function ConfiguracionPreciosPage() {
                           onClick={() => setNuevoServicioCategoria(cat.valor)}
                           className={`min-h-[42px] px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                             active
-                              ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E]'
-                              : 'bg-white text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8] hover:text-[#3B0D1E]'
+                              ? 'bg-[#111111] text-white border-[#111111]'
+                              : 'bg-white text-[#52525B] border-[#E4E4E7] hover:bg-[#F4F4F5] hover:text-[#111111]'
                           }`}
                         >
                           {cat.etiqueta}
@@ -800,7 +800,7 @@ export default function ConfiguracionPreciosPage() {
             )}
 
             {cargando ? (
-              <div className="skeleton-shimmer h-12 rounded-2xl" />
+              <div className="skeleton-shimmer h-12 rounded-xl" />
             ) : (
               <div className="flex gap-2 flex-wrap">
                 {servicios.map((srv) => {
@@ -820,16 +820,16 @@ export default function ConfiguracionPreciosPage() {
                       key={srv.id}
                       type="button"
                       onClick={() => setServicioId(srv.id)}
-                      className={`min-h-[46px] px-4 py-2 rounded-2xl text-xs font-bold border transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                      className={`min-h-[46px] px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer inline-flex items-center gap-1.5 ${
                         activo
-                          ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E] shadow-[0_6px_16px_-4px_rgba(59,13,30,0.2)]'
-                          : 'bg-[#FAF7F5] text-[#3B0D1E] border-[#EFE8E4] hover:bg-[#F5EBE8] hover:border-[#E8CFC8]'
+                          ? 'bg-[#111111] text-white border-[#111111] shadow-[0_6px_16px_-4px_rgba(59,13,30,0.2)]'
+                          : 'bg-[#FAFAFA] text-[#111111] border-[#E4E4E7] hover:bg-[#F4F4F5] hover:border-[#E4E4E7]'
                       }`}
                     >
                       <span className="capitalize">{srv.nombre}</span>
                       <span
                         className={`tabular-nums text-[11px] font-semibold ${
-                          activo ? 'text-[#E8CFC8]' : 'text-[#6B535C]'
+                          activo ? 'text-[#E4E4E7]' : 'text-[#52525B]'
                         }`}
                       >
                         · {formatearPrecioCop(tarifaChip)}
@@ -847,18 +847,18 @@ export default function ConfiguracionPreciosPage() {
            ═══════════════════════════════════════════════════════════════════ */}
         {pestana === 'servicios' && servicioActual && (
           <div className="space-y-5">
-            <section className="bg-white rounded-3xl border border-[#EFE8E4] p-5 sm:p-6 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] space-y-5">
+            <section className="bg-white rounded-xl border border-[#E4E4E7] p-5 sm:p-6  space-y-5">
               <div className="flex justify-between items-center flex-wrap gap-2">
                 <div>
-                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
                     Tarifa y reglas de cobro
                   </span>
-                  <h2 className="m-0 mt-0.5 font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E]">
+                  <h2 className="m-0 mt-0.5 font-sans text-base md:text-lg font-bold tracking-tight text-[#111111]">
                     {servicioActual.nombre}
                   </h2>
                 </div>
                 {plantillasMap[servicioActual.id] && (
-                  <span className="px-3 py-1 rounded-full bg-[#F0FDFA] border border-[#0D9488]/25 text-[#0D9488] text-xs font-bold">
+                  <span className="px-3 py-1 rounded-full bg-[#F0FDF4] border border-[#15803D]/25 text-[#15803D] text-xs font-bold">
                     Tarifa activa
                   </span>
                 )}
@@ -866,7 +866,7 @@ export default function ConfiguracionPreciosPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                     Precio base ($ COP)
                   </label>
                   <input
@@ -875,12 +875,12 @@ export default function ConfiguracionPreciosPage() {
                     step={1000}
                     value={precioBase}
                     onChange={(e) => setPrecioBase(Number(e.target.value) || 0)}
-                    className="w-full min-h-[48px] px-4 py-2.5 rounded-xl border border-[#EFE8E4] bg-[#FAF7F5] focus:bg-white text-base font-bold text-[#3B0D1E] tabular-nums"
+                    className="w-full min-h-[48px] px-4 py-2.5 rounded-xl border border-[#E4E4E7] bg-[#FAFAFA] focus:bg-white text-base font-bold text-[#111111] tabular-nums"
                   />
                 </div>
 
                 <div>
-                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                     Redondeo comercial
                   </span>
                   <div className="grid grid-cols-4 gap-1.5">
@@ -893,8 +893,8 @@ export default function ConfiguracionPreciosPage() {
                           onClick={() => setRedondeo(op.valor)}
                           className={`min-h-[48px] px-2 rounded-xl text-xs font-bold tabular-nums border transition-all cursor-pointer ${
                             active
-                              ? 'bg-[#F5EBE8] text-[#3B0D1E] border-[#E8CFC8]'
-                              : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:text-[#3B0D1E]'
+                              ? 'bg-[#F4F4F5] text-[#111111] border-[#E4E4E7]'
+                              : 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7] hover:text-[#111111]'
                           }`}
                         >
                           {op.etiqueta}
@@ -905,7 +905,7 @@ export default function ConfiguracionPreciosPage() {
                 </div>
 
                 <div>
-                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                     Vigencia de cotización (días)
                   </label>
                   <input
@@ -914,13 +914,13 @@ export default function ConfiguracionPreciosPage() {
                     max={90}
                     value={vigenciaDias}
                     onChange={(e) => setVigenciaDias(Math.max(1, Number(e.target.value) || 15))}
-                    className="w-full min-h-[48px] px-4 py-2.5 rounded-xl border border-[#EFE8E4] bg-[#FAF7F5] focus:bg-white text-base font-bold text-[#3B0D1E] tabular-nums"
+                    className="w-full min-h-[48px] px-4 py-2.5 rounded-xl border border-[#E4E4E7] bg-[#FAFAFA] focus:bg-white text-base font-bold text-[#111111] tabular-nums"
                   />
                 </div>
               </div>
 
               <div>
-                <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-2">
+                <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-2">
                   Factores capilares que ajustan el precio en silla
                 </span>
                 <div className="flex gap-2 flex-wrap">
@@ -933,8 +933,8 @@ export default function ConfiguracionPreciosPage() {
                         onClick={() => toggleVariableActiva(clave)}
                         className={`min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                           activa
-                            ? 'bg-[#F5EBE8] text-[#3B0D1E] border-[#3B0D1E]'
-                            : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:border-[#E8CFC8] hover:text-[#3B0D1E]'
+                            ? 'bg-[#F4F4F5] text-[#111111] border-[#111111]'
+                            : 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7] hover:border-[#E4E4E7] hover:text-[#111111]'
                         }`}
                       >
                         {activa ? '✓ ' : '+ '}
@@ -956,9 +956,9 @@ export default function ConfiguracionPreciosPage() {
                   return (
                     <div
                       key={clave}
-                      className="p-4 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] space-y-3"
+                      className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] space-y-3"
                     >
-                      <h3 className="m-0 font-sans text-sm font-bold text-[#3B0D1E]">
+                      <h3 className="m-0 font-sans text-sm font-bold text-[#111111]">
                         {ETIQUETAS_VARIABLE[clave]}
                       </h3>
                       <div className="space-y-2.5">
@@ -967,16 +967,16 @@ export default function ConfiguracionPreciosPage() {
                           return (
                             <div
                               key={op.valor}
-                              className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center bg-white p-3 rounded-xl border border-[#EFE8E4]"
+                              className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center bg-white p-3 rounded-xl border border-[#E4E4E7]"
                             >
                               <div className="sm:col-span-5">
-                                <div className="text-xs font-bold text-[#3B0D1E]">
+                                <div className="text-xs font-bold text-[#111111]">
                                   {op.etiqueta}
                                 </div>
-                                <div className="text-[11px] text-[#947C85]">{op.guia}</div>
+                                <div className="text-[11px] text-[#71717A]">{op.guia}</div>
                               </div>
                               <div className="sm:col-span-4">
-                                <label className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1">
+                                <label className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1">
                                   + Suma ($ COP)
                                 </label>
                                 <input
@@ -986,11 +986,11 @@ export default function ConfiguracionPreciosPage() {
                                   onChange={(e) =>
                                     cambiarAjusteOpcion(clave, op.valor, 'suma', e.target.value)
                                   }
-                                  className="w-full min-h-[42px] px-3 py-1.5 rounded-lg border border-[#EFE8E4] bg-[#FAF7F5] focus:bg-white text-xs font-bold text-[#3B0D1E] text-right tabular-nums"
+                                  className="w-full min-h-[42px] px-3 py-1.5 rounded-lg border border-[#E4E4E7] bg-[#FAFAFA] focus:bg-white text-xs font-bold text-[#111111] text-right tabular-nums"
                                 />
                               </div>
                               <div className="sm:col-span-3">
-                                <label className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1">
+                                <label className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1">
                                   + Porcentaje (%)
                                 </label>
                                 <input
@@ -1005,7 +1005,7 @@ export default function ConfiguracionPreciosPage() {
                                       e.target.value
                                     )
                                   }
-                                  className="w-full min-h-[42px] px-3 py-1.5 rounded-lg border border-[#EFE8E4] bg-[#FAF7F5] focus:bg-white text-xs font-bold text-[#3B0D1E] text-right tabular-nums"
+                                  className="w-full min-h-[42px] px-3 py-1.5 rounded-lg border border-[#E4E4E7] bg-[#FAFAFA] focus:bg-white text-xs font-bold text-[#111111] text-right tabular-nums"
                                 />
                               </div>
                             </div>
@@ -1042,34 +1042,34 @@ export default function ConfiguracionPreciosPage() {
           <div className="space-y-5">
             {/* Consumo químico calibrado por servicio */}
             {servicioActual && (
-              <section className="bg-white rounded-3xl border border-[#EFE8E4] p-5 sm:p-6 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] space-y-4">
+              <section className="bg-white rounded-xl border border-[#E4E4E7] p-5 sm:p-6  space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#F5F3FF] border border-[#DDD6FE] flex items-center justify-center shrink-0">
-                    <Sliders size={17} className="text-[#7C3AED]" />
+                  <div className="w-10 h-10 rounded-xl bg-[#F4F4F5] border border-[#E4E4E7] flex items-center justify-center shrink-0">
+                    <Sliders size={17} className="text-[#111111]" />
                   </div>
                   <div>
-                    <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#7C3AED] block">
+                    <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#111111] block">
                       Fórmula sin báscula por servicio
                     </span>
-                    <h2 className="m-0 font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E]">
+                    <h2 className="m-0 font-sans text-base md:text-lg font-bold tracking-tight text-[#111111]">
                       Consumo base · {servicioActual.nombre}
                     </h2>
                   </div>
                 </div>
 
-                <label className="min-h-[48px] px-4 py-2.5 rounded-2xl bg-[#F5F3FF] border border-[#DDD6FE] flex items-center gap-3 text-xs font-bold text-[#3B0D1E] cursor-pointer">
+                <label className="min-h-[48px] px-4 py-2.5 rounded-xl bg-[#F4F4F5] border border-[#E4E4E7] flex items-center gap-3 text-xs font-bold text-[#111111] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={usaFormulaColor}
                     onChange={(e) => setUsaFormulaColor(e.target.checked)}
-                    className="w-5 h-5 accent-[#7C3AED] cursor-pointer"
+                    className="w-5 h-5 accent-[#111111] cursor-pointer"
                   />
                   <span>Este servicio consume tinte / decolorante + oxidante</span>
                 </label>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                   <div>
-                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                       Gramos base (g)
                     </label>
                     <input
@@ -1077,11 +1077,11 @@ export default function ConfiguracionPreciosPage() {
                       min={0}
                       value={gramosTinteBase}
                       onChange={(e) => setGramosTinteBase(Number(e.target.value) || 0)}
-                      className="w-full min-h-[48px] px-4 py-2.5 rounded-xl border border-[#EFE8E4] bg-[#FAF7F5] focus:bg-white font-mono text-sm font-bold text-[#3B0D1E] tabular-nums"
+                      className="w-full min-h-[48px] px-4 py-2.5 rounded-xl border border-[#E4E4E7] bg-[#FAFAFA] focus:bg-white font-mono text-sm font-bold text-[#111111] tabular-nums"
                     />
                   </div>
                   <div>
-                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                       Prop. oxidante (1:X)
                     </label>
                     <input
@@ -1090,11 +1090,11 @@ export default function ConfiguracionPreciosPage() {
                       step={0.5}
                       value={proporcionOxidante}
                       onChange={(e) => setProporcionOxidante(Number(e.target.value) || 0)}
-                      className="w-full min-h-[48px] px-4 py-2.5 rounded-xl border border-[#EFE8E4] bg-[#FAF7F5] focus:bg-white font-mono text-sm font-bold text-[#3B0D1E] tabular-nums"
+                      className="w-full min-h-[48px] px-4 py-2.5 rounded-xl border border-[#E4E4E7] bg-[#FAFAFA] focus:bg-white font-mono text-sm font-bold text-[#111111] tabular-nums"
                     />
                   </div>
                   <div>
-                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                       Insumos fijos (aluminio, guantes · $)
                     </label>
                     <input
@@ -1103,7 +1103,7 @@ export default function ConfiguracionPreciosPage() {
                       step={500}
                       value={insumosFijos}
                       onChange={(e) => setInsumosFijos(Number(e.target.value) || 0)}
-                      className="w-full min-h-[48px] px-4 py-2.5 rounded-xl border border-[#EFE8E4] bg-[#FAF7F5] focus:bg-white text-sm font-bold text-[#3B0D1E] tabular-nums"
+                      className="w-full min-h-[48px] px-4 py-2.5 rounded-xl border border-[#E4E4E7] bg-[#FAFAFA] focus:bg-white text-sm font-bold text-[#111111] tabular-nums"
                     />
                   </div>
                 </div>
@@ -1124,16 +1124,16 @@ export default function ConfiguracionPreciosPage() {
             )}
 
             {/* Catálogo de insumos químicos ($/g y $/ml automático) */}
-            <section className="bg-white rounded-3xl border border-[#EFE8E4] p-5 sm:p-6 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] space-y-4">
+            <section className="bg-white rounded-xl border border-[#E4E4E7] p-5 sm:p-6  space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#F5F3FF] border border-[#DDD6FE] flex items-center justify-center shrink-0">
-                  <Package size={17} className="text-[#7C3AED]" />
+                <div className="w-10 h-10 rounded-xl bg-[#F4F4F5] border border-[#E4E4E7] flex items-center justify-center shrink-0">
+                  <Package size={17} className="text-[#111111]" />
                 </div>
                 <div>
-                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#7C3AED] block">
+                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#111111] block">
                     Catálogo de laboratorio
                   </span>
-                  <h2 className="m-0 font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E]">
+                  <h2 className="m-0 font-sans text-base md:text-lg font-bold tracking-tight text-[#111111]">
                     Catálogo Químico ($/g y $/ml)
                   </h2>
                 </div>
@@ -1141,7 +1141,7 @@ export default function ConfiguracionPreciosPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                     Nombre del insumo
                   </label>
                   <input
@@ -1149,11 +1149,11 @@ export default function ConfiguracionPreciosPage() {
                     value={prodNombre}
                     onChange={(e) => setProdNombre(e.target.value)}
                     placeholder="Ej. Tubo tinte 60g, Oxidante 20 vol"
-                    className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#EFE8E4] bg-[#FAF7F5] focus:bg-white text-sm text-[#3B0D1E] placeholder-[#947C85]"
+                    className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#E4E4E7] bg-[#FAFAFA] focus:bg-white text-sm text-[#111111] placeholder-[#71717A]"
                   />
                 </div>
                 <div>
-                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                     Marca comercial
                   </label>
                   <input
@@ -1161,13 +1161,13 @@ export default function ConfiguracionPreciosPage() {
                     value={prodMarca}
                     onChange={(e) => setProdMarca(e.target.value)}
                     placeholder="Ej. Wella, Schwarzkopf, Alfaparf"
-                    className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#EFE8E4] bg-[#FAF7F5] focus:bg-white text-sm text-[#3B0D1E] placeholder-[#947C85]"
+                    className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#E4E4E7] bg-[#FAFAFA] focus:bg-white text-sm text-[#111111] placeholder-[#71717A]"
                   />
                 </div>
               </div>
 
               <div>
-                <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                   Tipo de producto químico
                 </span>
                 <div className="flex flex-wrap gap-2">
@@ -1180,8 +1180,8 @@ export default function ConfiguracionPreciosPage() {
                         onClick={() => setProdTipo(t.valor)}
                         className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                           active
-                            ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E]'
-                            : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8] hover:text-[#3B0D1E]'
+                            ? 'bg-[#111111] text-white border-[#111111]'
+                            : 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7] hover:bg-[#F4F4F5] hover:text-[#111111]'
                         }`}
                       >
                         {t.etiqueta}
@@ -1193,7 +1193,7 @@ export default function ConfiguracionPreciosPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                     Unidad de medida
                   </span>
                   <div className="grid grid-cols-3 gap-1.5">
@@ -1212,8 +1212,8 @@ export default function ConfiguracionPreciosPage() {
                           onClick={() => setProdUnidad(v)}
                           className={`min-h-[46px] rounded-xl font-mono text-xs font-bold border transition-all cursor-pointer ${
                             active
-                              ? 'bg-[#F5F3FF] text-[#7C3AED] border-[#7C3AED]'
-                              : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:text-[#3B0D1E]'
+                              ? 'bg-[#F4F4F5] text-[#111111] border-[#111111]'
+                              : 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7] hover:text-[#111111]'
                           }`}
                         >
                           {label}
@@ -1224,7 +1224,7 @@ export default function ConfiguracionPreciosPage() {
                 </div>
 
                 <div>
-                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                     Presentación ({prodUnidad})
                   </label>
                   <input
@@ -1233,12 +1233,12 @@ export default function ConfiguracionPreciosPage() {
                     value={prodCantidad}
                     onChange={(e) => setProdCantidad(e.target.value)}
                     placeholder="Ej. 60"
-                    className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#EFE8E4] bg-[#FAF7F5] focus:bg-white font-mono text-sm font-bold text-[#3B0D1E] tabular-nums"
+                    className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#E4E4E7] bg-[#FAFAFA] focus:bg-white font-mono text-sm font-bold text-[#111111] tabular-nums"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                     Costo envase ($ COP)
                   </label>
                   <input
@@ -1248,15 +1248,15 @@ export default function ConfiguracionPreciosPage() {
                     value={prodCosto}
                     onChange={(e) => setProdCosto(e.target.value)}
                     placeholder="Ej. 28000"
-                    className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#EFE8E4] bg-[#FAF7F5] focus:bg-white text-sm font-bold text-[#3B0D1E] tabular-nums"
+                    className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#E4E4E7] bg-[#FAFAFA] focus:bg-white text-sm font-bold text-[#111111] tabular-nums"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-between items-center flex-wrap gap-3 p-4 rounded-2xl bg-[#F5F3FF] border border-[#DDD6FE]">
-                <span className="text-xs font-semibold text-[#6B535C]">
+              <div className="flex justify-between items-center flex-wrap gap-3 p-4 rounded-xl bg-[#F4F4F5] border border-[#E4E4E7]">
+                <span className="text-xs font-semibold text-[#52525B]">
                   Costo exacto calculado:{' '}
-                  <strong className="font-mono text-sm font-bold text-[#7C3AED] tabular-nums">
+                  <strong className="font-mono text-sm font-bold text-[#111111] tabular-nums">
                     {formatearPrecioCop(costoUnitarioPreview)} / {prodUnidad}
                   </strong>
                 </span>
@@ -1277,16 +1277,16 @@ export default function ConfiguracionPreciosPage() {
                     return (
                       <div
                         key={p.id}
-                        className="flex justify-between items-center gap-3 p-3.5 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4]"
+                        className="flex justify-between items-center gap-3 p-3.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7]"
                       >
                         <div className="min-w-0">
-                          <div className="text-sm font-bold text-[#3B0D1E] truncate">
+                          <div className="text-sm font-bold text-[#111111] truncate">
                             {p.nombre}
                             {p.marca ? (
-                              <span className="font-normal text-[#6B535C]"> · {p.marca}</span>
+                              <span className="font-normal text-[#52525B]"> · {p.marca}</span>
                             ) : null}
                           </div>
-                          <div className="text-xs text-[#947C85] tabular-nums mt-0.5">
+                          <div className="text-xs text-[#71717A] tabular-nums mt-0.5">
                             Presentación:{' '}
                             <span className="font-mono font-semibold">
                               {p.presentacionCantidad}
@@ -1295,7 +1295,7 @@ export default function ConfiguracionPreciosPage() {
                             · Compra: {formatearPrecioCop(p.precioCompra)}
                           </div>
                         </div>
-                        <span className="shrink-0 px-3 py-1 rounded-full bg-[#F5F3FF] border border-[#DDD6FE] text-[#7C3AED] font-mono text-xs font-semibold tabular-nums">
+                        <span className="shrink-0 px-3 py-1 rounded-full bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] font-mono text-xs font-semibold tabular-nums">
                           {formatearPrecioCop(unitario)} / {p.unidad}
                         </span>
                       </div>
@@ -1313,16 +1313,16 @@ export default function ConfiguracionPreciosPage() {
         {pestana === 'comisiones' && (
           <div className="space-y-5">
             {/* EQUIPO DE ESPECIALISTAS */}
-            <section className="bg-white rounded-3xl border border-[#EFE8E4] p-5 sm:p-6 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] space-y-4">
+            <section className="bg-white rounded-xl border border-[#E4E4E7] p-5 sm:p-6  space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#F5EBE8] border border-[#E8CFC8] flex items-center justify-center shrink-0">
-                  <Users size={17} className="text-[#3B0D1E]" />
+                <div className="w-10 h-10 rounded-xl bg-[#F4F4F5] border border-[#E4E4E7] flex items-center justify-center shrink-0">
+                  <Users size={17} className="text-[#111111]" />
                 </div>
                 <div>
-                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
                     Talento del salón
                   </span>
-                  <h2 className="m-0 font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E]">
+                  <h2 className="m-0 font-sans text-base md:text-lg font-bold tracking-tight text-[#111111]">
                     Equipo de especialistas
                   </h2>
                 </div>
@@ -1334,7 +1334,7 @@ export default function ConfiguracionPreciosPage() {
                   value={nuevaEstilistaNombre}
                   onChange={(e) => setNuevaEstilistaNombre(e.target.value)}
                   placeholder="Nombre de la especialista…"
-                  className="flex-1 min-h-[46px] px-4 py-2.5 rounded-xl border border-[#EFE8E4] bg-[#FAF7F5] focus:bg-white text-sm text-[#3B0D1E] placeholder-[#947C85]"
+                  className="flex-1 min-h-[46px] px-4 py-2.5 rounded-xl border border-[#E4E4E7] bg-[#FAFAFA] focus:bg-white text-sm text-[#111111] placeholder-[#71717A]"
                 />
                 <Btn
                   size="md"
@@ -1351,41 +1351,41 @@ export default function ConfiguracionPreciosPage() {
                   {estilistas.map((e) => (
                     <span
                       key={e.id}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#F5EBE8] border border-[#E8CFC8] text-xs font-bold text-[#3B0D1E] capitalize"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#F4F4F5] border border-[#E4E4E7] text-xs font-bold text-[#111111] capitalize"
                     >
                       {e.nombre}
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="m-0 text-xs text-[#947C85]">
+                <p className="m-0 text-xs text-[#71717A]">
                   Agrega tus especialistas para liquidar comisiones automáticamente en Reportes BI.
                 </p>
               )}
             </section>
 
             {/* REGLAS DE COMISIÓN */}
-            <section className="bg-white rounded-3xl border border-[#EFE8E4] p-5 sm:p-6 shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] space-y-4">
+            <section className="bg-white rounded-xl border border-[#E4E4E7] p-5 sm:p-6  space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#F5EBE8] border border-[#E8CFC8] flex items-center justify-center shrink-0">
-                  <Percent size={17} className="text-[#3B0D1E]" />
+                <div className="w-10 h-10 rounded-xl bg-[#F4F4F5] border border-[#E4E4E7] flex items-center justify-center shrink-0">
+                  <Percent size={17} className="text-[#111111]" />
                 </div>
                 <div>
-                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
                     Esquema de nómina
                   </span>
-                  <h2 className="m-0 font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E]">
+                  <h2 className="m-0 font-sans text-base md:text-lg font-bold tracking-tight text-[#111111]">
                     Reglas de comisión
                   </h2>
                 </div>
               </div>
-              <p className="m-0 text-xs text-[#6B535C] leading-relaxed">
+              <p className="m-0 text-xs text-[#52525B] leading-relaxed">
                 Prioridad automática: regla por especialista + servicio → por especialista → por servicio → regla general del salón.
               </p>
 
               {/* Alcance por especialista */}
               <div>
-                <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                   Especialista aplicable
                 </span>
                 <div className="flex flex-wrap gap-2">
@@ -1394,8 +1394,8 @@ export default function ConfiguracionPreciosPage() {
                     onClick={() => setComEstilistaId('')}
                     className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                       comEstilistaId === ''
-                        ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E] shadow-xs'
-                        : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8] hover:text-[#3B0D1E]'
+                        ? 'bg-[#111111] text-white border-[#111111] shadow-xs'
+                        : 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7] hover:bg-[#F4F4F5] hover:text-[#111111]'
                     }`}
                   >
                     Todas (regla general)
@@ -1409,8 +1409,8 @@ export default function ConfiguracionPreciosPage() {
                         onClick={() => setComEstilistaId(e.id)}
                         className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer capitalize ${
                           active
-                            ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E] shadow-xs'
-                            : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8] hover:text-[#3B0D1E]'
+                            ? 'bg-[#111111] text-white border-[#111111] shadow-xs'
+                            : 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7] hover:bg-[#F4F4F5] hover:text-[#111111]'
                         }`}
                       >
                         {e.nombre}
@@ -1422,7 +1422,7 @@ export default function ConfiguracionPreciosPage() {
 
               {/* Alcance por servicio */}
               <div>
-                <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                   Servicio aplicable
                 </span>
                 <div className="flex flex-wrap gap-2">
@@ -1431,8 +1431,8 @@ export default function ConfiguracionPreciosPage() {
                     onClick={() => setComServicioId('')}
                     className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                       comServicioId === ''
-                        ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E] shadow-xs'
-                        : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8] hover:text-[#3B0D1E]'
+                        ? 'bg-[#111111] text-white border-[#111111] shadow-xs'
+                        : 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7] hover:bg-[#F4F4F5] hover:text-[#111111]'
                     }`}
                   >
                     Todos los servicios
@@ -1446,8 +1446,8 @@ export default function ConfiguracionPreciosPage() {
                         onClick={() => setComServicioId(s.id)}
                         className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer capitalize ${
                           active
-                            ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E] shadow-xs'
-                            : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8] hover:text-[#3B0D1E]'
+                            ? 'bg-[#111111] text-white border-[#111111] shadow-xs'
+                            : 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7] hover:bg-[#F4F4F5] hover:text-[#111111]'
                         }`}
                       >
                         {s.nombre}
@@ -1459,7 +1459,7 @@ export default function ConfiguracionPreciosPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
                 <div>
-                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                     Modalidad
                   </span>
                   <div className="grid grid-cols-2 gap-1.5">
@@ -1477,8 +1477,8 @@ export default function ConfiguracionPreciosPage() {
                           onClick={() => setComTipo(v)}
                           className={`min-h-[46px] px-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                             active
-                              ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E] shadow-xs'
-                              : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:text-[#3B0D1E]'
+                              ? 'bg-[#111111] text-white border-[#111111] shadow-xs'
+                              : 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7] hover:text-[#111111]'
                           }`}
                         >
                           {label}
@@ -1489,7 +1489,7 @@ export default function ConfiguracionPreciosPage() {
                 </div>
 
                 <div>
-                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                     Valor ({comTipo === 'porcentaje' ? '%' : '$ COP'})
                   </label>
                   <input
@@ -1498,12 +1498,12 @@ export default function ConfiguracionPreciosPage() {
                     value={comValor}
                     onChange={(e) => setComValor(e.target.value)}
                     placeholder="Ej. 40"
-                    className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#EFE8E4] bg-[#FAF7F5] focus:bg-white text-sm font-bold text-[#3B0D1E] tabular-nums"
+                    className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#E4E4E7] bg-[#FAFAFA] focus:bg-white text-sm font-bold text-[#111111] tabular-nums"
                   />
                 </div>
 
                 <div>
-                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                  <span className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                     Base de liquidación
                   </span>
                   <div className="grid grid-cols-2 gap-1.5">
@@ -1521,8 +1521,8 @@ export default function ConfiguracionPreciosPage() {
                           onClick={() => setComBase(v)}
                           className={`min-h-[46px] px-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                             active
-                              ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E] shadow-xs'
-                              : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:text-[#3B0D1E]'
+                              ? 'bg-[#111111] text-white border-[#111111] shadow-xs'
+                              : 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7] hover:text-[#111111]'
                           }`}
                         >
                           {label}
@@ -1555,15 +1555,15 @@ export default function ConfiguracionPreciosPage() {
                     return (
                       <div
                         key={c.id ?? 'regla-general'}
-                        className="flex justify-between items-center gap-3 p-3.5 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] text-xs"
+                        className="flex justify-between items-center gap-3 p-3.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] text-xs"
                       >
                         <div className="min-w-0">
-                          <strong className="text-[#3B0D1E] capitalize">{nomEst}</strong>{' '}
-                          <span className="text-[#6B535C] capitalize">· {nomSrv} →</span>{' '}
-                          <span className="font-bold text-[#3B0D1E] tabular-nums">
+                          <strong className="text-[#111111] capitalize">{nomEst}</strong>{' '}
+                          <span className="text-[#52525B] capitalize">· {nomSrv} →</span>{' '}
+                          <span className="font-bold text-[#111111] tabular-nums">
                             {c.tipo === 'porcentaje' ? `${c.valor}%` : formatearPrecioCop(c.valor)}
                           </span>{' '}
-                          <span className="text-[#947C85]">
+                          <span className="text-[#71717A]">
                             (
                             {c.base === 'precio_menos_producto'
                               ? 'Menos química'
@@ -1576,7 +1576,7 @@ export default function ConfiguracionPreciosPage() {
                             type="button"
                             onClick={() => handleEliminarComision(c.id!)}
                             aria-label="Eliminar regla"
-                            className="min-w-[40px] min-h-[40px] rounded-xl bg-white hover:bg-[#FFF7F5] border border-[#EFE8E4] text-[#D97757] flex items-center justify-center cursor-pointer shrink-0 transition-colors"
+                            className="min-w-[40px] min-h-[40px] rounded-xl bg-white hover:bg-[#FFFBEB] border border-[#E4E4E7] text-[#B45309] flex items-center justify-center cursor-pointer shrink-0 transition-colors"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -1589,24 +1589,24 @@ export default function ConfiguracionPreciosPage() {
             </section>
 
             {/* SIMULADOR DE MARGEN EN VIVO */}
-            <section className="v-gradient-hero rounded-3xl p-5 sm:p-6 text-[#FAF7F5] shadow-[0_18px_44px_-10px_rgba(59,13,30,0.28)] space-y-4">
+            <section className="v-gradient-hero rounded-xl p-5 sm:p-6 text-white shadow-[0_18px_44px_-10px_rgba(59,13,30,0.28)] space-y-4">
               <div className="flex justify-between items-center gap-3">
                 <div>
-                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#E8CFC8] block">
+                  <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#E4E4E7] block">
                     Simulador de Rentabilidad en Vivo
                   </span>
-                  <h2 className="m-0 mt-0.5 font-display text-2xl font-semibold tracking-tight !text-[#FAF7F5] capitalize">
+                  <h2 className="m-0 mt-0.5 font-display text-2xl font-semibold tracking-tight !text-white capitalize">
                     {servicioActual?.nombre ?? 'Servicio'}
                   </h2>
                 </div>
-                <div className="w-11 h-11 rounded-2xl bg-white/10 border border-[#E8CFC8]/25 flex items-center justify-center shrink-0">
-                  <Calculator size={20} className="text-[#E8CFC8]" />
+                <div className="w-11 h-11 rounded-xl bg-white/10 border border-[#E4E4E7]/25 flex items-center justify-center shrink-0">
+                  <Calculator size={20} className="text-[#E4E4E7]" />
                 </div>
               </div>
 
               {/* Píldoras táctiles de servicio en el simulador */}
               <div>
-                <span className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E8CFC8] mb-1.5">
+                <span className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E4E4E7] mb-1.5">
                   Servicio a simular
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -1619,8 +1619,8 @@ export default function ConfiguracionPreciosPage() {
                         onClick={() => setServicioId(s.id)}
                         className={`min-h-[42px] px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer capitalize ${
                           active
-                            ? 'bg-[#E8CFC8] text-[#3B0D1E] border-[#E8CFC8]'
-                            : 'bg-white/10 text-[#FAF7F5] border-white/15 hover:bg-white/20'
+                            ? 'bg-[#E4E4E7] text-[#111111] border-[#E4E4E7]'
+                            : 'bg-white/10 text-white border-white/15 hover:bg-white/20'
                         }`}
                       >
                         {s.nombre}
@@ -1632,7 +1632,7 @@ export default function ConfiguracionPreciosPage() {
 
               {/* Píldoras de especialista en el simulador */}
               <div>
-                <span className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E8CFC8] mb-1.5">
+                <span className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E4E4E7] mb-1.5">
                   Especialista
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -1641,8 +1641,8 @@ export default function ConfiguracionPreciosPage() {
                     onClick={() => setSimEstilistaId('')}
                     className={`min-h-[42px] px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                       simEstilistaId === ''
-                        ? 'bg-[#E8CFC8] text-[#3B0D1E] border-[#E8CFC8]'
-                        : 'bg-white/10 text-[#FAF7F5] border-white/15 hover:bg-white/20'
+                        ? 'bg-[#E4E4E7] text-[#111111] border-[#E4E4E7]'
+                        : 'bg-white/10 text-white border-white/15 hover:bg-white/20'
                     }`}
                   >
                     Regla general del salón
@@ -1656,8 +1656,8 @@ export default function ConfiguracionPreciosPage() {
                         onClick={() => setSimEstilistaId(e.id)}
                         className={`min-h-[42px] px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer capitalize ${
                           active
-                            ? 'bg-[#E8CFC8] text-[#3B0D1E] border-[#E8CFC8]'
-                            : 'bg-white/10 text-[#FAF7F5] border-white/15 hover:bg-white/20'
+                            ? 'bg-[#E4E4E7] text-[#111111] border-[#E4E4E7]'
+                            : 'bg-white/10 text-white border-white/15 hover:bg-white/20'
                         }`}
                       >
                         {e.nombre}
@@ -1670,7 +1670,7 @@ export default function ConfiguracionPreciosPage() {
               {/* Píldoras capilares táctiles en el simulador */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <span className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E8CFC8] mb-1.5">
+                  <span className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E4E4E7] mb-1.5">
                     Largo
                   </span>
                   <div className="grid grid-cols-2 gap-1.5">
@@ -1683,8 +1683,8 @@ export default function ConfiguracionPreciosPage() {
                           onClick={() => setSimLargo(o.valor)}
                           className={`min-h-[42px] px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                             active
-                              ? 'bg-[#FAF7F5] text-[#3B0D1E] border-[#FAF7F5]'
-                              : 'bg-white/10 text-[#FAF7F5] border-white/15 hover:bg-white/20'
+                              ? 'bg-[#FAFAFA] text-[#111111] border-[#FAFAFA]'
+                              : 'bg-white/10 text-white border-white/15 hover:bg-white/20'
                           }`}
                         >
                           {o.etiqueta}
@@ -1695,7 +1695,7 @@ export default function ConfiguracionPreciosPage() {
                 </div>
 
                 <div>
-                  <span className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E8CFC8] mb-1.5">
+                  <span className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E4E4E7] mb-1.5">
                     Densidad
                   </span>
                   <div className="grid grid-cols-3 gap-1.5">
@@ -1708,8 +1708,8 @@ export default function ConfiguracionPreciosPage() {
                           onClick={() => setSimDensidad(o.valor)}
                           className={`min-h-[42px] px-2 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                             active
-                              ? 'bg-[#FAF7F5] text-[#3B0D1E] border-[#FAF7F5]'
-                              : 'bg-white/10 text-[#FAF7F5] border-white/15 hover:bg-white/20'
+                              ? 'bg-[#FAFAFA] text-[#111111] border-[#FAFAFA]'
+                              : 'bg-white/10 text-white border-white/15 hover:bg-white/20'
                           }`}
                         >
                           {o.etiqueta}
@@ -1720,7 +1720,7 @@ export default function ConfiguracionPreciosPage() {
                 </div>
 
                 <div>
-                  <span className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E8CFC8] mb-1.5">
+                  <span className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E4E4E7] mb-1.5">
                     Estado de la fibra
                   </span>
                   <div className="grid grid-cols-2 gap-1.5">
@@ -1733,8 +1733,8 @@ export default function ConfiguracionPreciosPage() {
                           onClick={() => setSimEstado(o.valor)}
                           className={`min-h-[42px] px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                             active
-                              ? 'bg-[#FAF7F5] text-[#3B0D1E] border-[#FAF7F5]'
-                              : 'bg-white/10 text-[#FAF7F5] border-white/15 hover:bg-white/20'
+                              ? 'bg-[#FAFAFA] text-[#111111] border-[#FAFAFA]'
+                              : 'bg-white/10 text-white border-white/15 hover:bg-white/20'
                           }`}
                         >
                           {o.etiqueta}
@@ -1745,7 +1745,7 @@ export default function ConfiguracionPreciosPage() {
                 </div>
 
                 <div>
-                  <span className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E8CFC8] mb-1.5">
+                  <span className="block font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E4E4E7] mb-1.5">
                     Porcentaje de canas
                   </span>
                   <div className="grid grid-cols-2 gap-1.5">
@@ -1758,8 +1758,8 @@ export default function ConfiguracionPreciosPage() {
                           onClick={() => setSimCanas(o.valor)}
                           className={`min-h-[42px] px-2.5 py-1.5 rounded-xl text-xs font-bold tabular-nums border transition-all cursor-pointer ${
                             active
-                              ? 'bg-[#FAF7F5] text-[#3B0D1E] border-[#FAF7F5]'
-                              : 'bg-white/10 text-[#FAF7F5] border-white/15 hover:bg-white/20'
+                              ? 'bg-[#FAFAFA] text-[#111111] border-[#FAFAFA]'
+                              : 'bg-white/10 text-white border-white/15 hover:bg-white/20'
                           }`}
                         >
                           {o.etiqueta}
@@ -1772,24 +1772,24 @@ export default function ConfiguracionPreciosPage() {
 
               {/* Tarjetas financieras del simulador */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-                <div className="p-3.5 rounded-2xl bg-white/10 border border-white/15">
-                  <div className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E8CFC8]">
+                <div className="p-3.5 rounded-xl bg-white/10 border border-white/15">
+                  <div className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E4E4E7]">
                     Precio al público
                   </div>
-                  <div className="font-display text-xl md:text-2xl font-bold text-[#FAF7F5] tabular-nums tracking-tight mt-1">
+                  <div className="font-display text-xl md:text-2xl font-bold text-white tabular-nums tracking-tight mt-1">
                     {formatearPrecioCop(simulacion.resPrecio.precioCalculado)}
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-white/10 border border-white/15">
-                  <div className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E8CFC8]">
+                <div className="p-3.5 rounded-xl bg-white/10 border border-white/15">
+                  <div className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E4E4E7]">
                     Química estimada
                   </div>
-                  <div className="font-display text-xl md:text-2xl font-bold text-[#FAF7F5] tabular-nums tracking-tight mt-1">
+                  <div className="font-display text-xl md:text-2xl font-bold text-white tabular-nums tracking-tight mt-1">
                     {formatearPrecioCop(simulacion.resCosto.costoTotal)}
                   </div>
                   {simulacion.resCosto.gramosTinte > 0 && (
-                    <div className="font-mono text-[11px] font-semibold text-[#E8CFC8] tabular-nums mt-1">
+                    <div className="font-mono text-[11px] font-semibold text-[#E4E4E7] tabular-nums mt-1">
                       {simulacion.resCosto.gramosTinte}g
                       {simulacion.usaOx
                         ? ` · ${simulacion.resCosto.mlOxidanteRedondeado}ml`
@@ -1798,43 +1798,43 @@ export default function ConfiguracionPreciosPage() {
                   )}
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-white/10 border border-white/15">
-                  <div className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E8CFC8]">
+                <div className="p-3.5 rounded-xl bg-white/10 border border-white/15">
+                  <div className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#E4E4E7]">
                     Comisión especialista
                   </div>
-                  <div className="font-display text-xl md:text-2xl font-bold text-[#FAF7F5] tabular-nums tracking-tight mt-1">
+                  <div className="font-display text-xl md:text-2xl font-bold text-white tabular-nums tracking-tight mt-1">
                     {formatearPrecioCop(simulacion.resComision.comision)}
                   </div>
                 </div>
 
                 <div
-                  className={`p-3.5 rounded-2xl border ${
+                  className={`p-3.5 rounded-xl border ${
                     simulacion.resComision.alertaMargenBajo
-                      ? 'bg-[#D97757]/25 border-[#D97757]/60'
-                      : 'bg-[#0D9488]/25 border-[#0D9488]/60'
+                      ? 'bg-[#B45309]/25 border-[#B45309]/60'
+                      : 'bg-[#15803D]/25 border-[#15803D]/60'
                   }`}
                 >
-                  <div className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#FAF7F5]">
+                  <div className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-white">
                     Utilidad neta salón
                   </div>
-                  <div className="font-display text-xl md:text-2xl font-bold text-[#FAF7F5] tabular-nums tracking-tight mt-1">
+                  <div className="font-display text-xl md:text-2xl font-bold text-white tabular-nums tracking-tight mt-1">
                     {formatearPrecioCop(simulacion.resComision.margenSalon)}
                   </div>
-                  <div className="font-mono text-xs font-semibold text-[#FAF7F5]/90 tabular-nums mt-0.5">
+                  <div className="font-mono text-xs font-semibold text-white/90 tabular-nums mt-0.5">
                     Margen: {simulacion.resComision.margenPorcentaje}%
                   </div>
                 </div>
               </div>
 
               {simulacion.resComision.alertaMargenBajo && (
-                <div className="p-4 rounded-2xl bg-[#FFF7F5] border border-[#D97757]/40 text-[#3B0D1E] text-xs leading-relaxed space-y-1">
-                  <div className="flex items-center gap-2 font-bold text-[#D97757]">
+                <div className="p-4 rounded-xl bg-[#FFFBEB] border border-[#B45309]/40 text-[#111111] text-xs leading-relaxed space-y-1">
+                  <div className="flex items-center gap-2 font-bold text-[#B45309]">
                     <AlertTriangle size={15} /> Margen neto inferior al 20%
                   </div>
                   {Number.isFinite(simulacion.resComision.precioSugeridoProteccion) && (
                     <div>
                       • Precio sugerido para proteger un margen mínimo del 20%:{' '}
-                      <strong className="tabular-nums text-[#3B0D1E]">
+                      <strong className="tabular-nums text-[#111111]">
                         {formatearPrecioCop(simulacion.resComision.precioSugeridoProteccion)}
                       </strong>
                       .
@@ -1842,7 +1842,7 @@ export default function ConfiguracionPreciosPage() {
                   )}
                   <div>
                     • Si liquidas la comisión descontando primero la química, al salón le quedarían{' '}
-                    <strong className="tabular-nums text-[#3B0D1E]">
+                    <strong className="tabular-nums text-[#111111]">
                       {formatearPrecioCop(simulacion.resComision.margenConComisionNeta)}
                     </strong>
                     .
@@ -1851,7 +1851,7 @@ export default function ConfiguracionPreciosPage() {
               )}
 
               {simulacion.avisos.length > 0 && (
-                <div className="text-xs text-[#E8CFC8] leading-relaxed">
+                <div className="text-xs text-[#E4E4E7] leading-relaxed">
                   {simulacion.avisos.map((a) => a.mensaje).join(' · ')}
                 </div>
               )}

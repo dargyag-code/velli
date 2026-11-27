@@ -1135,7 +1135,7 @@ function VelliWorkspaceInner() {
   const esSpecialist = orgActiva?.role === 'specialist';
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] pb-12">
+    <div className="min-h-screen bg-[#FAFAFA] text-[#111111] pb-12">
       {/* ── 1. HEADER SUPERIOR UNIFICADO (Sin barra inferior fija) ───────── */}
       <VelvetTopHeader
         nombreSalon={nombreSalon}
@@ -1149,7 +1149,7 @@ function VelliWorkspaceInner() {
       <main className="max-w-7xl mx-auto px-4 lg:px-8 py-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-xl lg:text-2xl font-bold text-[#3B0D1E] tracking-tight font-display">
+            <h1 className="text-xl lg:text-2xl font-bold text-[#111111] tracking-tight font-display">
               Workspace Maestro en Silla
             </h1>
             <p className="text-xs text-[#6E4F5D]">
@@ -1159,14 +1159,14 @@ function VelliWorkspaceInner() {
           </div>
 
           {/* Conmutador ?tab=cierre */}
-          <div className="inline-flex bg-white p-1.5 rounded-2xl border border-[#EFE8E4] shadow-sm self-start">
+          <div className="inline-flex bg-white p-1.5 rounded-xl border border-[#E4E4E7] shadow-sm self-start">
             <button
               type="button"
               onClick={() => setTab('cotizar')}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 tab === 'cotizar'
-                  ? 'bg-[#3B0D1E] text-[#FAF7F5] shadow-sm'
-                  : 'text-[#6E4F5D] hover:text-[#3B0D1E]'
+                  ? 'bg-[#111111] text-white shadow-sm'
+                  : 'text-[#6E4F5D] hover:text-[#111111]'
               }`}
             >
               Cotizar en Silla
@@ -1176,12 +1176,12 @@ function VelliWorkspaceInner() {
               onClick={() => setTab('cierre')}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 tab === 'cierre'
-                  ? 'bg-[#3B0D1E] text-[#FAF7F5] shadow-sm'
-                  : 'text-[#6E4F5D] hover:text-[#3B0D1E]'
+                  ? 'bg-[#111111] text-white shadow-sm'
+                  : 'text-[#6E4F5D] hover:text-[#111111]'
               }`}
             >
               Por Cobrar
-              <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-[#D97757] text-white font-bold tabular-nums">
+              <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-[#B45309] text-white font-bold tabular-nums">
                 {porCobrarCount}
               </span>
             </button>
@@ -1208,14 +1208,14 @@ function VelliWorkspaceInner() {
                ══════════════════════════════════════════════════════════════ */}
             <div className="lg:col-span-7 space-y-5">
               {/* ── TARJETA 1: 1. Clienta, Especialista y Servicio ───────── */}
-              <section className="bg-white rounded-2xl p-5 border border-[#EFE8E4] shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]">
+              <section className="bg-white rounded-xl p-5 border border-[#E4E4E7] ">
                 {/* Cabecera de Tarjeta 1 */}
                 <div className="flex items-center justify-between gap-2 mb-4">
                   <div className="flex items-center gap-2.5">
-                    <span className="w-6 h-6 rounded-full bg-[#3B0D1E] text-white text-xs font-bold flex items-center justify-center tabular-nums shrink-0">
+                    <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center tabular-nums shrink-0">
                       1
                     </span>
-                    <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E]">
+                    <h2 className="font-sans text-base font-bold tracking-tight text-[#111111]">
                       Clienta, Especialista y Servicio
                     </h2>
                   </div>
@@ -1226,12 +1226,12 @@ function VelliWorkspaceInner() {
                   {/* Columna A: CLIENTA EN SILLA */}
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <label className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                      <label className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                         CLIENTA EN SILLA
                       </label>
                       <Link
                         href="/clientas/nueva"
-                        className="font-sans text-[11px] font-bold text-[#7C3AED] hover:underline no-underline"
+                        className="font-sans text-[11px] font-bold text-[#111111] hover:underline no-underline"
                       >
                         + Nueva Clienta
                       </Link>
@@ -1251,8 +1251,8 @@ function VelliWorkspaceInner() {
                             onClick={() => elegirClientaExistente(c)}
                             className={`px-3 py-2 rounded-xl text-xs font-semibold border inline-flex items-center gap-1.5 transition-all cursor-pointer ${
                               seleccionada
-                                ? 'bg-[#3B0D1E] text-white border-[#3B0D1E] shadow-sm'
-                                : 'bg-[#FAF7F5] text-[#3B0D1E] border-[#EFE8E4] hover:bg-white hover:border-[#E8CFC8]'
+                                ? 'bg-[#111111] text-white border-[#111111] shadow-sm'
+                                : 'bg-[#FAFAFA] text-[#111111] border-[#E4E4E7] hover:bg-white hover:border-[#E4E4E7]'
                             }`}
                           >
                             <span className="truncate max-w-[125px] capitalize">{c.nombre}</span>
@@ -1260,7 +1260,7 @@ function VelliWorkspaceInner() {
                               className={`px-1.5 py-0.5 rounded-md font-mono text-[10px] font-bold ${
                                 seleccionada
                                   ? 'bg-white/20 text-white'
-                                  : 'bg-[#EFE8E4]/80 text-[#6B535C]'
+                                  : 'bg-[#E4E4E7]/80 text-[#52525B]'
                               }`}
                             >
                               {texturaBadge}
@@ -1274,8 +1274,8 @@ function VelliWorkspaceInner() {
                         onClick={activarClientaRapida}
                         className={`px-3 py-2 rounded-xl text-xs font-semibold border inline-flex items-center gap-1.5 transition-all cursor-pointer ${
                           modoClientaRapida || todasClientas.length === 0
-                            ? 'bg-[#3B0D1E] text-white border-[#3B0D1E] shadow-sm'
-                            : 'bg-[#FAF7F5] text-[#3B0D1E] border-[#EFE8E4] hover:bg-white hover:border-[#E8CFC8]'
+                            ? 'bg-[#111111] text-white border-[#111111] shadow-sm'
+                            : 'bg-[#FAFAFA] text-[#111111] border-[#E4E4E7] hover:bg-white hover:border-[#E4E4E7]'
                         }`}
                       >
                         <span>
@@ -1285,7 +1285,7 @@ function VelliWorkspaceInner() {
                           className={`px-1.5 py-0.5 rounded-md font-mono text-[10px] font-bold ${
                             modoClientaRapida || todasClientas.length === 0
                               ? 'bg-white/20 text-white'
-                              : 'bg-[#EFE8E4]/80 text-[#6B535C]'
+                              : 'bg-[#E4E4E7]/80 text-[#52525B]'
                           }`}
                         >
                           Express
@@ -1300,14 +1300,14 @@ function VelliWorkspaceInner() {
                           value={nombreClientaTexto}
                           onChange={(e) => setNombreClientaTexto(e.target.value)}
                           placeholder="Nombre clienta (opcional)"
-                          className="px-3 py-1.5 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] font-sans text-xs font-medium text-[#3B0D1E] placeholder-[#947C85] outline-none focus:border-[#3B0D1E]"
+                          className="px-3 py-1.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] font-sans text-xs font-medium text-[#111111] placeholder-[#71717A] outline-none focus:border-[#111111]"
                         />
                         <input
                           type="tel"
                           value={telefonoClientaTexto}
                           onChange={(e) => setTelefonoClientaTexto(e.target.value)}
                           placeholder="WhatsApp (opcional)"
-                          className="px-3 py-1.5 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] font-sans text-xs font-medium text-[#3B0D1E] placeholder-[#947C85] outline-none focus:border-[#3B0D1E] tabular-nums"
+                          className="px-3 py-1.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] font-sans text-xs font-medium text-[#111111] placeholder-[#71717A] outline-none focus:border-[#111111] tabular-nums"
                         />
                       </div>
                     )}
@@ -1316,13 +1316,13 @@ function VelliWorkspaceInner() {
                   {/* Columna B: ESPECIALISTA ASIGNADA */}
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <label className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                      <label className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                         ESPECIALISTA ASIGNADA
                       </label>
                       {!esSpecialist && (
                         <Link
                           href="/configuracion/precios"
-                          className="font-sans text-[11px] font-bold text-[#6B535C] hover:text-[#3B0D1E] no-underline"
+                          className="font-sans text-[11px] font-bold text-[#52525B] hover:text-[#111111] no-underline"
                         >
                           Equipo
                         </Link>
@@ -1330,7 +1330,7 @@ function VelliWorkspaceInner() {
                     </div>
 
                     {estilistas.length === 0 ? (
-                      <div className="px-3 py-2 rounded-xl bg-[#3B0D1E] text-white border border-[#3B0D1E] inline-flex items-center gap-1.5 text-xs font-semibold">
+                      <div className="px-3 py-2 rounded-xl bg-[#111111] text-white border border-[#111111] inline-flex items-center gap-1.5 text-xs font-semibold">
                         <span>Especialista Principal</span>
                         {!esSpecialist && (
                           <span className="font-mono text-[11px] bg-white/20 px-1.5 py-0.5 rounded-md tabular-nums">
@@ -1350,8 +1350,8 @@ function VelliWorkspaceInner() {
                               onClick={() => cambiarEstilista(est.id)}
                               className={`px-3 py-2 rounded-xl text-xs font-semibold border inline-flex items-center gap-1.5 transition-all cursor-pointer ${
                                 activa
-                                  ? 'bg-[#3B0D1E] text-white border-[#3B0D1E] shadow-sm'
-                                  : 'bg-[#FAF7F5] text-[#3B0D1E] border-[#EFE8E4] hover:bg-white hover:border-[#E8CFC8]'
+                                  ? 'bg-[#111111] text-white border-[#111111] shadow-sm'
+                                  : 'bg-[#FAFAFA] text-[#111111] border-[#E4E4E7] hover:bg-white hover:border-[#E4E4E7]'
                               }`}
                             >
                               <span className="capitalize">{est.nombre}</span>
@@ -1360,7 +1360,7 @@ function VelliWorkspaceInner() {
                                   className={`font-mono text-[11px] font-bold tabular-nums px-1.5 py-0.5 rounded-md ${
                                     activa
                                       ? 'bg-white/20 text-white'
-                                      : 'bg-[#EFE8E4]/80 text-[#6B535C]'
+                                      : 'bg-[#E4E4E7]/80 text-[#52525B]'
                                   }`}
                                 >
                                   {pctLabel}
@@ -1376,7 +1376,7 @@ function VelliWorkspaceInner() {
 
                 {/* Fila Inferior: PROCEDIMIENTO / SERVICIO BASE */}
                 <div>
-                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-2.5">
+                  <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-2.5">
                     PROCEDIMIENTO / SERVICIO BASE
                   </label>
 
@@ -1410,8 +1410,8 @@ function VelliWorkspaceInner() {
                           onClick={() => seleccionarServicio(srv)}
                           className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                             active
-                              ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E] shadow-md'
-                              : 'bg-[#FAF7F5] text-[#3B0D1E] border-[#EFE8E4] hover:bg-white hover:border-[#E8CFC8]'
+                              ? 'bg-[#111111] text-white border-[#111111] shadow-md'
+                              : 'bg-[#FAFAFA] text-[#111111] border-[#E4E4E7] hover:bg-white hover:border-[#E4E4E7]'
                           }`}
                         >
                           <div className="flex items-start justify-between gap-2">
@@ -1420,7 +1420,7 @@ function VelliWorkspaceInner() {
                             </span>
                             <span
                               className={`font-sans text-sm font-bold tabular-nums shrink-0 ${
-                                active ? 'text-[#FAF7F5]' : 'text-[#3B0D1E]'
+                                active ? 'text-white' : 'text-[#111111]'
                               }`}
                             >
                               {formatearPrecioCop(baseRef)}
@@ -1430,7 +1430,7 @@ function VelliWorkspaceInner() {
                           <div className="mt-2 flex items-center justify-between gap-2">
                             <span
                               className={`font-mono text-[11px] tabular-nums ${
-                                active ? 'text-[#E8CFC8]' : 'text-[#6B535C]'
+                                active ? 'text-[#E4E4E7]' : 'text-[#52525B]'
                               }`}
                             >
                               {`${gramosBaseSrv}${sufijoUnidadSrv} base`}
@@ -1439,8 +1439,8 @@ function VelliWorkspaceInner() {
                             <span
                               className={`px-2 py-0.5 rounded-md font-sans text-[10px] font-bold ${
                                 active
-                                  ? 'bg-white/15 text-[#E8CFC8]'
-                                  : 'bg-[#F5EBE8] text-[#6B535C]'
+                                  ? 'bg-white/15 text-[#E4E4E7]'
+                                  : 'bg-[#F4F4F5] text-[#52525B]'
                               }`}
                             >
                               {semSrv.requiereQuimico ? 'Químico / Decoloración' : semSrv.categoria}
@@ -1454,18 +1454,18 @@ function VelliWorkspaceInner() {
               </section>
 
               {/* ── TARJETA 2: 2. Diagnóstico Capilar Táctil + IA ────────── */}
-              <section className="bg-white rounded-2xl p-5 border border-[#EFE8E4] shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] space-y-4">
+              <section className="bg-white rounded-xl p-5 border border-[#E4E4E7]  space-y-4">
                 {/* Cabecera con Botón IA Destacado */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-start gap-2.5">
-                    <span className="w-6 h-6 rounded-full bg-[#3B0D1E] text-white text-xs font-bold flex items-center justify-center tabular-nums shrink-0 mt-0.5">
+                    <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center tabular-nums shrink-0 mt-0.5">
                       2
                     </span>
                     <div>
-                      <h2 className="font-sans text-base font-bold tracking-tight text-[#3B0D1E]">
+                      <h2 className="font-sans text-base font-bold tracking-tight text-[#111111]">
                         Diagnóstico Capilar Táctil + IA
                       </h2>
-                      <p className="font-sans text-xs text-[#6B535C]">
+                      <p className="font-sans text-xs text-[#52525B]">
                         Recalcula gramos, mililitros y tarifa en tiempo real
                       </p>
                     </div>
@@ -1488,7 +1488,7 @@ function VelliWorkspaceInner() {
                       }
                       setCamaraIAAbierta(true);
                     }}
-                    className="self-start sm:self-auto bg-[#F5F3FF] hover:bg-[#EDE9FE] text-[#7C3AED] border border-[#DDD6FE] px-3.5 py-2.5 rounded-xl text-xs font-bold inline-flex items-center gap-2 transition-colors cursor-pointer shrink-0"
+                    className="self-start sm:self-auto bg-[#F4F4F5] hover:bg-[#F4F4F5] text-[#111111] border border-[#E4E4E7] px-3.5 py-2.5 rounded-xl text-xs font-bold inline-flex items-center gap-2 transition-colors cursor-pointer shrink-0"
                   >
                     {tienePlanIA ? <Camera size={14} /> : <Lock size={14} />}
                     <span>Analizar Foto con IA (Claude Vision)</span>
@@ -1504,7 +1504,7 @@ function VelliWorkspaceInner() {
                 <div className="space-y-3.5">
                   {/* Longitud (grid-cols-4) */}
                   <div>
-                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                       Longitud
                     </label>
                     <div className="grid grid-cols-4 gap-2">
@@ -1524,14 +1524,14 @@ function VelliWorkspaceInner() {
                             }
                             className={`py-2.5 px-3 rounded-xl text-xs font-semibold border transition-all text-left cursor-pointer ${
                               active
-                                ? 'bg-[#3B0D1E] text-white border-[#3B0D1E] shadow-sm'
-                                : 'bg-[#FAF7F5] text-[#3B0D1E] border-[#EFE8E4] hover:bg-white hover:border-[#E8CFC8]'
+                                ? 'bg-[#111111] text-white border-[#111111] shadow-sm'
+                                : 'bg-[#FAFAFA] text-[#111111] border-[#E4E4E7] hover:bg-white hover:border-[#E4E4E7]'
                             }`}
                           >
                             <div className="font-bold leading-tight truncate">{item.etiqueta}</div>
                             <div
                               className={`mt-0.5 font-mono text-[10px] tabular-nums ${
-                                active ? 'text-[#E8CFC8]' : 'text-[#6B535C]'
+                                active ? 'text-[#E4E4E7]' : 'text-[#52525B]'
                               }`}
                             >
                               {formatearMontoCortoCop(deltaCop)} · {factor}x
@@ -1544,7 +1544,7 @@ function VelliWorkspaceInner() {
 
                   {/* Densidad (grid-cols-3) */}
                   <div>
-                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                       Densidad
                     </label>
                     <div className="grid grid-cols-3 gap-2">
@@ -1564,14 +1564,14 @@ function VelliWorkspaceInner() {
                             }
                             className={`py-2.5 px-3 rounded-xl text-xs font-semibold border transition-all text-left cursor-pointer ${
                               active
-                                ? 'bg-[#3B0D1E] text-white border-[#3B0D1E] shadow-sm'
-                                : 'bg-[#FAF7F5] text-[#3B0D1E] border-[#EFE8E4] hover:bg-white hover:border-[#E8CFC8]'
+                                ? 'bg-[#111111] text-white border-[#111111] shadow-sm'
+                                : 'bg-[#FAFAFA] text-[#111111] border-[#E4E4E7] hover:bg-white hover:border-[#E4E4E7]'
                             }`}
                           >
                             <div className="font-bold leading-tight">{item.etiqueta}</div>
                             <div
                               className={`mt-0.5 font-mono text-[10px] tabular-nums ${
-                                active ? 'text-[#E8CFC8]' : 'text-[#6B535C]'
+                                active ? 'text-[#E4E4E7]' : 'text-[#52525B]'
                               }`}
                             >
                               {formatearMontoCortoCop(deltaCop)} · {factor}x
@@ -1584,7 +1584,7 @@ function VelliWorkspaceInner() {
 
                   {/* Porosidad (grid-cols-3) */}
                   <div>
-                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                       Porosidad
                     </label>
                     <div className="grid grid-cols-3 gap-2">
@@ -1609,8 +1609,8 @@ function VelliWorkspaceInner() {
                             }
                             className={`py-2.5 px-3 rounded-xl text-xs font-semibold border transition-all text-left cursor-pointer ${
                               active
-                                ? 'bg-[#3B0D1E] text-white border-[#3B0D1E] shadow-sm'
-                                : 'bg-[#FAF7F5] text-[#3B0D1E] border-[#EFE8E4] hover:bg-white hover:border-[#E8CFC8]'
+                                ? 'bg-[#111111] text-white border-[#111111] shadow-sm'
+                                : 'bg-[#FAFAFA] text-[#111111] border-[#E4E4E7] hover:bg-white hover:border-[#E4E4E7]'
                             }`}
                           >
                             <div className="font-bold leading-tight truncate">
@@ -1618,7 +1618,7 @@ function VelliWorkspaceInner() {
                             </div>
                             <div
                               className={`mt-0.5 font-mono text-[10px] tabular-nums ${
-                                active ? 'text-[#E8CFC8]' : 'text-[#6B535C]'
+                                active ? 'text-[#E4E4E7]' : 'text-[#52525B]'
                               }`}
                             >
                               {formatearMontoCortoCop(deltaCop)} · {tagAditivo}
@@ -1631,12 +1631,12 @@ function VelliWorkspaceInner() {
 
                   {/* Canas (grid-cols-4) */}
                   <div>
-                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                       Porcentaje de Canas
                     </label>
 
                     {derivacion.canasPorPrecisar && (
-                      <div className="mb-2.5 p-3 rounded-xl bg-[#FAF7F5] border border-[#E8CFC8]">
+                      <div className="mb-2.5 p-3 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7]">
                         <SelectorTramoCanas
                           valor={
                             desempateCanas === '50_75'
@@ -1675,14 +1675,14 @@ function VelliWorkspaceInner() {
                             }}
                             className={`py-2.5 px-3 rounded-xl text-xs font-semibold border transition-all text-left cursor-pointer tabular-nums ${
                               active
-                                ? 'bg-[#3B0D1E] text-white border-[#3B0D1E] shadow-sm'
-                                : 'bg-[#FAF7F5] text-[#3B0D1E] border-[#EFE8E4] hover:bg-white hover:border-[#E8CFC8]'
+                                ? 'bg-[#111111] text-white border-[#111111] shadow-sm'
+                                : 'bg-[#FAFAFA] text-[#111111] border-[#E4E4E7] hover:bg-white hover:border-[#E4E4E7]'
                             }`}
                           >
                             <div className="font-bold leading-tight">{item.etiqueta}</div>
                             <div
                               className={`mt-0.5 font-mono text-[10px] tabular-nums ${
-                                active ? 'text-[#E8CFC8]' : 'text-[#6B535C]'
+                                active ? 'text-[#E4E4E7]' : 'text-[#52525B]'
                               }`}
                             >
                               {formatearMontoCortoCop(deltaCop)} · {factor}x
@@ -1695,9 +1695,9 @@ function VelliWorkspaceInner() {
                 </div>
 
                 {/* Sección Inferior: Guardarraíles Clínicos (lib/color/reglas.ts) */}
-                <div className="pt-3 border-t border-[#EFE8E4] space-y-3">
+                <div className="pt-3 border-t border-[#E4E4E7] space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                    <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                       Guardarraíles Clínicos (lib/color/reglas.ts)
                     </span>
                   </div>
@@ -1712,14 +1712,14 @@ function VelliWorkspaceInner() {
                       }}
                       className={`py-2.5 px-3 rounded-xl text-xs font-semibold border transition-all text-left flex items-center justify-between gap-1.5 cursor-pointer ${
                         hennaActiva
-                          ? 'bg-[#FFF7F5] border-[#D97757] text-[#D97757]'
-                          : 'bg-[#FAF7F5] text-[#3B0D1E] border-[#EFE8E4] hover:bg-white'
+                          ? 'bg-[#FFFBEB] border-[#B45309] text-[#B45309]'
+                          : 'bg-[#FAFAFA] text-[#111111] border-[#E4E4E7] hover:bg-white'
                       }`}
                     >
                       <span className="leading-snug">Henna / Sales Metálicas</span>
                       <ShieldAlert
                         size={14}
-                        className={`shrink-0 ${hennaActiva ? 'text-[#D97757]' : 'text-[#947C85]'}`}
+                        className={`shrink-0 ${hennaActiva ? 'text-[#B45309]' : 'text-[#71717A]'}`}
                       />
                     </button>
 
@@ -1731,15 +1731,15 @@ function VelliWorkspaceInner() {
                       }}
                       className={`py-2.5 px-3 rounded-xl text-xs font-semibold border transition-all text-left flex items-center justify-between gap-1.5 cursor-pointer ${
                         elasticidadActiva
-                          ? 'bg-[#FFF7F5] border-[#D97757] text-[#D97757]'
-                          : 'bg-[#FAF7F5] text-[#3B0D1E] border-[#EFE8E4] hover:bg-white'
+                          ? 'bg-[#FFFBEB] border-[#B45309] text-[#B45309]'
+                          : 'bg-[#FAFAFA] text-[#111111] border-[#E4E4E7] hover:bg-white'
                       }`}
                     >
                       <span className="leading-snug">Elasticidad Baja / Tricoptilosis</span>
                       <ShieldAlert
                         size={14}
                         className={`shrink-0 ${
-                          elasticidadActiva ? 'bg-[#D97757]' : 'text-[#947C85]'
+                          elasticidadActiva ? 'bg-[#B45309]' : 'text-[#71717A]'
                         }`}
                       />
                     </button>
@@ -1752,44 +1752,44 @@ function VelliWorkspaceInner() {
                       }}
                       className={`py-2.5 px-3 rounded-xl text-xs font-semibold border transition-all text-left flex items-center justify-between gap-1.5 cursor-pointer ${
                         cueroIrritadoActivo
-                          ? 'bg-[#FFF7F5] border-[#D97757] text-[#D97757]'
-                          : 'bg-[#FAF7F5] text-[#3B0D1E] border-[#EFE8E4] hover:bg-white'
+                          ? 'bg-[#FFFBEB] border-[#B45309] text-[#B45309]'
+                          : 'bg-[#FAFAFA] text-[#111111] border-[#E4E4E7] hover:bg-white'
                       }`}
                     >
                       <span className="leading-snug">Cuero Cabelludo Irritado</span>
                       <ShieldAlert
                         size={14}
                         className={`shrink-0 ${
-                          cueroIrritadoActivo ? 'text-[#D97757]' : 'text-[#947C85]'
+                          cueroIrritadoActivo ? 'text-[#B45309]' : 'text-[#71717A]'
                         }`}
                       />
                     </button>
                   </div>
 
-                  {/* Banner de bloqueo en #FFF7F5 con borde #D97757 y botón Prueba de Mechón Superada */}
+                  {/* Banner de bloqueo en #FFFBEB con borde #B45309 y botón Prueba de Mechón Superada */}
                   {hayGuardarrailesActivos && (
                     <div
                       className={`rounded-xl p-3.5 border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                         pruebaMechonSuperada && !bloqueoServicioSeleccionado
-                          ? 'bg-[#F0FDFA] border-[#0D9488]/40'
-                          : 'bg-[#FFF7F5] border-[#D97757]'
+                          ? 'bg-[#F0FDF4] border-[#15803D]/40'
+                          : 'bg-[#FFFBEB] border-[#B45309]'
                       }`}
                     >
                       <div className="flex items-start gap-2.5">
                         {pruebaMechonSuperada && !bloqueoServicioSeleccionado ? (
-                          <ShieldCheck size={18} className="text-[#0D9488] shrink-0 mt-0.5" />
+                          <ShieldCheck size={18} className="text-[#15803D] shrink-0 mt-0.5" />
                         ) : (
-                          <ShieldAlert size={18} className="text-[#D97757] shrink-0 mt-0.5" />
+                          <ShieldAlert size={18} className="text-[#B45309] shrink-0 mt-0.5" />
                         )}
                         <div>
-                          <p className="font-sans text-xs font-bold text-[#3B0D1E]">
+                          <p className="font-sans text-xs font-bold text-[#111111]">
                             {bloqueoServicioSeleccionado
                               ? bloqueoServicioSeleccionado.titulo
                               : pruebaMechonSuperada
                                 ? 'Prueba de mechón registrada y superada en silla'
                                 : 'Protocolo preventivo activo en servicio químico'}
                           </p>
-                          <p className="font-sans text-[11px] text-[#6B535C] mt-0.5 leading-relaxed">
+                          <p className="font-sans text-[11px] text-[#52525B] mt-0.5 leading-relaxed">
                             {bloqueoServicioSeleccionado
                               ? bloqueoServicioSeleccionado.mensaje
                               : pruebaMechonSuperada
@@ -1806,8 +1806,8 @@ function VelliWorkspaceInner() {
                             onClick={() => setPruebaMechonSuperada((v) => !v)}
                             className={`px-3.5 py-2 rounded-xl font-sans text-xs font-bold inline-flex items-center justify-center gap-1.5 shrink-0 transition-all cursor-pointer ${
                               pruebaMechonSuperada
-                                ? 'bg-[#0D9488] text-white shadow-sm'
-                                : 'bg-white border border-[#0D9488] text-[#0D9488] hover:bg-[#F0FDFA]'
+                                ? 'bg-[#15803D] text-white shadow-sm'
+                                : 'bg-white border border-[#15803D] text-[#15803D] hover:bg-[#F0FDF4]'
                             }`}
                           >
                             <ShieldCheck size={14} />
@@ -1822,9 +1822,9 @@ function VelliWorkspaceInner() {
                       {avisosEstandar.map((av) => (
                         <div
                           key={av.codigo}
-                          className="px-3 py-2 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] flex items-center gap-2 text-[11px] text-[#6B535C]"
+                          className="px-3 py-2 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] flex items-center gap-2 text-[11px] text-[#52525B]"
                         >
-                          <Info size={13} className="text-[#3B0D1E] shrink-0" />
+                          <Info size={13} className="text-[#111111] shrink-0" />
                           <span>{av.mensaje}</span>
                         </div>
                       ))}
@@ -1838,28 +1838,28 @@ function VelliWorkspaceInner() {
                 COLUMNA DERECHA (5 cols): TICKET FINANCIERO (sticky top-24)
                ══════════════════════════════════════════════════════════════ */}
             <div className="lg:col-span-5 lg:sticky lg:top-24">
-              <div className="bg-white rounded-3xl border border-[#EFE8E4] overflow-hidden shadow-[0_10px_30px_-5px_rgba(59,13,30,0.08)]">
+              <div className="bg-white rounded-xl border border-[#E4E4E7] overflow-hidden ">
                 {/* 1. Cabecera Ciruela */}
-                <div className="bg-[#3B0D1E] text-[#FAF7F5] p-6">
+                <div className="bg-[#111111] text-white p-6">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-sans text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.08em] text-[#E8CFC8]">
+                    <span className="font-sans text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.08em] text-[#E4E4E7]">
                       MOTOR FINANCIERO SIN BÁSCULA
                     </span>
-                    <span className="bg-white/10 px-2.5 py-1 rounded-full text-[11px] font-mono text-[#FAF7F5]">
+                    <span className="bg-white/10 px-2.5 py-1 rounded-full text-[11px] font-mono text-white">
                       PRECIO PÚBLICO SUGERIDO
                     </span>
                   </div>
 
                   <div className="mt-3 flex items-end justify-between gap-3">
-                    <div className="font-display text-3xl font-bold tabular-nums tracking-tight text-[#FAF7F5]">
+                    <div className="font-display text-3xl font-bold tabular-nums tracking-tight text-white">
                       {formatearPrecioCop(precioCotizadoFinal)}
                     </div>
 
                     <div className="text-right min-w-0">
-                      <p className="font-sans text-xs font-bold !text-[#FAF7F5] truncate capitalize">
+                      <p className="font-sans text-xs font-bold !text-white truncate capitalize">
                         {servicioActual?.nombre ?? 'Servicio'}
                       </p>
-                      <p className="font-sans text-[11px] text-[#E8CFC8] truncate mt-0.5">
+                      <p className="font-sans text-[11px] text-[#E4E4E7] truncate mt-0.5">
                         {resumenVariablesTicket}
                       </p>
                     </div>
@@ -1870,14 +1870,14 @@ function VelliWorkspaceInner() {
                 <div className="p-6 space-y-4">
                   {/* Desglose superior (2 filas simples antes de la caja violeta) */}
                   <div className="space-y-2 text-xs">
-                    <div className="flex items-center justify-between text-[#6B535C]">
+                    <div className="flex items-center justify-between text-[#52525B]">
                       <span>Tarifa Base Servicio</span>
-                      <span className="font-semibold text-[#3B0D1E] tabular-nums">
+                      <span className="font-semibold text-[#111111] tabular-nums">
                         {formatearPrecioCop(precioBaseActual)}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-[#6B535C]">
+                    <div className="flex items-center justify-between text-[#52525B]">
                       <span className="inline-flex items-center gap-1.5">
                         <span>Recargos Diagnóstico (Longitud/Densidad)</span>
                         <button
@@ -1886,24 +1886,24 @@ function VelliWorkspaceInner() {
                           title="Ajuste comercial opcional en silla"
                           className={`px-1.5 py-0.5 rounded-md border text-[10px] font-bold inline-flex items-center gap-1 cursor-pointer transition-colors ${
                             mostrarAjusteComercial || ajustePorcentaje !== 0 || modoPrecioManual
-                              ? 'bg-[#3B0D1E] text-white border-[#3B0D1E]'
-                              : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:text-[#3B0D1E]'
+                              ? 'bg-[#111111] text-white border-[#111111]'
+                              : 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7] hover:text-[#111111]'
                           }`}
                         >
                           <SlidersHorizontal size={10} />
                           <span>%</span>
                         </button>
                       </span>
-                      <span className="font-semibold text-[#3B0D1E] tabular-nums">
+                      <span className="font-semibold text-[#111111] tabular-nums">
                         {recargosDiagnosticoCop >= 0 ? '+' : '-'}
                         {formatearPrecioCop(Math.abs(recargosDiagnosticoCop))}
                       </span>
                     </div>
 
                     {mostrarAjusteComercial && (
-                      <div className="pt-2 pb-1 px-3 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] space-y-2">
+                      <div className="pt-2 pb-1 px-3 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                          <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                             Ajuste comercial en silla
                           </span>
                           <button
@@ -1912,7 +1912,7 @@ function VelliWorkspaceInner() {
                               setModoPrecioManual((v) => !v);
                               if (modoPrecioManual) setPrecioManualTexto('');
                             }}
-                            className="font-sans text-[11px] font-bold text-[#7C3AED] hover:underline cursor-pointer"
+                            className="font-sans text-[11px] font-bold text-[#111111] hover:underline cursor-pointer"
                           >
                             {modoPrecioManual ? 'Usar %' : 'Valor manual'}
                           </button>
@@ -1927,8 +1927,8 @@ function VelliWorkspaceInner() {
                                 onClick={() => setAjustePorcentaje(pct)}
                                 className={`py-1.5 rounded-lg border font-mono text-[10px] font-bold tabular-nums cursor-pointer ${
                                   ajustePorcentaje === pct
-                                    ? 'bg-[#3B0D1E] text-white border-[#3B0D1E]'
-                                    : 'bg-white text-[#6B535C] border-[#EFE8E4]'
+                                    ? 'bg-[#111111] text-white border-[#111111]'
+                                    : 'bg-white text-[#52525B] border-[#E4E4E7]'
                                 }`}
                               >
                                 {pct > 0 ? `+${pct}%` : `${pct}%`}
@@ -1945,14 +1945,14 @@ function VelliWorkspaceInner() {
                                 setPrecioManualTexto(e.target.value.replace(/[^\d]/g, ''))
                               }
                               placeholder={String(calculoPrecio?.precioCalculado ?? 180000)}
-                              className="px-2.5 py-1.5 rounded-lg bg-white border border-[#EFE8E4] font-sans text-xs font-bold text-[#3B0D1E] outline-none tabular-nums"
+                              className="px-2.5 py-1.5 rounded-lg bg-white border border-[#E4E4E7] font-sans text-xs font-bold text-[#111111] outline-none tabular-nums"
                             />
                             <input
                               type="text"
                               value={motivoManual}
                               onChange={(e) => setMotivoManual(e.target.value)}
                               placeholder="Motivo del ajuste"
-                              className="px-2.5 py-1.5 rounded-lg bg-white border border-[#EFE8E4] font-sans text-xs text-[#3B0D1E] placeholder-[#947C85] outline-none"
+                              className="px-2.5 py-1.5 rounded-lg bg-white border border-[#E4E4E7] font-sans text-xs text-[#111111] placeholder-[#71717A] outline-none"
                             />
                           </div>
                         )}
@@ -1961,38 +1961,38 @@ function VelliWorkspaceInner() {
                   </div>
 
                   {/* Caja de Dosificación Sin Báscula (oculta costos internos para specialist) */}
-                  <div className="bg-[#F5F3FF] border border-[#DDD6FE] rounded-2xl p-4 space-y-3">
+                  <div className="bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl p-4 space-y-3">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="inline-flex items-center gap-1.5 font-sans text-[11px] font-bold uppercase tracking-[0.06em] text-[#7C3AED]">
+                      <span className="inline-flex items-center gap-1.5 font-sans text-[11px] font-semibold uppercase tracking-[0.06em] text-[#111111]">
                         <FlaskConical size={14} />
                         <span>
                           {esSpecialist
-                            ? 'DOSIFICACIÓN OPERATIVA SIN BÁSCULA'
-                            : 'CÁLCULO QUÍMICO SIN BÁSCULA'}
+                            ? 'Dosificación en silla · Sin báscula'
+                            : 'Dosificación química · Sin báscula'}
                         </span>
                       </span>
-                      <span className="px-2 py-0.5 rounded-md bg-white border border-[#DDD6FE] font-mono text-[10px] font-bold text-[#7C3AED]">
-                        {esSpecialist ? 'MEZCLA EN SILLA' : 'LIB/COSTO.TS'}
+                      <span className="px-2 py-0.5 rounded-lg bg-white border border-[#E4E4E7] font-sans text-[11px] font-medium text-[#52525B]">
+                        Mezcla en silla
                       </span>
                     </div>
 
-                    <div className="bg-white rounded-xl p-2.5 border border-[#EDE9FE] flex items-center justify-between gap-2">
+                    <div className="bg-white rounded-xl p-2.5 border border-[#F4F4F5] flex items-center justify-between gap-2">
                       <div className="min-w-0">
-                        <span className="block font-sans text-[11px] text-[#6B535C]">
+                        <span className="block font-sans text-[11px] text-[#52525B]">
                           Fórmula estimada (g / ml)
                         </span>
                         <div className="flex items-baseline flex-wrap gap-1.5 mt-0.5">
-                          <span className="font-mono text-lg font-bold text-[#7C3AED] tabular-nums">
+                          <span className="font-mono text-lg font-bold text-[#111111] tabular-nums">
                             {Math.round(calculoCosto.gramosTinte)}
                             {semillaActual.unidadFisica === 'onza_30ml' ? 'ml' : 'g'}
                           </span>
                           {semillaActual.ratioPeroxido > 0 && (
-                            <span className="font-mono text-xs font-semibold text-[#6B535C] tabular-nums">
+                            <span className="font-mono text-xs font-semibold text-[#52525B] tabular-nums">
                               + {calculoCosto.mlOxidanteRedondeado}ml
                             </span>
                           )}
                           {!esSpecialist && (
-                            <span className="font-mono text-[11px] text-[#947C85] tabular-nums">
+                            <span className="font-mono text-[11px] text-[#71717A] tabular-nums">
                               ({formatearPrecioCop(Math.round(costoPorGramoRef))}/
                               {semillaActual.unidadFisica === 'onza_30ml' ? 'ml' : 'g'})
                             </span>
@@ -2002,7 +2002,7 @@ function VelliWorkspaceInner() {
                               type="button"
                               onClick={() => setDeltaGramosSilla(0)}
                               title="Restablecer gramos teóricos"
-                              className="inline-flex items-center gap-0.5 font-mono text-[10px] font-bold text-[#D97757] hover:underline cursor-pointer tabular-nums"
+                              className="inline-flex items-center gap-0.5 font-mono text-[10px] font-bold text-[#B45309] hover:underline cursor-pointer tabular-nums"
                             >
                               <RotateCcw size={10} />
                               {deltaGramosSilla > 0
@@ -2017,7 +2017,7 @@ function VelliWorkspaceInner() {
                           {ticketVivo.equivalenciaFisica}
                         </p>
                         {!esSpecialist && (
-                          <p className="font-mono text-[10px] text-[#7C3AED] font-semibold tabular-nums mt-0.5">
+                          <p className="font-mono text-[10px] text-[#111111] font-semibold tabular-nums mt-0.5">
                             Químico {formatearPrecioCop(ticketVivo.subtotalQuimicoPrincipalCop)}
                             {semillaActual.ratioPeroxido > 0
                               ? ` + Peróxido ${formatearPrecioCop(ticketVivo.subtotalPeroxidoCop)} ($32/ml)`
@@ -2036,7 +2036,7 @@ function VelliWorkspaceInner() {
                             )
                           }
                           aria-label="Restar 5 gramos"
-                          className="px-2.5 py-1.5 rounded-lg bg-[#F5F3FF] hover:bg-[#EDE9FE] text-[#7C3AED] font-mono text-xs font-bold tabular-nums transition-colors cursor-pointer"
+                          className="px-2.5 py-1.5 rounded-lg bg-[#F4F4F5] hover:bg-[#F4F4F5] text-[#111111] font-mono text-xs font-bold tabular-nums transition-colors cursor-pointer"
                         >
                           -5g
                         </button>
@@ -2044,7 +2044,7 @@ function VelliWorkspaceInner() {
                           type="button"
                           onClick={() => setDeltaGramosSilla((prev) => prev + 5)}
                           aria-label="Sumar 5 gramos"
-                          className="px-2.5 py-1.5 rounded-lg bg-[#F5F3FF] hover:bg-[#EDE9FE] text-[#7C3AED] font-mono text-xs font-bold tabular-nums transition-colors cursor-pointer"
+                          className="px-2.5 py-1.5 rounded-lg bg-[#F4F4F5] hover:bg-[#F4F4F5] text-[#111111] font-mono text-xs font-bold tabular-nums transition-colors cursor-pointer"
                         >
                           +5g
                         </button>
@@ -2052,11 +2052,11 @@ function VelliWorkspaceInner() {
                     </div>
 
                     {!esSpecialist && (
-                      <div className="border-t border-[#DDD6FE] pt-2 flex items-center justify-between text-xs">
-                        <span className="font-sans font-semibold text-[#3B0D1E]">
+                      <div className="border-t border-[#E4E4E7] pt-2 flex items-center justify-between text-xs">
+                        <span className="font-sans font-semibold text-[#111111]">
                           Costo Químico Descontado
                         </span>
-                        <span className="font-mono font-bold text-[#7C3AED] tabular-nums">
+                        <span className="font-mono font-bold text-[#111111] tabular-nums">
                           -{formatearPrecioCop(calculoCosto.costoTotal)}
                         </span>
                       </div>
@@ -2068,40 +2068,40 @@ function VelliWorkspaceInner() {
                     <>
                       <div className="px-1 py-1 flex justify-between items-center gap-3">
                         <div>
-                          <p className="font-sans text-xs font-bold text-[#3B0D1E]">
+                          <p className="font-sans text-xs font-bold text-[#111111]">
                             Comisión Especialista (
                             <span className="capitalize">
                               {estSeleccionadaObj?.nombre ?? 'Especialista Principal'}
                             </span>{' '}
                             · {etiquetaPctEstilistaActiva})
                           </p>
-                          <p className="font-sans text-[11px] text-[#6B535C]">
+                          <p className="font-sans text-[11px] text-[#52525B]">
                             {etiquetaPctEstilistaActiva} sobre base libre de química
                           </p>
                         </div>
-                        <span className="font-semibold text-[#D97757] tabular-nums text-xs sm:text-sm shrink-0">
+                        <span className="font-semibold text-[#B45309] tabular-nums text-xs sm:text-sm shrink-0">
                           -{formatearPrecioCop(calculoComision.comision)}
                         </span>
                       </div>
 
                       <div
-                        className={`rounded-2xl p-4 border flex items-center justify-between gap-3 ${
+                        className={`rounded-xl p-4 border flex items-center justify-between gap-3 ${
                           esRentabilidadOptima
-                            ? 'bg-[#F0FDFA] border-[#CCFBF1]'
-                            : 'bg-[#FFF7F5] border-[#D97757]/40'
+                            ? 'bg-[#F0FDF4] border-[#BBF7D0]'
+                            : 'bg-[#FFFBEB] border-[#B45309]/40'
                         }`}
                       >
                         <div>
                           <span
                             className={`block font-sans text-[11px] font-bold uppercase ${
-                              esRentabilidadOptima ? 'text-[#0D9488]' : 'text-[#D97757]'
+                              esRentabilidadOptima ? 'text-[#15803D]' : 'text-[#B45309]'
                             }`}
                           >
                             UTILIDAD NETA REAL DEL SALÓN
                           </span>
                           <div
                             className={`font-display text-2xl font-bold tabular-nums mt-0.5 ${
-                              esRentabilidadOptima ? 'text-[#0D9488]' : 'text-[#D97757]'
+                              esRentabilidadOptima ? 'text-[#15803D]' : 'text-[#B45309]'
                             }`}
                           >
                             {formatearPrecioCop(calculoComision.margenSalon)}
@@ -2111,12 +2111,12 @@ function VelliWorkspaceInner() {
                         <div className="text-right shrink-0">
                           <span
                             className={`inline-block px-2.5 py-1 rounded-lg text-xs font-bold tabular-nums text-white ${
-                              esRentabilidadOptima ? 'bg-[#0D9488]' : 'bg-[#D97757]'
+                              esRentabilidadOptima ? 'bg-[#15803D]' : 'bg-[#B45309]'
                             }`}
                           >
                             Margen Neto: {margenPctEntero}%
                           </span>
-                          <span className="block font-sans text-[11px] text-[#6B535C] mt-1">
+                          <span className="block font-sans text-[11px] text-[#52525B] mt-1">
                             {esRentabilidadOptima
                               ? 'Sembrado financiero activo'
                               : `Sugerido 35%: ${formatearPrecioCop(ticketVivo.tarifaCalibradaSugeridaCop)}`}
@@ -2132,7 +2132,7 @@ function VelliWorkspaceInner() {
                       type="button"
                       onClick={() => handleConfirmarCotizacion('whatsapp')}
                       disabled={guardandoModo !== null || Boolean(bloqueoServicioSeleccionado)}
-                      className="w-full py-3.5 px-4 rounded-xl bg-[#3B0D1E] hover:bg-[#52142B] disabled:opacity-50 text-[#FAF7F5] font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full py-3.5 px-4 rounded-xl bg-[#111111] hover:bg-[#27272A] disabled:opacity-50 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <MessageCircle size={15} />
                       <span>
@@ -2146,9 +2146,9 @@ function VelliWorkspaceInner() {
                       type="button"
                       onClick={() => handleConfirmarCotizacion('cierre')}
                       disabled={guardandoModo !== null || Boolean(bloqueoServicioSeleccionado)}
-                      className="w-full py-3 px-4 rounded-xl bg-[#FAF7F5] hover:bg-[#EFE8E4] disabled:opacity-50 text-[#3B0D1E] border border-[#EFE8E4] font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full py-3 px-4 rounded-xl bg-[#FAFAFA] hover:bg-[#E4E4E7] disabled:opacity-50 text-[#111111] border border-[#E4E4E7] font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <CheckCircle2 size={15} className="text-[#0D9488]" />
+                      <CheckCircle2 size={15} className="text-[#15803D]" />
                       <span>
                         {guardandoModo === 'cierre'
                           ? 'Pasando a Por Cobrar…'
@@ -2165,17 +2165,17 @@ function VelliWorkspaceInner() {
 
       {/* Modal opcional de Cámara IA Capilar */}
       {camaraIAAbierta && (
-        <div className="fixed inset-0 z-50 bg-[#1F050F]/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="w-full max-w-lg bg-white rounded-3xl border border-[#EFE8E4] overflow-hidden shadow-[0_24px_60px_-12px_rgba(59,13,30,0.3)]">
-            <div className="px-5 py-4 bg-[#3B0D1E] text-[#FAF7F5] flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-[#111111]/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="w-full max-w-lg bg-white rounded-xl border border-[#E4E4E7] overflow-hidden ">
+            <div className="px-5 py-4 bg-[#111111] text-white flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles size={16} className="text-[#E8CFC8]" />
+                <Sparkles size={16} className="text-[#E4E4E7]" />
                 <span className="font-sans text-sm font-bold">Asistente Visual IA Capilar</span>
               </div>
               <button
                 type="button"
                 onClick={() => setCamaraIAAbierta(false)}
-                className="min-w-[40px] min-h-[40px] rounded-full flex items-center justify-center text-[#E8CFC8] hover:text-white cursor-pointer"
+                className="min-w-[40px] min-h-[40px] rounded-full flex items-center justify-center text-[#E4E4E7] hover:text-white cursor-pointer"
                 aria-label="Cerrar cámara"
               >
                 <X size={18} />
@@ -2200,8 +2200,8 @@ export default function VelliVelvetStudioPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#FAF7F5] flex items-center justify-center font-sans text-sm text-[#6B535C]">
-          Cargando Velli Business Intelligence…
+        <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center font-sans text-sm text-[#52525B]">
+          Cargando Veli…
         </div>
       }
     >

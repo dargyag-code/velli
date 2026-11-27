@@ -1,14 +1,14 @@
-// ── URL pública de la app y correo de soporte ──────────────────────────────
-// Un solo lugar para el dominio y el correo: metadatos (vistas previas en
-// WhatsApp y redes), pie de los PDF, Configuración y textos legales. Velli no
-// tiene dominio propio, así que por defecto se usa el alias de Vercel.
+// ── URL pública de la app y correo de soporte · Veli ───────────────────────
+// Fuente única para dominio, marca y correo: metadatos (vistas previas en
+// WhatsApp y redes), pie de PDF, Configuración y textos legales.
 //
 //   NEXT_PUBLIC_APP_URL="https://velli-three.vercel.app"
 //   NEXT_PUBLIC_SUPPORT_EMAIL="soporte@tu-dominio.com"
 //
 // Las variables se leen LITERALMENTE (process.env.NEXT_PUBLIC_…): Next solo
-// incrusta en el bundle del cliente los accesos literales, al construir.
-// Cambiar un valor exige redeploy.
+// incrusta en el bundle del cliente los accesos literales al construir.
+
+export const NOMBRE_MARCA = 'Veli';
 
 const APP_URL_POR_DEFECTO = 'https://velli-three.vercel.app';
 
@@ -27,7 +27,7 @@ const base = urlBase(process.env.NEXT_PUBLIC_APP_URL);
 /** Origen público de la app, sin barra final: `https://velli-three.vercel.app`. */
 export const APP_URL = base.origin;
 
-/** Dominio sin protocolo, para mostrar (pie del PDF). */
+/** Dominio sin protocolo, para mostrar (pie del PDF y enlaces públicos). */
 export const APP_HOST = base.host;
 
 const correo = process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim();

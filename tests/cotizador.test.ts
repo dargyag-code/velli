@@ -620,7 +620,9 @@ describe('lib/cotizador · 5. Mensaje de WhatsApp, ruta pública /c/[token], SW 
     expect(sw).toMatch(/url\.pathname\s*===\s*'\/c'\s*\|\|\s*url\.pathname\.startsWith\('\/c\/'\)/);
     expect(proxy).toMatch(/path\s*===\s*'\/c'\s*\|\|\s*path\.startsWith\('\/c\/'\)/);
     expect(privacidad).toMatch(/\/c\/&lt;token&gt;|\/c\/<token>/);
-    expect(privacidad).toMatch(/sin exponer en ningún caso el nombre de la\s+clienta, fotografías ni datos/i);
+    expect(privacidad).toMatch(
+      /sin exponer en ningún caso el nombre\s+(?:de la\s+clienta|del\s+cliente),\s+fotografías\s+ni\s+datos/i
+    );
     expect(terminos).toMatch(/estimaciones vigentes hasta la fecha indicada/i);
     expect(TEXTO_LEGAL_COTIZACION_PUBLICA).toBe(
       'Precio para el servicio descrito, válido hasta la fecha indicada. Puede cambiar si al momento del servicio el cabello requiere un trabajo distinto.'
@@ -680,8 +682,8 @@ describe('lib/cotizador · 5. Mensaje de WhatsApp, ruta pública /c/[token], SW 
       conMarcaVelli: true,
     });
     expect(metaConMarca.title).toBe('Cotización · Salón Esmeralda');
-    expect(metaConMarca.description).toContain('Cotización hecha con Velli');
-    expect((metaConMarca.openGraph as { siteName?: string })?.siteName).toBe('Velli');
+    expect(metaConMarca.description).toContain('Cotización hecha con Veli');
+    expect((metaConMarca.openGraph as { siteName?: string })?.siteName).toBe('Veli');
     expect((metaConMarca.robots as { index?: boolean })?.index).toBe(false);
 
     const metaSinMarca = construirMetadataCotizacion({
@@ -694,11 +696,11 @@ describe('lib/cotizador · 5. Mensaje de WhatsApp, ruta pública /c/[token], SW 
       conMarcaVelli: false,
     });
     expect(metaSinMarca.title).toBe('Cotización · Salón Esmeralda');
-    expect(metaSinMarca.description).not.toMatch(/Velli/i);
+    expect(metaSinMarca.description).not.toMatch(/Veli|Velli/i);
     expect((metaSinMarca.openGraph as { siteName?: string })?.siteName).toBe('Salón Esmeralda');
 
     expect(normalizarColorSalon('#123abc')).toBe('#123abc');
-    expect(normalizarColorSalon('javascript:alert(1)')).toBe('#3B0D1E');
+    expect(normalizarColorSalon('javascript:alert(1)')).toBe('#111111');
     expect(
       extraerIpDesdeHeaders({
         get: (k) => (k === 'x-forwarded-for' ? '190.1.2.3, 10.0.0.1' : null),

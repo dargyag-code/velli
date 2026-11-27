@@ -334,8 +334,8 @@ export default function ListaPorCobrar({
   if (cargando) {
     if (!mostrarVacio) return null;
     return (
-      <section className="bg-white rounded-2xl p-8 border border-[#EFE8E4] text-center shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]">
-        <p className="font-sans text-sm text-[#6B535C]">Cargando servicios por cobrar…</p>
+      <section className="bg-white rounded-xl p-8 border border-[#E4E4E7] text-center ">
+        <p className="font-sans text-sm text-[#52525B]">Cargando servicios por cobrar…</p>
       </section>
     );
   }
@@ -343,17 +343,17 @@ export default function ListaPorCobrar({
   if (cotizaciones.length === 0) {
     if (!mostrarVacio) return null;
     return (
-      <section className="bg-white rounded-3xl p-10 border border-[#EFE8E4] text-center shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]">
-        <div className="w-12 h-12 rounded-2xl bg-[#F5EBE8] text-[#3B0D1E] mx-auto flex items-center justify-center mb-4">
+      <section className="bg-white rounded-xl p-10 border border-[#E4E4E7] text-center ">
+        <div className="w-12 h-12 rounded-xl bg-[#F4F4F5] text-[#111111] mx-auto flex items-center justify-center mb-4">
           <Sparkles size={22} />
         </div>
-        <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+        <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
           Cierre Financiero en 1 Toque
         </span>
-        <h2 className="font-display text-2xl font-semibold tracking-tight text-[#3B0D1E] mt-1">
+        <h2 className="font-display text-2xl font-semibold tracking-tight text-[#111111] mt-1">
           Todo al día en caja
         </h2>
-        <p className="font-sans text-sm text-[#6B535C] mt-2 max-w-md mx-auto">
+        <p className="font-sans text-sm text-[#52525B] mt-2 max-w-md mx-auto">
           {rolEfectivo === 'specialist'
             ? 'No hay servicios pendientes de cierre en este momento.'
             : 'No hay cotizaciones pendientes por cobrar en este momento. Crea una cotización en silla para congelar gramos, comisión y utilidad neta en 1 toque.'}
@@ -362,7 +362,7 @@ export default function ListaPorCobrar({
           <button
             type="button"
             onClick={onIrACotizar}
-            className="mt-6 min-h-[46px] px-6 py-3 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans text-xs font-bold tracking-wide transition-all cursor-pointer shadow-[0_10px_30px_-5px_rgba(59,13,30,0.18)]"
+            className="mt-6 min-h-[46px] px-6 py-3 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white font-sans text-xs font-bold tracking-wide transition-all cursor-pointer "
           >
             Nueva Cotización en Silla
           </button>
@@ -376,17 +376,17 @@ export default function ListaPorCobrar({
       {/* Encabezado de la Pestaña / Bloque de Cierre */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+          <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
             {rolEfectivo === 'specialist'
               ? 'Cola Operativa de Silla'
               : 'Cierre Financiero en 1 Toque'}
           </span>
-          <h2 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E] mt-0.5 tabular-nums">
+          <h2 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#111111] mt-0.5 tabular-nums">
             Servicios por Cobrar ({cotizaciones.length})
           </h2>
         </div>
         {rolEfectivo !== 'specialist' && (
-          <span className="px-3 py-1.5 rounded-full bg-[#F5F3FF] border border-[#DDD6FE] text-[#7C3AED] font-sans text-xs font-semibold">
+          <span className="px-3 py-1.5 rounded-full bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] font-sans text-xs font-semibold">
             Congela insumos y comisión
           </span>
         )}
@@ -441,39 +441,39 @@ export default function ListaPorCobrar({
           return (
             <article
               key={cot.id}
-              className="bg-white rounded-2xl p-5 border border-[#EFE8E4] shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)] flex flex-col justify-between gap-4"
+              className="bg-white rounded-xl p-5 border border-[#E4E4E7]  flex flex-col justify-between gap-4"
             >
               {/* Cabecera de la Cotización */}
               <div>
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     {!clientaId && (
-                      <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                      <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                         {nombreCli}
                       </span>
                     )}
-                    <h3 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E] leading-snug mt-0.5 capitalize">
+                    <h3 className="font-sans text-base md:text-lg font-bold tracking-tight text-[#111111] leading-snug mt-0.5 capitalize">
                       {cot.servicioNombre}
                     </h3>
                     <div className="flex flex-wrap items-center gap-2 mt-2">
                       {nombreEst && (
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F5EBE8] text-xs font-semibold text-[#3B0D1E] capitalize">
-                          <UserCheck className="text-[#3B0D1E]" size={13} />
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F4F4F5] text-xs font-semibold text-[#111111] capitalize">
+                          <UserCheck className="text-[#111111]" size={13} />
                           <span>{nombreEst}</span>
                         </div>
                       )}
                       {gramosEstimados !== null && (
-                        <span className="px-2.5 py-1 rounded-full bg-[#F5F3FF] border border-[#DDD6FE] text-[#7C3AED] font-mono text-xs font-semibold tabular-nums">
+                        <span className="px-2.5 py-1 rounded-full bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] font-mono text-xs font-semibold tabular-nums">
                           {gramosEstimados}g
                         </span>
                       )}
                       {consentimientoAceptado ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F0FDFA] text-[#0D9488] text-[11px] font-bold">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F0FDF4] text-[#15803D] text-[11px] font-bold">
                           <ShieldCheck size={12} />
                           Confirmada ✓
                         </span>
                       ) : enviadaPorWhatsApp ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F5F3FF] text-[#7C3AED] text-[11px] font-semibold">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F4F4F5] text-[#111111] text-[11px] font-semibold">
                           <MessageCircle size={12} />
                           Enviada WA
                         </span>
@@ -486,14 +486,14 @@ export default function ListaPorCobrar({
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1 shrink-0 tabular-nums ${
                         esRentable
-                          ? 'bg-[#F0FDFA] text-[#0D9488]'
-                          : 'bg-[#FFF7F5] text-[#D97757]'
+                          ? 'bg-[#F0FDF4] text-[#15803D]'
+                          : 'bg-[#FFFBEB] text-[#B45309]'
                       }`}
                     >
                       <TrendingUp size={13} /> {margenPct}%
                     </span>
                   ) : (
-                    <span className="font-display text-lg font-bold text-[#3B0D1E] shrink-0 tabular-nums">
+                    <span className="font-display text-lg font-bold text-[#111111] shrink-0 tabular-nums">
                       {formatearPrecioCop(cot.precioCotizado)}
                     </span>
                   )}
@@ -501,30 +501,30 @@ export default function ListaPorCobrar({
 
                 {/* Resumen BI antes de cerrar (estrictamente oculto para specialist) */}
                 {rolEfectivo !== 'specialist' && (
-                  <div className="mt-4 p-3.5 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] grid grid-cols-3 gap-2 text-xs tabular-nums">
+                  <div className="mt-4 p-3.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] grid grid-cols-3 gap-2 text-xs tabular-nums">
                     <div>
-                      <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                      <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
                         Química
                       </span>
-                      <span className="font-bold text-[#7C3AED] mt-0.5 block">
+                      <span className="font-bold text-[#111111] mt-0.5 block">
                         {formatearPrecioCop(snapPreview.costoProductoEstimado)}
                       </span>
                     </div>
                     <div>
-                      <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                      <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
                         Comisión
                       </span>
-                      <span className="font-bold text-[#3B0D1E] mt-0.5 block">
+                      <span className="font-bold text-[#111111] mt-0.5 block">
                         {formatearPrecioCop(snapPreview.comisionEstimada)}
                       </span>
                     </div>
                     <div>
-                      <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                      <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
                         Utilidad Neta
                       </span>
                       <span
                         className={`font-bold mt-0.5 block ${
-                          esRentable ? 'text-[#0D9488]' : 'text-[#D97757]'
+                          esRentable ? 'text-[#15803D]' : 'text-[#B45309]'
                         }`}
                       >
                         {formatearPrecioCop(utilidadNeta)}
@@ -539,8 +539,8 @@ export default function ListaPorCobrar({
                   !cot.estilistaId &&
                   estilistas.length > 0 && (
                   <div className="mt-3.5">
-                    <label className="flex items-center gap-1.5 font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-2">
-                      <UserCheck size={13} className="text-[#3B0D1E]" />
+                    <label className="flex items-center gap-1.5 font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-2">
+                      <UserCheck size={13} className="text-[#111111]" />
                       Especialista asignada para liquidación
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -556,8 +556,8 @@ export default function ListaPorCobrar({
                             }}
                             className={`min-h-[44px] px-3.5 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer capitalize ${
                               activa
-                                ? 'bg-[#F5EBE8] border-[#3B0D1E] text-[#3B0D1E]'
-                                : 'bg-[#FAF7F5] border-[#EFE8E4] text-[#6B535C] hover:text-[#3B0D1E]'
+                                ? 'bg-[#F4F4F5] border-[#111111] text-[#111111]'
+                                : 'bg-[#FAFAFA] border-[#E4E4E7] text-[#52525B] hover:text-[#111111]'
                             }`}
                           >
                             {e.nombre}
@@ -571,9 +571,9 @@ export default function ListaPorCobrar({
 
               {/* Acciones de Cierre en 1 Toque o Vista Operativa de Specialist */}
               {rolEfectivo === 'specialist' ? (
-                <div className="pt-2 border-t border-[#EFE8E4] flex items-center justify-between gap-2 text-xs text-[#6B535C]">
+                <div className="pt-2 border-t border-[#E4E4E7] flex items-center justify-between gap-2 text-xs text-[#52525B]">
                   <span>En espera de cierre en recepción</span>
-                  <span className="font-mono font-semibold text-[#3B0D1E] tabular-nums">
+                  <span className="font-mono font-semibold text-[#111111] tabular-nums">
                     Válida hasta {cot.vigenciaHasta}
                   </span>
                 </div>
@@ -583,7 +583,7 @@ export default function ListaPorCobrar({
                     type="button"
                     disabled={ocupado}
                     onClick={() => handleConfirmarCobro(cot)}
-                    className="flex-1 min-h-[46px] py-3 px-4 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] disabled:opacity-60 text-[#FAF7F5] font-sans font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_-6px_rgba(59,13,30,0.22)] transition-all cursor-pointer tabular-nums"
+                    className="flex-1 min-h-[46px] py-3 px-4 rounded-xl bg-[#111111] hover:bg-[#27272A] disabled:opacity-60 text-white font-sans font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_-6px_rgba(59,13,30,0.22)] transition-all cursor-pointer tabular-nums"
                   >
                     {ocupado ? <Sparkles size={16} /> : <Check size={16} />}
                     <span>Cobrado {formatearPrecioCop(cot.precioCotizado)}</span>
@@ -597,16 +597,16 @@ export default function ListaPorCobrar({
                       setOtroValorTexto(String(cot.precioCotizado));
                       setEstilistaOverrideId(cot.estilistaId || seleccionTarjeta || '');
                     }}
-                    className="min-h-[46px] py-3 px-4 rounded-2xl bg-[#FAF7F5] hover:bg-[#F5EBE8] border border-[#EFE8E4] text-[#3B0D1E] font-sans font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                    className="min-h-[46px] py-3 px-4 rounded-xl bg-[#FAFAFA] hover:bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] font-sans font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
                   >
                     <Edit3 size={14} />
                     <span>Ajustar</span>
                   </button>
                 </div>
               ) : (
-                <div className="pt-3 border-t border-[#EFE8E4] space-y-3.5">
+                <div className="pt-3 border-t border-[#E4E4E7] space-y-3.5">
                   <div>
-                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                    <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                       Valor final cobrado ($ COP)
                     </label>
                     <input
@@ -615,13 +615,13 @@ export default function ListaPorCobrar({
                       step={1000}
                       value={otroValorTexto}
                       onChange={(e) => setOtroValorTexto(e.target.value)}
-                      className="w-full min-h-[46px] px-3.5 py-2.5 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] text-sm font-bold text-[#3B0D1E] tabular-nums"
+                      className="w-full min-h-[46px] px-3.5 py-2.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] text-sm font-bold text-[#111111] tabular-nums"
                     />
                   </div>
 
                   {estilistas.length > 0 && (
                     <div>
-                      <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                      <label className="block font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                         Especialista asignada
                       </label>
                       <div className="flex flex-wrap gap-2">
@@ -637,8 +637,8 @@ export default function ListaPorCobrar({
                               }}
                               className={`min-h-[44px] px-3.5 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer capitalize ${
                                 activa
-                                  ? 'bg-[#F5EBE8] border-[#3B0D1E] text-[#3B0D1E]'
-                                  : 'bg-[#FAF7F5] border-[#EFE8E4] text-[#6B535C] hover:text-[#3B0D1E]'
+                                  ? 'bg-[#F4F4F5] border-[#111111] text-[#111111]'
+                                  : 'bg-[#FAFAFA] border-[#E4E4E7] text-[#52525B] hover:text-[#111111]'
                               }`}
                             >
                               {e.nombre}
@@ -660,7 +660,7 @@ export default function ListaPorCobrar({
                             Number(otroValorTexto.replace(/\D/g, ''))
                           )
                         }
-                        className="min-h-[44px] py-2.5 px-4 rounded-xl bg-[#0D9488] hover:opacity-95 text-white font-sans font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                        className="min-h-[44px] py-2.5 px-4 rounded-xl bg-[#15803D] hover:opacity-95 text-white font-sans font-bold text-xs flex items-center gap-1.5 cursor-pointer"
                       >
                         <Check size={15} /> Confirmar cierre
                       </button>
@@ -669,7 +669,7 @@ export default function ListaPorCobrar({
                         type="button"
                         disabled={ocupado}
                         onClick={() => setEditandoId(null)}
-                        className="min-h-[44px] py-2.5 px-3.5 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] text-[#6B535C] font-sans font-bold text-xs cursor-pointer"
+                        className="min-h-[44px] py-2.5 px-3.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] text-[#52525B] font-sans font-bold text-xs cursor-pointer"
                       >
                         Cancelar
                       </button>
@@ -679,7 +679,7 @@ export default function ListaPorCobrar({
                       type="button"
                       disabled={ocupado}
                       onClick={() => handleAnular(cot)}
-                      className="min-h-[44px] px-3 text-xs font-bold text-[#D97757] hover:underline inline-flex items-center gap-1 cursor-pointer"
+                      className="min-h-[44px] px-3 text-xs font-bold text-[#B45309] hover:underline inline-flex items-center gap-1 cursor-pointer"
                     >
                       <XCircle size={14} /> Anular
                     </button>

@@ -45,19 +45,19 @@ const STATUS_META: Record<
 > = {
   sent_to_whatsapp: {
     label: 'Enviado a WhatsApp',
-    classes: 'bg-[#F5EBE8] text-[#3B0D1E] border-[#E8CFC8]',
+    classes: 'bg-[#F4F4F5] text-[#111111] border-[#E4E4E7]',
   },
   confirmed: {
     label: 'Confirmado',
-    classes: 'bg-[#F5F3FF] text-[#7C3AED] border-[#DDD6FE]',
+    classes: 'bg-[#F4F4F5] text-[#111111] border-[#E4E4E7]',
   },
   completed: {
     label: 'Completado',
-    classes: 'bg-[#F0FDFA] text-[#0D9488] border-[#0D9488]/30',
+    classes: 'bg-[#F0FDF4] text-[#15803D] border-[#15803D]/30',
   },
   cancelled: {
     label: 'Cancelado',
-    classes: 'bg-[#FFF7F5] text-[#D97757] border-[#D97757]/30',
+    classes: 'bg-[#FFFBEB] text-[#B45309] border-[#B45309]/30',
   },
 };
 
@@ -277,7 +277,7 @@ export default function VitrinaPanelPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] font-sans pb-16">
+    <div className="min-h-screen bg-[#FAFAFA] text-[#111111] font-sans pb-16">
       <VelvetTopHeader
         nombreSalon={org?.name}
         ciudadSalon={org?.city ?? undefined}
@@ -285,13 +285,13 @@ export default function VitrinaPanelPage() {
       />
 
       {/* Sub-header Vitrina & Pedidos Web */}
-      <div className="border-b border-[#EFE8E4]">
+      <div className="border-b border-[#E4E4E7]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
               Canal Digital · Conversión por WhatsApp
             </span>
-            <h1 className="m-0 mt-0.5 font-display text-2xl md:text-3xl font-semibold tracking-tight text-[#3B0D1E]">
+            <h1 className="m-0 mt-0.5 font-display text-2xl md:text-3xl font-semibold tracking-tight text-[#111111]">
               Vitrina & Pedidos Web
             </h1>
           </div>
@@ -301,7 +301,7 @@ export default function VitrinaPanelPage() {
               <button
                 type="button"
                 onClick={copiarEnlaceVitrina}
-                className="min-h-[42px] px-3.5 py-2 rounded-2xl bg-white hover:bg-[#F5EBE8] border border-[#EFE8E4] text-xs font-bold text-[#3B0D1E] inline-flex items-center gap-2 transition-colors cursor-pointer"
+                className="min-h-[42px] px-3.5 py-2 rounded-xl bg-white hover:bg-[#F4F4F5] border border-[#E4E4E7] text-xs font-bold text-[#111111] inline-flex items-center gap-2 transition-colors cursor-pointer"
               >
                 <Copy size={14} />
                 <span className="font-mono text-[11px]">/s/{org.slug}</span>
@@ -310,7 +310,7 @@ export default function VitrinaPanelPage() {
               <Link
                 href={`/s/${org.slug}`}
                 target="_blank"
-                className="min-h-[42px] px-4 py-2 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] text-xs font-bold inline-flex items-center gap-1.5 no-underline transition-colors"
+                className="min-h-[42px] px-4 py-2 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white text-xs font-bold inline-flex items-center gap-1.5 no-underline transition-colors"
               >
                 <span>Ver vitrina pública</span>
                 <ExternalLink size={13} />
@@ -323,14 +323,14 @@ export default function VitrinaPanelPage() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
         {/* Selector de sección */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-[#F5EBE8] border border-[#EFE8E4]">
+          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-[#F4F4F5] border border-[#E4E4E7]">
             <button
               type="button"
               onClick={() => setTab('pedidos')}
               className={`min-h-[42px] px-4 py-2 rounded-xl font-sans text-xs font-bold inline-flex items-center gap-2 transition-all cursor-pointer border-none ${
                 tab === 'pedidos'
-                  ? 'bg-[#3B0D1E] text-[#FAF7F5]'
-                  : 'bg-transparent text-[#6B535C] hover:text-[#3B0D1E]'
+                  ? 'bg-[#111111] text-white'
+                  : 'bg-transparent text-[#52525B] hover:text-[#111111]'
               }`}
             >
               <MessageCircle size={14} />
@@ -343,8 +343,8 @@ export default function VitrinaPanelPage() {
                 onClick={() => setTab('productos')}
                 className={`min-h-[42px] px-4 py-2 rounded-xl font-sans text-xs font-bold inline-flex items-center gap-2 transition-all cursor-pointer border-none ${
                   tab === 'productos'
-                    ? 'bg-[#3B0D1E] text-[#FAF7F5]'
-                    : 'bg-transparent text-[#6B535C] hover:text-[#3B0D1E]'
+                    ? 'bg-[#111111] text-white'
+                    : 'bg-transparent text-[#52525B] hover:text-[#111111]'
                 }`}
               >
                 <ShoppingBag size={14} />
@@ -360,7 +360,7 @@ export default function VitrinaPanelPage() {
                 limpiarFormularioProducto();
                 setMostrarFormProducto(true);
               }}
-              className="min-h-[42px] px-4 py-2 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer border-none"
+              className="min-h-[42px] px-4 py-2 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white font-sans text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer border-none"
             >
               <Plus size={14} />
               <span>Nuevo producto</span>
@@ -371,15 +371,15 @@ export default function VitrinaPanelPage() {
         {cargando ? (
           <div className="space-y-3">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="skeleton-shimmer h-28 rounded-3xl" />
+              <div key={i} className="skeleton-shimmer h-28 rounded-xl" />
             ))}
           </div>
         ) : !org ? (
-          <section className="bg-white rounded-3xl border border-[#EFE8E4] p-8 text-center shadow-velvet">
-            <h2 className="m-0 font-display text-2xl font-semibold text-[#3B0D1E]">
+          <section className="bg-white rounded-xl border border-[#E4E4E7] p-8 text-center">
+            <h2 className="m-0 font-display text-2xl font-semibold text-[#111111]">
               Aún no hay organización activa
             </h2>
-            <p className="mt-2 mb-0 text-sm text-[#6B535C] max-w-md mx-auto">
+            <p className="mt-2 mb-0 text-sm text-[#52525B] max-w-md mx-auto">
               Aplica las migraciones `migration-multitenant-rbac.sql` y `migration-vitrina-editorial.sql` en Supabase para habilitar la vitrina pública de tu salón.
             </p>
           </section>
@@ -404,8 +404,8 @@ export default function VitrinaPanelPage() {
                     onClick={() => setFiltroEstado(f.key)}
                     className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                       activo
-                        ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E]'
-                        : 'bg-white text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8]'
+                        ? 'bg-[#111111] text-white border-[#111111]'
+                        : 'bg-white text-[#52525B] border-[#E4E4E7] hover:bg-[#F4F4F5]'
                     }`}
                   >
                     {f.label}
@@ -415,12 +415,12 @@ export default function VitrinaPanelPage() {
             </div>
 
             {pedidosFiltrados.length === 0 ? (
-              <section className="bg-white rounded-3xl border border-[#EFE8E4] p-10 text-center shadow-velvet">
-                <MessageCircle size={26} className="text-[#947C85] mx-auto mb-3" />
-                <h2 className="m-0 font-display text-xl font-semibold text-[#3B0D1E]">
+              <section className="bg-white rounded-xl border border-[#E4E4E7] p-10 text-center">
+                <MessageCircle size={26} className="text-[#71717A] mx-auto mb-3" />
+                <h2 className="m-0 font-display text-xl font-semibold text-[#111111]">
                   Sin pedidos web en este filtro
                 </h2>
-                <p className="mt-1.5 mb-0 text-xs text-[#6B535C] max-w-sm mx-auto leading-relaxed">
+                <p className="mt-1.5 mb-0 text-xs text-[#52525B] max-w-sm mx-auto leading-relaxed">
                   Comparte el enlace público de tu vitrina en Instagram o WhatsApp para recibir pedidos con código único y desglose automático.
                 </p>
               </section>
@@ -437,12 +437,12 @@ export default function VitrinaPanelPage() {
                   return (
                     <article
                       key={order.id}
-                      className="bg-white rounded-3xl border border-[#EFE8E4] p-5 sm:p-6 shadow-velvet space-y-4"
+                      className="bg-white rounded-xl border border-[#E4E4E7] p-5 sm:p-6 space-y-4"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-[#FAF7F5] border border-[#EFE8E4] text-[#3B0D1E] tabular-nums">
+                            <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-[#FAFAFA] border border-[#E4E4E7] text-[#111111] tabular-nums">
                               {order.orderCode}
                             </span>
                             <span
@@ -450,7 +450,7 @@ export default function VitrinaPanelPage() {
                             >
                               {meta.label}
                             </span>
-                            <span className="text-[11px] font-semibold text-[#947C85]">
+                            <span className="text-[11px] font-semibold text-[#71717A]">
                               ·{' '}
                               {order.orderType === 'service_inquiry'
                                 ? 'Solicitud de servicio'
@@ -458,49 +458,49 @@ export default function VitrinaPanelPage() {
                             </span>
                           </div>
 
-                          <h3 className="m-0 mt-2 font-sans text-base font-bold text-[#3B0D1E]">
+                          <h3 className="m-0 mt-2 font-sans text-base font-bold text-[#111111]">
                             {order.customerName}{' '}
-                            <span className="font-mono text-xs font-normal text-[#6B535C] tabular-nums">
+                            <span className="font-mono text-xs font-normal text-[#52525B] tabular-nums">
                               · {order.customerPhone}
                             </span>
                           </h3>
-                          <span className="font-mono text-[11px] text-[#947C85] tabular-nums">
+                          <span className="font-mono text-[11px] text-[#71717A] tabular-nums">
                             {formatDate(order.createdAt)}
                           </span>
                         </div>
 
                         <div className="text-right">
-                          <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+                          <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
                             Total
                           </span>
-                          <div className="font-display text-2xl font-bold text-[#3B0D1E] tabular-nums">
+                          <div className="font-display text-2xl font-bold text-[#111111] tabular-nums">
                             {formatearPrecioCop(order.totalCop)}
                           </div>
                         </div>
                       </div>
 
                       {/* Ítems del pedido */}
-                      <div className="rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] p-3.5 space-y-1.5">
+                      <div className="rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] p-3.5 space-y-1.5">
                         {order.items.map((it, idx) => (
                           <div
                             key={`${order.id}-${idx}`}
                             className="flex items-center justify-between gap-2 text-xs"
                           >
-                            <span className="text-[#3B0D1E] font-medium">
+                            <span className="text-[#111111] font-medium">
                               <strong className="font-mono tabular-nums">{it.quantity}×</strong>{' '}
                               {it.name}
                               {it.variantLabel && (
-                                <span className="text-[#6B535C]"> ({it.variantLabel})</span>
+                                <span className="text-[#52525B]"> ({it.variantLabel})</span>
                               )}
                             </span>
-                            <span className="font-mono font-semibold text-[#3B0D1E] tabular-nums shrink-0">
+                            <span className="font-mono font-semibold text-[#111111] tabular-nums shrink-0">
                               {formatearPrecioCop(it.lineTotalCop)}
                             </span>
                           </div>
                         ))}
                         {order.notes && (
-                          <p className="m-0 pt-2 border-t border-[#EFE8E4] text-xs text-[#6B535C]">
-                            <strong className="text-[#3B0D1E]">Nota:</strong> {order.notes}
+                          <p className="m-0 pt-2 border-t border-[#E4E4E7] text-xs text-[#52525B]">
+                            <strong className="text-[#111111]">Nota:</strong> {order.notes}
                           </p>
                         )}
                       </div>
@@ -512,7 +512,7 @@ export default function VitrinaPanelPage() {
                             href={chatClienteUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-[#FAF7F5] hover:bg-[#F5EBE8] border border-[#EFE8E4] text-xs font-bold text-[#3B0D1E] inline-flex items-center gap-1.5 no-underline transition-colors"
+                            className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-[#FAFAFA] hover:bg-[#F4F4F5] border border-[#E4E4E7] text-xs font-bold text-[#111111] inline-flex items-center gap-1.5 no-underline transition-colors"
                           >
                             <MessageCircle size={14} />
                             <span>Responder en WhatsApp</span>
@@ -528,7 +528,7 @@ export default function VitrinaPanelPage() {
                                 type="button"
                                 disabled={ocupado}
                                 onClick={() => cambiarEstadoPedido(order, 'confirmed')}
-                                className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50 border-none"
+                                className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50 border-none"
                               >
                                 <Check size={14} />
                                 <span>Confirmar</span>
@@ -539,7 +539,7 @@ export default function VitrinaPanelPage() {
                                 type="button"
                                 disabled={ocupado}
                                 onClick={() => cambiarEstadoPedido(order, 'completed')}
-                                className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-[#0D9488] hover:opacity-95 text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50 border-none"
+                                className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-[#15803D] hover:opacity-95 text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50 border-none"
                               >
                                 <CheckCircle2 size={14} />
                                 <span>Completado</span>
@@ -550,7 +550,7 @@ export default function VitrinaPanelPage() {
                                 type="button"
                                 disabled={ocupado}
                                 onClick={() => cambiarEstadoPedido(order, 'cancelled')}
-                                className="min-h-[38px] px-3 py-1.5 rounded-xl bg-[#FFF7F5] hover:bg-[#F5EBE8] border border-[#D97757]/30 text-[#D97757] text-xs font-bold cursor-pointer disabled:opacity-50"
+                                className="min-h-[38px] px-3 py-1.5 rounded-xl bg-[#FFFBEB] hover:bg-[#F4F4F5] border border-[#B45309]/30 text-[#B45309] text-xs font-bold cursor-pointer disabled:opacity-50"
                               >
                                 Cancelar
                               </button>
@@ -569,10 +569,10 @@ export default function VitrinaPanelPage() {
             {mostrarFormProducto && esAdmin && (
               <form
                 onSubmit={guardarProducto}
-                className="bg-white rounded-3xl border border-[#EFE8E4] p-6 shadow-velvet space-y-4"
+                className="bg-white rounded-xl border border-[#E4E4E7] p-6 space-y-4"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <h2 className="m-0 font-display text-xl font-semibold text-[#3B0D1E]">
+                  <h2 className="m-0 font-display text-xl font-semibold text-[#111111]">
                     {editandoId ? 'Editar producto' : 'Nuevo producto de tienda'}
                   </h2>
                   <button
@@ -581,7 +581,7 @@ export default function VitrinaPanelPage() {
                       limpiarFormularioProducto();
                       setMostrarFormProducto(false);
                     }}
-                    className="w-8 h-8 rounded-full bg-[#FAF7F5] border border-[#EFE8E4] text-[#6B535C] flex items-center justify-center cursor-pointer"
+                    className="w-8 h-8 rounded-full bg-[#FAFAFA] border border-[#E4E4E7] text-[#52525B] flex items-center justify-center cursor-pointer"
                   >
                     <X size={15} />
                   </button>
@@ -589,7 +589,7 @@ export default function VitrinaPanelPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                   <label className="block sm:col-span-2">
-                    <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                    <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                       Nombre comercial *
                     </span>
                     <input
@@ -598,12 +598,12 @@ export default function VitrinaPanelPage() {
                       value={prodName}
                       onChange={(e) => setProdName(e.target.value)}
                       placeholder="Ej. Shampoo Nutritivo Sin Sulfatos"
-                      className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm text-[#3B0D1E]"
+                      className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm text-[#111111]"
                     />
                   </label>
 
                   <label className="block">
-                    <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                    <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                       Precio público COP *
                     </span>
                     <input
@@ -614,14 +614,14 @@ export default function VitrinaPanelPage() {
                       value={prodPriceCop}
                       onChange={(e) => setProdPriceCop(e.target.value)}
                       placeholder="65000"
-                      className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#3B0D1E]"
+                      className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm font-mono tabular-nums text-[#111111]"
                     />
                   </label>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-start">
                   <label className="block">
-                    <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                    <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                       Categoría
                     </span>
                     <input
@@ -629,7 +629,7 @@ export default function VitrinaPanelPage() {
                       value={prodCategory}
                       onChange={(e) => setProdCategory(e.target.value)}
                       placeholder="Cuidado Capilar, Styling, Kits…"
-                      className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm text-[#3B0D1E]"
+                      className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm text-[#111111]"
                     />
                   </label>
 
@@ -646,7 +646,7 @@ export default function VitrinaPanelPage() {
                 </div>
 
                 <label className="block">
-                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C] mb-1">
+                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B] mb-1">
                     Descripción breve
                   </span>
                   <textarea
@@ -655,13 +655,13 @@ export default function VitrinaPanelPage() {
                     value={prodDescription}
                     onChange={(e) => setProdDescription(e.target.value)}
                     placeholder="Beneficios principales y modo de uso en casa…"
-                    className="w-full bg-[#FAF7F5] border border-[#EFE8E4] rounded-2xl px-3.5 py-2.5 text-sm text-[#3B0D1E] resize-none"
+                    className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-sm text-[#111111] resize-none"
                   />
                 </label>
 
                 {/* Variantes opcionales */}
-                <div className="p-4 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] space-y-3">
-                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#6B535C]">
+                <div className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] space-y-3">
+                  <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-[#52525B]">
                     Variantes opcionales (ml / talla / aroma / presentación)
                   </span>
 
@@ -670,7 +670,7 @@ export default function VitrinaPanelPage() {
                       {prodVariants.map((v) => (
                         <span
                           key={v.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white border border-[#EFE8E4] font-mono text-xs text-[#3B0D1E] tabular-nums"
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white border border-[#E4E4E7] font-mono text-xs text-[#111111] tabular-nums"
                         >
                           {v.label}
                           {v.priceOverrideCop !== undefined &&
@@ -681,7 +681,7 @@ export default function VitrinaPanelPage() {
                               setProdVariants((prev) => prev.filter((x) => x.id !== v.id))
                             }
                             aria-label={`Quitar variante ${v.label}`}
-                            className="p-0.5 bg-transparent border-none text-[#947C85] hover:text-[#D97757] cursor-pointer"
+                            className="p-0.5 bg-transparent border-none text-[#71717A] hover:text-[#B45309] cursor-pointer"
                           >
                             <X size={12} />
                           </button>
@@ -694,7 +694,7 @@ export default function VitrinaPanelPage() {
                     <select
                       value={varGroup}
                       onChange={(e) => setVarGroup(e.target.value as VariantGroupKind)}
-                      className="bg-white border border-[#EFE8E4] rounded-xl px-3 py-2 text-xs text-[#3B0D1E]"
+                      className="bg-white border border-[#E4E4E7] rounded-xl px-3 py-2 text-xs text-[#111111]"
                     >
                       <option value="ml">Mililitros (ml)</option>
                       <option value="presentacion">Presentación</option>
@@ -706,7 +706,7 @@ export default function VitrinaPanelPage() {
                       value={varLabel}
                       onChange={(e) => setVarLabel(e.target.value)}
                       placeholder="Ej. 250 ml"
-                      className="bg-white border border-[#EFE8E4] rounded-xl px-3 py-2 text-xs text-[#3B0D1E]"
+                      className="bg-white border border-[#E4E4E7] rounded-xl px-3 py-2 text-xs text-[#111111]"
                     />
                     <input
                       type="number"
@@ -714,12 +714,12 @@ export default function VitrinaPanelPage() {
                       value={varPriceOverride}
                       onChange={(e) => setVarPriceOverride(e.target.value)}
                       placeholder="Precio COP variante (opc.)"
-                      className="bg-white border border-[#EFE8E4] rounded-xl px-3 py-2 text-xs font-mono tabular-nums text-[#3B0D1E]"
+                      className="bg-white border border-[#E4E4E7] rounded-xl px-3 py-2 text-xs font-mono tabular-nums text-[#111111]"
                     />
                     <button
                       type="button"
                       onClick={agregarVarianteForm}
-                      className="px-3 py-2 rounded-xl bg-white hover:bg-[#F5EBE8] border border-[#E8CFC8] text-xs font-bold text-[#3B0D1E] cursor-pointer"
+                      className="px-3 py-2 rounded-xl bg-white hover:bg-[#F4F4F5] border border-[#E4E4E7] text-xs font-bold text-[#111111] cursor-pointer"
                     >
                       + Añadir variante
                     </button>
@@ -727,7 +727,7 @@ export default function VitrinaPanelPage() {
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                  <div className="flex items-center gap-4 text-xs font-semibold text-[#3B0D1E]">
+                  <div className="flex items-center gap-4 text-xs font-semibold text-[#111111]">
                     <label className="inline-flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -753,14 +753,14 @@ export default function VitrinaPanelPage() {
                         limpiarFormularioProducto();
                         setMostrarFormProducto(false);
                       }}
-                      className="min-h-[42px] px-4 py-2 rounded-2xl bg-white border border-[#EFE8E4] text-xs font-bold text-[#6B535C] cursor-pointer"
+                      className="min-h-[42px] px-4 py-2 rounded-xl bg-white border border-[#E4E4E7] text-xs font-bold text-[#52525B] cursor-pointer"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
                       disabled={guardandoProducto}
-                      className="min-h-[42px] px-5 py-2 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] text-xs font-bold cursor-pointer disabled:opacity-60 border-none"
+                      className="min-h-[42px] px-5 py-2 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white text-xs font-bold cursor-pointer disabled:opacity-60 border-none"
                     >
                       {guardandoProducto ? 'Guardando…' : 'Guardar producto'}
                     </button>
@@ -770,12 +770,12 @@ export default function VitrinaPanelPage() {
             )}
 
             {products.length === 0 ? (
-              <section className="bg-white rounded-3xl border border-[#EFE8E4] p-10 text-center shadow-velvet">
-                <Package size={26} className="text-[#947C85] mx-auto mb-3" />
-                <h2 className="m-0 font-display text-xl font-semibold text-[#3B0D1E]">
+              <section className="bg-white rounded-xl border border-[#E4E4E7] p-10 text-center">
+                <Package size={26} className="text-[#71717A] mx-auto mb-3" />
+                <h2 className="m-0 font-display text-xl font-semibold text-[#111111]">
                   Tu catálogo de tienda está vacío
                 </h2>
-                <p className="mt-1.5 mb-0 text-xs text-[#6B535C] max-w-sm mx-auto leading-relaxed">
+                <p className="mt-1.5 mb-0 text-xs text-[#52525B] max-w-sm mx-auto leading-relaxed">
                   Agrega shampoos, mascarillas o kits de mantenimiento en casa para vender por WhatsApp desde tu vitrina pública.
                 </p>
               </section>
@@ -784,25 +784,25 @@ export default function VitrinaPanelPage() {
                 {products.map((prod) => (
                   <article
                     key={prod.id}
-                    className="bg-white rounded-3xl border border-[#EFE8E4] p-5 shadow-velvet flex flex-col justify-between gap-4"
+                    className="bg-white rounded-xl border border-[#E4E4E7] p-5 flex flex-col justify-between gap-4"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-1">
-                        <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                        <span className="font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                           {prod.category}
                         </span>
                         <div className="flex items-center gap-1.5">
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                               prod.inStock
-                                ? 'bg-[#F0FDFA] text-[#0D9488] border-[#0D9488]/25'
-                                : 'bg-[#FFF7F5] text-[#D97757] border-[#D97757]/30'
+                                ? 'bg-[#F0FDF4] text-[#15803D] border-[#15803D]/25'
+                                : 'bg-[#FFFBEB] text-[#B45309] border-[#B45309]/30'
                             }`}
                           >
                             {prod.inStock ? 'En stock' : 'Agotado'}
                           </span>
                           {!prod.active && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FAF7F5] text-[#947C85] border border-[#EFE8E4]">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FAFAFA] text-[#71717A] border border-[#E4E4E7]">
                               Oculto
                             </span>
                           )}
@@ -815,14 +815,14 @@ export default function VitrinaPanelPage() {
                           <img
                             src={prod.imageUrl}
                             alt={prod.name}
-                            className="w-16 h-16 rounded-2xl object-cover border border-[#EFE8E4] shrink-0 bg-[#FAF7F5]"
+                            className="w-16 h-16 rounded-xl object-cover border border-[#E4E4E7] shrink-0 bg-[#FAFAFA]"
                           />
                         )}
                         <div className="min-w-0">
-                          <h3 className="m-0 font-sans text-base font-bold text-[#3B0D1E]">
+                          <h3 className="m-0 font-sans text-base font-bold text-[#111111]">
                             {prod.name}
                           </h3>
-                          <div className="mt-1 font-display text-xl font-bold text-[#3B0D1E] tabular-nums">
+                          <div className="mt-1 font-display text-xl font-bold text-[#111111] tabular-nums">
                             {formatearPrecioCop(prod.priceCop)}
                           </div>
                         </div>
@@ -833,7 +833,7 @@ export default function VitrinaPanelPage() {
                           {prod.variants.map((v) => (
                             <span
                               key={v.id}
-                              className="px-2 py-0.5 rounded-lg bg-[#FAF7F5] border border-[#EFE8E4] font-mono text-[11px] text-[#6B535C] tabular-nums"
+                              className="px-2 py-0.5 rounded-lg bg-[#FAFAFA] border border-[#E4E4E7] font-mono text-[11px] text-[#52525B] tabular-nums"
                             >
                               {v.label}
                             </span>
@@ -843,11 +843,11 @@ export default function VitrinaPanelPage() {
                     </div>
 
                     {esAdmin && (
-                      <div className="pt-3 border-t border-[#EFE8E4] flex items-center justify-between gap-2">
+                      <div className="pt-3 border-t border-[#E4E4E7] flex items-center justify-between gap-2">
                         <button
                           type="button"
                           onClick={() => toggleStockRapido(prod)}
-                          className="min-h-[36px] px-3 py-1.5 rounded-xl bg-[#FAF7F5] hover:bg-[#F5EBE8] border border-[#EFE8E4] text-xs font-bold text-[#3B0D1E] cursor-pointer"
+                          className="min-h-[36px] px-3 py-1.5 rounded-xl bg-[#FAFAFA] hover:bg-[#F4F4F5] border border-[#E4E4E7] text-xs font-bold text-[#111111] cursor-pointer"
                         >
                           {prod.inStock ? 'Marcar agotado' : 'Activar stock'}
                         </button>
@@ -857,7 +857,7 @@ export default function VitrinaPanelPage() {
                             type="button"
                             onClick={() => iniciarEdicionProducto(prod)}
                             aria-label={`Editar ${prod.name}`}
-                            className="w-9 h-9 rounded-xl bg-[#FAF7F5] hover:bg-[#F5EBE8] border border-[#EFE8E4] text-[#3B0D1E] flex items-center justify-center cursor-pointer"
+                            className="w-9 h-9 rounded-xl bg-[#FAFAFA] hover:bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] flex items-center justify-center cursor-pointer"
                           >
                             <Edit3 size={14} />
                           </button>
@@ -865,7 +865,7 @@ export default function VitrinaPanelPage() {
                             type="button"
                             onClick={() => borrarProducto(prod)}
                             aria-label={`Eliminar ${prod.name}`}
-                            className="w-9 h-9 rounded-xl bg-[#FFF7F5] hover:bg-[#F5EBE8] border border-[#D97757]/30 text-[#D97757] flex items-center justify-center cursor-pointer"
+                            className="w-9 h-9 rounded-xl bg-[#FFFBEB] hover:bg-[#F4F4F5] border border-[#B45309]/30 text-[#B45309] flex items-center justify-center cursor-pointer"
                           >
                             <Trash2 size={14} />
                           </button>

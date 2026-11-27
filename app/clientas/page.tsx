@@ -170,21 +170,21 @@ export default function ClientasPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] font-sans relative pb-24 lg:pb-12">
+    <div className="min-h-screen bg-[#FAFAFA] text-[#111111] font-sans relative pb-24 lg:pb-12">
       <VelvetTopHeader />
 
       {/* Sub-header CRM */}
-      <div className="border-b border-[#EFE8E4] pt-6 pb-4 px-4 sm:px-6">
+      <div className="border-b border-[#E4E4E7] pt-6 pb-4 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-end justify-between gap-3 mb-4">
             <div className="min-w-0">
-              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block">
+              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block">
                 Directorio CRM · Retención BI
               </span>
-              <h1 className="m-0 mt-0.5 font-display text-2xl md:text-3xl font-semibold tracking-tight text-[#3B0D1E] leading-tight">
+              <h1 className="m-0 mt-0.5 font-display text-2xl md:text-3xl font-semibold tracking-tight text-[#111111] leading-tight">
                 Clientas{' '}
                 {!loading && (
-                  <span className="text-[#6B535C] font-normal tabular-nums">
+                  <span className="text-[#52525B] font-normal tabular-nums">
                     · {clientas.length}
                   </span>
                 )}
@@ -201,14 +201,14 @@ export default function ClientasPage() {
           </div>
 
           {/* Selector de Pestañas: Directorio / Por reactivar */}
-          <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-[#F5EBE8] border border-[#EFE8E4] mb-3.5">
+          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-[#F4F4F5] border border-[#E4E4E7] mb-3.5">
             <button
               type="button"
               onClick={() => setTabCrm('directorio')}
               className={`min-h-[40px] px-4 py-1.5 rounded-xl font-sans text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer border-none transition-all ${
                 tabCrm === 'directorio'
-                  ? 'bg-[#3B0D1E] text-[#FAF7F5]'
-                  : 'bg-transparent text-[#6B535C] hover:text-[#3B0D1E]'
+                  ? 'bg-[#111111] text-white'
+                  : 'bg-transparent text-[#52525B] hover:text-[#111111]'
               }`}
             >
               <Users size={14} />
@@ -220,8 +220,8 @@ export default function ClientasPage() {
               onClick={() => setTabCrm('reactivar')}
               className={`min-h-[40px] px-4 py-1.5 rounded-xl font-sans text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer border-none transition-all ${
                 tabCrm === 'reactivar'
-                  ? 'bg-[#3B0D1E] text-[#FAF7F5]'
-                  : 'bg-transparent text-[#6B535C] hover:text-[#3B0D1E]'
+                  ? 'bg-[#111111] text-white'
+                  : 'bg-transparent text-[#52525B] hover:text-[#111111]'
               }`}
             >
               <Clock size={14} />
@@ -230,8 +230,8 @@ export default function ClientasPage() {
                 <span
                   className={`px-2 py-0.5 rounded-full font-mono text-[10px] font-bold tabular-nums ${
                     tabCrm === 'reactivar'
-                      ? 'bg-[#D97757] text-white'
-                      : 'bg-[#FFF7F5] text-[#D97757] border border-[#D97757]/30'
+                      ? 'bg-[#B45309] text-white'
+                      : 'bg-[#FFFBEB] text-[#B45309] border border-[#B45309]/30'
                   }`}
                 >
                   {conteosReactivacion.pendientesHoy}
@@ -241,13 +241,13 @@ export default function ClientasPage() {
           </div>
 
           {/* Search bar */}
-          <div className="min-h-[48px] flex items-center gap-2.5 px-4 bg-white border border-[#EFE8E4] rounded-2xl shadow-velvet">
-            <Search size={16} className="text-[#947C85] shrink-0" />
+          <div className="min-h-[48px] flex items-center gap-2.5 px-4 bg-white border border-[#E4E4E7] rounded-xl">
+            <Search size={16} className="text-[#71717A] shrink-0" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar clienta por nombre…"
-              className="flex-1 min-w-0 py-2 border-none bg-transparent outline-none text-sm font-sans text-[#3B0D1E] placeholder-[#947C85]"
+              className="flex-1 min-w-0 py-2 border-none bg-transparent outline-none text-sm font-sans text-[#111111] placeholder-[#71717A]"
             />
             {tabCrm === 'directorio' && (
               <button
@@ -256,8 +256,8 @@ export default function ClientasPage() {
                 aria-label="Filtros"
                 className={`min-h-[38px] px-3 rounded-xl border-none flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] transition-colors cursor-pointer ${
                   showFilters || sort !== 'ultima'
-                    ? 'bg-[#F5EBE8] text-[#3B0D1E]'
-                    : 'bg-transparent text-[#6B535C] hover:bg-[#FAF7F5] hover:text-[#3B0D1E]'
+                    ? 'bg-[#F4F4F5] text-[#111111]'
+                    : 'bg-transparent text-[#52525B] hover:bg-[#FAFAFA] hover:text-[#111111]'
                 }`}
               >
                 <Filter size={13} />
@@ -277,12 +277,12 @@ export default function ClientasPage() {
                     onClick={() => setFilterRizo(p.key)}
                     className={`min-h-[44px] shrink-0 px-4 py-2 rounded-xl text-xs font-bold tabular-nums border transition-all whitespace-nowrap cursor-pointer ${
                       active
-                        ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E]'
-                        : 'bg-white text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8] hover:text-[#3B0D1E]'
+                        ? 'bg-[#111111] text-white border-[#111111]'
+                        : 'bg-white text-[#52525B] border-[#E4E4E7] hover:bg-[#F4F4F5] hover:text-[#111111]'
                     }`}
                   >
                     {p.label}{' '}
-                    <span className={active ? 'text-[#E8CFC8]' : 'text-[#947C85]'}>
+                    <span className={active ? 'text-[#E4E4E7]' : 'text-[#71717A]'}>
                       · {p.count}
                     </span>
                   </button>
@@ -306,12 +306,12 @@ export default function ClientasPage() {
                     onClick={() => setUmbralDias(t.dias)}
                     className={`min-h-[42px] shrink-0 px-4 py-2 rounded-xl text-xs font-bold tabular-nums border transition-all whitespace-nowrap cursor-pointer ${
                       activo
-                        ? 'bg-[#3B0D1E] text-[#FAF7F5] border-[#3B0D1E]'
-                        : 'bg-white text-[#6B535C] border-[#EFE8E4] hover:bg-[#F5EBE8] hover:text-[#3B0D1E]'
+                        ? 'bg-[#111111] text-white border-[#111111]'
+                        : 'bg-white text-[#52525B] border-[#E4E4E7] hover:bg-[#F4F4F5] hover:text-[#111111]'
                     }`}
                   >
                     {t.label}{' '}
-                    <span className={activo ? 'text-[#E8CFC8]' : 'text-[#947C85]'}>
+                    <span className={activo ? 'text-[#E4E4E7]' : 'text-[#71717A]'}>
                       · {t.count}
                     </span>
                   </button>
@@ -325,8 +325,8 @@ export default function ClientasPage() {
       {/* Filter drawer */}
       {tabCrm === 'directorio' && showFilters && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-3.5">
-          <section className="bg-white rounded-2xl border border-[#EFE8E4] p-4 shadow-velvet">
-            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C] block mb-2.5">
+          <section className="bg-white rounded-xl border border-[#E4E4E7] p-4">
+            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B] block mb-2.5">
               Ordenar directorio por
             </span>
             <div className="flex gap-2 flex-wrap">
@@ -343,8 +343,8 @@ export default function ClientasPage() {
                     onClick={() => setSort(key as SortKey)}
                     className={`min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                       active
-                        ? 'bg-[#F5EBE8] text-[#3B0D1E] border-[#E8CFC8]'
-                        : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4] hover:border-[#E8CFC8] hover:text-[#3B0D1E]'
+                        ? 'bg-[#F4F4F5] text-[#111111] border-[#E4E4E7]'
+                        : 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7] hover:border-[#E4E4E7] hover:text-[#111111]'
                     }`}
                   >
                     {label}
@@ -362,18 +362,18 @@ export default function ClientasPage() {
           loading ? (
             <div className="space-y-2.5">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="skeleton-shimmer h-24 rounded-3xl" />
+                <div key={i} className="skeleton-shimmer h-24 rounded-xl" />
               ))}
             </div>
           ) : listaReactivacion.length === 0 ? (
-            <section className="text-center py-12 px-5 bg-white rounded-3xl border border-[#EFE8E4] shadow-velvet">
-              <div className="w-14 h-14 rounded-2xl bg-[#F0FDFA] border border-[#0D9488]/25 mx-auto mb-3.5 flex items-center justify-center text-[#0D9488]">
+            <section className="text-center py-12 px-5 bg-white rounded-xl border border-[#E4E4E7]">
+              <div className="w-14 h-14 rounded-xl bg-[#F0FDF4] border border-[#15803D]/25 mx-auto mb-3.5 flex items-center justify-center text-[#15803D]">
                 <Check size={24} />
               </div>
-              <h2 className="m-0 font-display text-xl font-semibold text-[#3B0D1E]">
+              <h2 className="m-0 font-display text-xl font-semibold text-[#111111]">
                 Sin clientas inactivas en el tramo de {umbralDias}+ días
               </h2>
-              <p className="mt-1.5 mb-0 max-w-sm mx-auto text-xs text-[#6B535C] leading-relaxed">
+              <p className="mt-1.5 mb-0 max-w-sm mx-auto text-xs text-[#52525B] leading-relaxed">
                 Tus clientas habituales están al día con su frecuencia de visita en este segmento.
               </p>
             </section>
@@ -387,7 +387,7 @@ export default function ClientasPage() {
                 return (
                   <article
                     key={c.id}
-                    className="bg-white rounded-3xl border border-[#EFE8E4] p-5 shadow-velvet flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    className="bg-white rounded-xl border border-[#E4E4E7] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                   >
                     <div className="flex items-center gap-3.5 min-w-0 flex-1">
                       <AvatarV2 nombre={c.nombre} tone={tone} size="md" />
@@ -395,24 +395,24 @@ export default function ClientasPage() {
                         <div className="flex flex-wrap items-center gap-2">
                           <Link
                             href={`/clientas/${c.id}`}
-                            className="font-sans text-base font-bold text-[#3B0D1E] hover:underline no-underline truncate"
+                            className="font-sans text-base font-bold text-[#111111] hover:underline no-underline truncate"
                           >
                             {c.nombre}
                           </Link>
                           <span
                             className={`px-2.5 py-0.5 rounded-full font-mono text-[11px] font-bold tabular-nums border ${
                               tramo === 60
-                                ? 'bg-[#FFF7F5] text-[#D97757] border-[#D97757]/35'
+                                ? 'bg-[#FFFBEB] text-[#B45309] border-[#B45309]/35'
                                 : tramo === 45
-                                  ? 'bg-[#F5EBE8] text-[#52142B] border-[#E8CFC8]'
-                                  : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4]'
+                                  ? 'bg-[#F4F4F5] text-[#27272A] border-[#E4E4E7]'
+                                  : 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7]'
                             }`}
                           >
                             Hace {diasInactiva} días
                           </span>
                         </div>
 
-                        <p className="m-0 mt-1 text-xs text-[#6B535C] tabular-nums">
+                        <p className="m-0 mt-1 text-xs text-[#52525B] tabular-nums">
                           Última visita: {c.ultimaVisita ? formatDate(c.ultimaVisita) : '—'}
                           {c.totalVisitas > 0 ? ` · ${c.totalVisitas} visitas` : ''}
                         </p>
@@ -421,7 +421,7 @@ export default function ClientasPage() {
 
                     <div className="shrink-0">
                       {contactadaEstaSemana ? (
-                        <span className="min-h-[42px] px-4 py-2 rounded-2xl bg-[#F0FDFA] border border-[#0D9488]/25 text-[#0D9488] font-sans text-xs font-bold inline-flex items-center gap-1.5">
+                        <span className="min-h-[42px] px-4 py-2 rounded-xl bg-[#F0FDF4] border border-[#15803D]/25 text-[#15803D] font-sans text-xs font-bold inline-flex items-center gap-1.5">
                           <Check size={14} />
                           <span>Contactada esta semana</span>
                         </span>
@@ -430,7 +430,7 @@ export default function ClientasPage() {
                           type="button"
                           disabled={!tieneTelefonoValido}
                           onClick={() => enviarMensajeReactivacion(item)}
-                          className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans text-xs font-bold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed border-none"
+                          className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white font-sans text-xs font-bold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed border-none"
                         >
                           <MessageCircle size={15} />
                           <span>Reactivar por WhatsApp</span>
@@ -445,7 +445,7 @@ export default function ClientasPage() {
         ) : (
           <>
             <div className="flex justify-between items-center mb-3">
-              <span className="font-mono text-xs font-semibold text-[#947C85] tabular-nums">
+              <span className="font-mono text-xs font-semibold text-[#71717A] tabular-nums">
                 {filtered.length} {filtered.length === 1 ? 'clienta' : 'clientas'}
                 {sort === 'ultima'
                   ? ' · ordenadas por última visita'
@@ -456,7 +456,7 @@ export default function ClientasPage() {
               <button
                 type="button"
                 onClick={() => setShowFilters((v) => !v)}
-                className="min-h-[38px] px-2.5 rounded-lg bg-transparent border-none flex items-center gap-1.5 text-[#6B535C] hover:text-[#3B0D1E] text-xs font-bold cursor-pointer"
+                className="min-h-[38px] px-2.5 rounded-lg bg-transparent border-none flex items-center gap-1.5 text-[#52525B] hover:text-[#111111] text-xs font-bold cursor-pointer"
               >
                 <SlidersHorizontal size={13} /> Ordenar
               </button>
@@ -465,20 +465,20 @@ export default function ClientasPage() {
             {loading ? (
               <div className="space-y-2.5">
                 {[0, 1, 2, 3].map((i) => (
-                  <div key={i} className="skeleton-shimmer h-20 rounded-2xl" />
+                  <div key={i} className="skeleton-shimmer h-20 rounded-xl" />
                 ))}
               </div>
             ) : filtered.length === 0 ? (
-              <div className="text-center py-12 px-5 bg-white rounded-3xl border border-[#EFE8E4] shadow-velvet">
-                <div className="w-14 h-14 rounded-2xl bg-[#F5EBE8] border border-[#E8CFC8] mx-auto mb-3.5 flex items-center justify-center">
-                  <Users size={24} className="text-[#3B0D1E]" />
+              <div className="text-center py-12 px-5 bg-white rounded-xl border border-[#E4E4E7]">
+                <div className="w-14 h-14 rounded-xl bg-[#F4F4F5] border border-[#E4E4E7] mx-auto mb-3.5 flex items-center justify-center">
+                  <Users size={24} className="text-[#111111]" />
                 </div>
-                <h2 className="m-0 font-sans text-base md:text-lg font-bold tracking-tight text-[#3B0D1E]">
+                <h2 className="m-0 font-sans text-base md:text-lg font-bold tracking-tight text-[#111111]">
                   {search || filterRizo !== 'todas'
                     ? 'Sin resultados para este filtro'
                     : 'Aún no tienes clientas registradas'}
                 </h2>
-                <p className="mt-1.5 mb-5 max-w-sm mx-auto text-xs text-[#6B535C] leading-relaxed">
+                <p className="mt-1.5 mb-5 max-w-sm mx-auto text-xs text-[#52525B] leading-relaxed">
                   {search || filterRizo !== 'todas'
                     ? 'Prueba ajustando el nombre buscado o seleccionando otra textura capilar.'
                     : 'Cada clienta conserva sus cotizaciones, cierres en silla, diagnósticos y consentimientos digitales.'}
@@ -508,27 +508,27 @@ export default function ClientasPage() {
                       href={`/clientas/${c.id}`}
                       className="stagger-item block no-underline"
                     >
-                      <article className="bg-white rounded-3xl p-4 border border-[#EFE8E4] hover:border-[#E8CFC8] shadow-velvet transition-all flex items-center gap-3.5">
+                      <article className="bg-white rounded-xl p-4 border border-[#E4E4E7] hover:border-[#E4E4E7] transition-all flex items-center gap-3.5">
                         <AvatarV2 nombre={c.nombre} tone={tone} size="md" />
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-baseline gap-2">
-                            <h3 className="m-0 font-sans text-base font-bold tracking-tight text-[#3B0D1E] truncate">
+                            <h3 className="m-0 font-sans text-base font-bold tracking-tight text-[#111111] truncate">
                               {c.nombre}
                             </h3>
                             {c.ultimaVisita && (
-                              <span className="font-mono text-[11px] font-semibold text-[#947C85] tabular-nums shrink-0">
+                              <span className="font-mono text-[11px] font-semibold text-[#71717A] tabular-nums shrink-0">
                                 {formatDate(c.ultimaVisita)}
                               </span>
                             )}
                           </div>
                           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                             {c.tipoRizoPrincipal && (
-                              <span className="px-2.5 py-0.5 rounded-full bg-[#F5EBE8] border border-[#E8CFC8] text-[#3B0D1E] text-[11px] font-bold">
+                              <span className="px-2.5 py-0.5 rounded-full bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] text-[11px] font-bold">
                                 {getRizoLabel(c.tipoRizoPrincipal)}
                               </span>
                             )}
                             {c.edad > 0 && (
-                              <span className="text-xs text-[#6B535C] tabular-nums">
+                              <span className="text-xs text-[#52525B] tabular-nums">
                                 · {c.edad} años
                               </span>
                             )}
@@ -536,8 +536,8 @@ export default function ClientasPage() {
                               <span
                                 className={`ml-auto inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold tabular-nums border ${
                                   c.totalVisitas >= 5
-                                    ? 'bg-[#F0FDFA] text-[#0D9488] border-[#0D9488]/25'
-                                    : 'bg-[#FAF7F5] text-[#6B535C] border-[#EFE8E4]'
+                                    ? 'bg-[#F0FDF4] text-[#15803D] border-[#15803D]/25'
+                                    : 'bg-[#FAFAFA] text-[#52525B] border-[#E4E4E7]'
                                 }`}
                               >
                                 {c.totalVisitas}× {c.totalVisitas === 1 ? 'visita' : 'visitas'}
@@ -545,7 +545,7 @@ export default function ClientasPage() {
                             )}
                           </div>
                         </div>
-                        <ChevronRight size={17} className="text-[#947C85] shrink-0" />
+                        <ChevronRight size={17} className="text-[#71717A] shrink-0" />
                       </article>
                     </Link>
                   );

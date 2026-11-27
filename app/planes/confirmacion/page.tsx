@@ -90,7 +90,7 @@ function ConfirmacionInner() {
     cuerpo = (
       <EstadoCard
         icono={
-          <div className="w-14 h-14 rounded-2xl bg-[#FFF7F5] border border-[#D97757]/30 text-[#D97757] flex items-center justify-center">
+          <div className="w-14 h-14 rounded-xl bg-[#FFFBEB] border border-[#B45309]/30 text-[#B45309] flex items-center justify-center">
             <XCircle size={28} strokeWidth={1.8} />
           </div>
         }
@@ -101,7 +101,7 @@ function ConfirmacionInner() {
           <button
             type="button"
             onClick={() => router.push('/planes')}
-            className="w-full min-h-[48px] py-3.5 px-5 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans font-bold text-sm transition-colors cursor-pointer border-none"
+            className="w-full min-h-[48px] py-3.5 px-5 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white font-sans font-bold text-sm transition-colors cursor-pointer border-none"
           >
             Volver a planes
           </button>
@@ -112,7 +112,7 @@ function ConfirmacionInner() {
     cuerpo = (
       <EstadoCard
         icono={
-          <div className="w-14 h-14 rounded-2xl bg-[#F0FDFA] border border-[#0D9488]/25 text-[#0D9488] flex items-center justify-center">
+          <div className="w-14 h-14 rounded-xl bg-[#F0FDF4] border border-[#15803D]/25 text-[#15803D] flex items-center justify-center">
             <CheckCircle2 size={28} strokeWidth={1.8} />
           </div>
         }
@@ -125,7 +125,7 @@ function ConfirmacionInner() {
               <>
                 {' '}
                 hasta el{' '}
-                <span className="font-semibold text-[#3B0D1E] tabular-nums">
+                <span className="font-semibold text-[#111111] tabular-nums">
                   {formatDate(resultado.suscripcion.vence)}
                 </span>
                 .
@@ -133,14 +133,14 @@ function ConfirmacionInner() {
             ) : (
               '.'
             )}{' '}
-            Gracias por confiar en Velli.
+            Gracias por confiar en Veli.
           </>
         }
         accion={
           <button
             type="button"
             onClick={() => router.push('/')}
-            className="w-full min-h-[48px] py-3.5 px-5 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans font-bold text-sm transition-colors cursor-pointer border-none"
+            className="w-full min-h-[48px] py-3.5 px-5 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white font-sans font-bold text-sm transition-colors cursor-pointer border-none"
           >
             Ir al inicio
           </button>
@@ -151,7 +151,7 @@ function ConfirmacionInner() {
     cuerpo = (
       <EstadoCard
         icono={
-          <div className="w-14 h-14 rounded-2xl bg-[#FFF7F5] border border-[#D97757]/30 text-[#D97757] flex items-center justify-center">
+          <div className="w-14 h-14 rounded-xl bg-[#FFFBEB] border border-[#B45309]/30 text-[#B45309] flex items-center justify-center">
             <XCircle size={28} strokeWidth={1.8} />
           </div>
         }
@@ -162,7 +162,7 @@ function ConfirmacionInner() {
           <button
             type="button"
             onClick={() => router.push('/planes')}
-            className="w-full min-h-[48px] py-3.5 px-5 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans font-bold text-sm transition-colors cursor-pointer border-none"
+            className="w-full min-h-[48px] py-3.5 px-5 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white font-sans font-bold text-sm transition-colors cursor-pointer border-none"
           >
             Intentar de nuevo
           </button>
@@ -174,12 +174,12 @@ function ConfirmacionInner() {
       <EstadoCard
         icono={
           agotado ? (
-            <div className="w-14 h-14 rounded-2xl bg-[#F5EBE8] border border-[#E8CFC8] text-[#52142B] flex items-center justify-center">
+            <div className="w-14 h-14 rounded-xl bg-[#F4F4F5] border border-[#E4E4E7] text-[#27272A] flex items-center justify-center">
               <Clock4 size={28} strokeWidth={1.8} />
             </div>
           ) : (
-            <div className="w-14 h-14 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] flex items-center justify-center">
-              <span className="w-7 h-7 rounded-full border-[3px] border-[#3B0D1E] border-t-transparent animate-spin inline-block" />
+            <div className="w-14 h-14 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] flex items-center justify-center">
+              <span className="w-7 h-7 rounded-full border-[3px] border-[#111111] border-t-transparent animate-spin inline-block" />
             </div>
           )
         }
@@ -197,14 +197,14 @@ function ConfirmacionInner() {
                 type="button"
                 onClick={reverificar}
                 disabled={verificando}
-                className="w-full min-h-[48px] py-3.5 px-5 rounded-2xl bg-[#3B0D1E] hover:bg-[#52142B] text-[#FAF7F5] font-sans font-bold text-sm transition-colors cursor-pointer disabled:opacity-60 border-none"
+                className="w-full min-h-[48px] py-3.5 px-5 rounded-xl bg-[#111111] hover:bg-[#27272A] text-white font-sans font-bold text-sm transition-colors cursor-pointer disabled:opacity-60 border-none"
               >
                 {verificando ? 'Verificando…' : 'Verificar ahora'}
               </button>
               <button
                 type="button"
                 onClick={() => router.push('/')}
-                className="w-full min-h-[48px] py-3.5 px-5 rounded-2xl bg-white hover:bg-[#F5EBE8] border border-[#EFE8E4] text-[#3B0D1E] font-sans font-bold text-sm transition-colors cursor-pointer"
+                className="w-full min-h-[48px] py-3.5 px-5 rounded-xl bg-white hover:bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] font-sans font-bold text-sm transition-colors cursor-pointer"
               >
                 Ir al inicio
               </button>
@@ -216,18 +216,18 @@ function ConfirmacionInner() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] text-[#3B0D1E] font-sans pb-24">
-      <header className="sticky top-0 z-30 bg-[#FAF7F5]/95 backdrop-blur-md border-b border-[#EFE8E4]">
+    <div className="min-h-screen bg-[#FAFAFA] text-[#111111] font-sans pb-24">
+      <header className="sticky top-0 z-30 bg-[#FAFAFA]/95 backdrop-blur-md border-b border-[#E4E4E7]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           <Link
             href="/planes"
-            className="min-h-[44px] inline-flex items-center gap-2 text-xs font-bold text-[#6B535C] hover:text-[#3B0D1E] no-underline transition-colors"
+            className="min-h-[44px] inline-flex items-center gap-2 text-xs font-bold text-[#52525B] hover:text-[#111111] no-underline transition-colors"
           >
             <ArrowLeft size={16} />
             Volver a Planes
           </Link>
-          <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
-            Velli Business Intelligence
+          <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
+            Veli
           </span>
         </div>
       </header>
@@ -235,8 +235,8 @@ function ConfirmacionInner() {
       <main className="max-w-lg mx-auto px-4 sm:px-6 pt-10">
         {cuerpo}
 
-        <div className="mt-6 flex items-start gap-2.5 text-xs text-[#6B535C] leading-relaxed px-1">
-          <ShieldCheck size={16} className="text-[#3B0D1E] shrink-0 mt-0.5" />
+        <div className="mt-6 flex items-start gap-2.5 text-xs text-[#52525B] leading-relaxed px-1">
+          <ShieldCheck size={16} className="text-[#111111] shrink-0 mt-0.5" />
           <p className="m-0">
             Transacción procesada de forma segura por Bold. Tu información operativa y las métricas de tu salón permanecen protegidas.
           </p>
@@ -260,15 +260,15 @@ function EstadoCard({
   accion?: React.ReactNode;
 }) {
   return (
-    <section className="bg-white rounded-3xl border border-[#EFE8E4] p-7 sm:p-8 shadow-velvet flex flex-col items-center text-center">
+    <section className="bg-white rounded-xl border border-[#E4E4E7] p-7 sm:p-8 flex flex-col items-center text-center">
       {icono}
-      <span className="mt-4 font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+      <span className="mt-4 font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
         {eyebrow}
       </span>
-      <h1 className="m-0 mt-1 font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#3B0D1E]">
+      <h1 className="m-0 mt-1 font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#111111]">
         {titulo}
       </h1>
-      <p className="m-0 mt-2.5 text-sm text-[#6B535C] font-sans leading-relaxed max-w-sm">
+      <p className="m-0 mt-2.5 text-sm text-[#52525B] font-sans leading-relaxed max-w-sm">
         {detalle}
       </p>
       {accion && <div className="mt-6 w-full">{accion}</div>}

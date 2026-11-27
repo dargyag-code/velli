@@ -348,23 +348,23 @@ export default function OnboardingExpressPage() {
 
   if (checking) {
     return (
-      <div className="min-h-screen w-full bg-[#FAF7F5] flex items-center justify-center">
+      <div className="min-h-screen w-full bg-[#FAFAFA] flex items-center justify-center">
         <div className="inline-flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-[#3B0D1E] flex items-center justify-center shadow-md animate-pulse">
+          <div className="w-11 h-11 rounded-xl bg-[#111111] flex items-center justify-center shadow-md animate-pulse">
             <svg width="24" height="24" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M19.2 33.5C13.2 29.8 7.5 21.8 9.2 13.8C10.5 7.8 16.5 7.2 19.2 14.5C20.2 17.2 20.2 27.5 19.2 33.5Z"
-                fill="#FAF7F5"
+                fill="#FAFAFA"
               />
               <path
                 d="M20.8 33.5C26.8 29.8 32.5 21.8 30.8 13.8C29.5 7.8 23.5 7.2 20.8 14.5C19.8 17.2 19.8 27.5 20.8 33.5Z"
-                fill="#E8CFC8"
+                fill="#E4E4E7"
                 fillOpacity="0.85"
               />
-              <circle cx="20" cy="6.5" r="2.5" fill="#D97757" />
+              <circle cx="20" cy="6.5" r="2.5" fill="#B45309" />
             </svg>
           </div>
-          <span className="text-sm font-semibold text-[#6E6266]">Preparando tu salón…</span>
+          <span className="text-sm font-semibold text-[#52525B]">Preparando tu salón…</span>
         </div>
       </div>
     );
@@ -401,31 +401,31 @@ export default function OnboardingExpressPage() {
   ];
 
   return (
-    <div className="min-h-screen w-full bg-[#FAF7F5] text-[#3B0D1E] flex flex-col justify-between pb-10">
+    <div className="min-h-screen w-full bg-[#FAFAFA] text-[#111111] flex flex-col justify-between pb-10">
       {/* ── Top Hero Velvet Studio ──────────────────────────────────────── */}
-      <header className="v-gradient-hero v-grain text-[#FAF7F5] pt-8 pb-8 px-5 sm:px-8 border-b border-[#3B0D1E]">
+      <header className="v-gradient-hero v-grain text-white pt-8 pb-8 px-5 sm:px-8 border-b border-[#111111]">
         <div className="max-w-xl mx-auto">
           <div className="flex items-center justify-between gap-3 mb-6">
             <div className="inline-flex items-center gap-3 select-none">
-              <div className="w-10 h-10 rounded-xl bg-[#FAF7F5]/10 border border-[#E8CFC8]/25 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[#FAFAFA]/10 border border-[#E4E4E7]/25 flex items-center justify-center">
                 <svg width="24" height="24" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
                     d="M19.2 33.5C13.2 29.8 7.5 21.8 9.2 13.8C10.5 7.8 16.5 7.2 19.2 14.5C20.2 17.2 20.2 27.5 19.2 33.5Z"
-                    fill="#FAF7F5"
+                    fill="#FAFAFA"
                   />
                   <path
                     d="M20.8 33.5C26.8 29.8 32.5 21.8 30.8 13.8C29.5 7.8 23.5 7.2 20.8 14.5C19.8 17.2 19.8 27.5 20.8 33.5Z"
-                    fill="#E8CFC8"
+                    fill="#E4E4E7"
                     fillOpacity="0.85"
                   />
-                  <circle cx="20" cy="6.5" r="2.5" fill="#D97757" />
+                  <circle cx="20" cy="6.5" r="2.5" fill="#B45309" />
                 </svg>
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-xl font-bold tracking-tight !text-[#FAF7F5] font-brand">
+                <span className="text-xl font-bold tracking-tight !text-white font-brand">
                   velli
                 </span>
-                <span className="text-[9px] uppercase tracking-[0.22em] font-semibold mt-0.5 !text-[#E8CFC8]">
+                <span className="text-[9px] uppercase tracking-[0.22em] font-semibold mt-0.5 !text-[#E4E4E7]">
                   Business Intelligence
                 </span>
               </div>
@@ -435,16 +435,16 @@ export default function OnboardingExpressPage() {
               type="button"
               onClick={completarDespues}
               disabled={saving}
-              className="text-xs font-semibold text-[#E8CFC8] hover:text-[#FAF7F5] transition-colors cursor-pointer disabled:opacity-50"
+              className="text-xs font-semibold text-[#E4E4E7] hover:text-white transition-colors cursor-pointer disabled:opacity-50"
             >
               Saltar configuración →
             </button>
           </div>
 
-          <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight !text-[#FAF7F5] leading-tight">
+          <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight !text-white leading-tight">
             {encabezados.titulo}
           </h1>
-          <p className="mt-2 text-xs sm:text-sm !text-[#FAF7F5]/85 leading-relaxed">
+          <p className="mt-2 text-xs sm:text-sm !text-white/85 leading-relaxed">
             {encabezados.subtitulo}
           </p>
         </div>
@@ -452,7 +452,7 @@ export default function OnboardingExpressPage() {
 
       {/* ── Indicador de Progreso de 3 Pasos ────────────────────────────── */}
       <div className="w-full max-w-xl mx-auto px-5 sm:px-8 pt-5">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 bg-[#F3ECE8] p-1.5 rounded-2xl border border-[#EFE8E4]">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 bg-[#F4F4F5] p-1.5 rounded-xl border border-[#E4E4E7]">
           {PASOS_INDICADOR.map((item) => {
             const activo = paso === item.num;
             const completado = paso > item.num;
@@ -461,10 +461,10 @@ export default function OnboardingExpressPage() {
                 key={item.num}
                 className={`px-3 py-2.5 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-1.5 text-center transition-all ${
                   activo
-                    ? 'bg-[#3B0D1E] text-[#FAF7F5] shadow-sm'
+                    ? 'bg-[#111111] text-white shadow-sm'
                     : completado
-                      ? 'bg-white text-[#0D9488] border border-[#EFE8E4]'
-                      : 'text-[#6B535C]'
+                      ? 'bg-white text-[#15803D] border border-[#E4E4E7]'
+                      : 'text-[#52525B]'
                 }`}
               >
                 {completado && <Check size={13} className="shrink-0" />}
@@ -481,10 +481,10 @@ export default function OnboardingExpressPage() {
         {paso === 1 && (
           <form
             onSubmit={guardarPaso1}
-            className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EFE8E4] shadow-[0_14px_34px_-10px_rgba(59,13,30,0.08)] space-y-5"
+            className="bg-white rounded-xl p-6 sm:p-7 border border-[#E4E4E7] shadow-[0_14px_34px_-10px_rgba(59,13,30,0.08)] space-y-5"
           >
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-[0.14em] text-[#6E6266] mb-1.5">
+              <label className="block text-[11px] font-bold uppercase tracking-[0.14em] text-[#52525B] mb-1.5">
                 Nombre del salón *
               </label>
               <input
@@ -493,12 +493,12 @@ export default function OnboardingExpressPage() {
                 onChange={(e) => setNombreSalon(e.target.value)}
                 placeholder="Ej. Atelier Camila Studio"
                 autoFocus
-                className="w-full px-4 py-3 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] text-sm text-[#1C1518] placeholder-[#BDB0B4] focus:bg-white focus:border-[#3B0D1E] outline-none transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] text-sm text-[#111111] placeholder-[#71717A] focus:bg-white focus:border-[#111111] outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-[0.14em] text-[#6E6266] mb-1.5">
+              <label className="block text-[11px] font-bold uppercase tracking-[0.14em] text-[#52525B] mb-1.5">
                 Ciudad
               </label>
               <input
@@ -506,29 +506,29 @@ export default function OnboardingExpressPage() {
                 value={ciudad}
                 onChange={(e) => setCiudad(e.target.value)}
                 placeholder="Ej. Bogotá, Medellín, Cali…"
-                className="w-full px-4 py-3 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] text-sm text-[#1C1518] placeholder-[#BDB0B4] focus:bg-white focus:border-[#3B0D1E] outline-none transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] text-sm text-[#111111] placeholder-[#71717A] focus:bg-white focus:border-[#111111] outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-[0.14em] text-[#6E6266] mb-1.5">
+              <label className="block text-[11px] font-bold uppercase tracking-[0.14em] text-[#52525B] mb-1.5">
                 WhatsApp oficial del salón
               </label>
               <div className="relative">
                 <MessageCircle
                   size={16}
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0D9488]"
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#15803D]"
                 />
                 <input
                   type="tel"
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
                   placeholder="+57 300 123 4567"
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] text-sm text-[#1C1518] placeholder-[#BDB0B4] focus:bg-white focus:border-[#3B0D1E] outline-none transition-all tabular-nums"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] text-sm text-[#111111] placeholder-[#71717A] focus:bg-white focus:border-[#111111] outline-none transition-all tabular-nums"
                 />
               </div>
-              <div className="mt-2.5 p-3 rounded-2xl bg-[#EAF6F4] border border-[#0D9488]/20 text-xs text-[#1C1518] leading-relaxed">
-                <strong className="text-[#0D9488]">Canal directo de cierre:</strong> En este número
+              <div className="mt-2.5 p-3 rounded-xl bg-[#F0FDF4] border border-[#15803D]/20 text-xs text-[#111111] leading-relaxed">
+                <strong className="text-[#15803D]">Canal directo de cierre:</strong> En este número
                 recibirás las confirmaciones y consentimientos digitales cuando tus clientas acepten
                 su cotización desde el enlace público <code className="font-mono text-[11px]">/c/[token]</code>.
               </div>
@@ -538,7 +538,7 @@ export default function OnboardingExpressPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="w-full py-3.5 px-6 rounded-full bg-[#3B0D1E] hover:bg-[#6E1E3A] disabled:opacity-60 text-[#FAF7F5] font-bold text-sm tracking-wide shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3.5 px-6 rounded-full bg-[#111111] hover:bg-[#27272A] disabled:opacity-60 text-white font-bold text-sm tracking-wide shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>{saving ? 'Guardando…' : 'Continuar a Servicios y Tarifas'}</span>
                 <ArrowRight size={16} />
@@ -550,15 +550,15 @@ export default function OnboardingExpressPage() {
         {/* PASO 2: SERVICIOS Y PRECIOS BASE */}
         {paso === 2 && (
           <div className="space-y-4">
-            <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#EFE8E4] shadow-[0_14px_34px_-10px_rgba(59,13,30,0.08)] space-y-3">
+            <div className="bg-white rounded-xl p-5 sm:p-6 border border-[#E4E4E7] shadow-[0_14px_34px_-10px_rgba(59,13,30,0.08)] space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#6E6266]">
+                <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#52525B]">
                   Servicios activos ({serviciosSeleccionados.length})
                 </span>
-                <span className="text-[11px] text-[#6E6266]">Tarifa base ($ COP)</span>
+                <span className="text-[11px] text-[#52525B]">Tarifa base ($ COP)</span>
               </div>
 
-              <div className="divide-y divide-[#FAF7F5]">
+              <div className="divide-y divide-[#FAFAFA]">
                 {catalogoServicios.map((srv) => (
                   <div
                     key={srv.nombre}
@@ -574,19 +574,19 @@ export default function OnboardingExpressPage() {
                       <span
                         className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 border transition-colors ${
                           srv.seleccionado
-                            ? 'bg-[#3B0D1E] border-[#3B0D1E] text-[#FAF7F5]'
-                            : 'bg-[#FAF7F5] border-[#D9CCC6] text-transparent'
+                            ? 'bg-[#111111] border-[#111111] text-white'
+                            : 'bg-[#FAFAFA] border-[#D9CCC6] text-transparent'
                         }`}
                       >
                         <Check size={13} />
                       </span>
-                      <span className="text-sm font-semibold text-[#1C1518] truncate">
+                      <span className="text-sm font-semibold text-[#111111] truncate">
                         {srv.nombre}
                       </span>
                     </button>
 
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-xs font-semibold text-[#6E6266]">$</span>
+                      <span className="text-xs font-semibold text-[#52525B]">$</span>
                       <input
                         type="text"
                         inputMode="numeric"
@@ -594,7 +594,7 @@ export default function OnboardingExpressPage() {
                         value={srv.precioBase > 0 ? srv.precioBase.toLocaleString('es-CO') : ''}
                         onChange={(e) => cambiarPrecioServicio(srv.nombre, e.target.value)}
                         aria-label={`Precio base de ${srv.nombre}`}
-                        className="w-28 px-3 py-1.5 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] text-right text-sm font-bold text-[#1C1518] tabular-nums focus:bg-white focus:border-[#3B0D1E] outline-none disabled:opacity-50"
+                        className="w-28 px-3 py-1.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] text-right text-sm font-bold text-[#111111] tabular-nums focus:bg-white focus:border-[#111111] outline-none disabled:opacity-50"
                       />
                     </div>
                   </div>
@@ -602,8 +602,8 @@ export default function OnboardingExpressPage() {
               </div>
 
               {/* Agregar servicio propio */}
-              <div className="pt-3 border-t border-[#EFE8E4]">
-                <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#6E6266] mb-2">
+              <div className="pt-3 border-t border-[#E4E4E7]">
+                <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#52525B] mb-2">
                   ¿Ofreces otra especialidad? Agrégala aquí
                 </span>
                 <div className="flex flex-wrap sm:flex-nowrap gap-2">
@@ -612,7 +612,7 @@ export default function OnboardingExpressPage() {
                     value={nuevoServicioNombre}
                     onChange={(e) => setNuevoServicioNombre(e.target.value)}
                     placeholder="Nombre del servicio"
-                    className="flex-1 min-w-[160px] px-3.5 py-2.5 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] text-xs text-[#1C1518] placeholder-[#BDB0B4] focus:bg-white focus:border-[#3B0D1E] outline-none"
+                    className="flex-1 min-w-[160px] px-3.5 py-2.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] text-xs text-[#111111] placeholder-[#71717A] focus:bg-white focus:border-[#111111] outline-none"
                   />
                   <input
                     type="text"
@@ -623,12 +623,12 @@ export default function OnboardingExpressPage() {
                       setNuevoServicioPrecio(val ? Number(val).toLocaleString('es-CO') : '');
                     }}
                     placeholder="$ Base COP"
-                    className="w-32 px-3.5 py-2.5 rounded-xl bg-[#FAF7F5] border border-[#EFE8E4] text-xs font-semibold text-[#1C1518] placeholder-[#BDB0B4] tabular-nums focus:bg-white focus:border-[#3B0D1E] outline-none"
+                    className="w-32 px-3.5 py-2.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] text-xs font-semibold text-[#111111] placeholder-[#71717A] tabular-nums focus:bg-white focus:border-[#111111] outline-none"
                   />
                   <button
                     type="button"
                     onClick={agregarServicioPersonalizado}
-                    className="px-3.5 py-2.5 rounded-xl bg-[#F7ECEF] hover:bg-[#E8CFC8]/50 text-[#3B0D1E] text-xs font-bold inline-flex items-center gap-1 cursor-pointer transition-colors"
+                    className="px-3.5 py-2.5 rounded-xl bg-[#F7ECEF] hover:bg-[#E4E4E7]/50 text-[#111111] text-xs font-bold inline-flex items-center gap-1 cursor-pointer transition-colors"
                   >
                     <Plus size={14} /> Añadir
                   </button>
@@ -641,7 +641,7 @@ export default function OnboardingExpressPage() {
                 type="button"
                 onClick={() => setPaso(1)}
                 disabled={saving}
-                className="px-5 py-3.5 rounded-full bg-white border border-[#EFE8E4] text-[#6E6266] hover:text-[#1C1518] font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-3.5 rounded-full bg-white border border-[#E4E4E7] text-[#52525B] hover:text-[#111111] font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer"
               >
                 <ArrowLeft size={14} /> Atrás
               </button>
@@ -649,7 +649,7 @@ export default function OnboardingExpressPage() {
                 type="button"
                 onClick={guardarPaso2}
                 disabled={saving}
-                className="flex-1 py-3.5 px-6 rounded-full bg-[#3B0D1E] hover:bg-[#6E1E3A] disabled:opacity-60 text-[#FAF7F5] font-bold text-sm tracking-wide shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-1 py-3.5 px-6 rounded-full bg-[#111111] hover:bg-[#27272A] disabled:opacity-60 text-white font-bold text-sm tracking-wide shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>{saving ? 'Guardando…' : 'Revisar activación BI'}</span>
                 <ArrowRight size={16} />
@@ -661,70 +661,70 @@ export default function OnboardingExpressPage() {
         {/* PASO 3: ACTIVACIÓN BI SIN BÁSCULA */}
         {paso === 3 && (
           <div className="space-y-4">
-            <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EFE8E4] shadow-[0_14px_34px_-10px_rgba(59,13,30,0.08)] space-y-5">
-              <div className="flex items-start justify-between gap-3 pb-4 border-b border-[#EFE8E4]">
+            <div className="bg-white rounded-xl p-6 sm:p-7 border border-[#E4E4E7] shadow-[0_14px_34px_-10px_rgba(59,13,30,0.08)] space-y-5">
+              <div className="flex items-start justify-between gap-3 pb-4 border-b border-[#E4E4E7]">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7C3AED]">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#111111]">
                     Calibración Automática Minuto 1
                   </span>
-                  <h2 className="text-lg font-bold text-[#1C1518] mt-0.5">
+                  <h2 className="text-lg font-bold text-[#111111] mt-0.5">
                     {nombreSalon.trim() || 'Tu Salón'} queda listo para rentabilizar
                   </h2>
                 </div>
-                <span className="px-3 py-1 rounded-full bg-[#EAF6F4] text-[#0D9488] text-[11px] font-bold">
+                <span className="px-3 py-1 rounded-full bg-[#F0FDF4] text-[#15803D] text-[11px] font-bold">
                   0% Margen Falso
                 </span>
               </div>
 
               {/* Resumen de lo que se siembra */}
               <div className="space-y-3 text-xs">
-                <div className="p-4 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#F5EFFB] text-[#7C3AED] flex items-center justify-center shrink-0">
+                <div className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-[#F5EFFB] text-[#111111] flex items-center justify-center shrink-0">
                     <FlaskConical size={16} />
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-[#1C1518] text-sm">
+                    <p className="font-bold text-[#111111] text-sm">
                       Catálogo Químico Semilla Colombia 2026 (Sin Báscula)
                     </p>
-                    <p className="text-[#6E6266] mt-0.5 leading-relaxed">
+                    <p className="text-[#52525B] mt-0.5 leading-relaxed">
                       Sembramos{' '}
-                      <strong className="text-[#1C1518] tabular-nums">
+                      <strong className="text-[#111111] tabular-nums">
                         Polvo Decolorante ($320/g)
                       </strong>
                       ,{' '}
-                      <strong className="text-[#1C1518] tabular-nums">
+                      <strong className="text-[#111111] tabular-nums">
                         Tinte Permanente ($465/g)
                       </strong>
                       ,{' '}
-                      <strong className="text-[#1C1518] tabular-nums">
+                      <strong className="text-[#111111] tabular-nums">
                         Peróxido 10V-30V ($32/ml)
                       </strong>{' '}
-                      e insumos fijos (<strong className="text-[#1C1518] tabular-nums">$9.500</strong> en
-                      decoloración y <strong className="text-[#1C1518] tabular-nums">$3.000–$3.500</strong> en
+                      e insumos fijos (<strong className="text-[#111111] tabular-nums">$9.500</strong> en
+                      decoloración y <strong className="text-[#111111] tabular-nums">$3.000–$3.500</strong> en
                       color/hidratación).
                     </p>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4] flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#F7ECEF] text-[#3B0D1E] flex items-center justify-center shrink-0">
+                <div className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-[#F7ECEF] text-[#111111] flex items-center justify-center shrink-0">
                     <UserCheck size={16} />
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-[#1C1518] text-sm">
+                    <p className="font-bold text-[#111111] text-sm">
                       Especialista y Regla de Comisión Saludable (40%)
                     </p>
-                    <p className="text-[#6E6266] mt-0.5 leading-relaxed">
-                      Activamos tu <strong className="text-[#1C1518]">Especialista Principal</strong> con
-                      comisión del <strong className="text-[#1C1518] tabular-nums">40% sobre base libre de química</strong>,
+                    <p className="text-[#52525B] mt-0.5 leading-relaxed">
+                      Activamos tu <strong className="text-[#111111]">Especialista Principal</strong> con
+                      comisión del <strong className="text-[#111111] tabular-nums">40% sobre base libre de química</strong>,
                       protegiendo la utilidad neta del salón.
                     </p>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#FAF7F5] border border-[#EFE8E4]">
+                <div className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7]">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-[#1C1518] text-sm">
+                    <span className="font-bold text-[#111111] text-sm">
                       {serviciosSeleccionados.length}{' '}
                       {serviciosSeleccionados.length === 1
                         ? 'Servicio calibrado'
@@ -733,7 +733,7 @@ export default function OnboardingExpressPage() {
                     <button
                       type="button"
                       onClick={() => setPaso(2)}
-                      className="text-[11px] font-bold text-[#6E1E3A] hover:underline cursor-pointer"
+                      className="text-[11px] font-bold text-[#27272A] hover:underline cursor-pointer"
                     >
                       Editar tarifas
                     </button>
@@ -742,10 +742,10 @@ export default function OnboardingExpressPage() {
                     {serviciosSeleccionados.map((s) => (
                       <span
                         key={s.nombre}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-[#EFE8E4] text-[11px] text-[#1C1518]"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-[#E4E4E7] text-[11px] text-[#111111]"
                       >
                         <span>{s.nombre}</span>
-                        <strong className="text-[#3B0D1E] tabular-nums">
+                        <strong className="text-[#111111] tabular-nums">
                           {formatearPrecioCop(s.precioBase)}
                         </strong>
                       </span>
@@ -754,8 +754,8 @@ export default function OnboardingExpressPage() {
                 </div>
               </div>
 
-              <p className="text-[11px] text-[#6E6266] flex items-center gap-1.5 pt-1">
-                <ShieldCheck size={14} className="text-[#0D9488] shrink-0" />
+              <p className="text-[11px] text-[#52525B] flex items-center gap-1.5 pt-1">
+                <ShieldCheck size={14} className="text-[#15803D] shrink-0" />
                 Puedes personalizar marcas, gramos exactos y equipo cuando quieras en Configuración → Precios.
               </p>
             </div>
@@ -765,7 +765,7 @@ export default function OnboardingExpressPage() {
                 type="button"
                 onClick={() => setPaso(2)}
                 disabled={saving}
-                className="px-5 py-3.5 rounded-full bg-white border border-[#EFE8E4] text-[#6E6266] hover:text-[#1C1518] font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-3.5 rounded-full bg-white border border-[#E4E4E7] text-[#52525B] hover:text-[#111111] font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer"
               >
                 <ArrowLeft size={14} /> Atrás
               </button>
@@ -773,7 +773,7 @@ export default function OnboardingExpressPage() {
                 type="button"
                 onClick={activarSalonYEmpezar}
                 disabled={saving}
-                className="flex-1 py-4 px-6 rounded-full bg-[#3B0D1E] hover:bg-[#6E1E3A] disabled:opacity-60 text-[#FAF7F5] font-bold text-sm tracking-wide shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-1 py-4 px-6 rounded-full bg-[#111111] hover:bg-[#27272A] disabled:opacity-60 text-white font-bold text-sm tracking-wide shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Sparkles size={16} />
                 <span>{saving ? 'Activando motor BI…' : 'Activar mi salón y cotizar'}</span>

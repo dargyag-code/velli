@@ -41,8 +41,8 @@ export const MAIN_NAV_TABS: readonly MainNavTabItem[] = [
   {
     key: 'clientas',
     href: '/clientas',
-    label: 'Clientas CRM',
-    shortLabel: 'Clientas',
+    label: 'Clientes',
+    shortLabel: 'Clientes',
     allowedRoles: ['owner', 'manager', 'specialist'],
   },
   {

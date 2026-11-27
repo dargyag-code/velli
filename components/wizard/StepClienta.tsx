@@ -54,7 +54,7 @@ export default function StepClienta({ data, onChange, errors }: Props) {
 
       {/* Select existing */}
       {existingClientas.length > 0 && (
-        <div className="bg-[var(--primary-light)] rounded-2xl p-4">
+        <div className="bg-[var(--primary-light)] rounded-xl p-4">
           <p className="text-sm font-semibold text-[var(--primary)] mb-3" style={{ fontFamily: "var(--font-dm-serif), 'DM Serif Display', serif" }}>
             Clienta existente
           </p>
@@ -121,9 +121,9 @@ export default function StepClienta({ data, onChange, errors }: Props) {
       )}
 
       <div className="flex items-center gap-3">
-        <div className="flex-1 h-px bg-[#E5E5E5]" />
+        <div className="flex-1 h-px bg-[#E4E4E7]" />
         <span className="text-xs text-[#999999] font-medium">o nueva clienta</span>
-        <div className="flex-1 h-px bg-[#E5E5E5]" />
+        <div className="flex-1 h-px bg-[#E4E4E7]" />
       </div>
 
       {/* New client form */}

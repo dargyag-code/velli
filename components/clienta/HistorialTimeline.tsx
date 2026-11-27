@@ -55,7 +55,7 @@ function buildWhatsAppUrl(clienta: Clienta, consulta: Consulta): string {
     ``,
     `Tu PDF completo te lo envío por aquí 📄`,
     ``,
-    `_Generado con Velli Business Intelligence_`,
+    `_Generado con Veli_`,
   ]
     .filter((l) => l !== null)
     .join('\n');
@@ -122,31 +122,31 @@ function ConsultaItem({
         className="absolute left-0 top-4 w-6 h-6 rounded-full flex items-center justify-center shadow-[0_4px_10px_-2px_rgba(59,13,30,0.18)] z-10"
         style={{ background: borderColor }}
       >
-        <span className="text-[#FAF7F5] font-mono text-[10px] font-bold tabular-nums">
+        <span className="text-white font-mono text-[10px] font-bold tabular-nums">
           {consulta.numeroConsulta}
         </span>
       </div>
       {/* Timeline line */}
-      <div className="absolute left-3 top-10 bottom-0 w-px bg-[#EFE8E4]" />
+      <div className="absolute left-3 top-10 bottom-0 w-px bg-[#E4E4E7]" />
 
       <div
-        className="bg-white rounded-2xl border border-[#EFE8E4] overflow-hidden shadow-[0_10px_30px_-5px_rgba(59,13,30,0.05)]"
+        className="bg-white rounded-xl border border-[#E4E4E7] overflow-hidden "
         style={{ borderLeft: `4px solid ${borderColor}` }}
       >
         {/* Header */}
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
-          className="w-full min-h-[56px] flex items-center justify-between p-4 text-left bg-transparent border-none hover:bg-[#FAF7F5] transition-colors cursor-pointer"
+          className="w-full min-h-[56px] flex items-center justify-between p-4 text-left bg-transparent border-none hover:bg-[#FAFAFA] transition-colors cursor-pointer"
         >
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <Calendar size={13} className="text-[#947C85]" />
-              <span className="font-sans text-sm font-bold text-[#3B0D1E] tabular-nums">
+              <Calendar size={13} className="text-[#71717A]" />
+              <span className="font-sans text-sm font-bold text-[#111111] tabular-nums">
                 {formatDate(consulta.fecha)}
               </span>
               {consulta.esBorrador && (
-                <span className="inline-flex items-center gap-1 bg-[#FFF7F5] text-[#D97757] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#D97757]/30">
+                <span className="inline-flex items-center gap-1 bg-[#FFFBEB] text-[#B45309] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#B45309]/30">
                   <FileText size={10} />
                   Borrador
                 </span>
@@ -160,7 +160,7 @@ function ConsultaItem({
                 {resultado.tratamientoPrincipal}
               </span>
               {consulta.tipoRizoPrincipal && (
-                <span className="px-2.5 py-0.5 rounded-full bg-[#F5EBE8] text-[#3B0D1E] text-[11px] font-semibold">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#F4F4F5] text-[#111111] text-[11px] font-semibold">
                   {getRizoLabel(consulta.tipoRizoPrincipal)}
                 </span>
               )}
@@ -168,25 +168,25 @@ function ConsultaItem({
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {consulta.proximaCita && (
-              <span className="font-mono text-[10px] text-[#947C85] tabular-nums">
+              <span className="font-mono text-[10px] text-[#71717A] tabular-nums">
                 Próx: {formatDate(consulta.proximaCita)}
               </span>
             )}
             {expanded ? (
-              <ChevronUp size={17} className="text-[#6B535C]" />
+              <ChevronUp size={17} className="text-[#52525B]" />
             ) : (
-              <ChevronDown size={17} className="text-[#6B535C]" />
+              <ChevronDown size={17} className="text-[#52525B]" />
             )}
           </div>
         </button>
 
         {/* Expanded */}
         {expanded && (
-          <div className="px-4 pb-4 flex flex-col gap-3 border-t border-[#EFE8E4] fade-in">
+          <div className="px-4 pb-4 flex flex-col gap-3 border-t border-[#E4E4E7] fade-in">
             {consulta.esBorrador && (
-              <div className="flex items-center gap-2 mt-3 p-3 bg-[#FFF7F5] rounded-xl border border-[#D97757]/30">
-                <FileText size={14} className="text-[#D97757]" />
-                <p className="m-0 text-xs font-semibold text-[#D97757]">
+              <div className="flex items-center gap-2 mt-3 p-3 bg-[#FFFBEB] rounded-xl border border-[#B45309]/30">
+                <FileText size={14} className="text-[#B45309]" />
+                <p className="m-0 text-xs font-semibold text-[#B45309]">
                   Diagnóstico express — detalles incompletos
                 </p>
               </div>
@@ -202,12 +202,12 @@ function ConsultaItem({
               ].map(({ label, value }) => (
                 <div
                   key={label}
-                  className="bg-[#FAF7F5] border border-[#EFE8E4] rounded-xl px-3 py-2.5"
+                  className="bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl px-3 py-2.5"
                 >
-                  <p className="m-0 font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+                  <p className="m-0 font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                     {label}
                   </p>
-                  <p className="m-0 mt-0.5 text-sm font-bold text-[#3B0D1E] capitalize">
+                  <p className="m-0 mt-0.5 text-sm font-bold text-[#111111] capitalize">
                     {value}
                   </p>
                 </div>
@@ -215,11 +215,11 @@ function ConsultaItem({
             </div>
 
             {/* Técnica */}
-            <div className="bg-[#F5EBE8] border border-[#E8CFC8] rounded-xl p-3">
-              <p className="m-0 font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1">
+            <div className="bg-[#F4F4F5] border border-[#E4E4E7] rounded-xl p-3">
+              <p className="m-0 font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1">
                 Técnica sugerida
               </p>
-              <p className="m-0 text-sm font-semibold text-[#3B0D1E]">
+              <p className="m-0 text-sm font-semibold text-[#111111]">
                 {resultado.tecnicaDefinicion}
               </p>
             </div>
@@ -227,14 +227,14 @@ function ConsultaItem({
             {/* Problemas */}
             {consulta.problemas.length > 0 && (
               <div>
-                <p className="m-0 font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1.5">
+                <p className="m-0 font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1.5">
                   Condiciones tratadas
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {consulta.problemas.map((p) => (
                     <span
                       key={p}
-                      className="text-[11px] font-semibold bg-[#FAF7F5] text-[#3B0D1E] px-2.5 py-0.5 rounded-full border border-[#EFE8E4]"
+                      className="text-[11px] font-semibold bg-[#FAFAFA] text-[#111111] px-2.5 py-0.5 rounded-full border border-[#E4E4E7]"
                     >
                       {p}
                     </span>
@@ -245,11 +245,11 @@ function ConsultaItem({
 
             {/* Notas */}
             {consulta.notasEstilista && (
-              <div className="bg-[#FAF7F5] border border-[#EFE8E4] rounded-xl p-3">
-                <p className="m-0 font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B535C] mb-1">
+              <div className="bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl p-3">
+                <p className="m-0 font-sans text-[10px] font-bold uppercase tracking-[0.08em] text-[#52525B] mb-1">
                   Notas de silla
                 </p>
-                <p className="m-0 text-xs text-[#3B0D1E] leading-relaxed">
+                <p className="m-0 text-xs text-[#111111] leading-relaxed">
                   {consulta.notasEstilista}
                 </p>
               </div>
@@ -257,7 +257,7 @@ function ConsultaItem({
 
             {/* Satisfacción 1–5 — lectura si ya existe, captura de un toque si no */}
             <div className="flex items-center gap-2 flex-wrap pt-1">
-              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#6B535C]">
+              <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
                 {sat ? 'Satisfacción:' : '¿Cómo quedó tu clienta?'}
               </span>
               <div className="flex gap-1">
@@ -269,23 +269,23 @@ function ConsultaItem({
                     onClick={() => calificar(n)}
                     aria-label={`Calificar ${n} de 5`}
                     className={`min-w-[36px] min-h-[36px] rounded-lg flex items-center justify-center bg-transparent border-none ${
-                      sat ? 'cursor-default' : 'hover:bg-[#FAF7F5] active:scale-90 transition-all cursor-pointer'
+                      sat ? 'cursor-default' : 'hover:bg-[#FAFAFA] active:scale-90 transition-all cursor-pointer'
                     }`}
                   >
                     <Star
                       size={16}
-                      fill={sat && n <= sat ? '#D97757' : 'none'}
-                      className={sat && n <= sat ? 'text-[#D97757]' : 'text-[#E8CFC8]'}
+                      fill={sat && n <= sat ? '#B45309' : 'none'}
+                      className={sat && n <= sat ? 'text-[#B45309]' : 'text-[#E4E4E7]'}
                     />
                   </button>
                 ))}
               </div>
               {sat && (
-                <span className="font-mono text-xs font-bold text-[#3B0D1E] tabular-nums">
+                <span className="font-mono text-xs font-bold text-[#111111] tabular-nums">
                   {sat}/5
                 </span>
               )}
-              {!sat && <span className="text-[11px] text-[#947C85]">opcional · un toque</span>}
+              {!sat && <span className="text-[11px] text-[#71717A]">opcional · un toque</span>}
             </div>
 
             {/* Acciones */}
@@ -293,7 +293,7 @@ function ConsultaItem({
               {cotizadorActivo && (
                 <Link
                   href={`/?clientaId=${clienta.id}`}
-                  className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#E8CFC8] bg-[#F5EBE8] text-xs font-bold text-[#3B0D1E] hover:bg-[#3B0D1E] hover:text-[#FAF7F5] no-underline active:scale-[0.98] transition-all"
+                  className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#E4E4E7] bg-[#F4F4F5] text-xs font-bold text-[#111111] hover:bg-[#111111] hover:text-white no-underline active:scale-[0.98] transition-all"
                 >
                   <Sparkles size={13} />
                   Cotizar en Silla
@@ -304,7 +304,7 @@ function ConsultaItem({
                 type="button"
                 onClick={handleDownloadPDF}
                 disabled={downloading}
-                className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#EFE8E4] bg-white text-xs font-bold text-[#6B535C] hover:border-[#3B0D1E] hover:text-[#3B0D1E] active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+                className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#E4E4E7] bg-white text-xs font-bold text-[#52525B] hover:border-[#111111] hover:text-[#111111] active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
               >
                 <Download size={13} className={downloading ? 'animate-bounce' : ''} />
                 {downloading ? 'Generando…' : 'Descargar PDF'}
@@ -315,7 +315,7 @@ function ConsultaItem({
                   href={buildWhatsAppUrl(clienta, consulta)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#0D9488]/30 bg-[#F0FDFA] text-xs font-bold text-[#0D9488] hover:bg-[#0D9488] hover:text-[#FAF7F5] no-underline active:scale-[0.98] transition-all"
+                  className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#15803D]/30 bg-[#F0FDF4] text-xs font-bold text-[#15803D] hover:bg-[#15803D] hover:text-white no-underline active:scale-[0.98] transition-all"
                 >
                   <MessageCircle size={13} />
                   Compartir WA
@@ -334,13 +334,13 @@ export default function HistorialTimeline({ consultas, clienta }: Props) {
   if (!consultas.length) {
     return (
       <div className="text-center py-10 font-sans">
-        <div className="w-14 h-14 bg-[#F5EBE8] border border-[#E8CFC8] rounded-2xl mx-auto mb-3 flex items-center justify-center">
-          <Calendar size={24} className="text-[#3B0D1E]" />
+        <div className="w-14 h-14 bg-[#F4F4F5] border border-[#E4E4E7] rounded-xl mx-auto mb-3 flex items-center justify-center">
+          <Calendar size={24} className="text-[#111111]" />
         </div>
-        <p className="m-0 font-sans text-sm font-bold text-[#3B0D1E]">
+        <p className="m-0 font-sans text-sm font-bold text-[#111111]">
           Sin consultas registradas
         </p>
-        <p className="m-0 text-xs text-[#947C85] mt-1">
+        <p className="m-0 text-xs text-[#71717A] mt-1">
           Las fichas técnicas previas aparecerán en esta línea de tiempo.
         </p>
       </div>
