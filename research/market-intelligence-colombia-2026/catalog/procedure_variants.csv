@@ -1,0 +1,30 @@
+variant_id,procedure_id,dimension_type,variant_code,variant_label,duration_delta_min,consumption_multiplier,price_surcharge_cop,price_multiplier,notes
+VAR-hair-balayage-completo-corto-media,hair-balayage-completo,largo_densidad,corto_media,Cabello corto (mentón/cuello) · Densidad media,-45,1,0,1,Base 1.0x calibrada para motor Sin Báscula (60g decolorante + 40g matiz)
+VAR-hair-balayage-completo-medio-media,hair-balayage-completo,largo_densidad,medio_media,Cabello medio (hombros/clavícula) · Densidad media,0,1.5,40000,1,Configuración modal en salones colombianos (90g decolorante + 50g matiz)
+VAR-hair-balayage-completo-largo-media,hair-balayage-completo,largo_densidad,largo_media,Cabello largo (media espalda) · Densidad media,45,2,90000,1,120g decolorante + 60g matiz + 70 folios aluminio
+VAR-hair-balayage-completo-xl-alta,hair-balayage-completo,largo_densidad,xl_alta,Cabello extra largo (cintura) · Densidad alta,90,3.25,180000,1,Factor combinado 2.5x largo * 1.3x densidad; sin este recargo el margen colapsa
+VAR-hair-tinte-global-corto,hair-tinte-global,largo,corto,Cabello corto (1 tubo 60g),-15,1,0,1,60g tinte + 60ml peróxido
+VAR-hair-tinte-global-medio,hair-tinte-global,largo,medio,Cabello medio (1.5 tubos 90g),0,1.5,30000,1,90g tinte + 90ml peróxido
+VAR-hair-tinte-global-largo,hair-tinte-global,largo,largo,Cabello largo (2 tubos 120g),30,2,65000,1,120g tinte + 120ml peróxido
+VAR-hair-tinte-global-xl,hair-tinte-global,largo,extra_largo,Cabello extra largo (3 tubos 180g),45,3,110000,1,180g tinte + 180ml peróxido
+VAR-hair-keratina-corto,hair-keratina-alisado,largo,corto,Cabello corto (60 ml · 2 oz),-30,1,0,1,2 oz de producto alisador
+VAR-hair-keratina-medio,hair-keratina-alisado,largo,medio,Cabello medio (90 ml · 3 oz),0,1.5,45000,1,3 oz de producto alisador
+VAR-hair-keratina-largo,hair-keratina-alisado,largo,largo,Cabello largo (120 ml · 4 oz),45,2,95000,1,4 oz + tiempo extra de sellado con plancha en mechas finas
+VAR-hair-keratina-xl-abundante,hair-keratina-alisado,largo_densidad,xl_abundante,Cabello extra largo abundante (165 ml · 5.5 oz),75,2.75,160000,1,Alta exigencia física de planchado (hasta 4h totales)
+VAR-hair-blower-corto,hair-cepillado-blower,largo,corto,Cabello corto,-15,0.8,0,1,30 min en silla
+VAR-hair-blower-medio,hair-cepillado-blower,largo,medio,Cabello medio,0,1,10000,1,45 min en silla
+VAR-hair-blower-largo-xl,hair-cepillado-blower,largo,largo_xl,Cabello largo o extra largo abundante,15,1.4,22000,1,60 min en silla
+VAR-nail-acrilicas-largo-1-2,nail-acrilicas-set-nuevo,largo_una,largo_1_2,Largo #1 a #2 (corto/funcional) · Tono liso,0,1,0,1,12 ml monómero + 8 g polímero
+VAR-nail-acrilicas-largo-3-4,nail-acrilicas-set-nuevo,largo_una,largo_3_4,Largo #3 a #4 (medio/almendra/coffin),30,1.45,25000,1,18 ml monómero + 12 g polímero
+VAR-nail-acrilicas-largo-5-plus,nail-acrilicas-set-nuevo,largo_una,largo_5_plus,Largo #5+ o estructura europea/encapsulada,60,2,55000,1,24 ml monómero + 18 g polímero
+VAR-nail-art-nivel-1,nail-nail-art-diseno,complejidad_diseno,nivel_1_basico,"Nivel 1: Francés, efecto aurora/chrome o 2 uñas decoradas",15,1,0,1,$15.000 - $20.000 promedio
+VAR-nail-art-nivel-2,nail-nail-art-diseno,complejidad_diseno,nivel_2_intermedio,"Nivel 2: Mano alzada en 4-6 uñas, relieve 3D o blooming",30,1.5,18000,1,$30.000 - $45.000 promedio
+VAR-nail-art-nivel-3,nail-nail-art-diseno,complejidad_diseno,nivel_3_avanzado,"Nivel 3: Set 10 uñas diseño complejo, cristalería o micro-pintura",45,2.2,40000,1,$55.000 - $80.000 promedio
+VAR-nail-pestanas-retoque-2sem,nail-retoque-pestanas,tiempo_retorno,14_dias,Retoque oportuno (hasta 15 días · >50% retención),-15,0.85,0,1,Incentiva disciplina de mantenimiento quincenal
+VAR-nail-pestanas-retoque-3sem,nail-retoque-pestanas,tiempo_retorno,21_dias,Retoque estándar (16 a 22 días · min 40% retención),0,1,15000,1,Pasados 23 días se cobra como set nuevo + retiro
+VAR-spa-masaje-relajante-90,spa-masaje-relajante-60,duracion,90_min,Extensión a 90 minutos (cuerpo completo + cráneo y pies),30,1.35,50000,1,Excelente upsell (+38% ingreso con costo marginal mínimo de aceite)
+VAR-spa-drenaje-bono-5,spa-drenaje-linfatico-manual,paquete_sesiones,paquete_5,Paquete 5 sesiones (descuento ~12% vs sesión suelta),0,5,0,4.4,Asegura adherencia terapéutica y caja anticipada
+VAR-spa-maderoterapia-bono-10,spa-maderoterapia-corporal,paquete_sesiones,paquete_10,Plan 10 sesiones moldeadoras (descuento ~15%),0,10,0,8.5,Ticket $850k-$1.250k en Colombia
+VAR-spa-laser-bono-6-pequena,spa-laser-zona-pequena,paquete_sesiones,paquete_6,Paquete completo 6 sesiones zona pequeña,0,6,0,4.8,Formato comercial dominante en clínicas láser en Colombia
+VAR-barber-fade-senior-master,barber-corte-fade,nivel_especialista,master_barber,Atención por Master Barber / Director de Estudio,15,1,18000,1,Segmentación de tarifa por demanda del especialista muy usada en Bogotá y Medellín
+VAR-lounge-social-aerografo,lounge-maquillaje-social,tecnica,alta_definicion_pestanas_3d,Upgrade piel blindada + pestañas 3D de visón sintético,15,1.3,35000,1,Incrementa ticket promedio en grados y bodas en tierra caliente

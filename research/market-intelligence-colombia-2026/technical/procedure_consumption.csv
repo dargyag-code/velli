@@ -1,0 +1,265 @@
+consumption_id,procedure_id,config_code,item_role,technical_product_category,reference_quantity,unit,mix_ratio_note,scaling_factors,waste_pct,data_origin,confidence_level,notes
+CONS-0001,hair-corte-personalizado,session_base,topical_cosmetic,tratamiento_backbar,15,g,Shampoo/acondicionador + termoprotector,segun largo,0,estimated,high,Backbar lavado y acabado
+CONS-0002,hair-corte-cambio-look,session_base,topical_cosmetic,tratamiento_backbar,15,g,Shampoo/acondicionador + termoprotector,segun largo,0,estimated,high,Backbar lavado y acabado
+CONS-0003,hair-corte-puntas,session_base,topical_cosmetic,tratamiento_backbar,15,g,Shampoo/acondicionador + termoprotector,segun largo,0,estimated,high,Backbar lavado y acabado
+CONS-0004,hair-corte-flequillo,session_base,topical_cosmetic,tratamiento_backbar,3,g,Shampoo/acondicionador + termoprotector,segun largo,0,estimated,high,Backbar lavado y acabado
+CONS-0005,hair-corte-infantil,session_base,topical_cosmetic,tratamiento_backbar,15,g,Shampoo/acondicionador + termoprotector,segun largo,0,estimated,high,Backbar lavado y acabado
+CONS-0006,hair-cepillado-blower,session_base,topical_cosmetic,tratamiento_backbar,15,g,Shampoo/acondicionador + termoprotector,segun largo,0,estimated,high,Backbar lavado y acabado
+CONS-0007,hair-cepillado-plancha,session_base,topical_cosmetic,tratamiento_backbar,15,g,Shampoo/acondicionador + termoprotector,segun largo,0,estimated,high,Backbar lavado y acabado
+CONS-0008,hair-cepillado-ondas,session_base,topical_cosmetic,tratamiento_backbar,15,g,Shampoo/acondicionador + termoprotector,segun largo,0,estimated,high,Backbar lavado y acabado
+CONS-0009,hair-lavado-secado-express,session_base,topical_cosmetic,tratamiento_backbar,15,g,Shampoo/acondicionador + termoprotector,segun largo,0,estimated,high,Backbar lavado y acabado
+CONS-0010,hair-retoque-raiz,medio_tipico,primary_chemical,tinte_permanente,45,g,1:1,corto=0.75x;medio=1.0x;largo=1.5x;xl=2.2x,5,observed,high,Ficha técnica Igora Royal/Vibrance
+CONS-0011,hair-retoque-raiz,medio_tipico,activator_oxidant,oxidante,45,ml,1:1,proporcional,5,calculated,high,Loción reveladora
+CONS-0012,hair-tinte-global,medio_tipico,primary_chemical,tinte_permanente,65,g,1:1,corto=0.75x;medio=1.0x;largo=1.5x;xl=2.2x,5,observed,high,Ficha técnica Igora Royal/Vibrance
+CONS-0013,hair-tinte-global,medio_tipico,activator_oxidant,oxidante,65,ml,1:1,proporcional,5,calculated,high,Loción reveladora
+CONS-0014,hair-bano-de-color,medio_tipico,primary_chemical,tinte_tono_sobre_tono,65,g,1:1.5,corto=0.75x;medio=1.0x;largo=1.5x;xl=2.2x,5,observed,high,Ficha técnica Igora Royal/Vibrance
+CONS-0015,hair-bano-de-color,medio_tipico,activator_oxidant,oxidante,98,ml,1:1.5,proporcional,5,calculated,high,Loción reveladora
+CONS-0016,hair-tinte-sin-amoniaco,medio_tipico,primary_chemical,tinte_permanente,65,g,1:1,corto=0.75x;medio=1.0x;largo=1.5x;xl=2.2x,5,observed,high,Ficha técnica Igora Royal/Vibrance
+CONS-0017,hair-tinte-sin-amoniaco,medio_tipico,activator_oxidant,oxidante,65,ml,1:1,proporcional,5,calculated,high,Loción reveladora
+CONS-0018,hair-color-fantasia,medio_tipico,primary_chemical,tinte_permanente,65,g,1:1,corto=0.75x;medio=1.0x;largo=1.5x;xl=2.2x,5,observed,high,Ficha técnica Igora Royal/Vibrance
+CONS-0019,hair-color-fantasia,medio_tipico,activator_oxidant,oxidante,65,ml,1:1,proporcional,5,calculated,high,Loción reveladora
+CONS-0020,hair-falso-crecimiento,medio_tipico,primary_chemical,tinte_tono_sobre_tono,45,g,1:1.5,corto=0.75x;medio=1.0x;largo=1.5x;xl=2.2x,5,observed,high,Ficha técnica Igora Royal/Vibrance
+CONS-0021,hair-falso-crecimiento,medio_tipico,activator_oxidant,oxidante,68,ml,1:1.5,proporcional,5,calculated,high,Loción reveladora
+CONS-0022,hair-balayage-completo,corto,primary_chemical,decolorante,60,g,1:1.5 con oxidante,corto=1.0x;medio=1.5x;largo=2.0x;xl=2.75x,5,observed,high,Ficha BlondMe/Blond Studio base corto recalibrada
+CONS-0023,hair-balayage-completo,medio_tipico,primary_chemical,decolorante,90,g,1:1.5 con oxidante,medio=1.5x sobre corto,5,observed,high,Consumo modal en salón colombiano melena media
+CONS-0024,hair-balayage-completo,medio_tipico,activator_oxidant,oxidante,210,ml,1:1.5 decolorante y matiz,proporcional a gramos,5,calculated,high,Oxidante 20V montaje + 10V/7V matización
+CONS-0025,hair-balayage-completo,medio_tipico,secondary_toner_or_step,tinte_tono_sobre_tono,50,g,1:1.5 loción activadora,corto=0.8x;medio=1.0x;largo=1.3x,5,observed,high,Matiz ácido post-aclaración
+CONS-0026,hair-balayage-completo,medio_tipico,topical_cosmetic,tratamiento_backbar,30,g,Aplicación directa húmedo,segun largo,0,estimated,high, Sellado post-color en lavacabezas
+CONS-0027,hair-balayage-completo,session_base,disposable_consumable,consumible_desechable,55,unidad,Láminas aluminio + 2 pares guantes,fijo/escala folios,0,estimated,high,Folios aluminio + guantes nitrilo + toalla desechable
+CONS-0028,hair-babylights,corto,primary_chemical,decolorante,60,g,1:1.5 con oxidante,corto=1.0x;medio=1.5x;largo=2.0x;xl=2.75x,5,observed,high,Ficha BlondMe/Blond Studio base corto recalibrada
+CONS-0029,hair-babylights,medio_tipico,primary_chemical,decolorante,90,g,1:1.5 con oxidante,medio=1.5x sobre corto,5,observed,high,Consumo modal en salón colombiano melena media
+CONS-0030,hair-babylights,medio_tipico,activator_oxidant,oxidante,210,ml,1:1.5 decolorante y matiz,proporcional a gramos,5,calculated,high,Oxidante 20V montaje + 10V/7V matización
+CONS-0031,hair-babylights,medio_tipico,secondary_toner_or_step,tinte_tono_sobre_tono,50,g,1:1.5 loción activadora,corto=0.8x;medio=1.0x;largo=1.3x,5,observed,high,Matiz ácido post-aclaración
+CONS-0032,hair-babylights,medio_tipico,topical_cosmetic,tratamiento_backbar,30,g,Aplicación directa húmedo,segun largo,0,estimated,high, Sellado post-color en lavacabezas
+CONS-0033,hair-babylights,session_base,disposable_consumable,consumible_desechable,55,unidad,Láminas aluminio + 2 pares guantes,fijo/escala folios,0,estimated,high,Folios aluminio + guantes nitrilo + toalla desechable
+CONS-0034,hair-contorno-money-piece,medio_tipico,primary_chemical,decolorante,30,g,1:2 global / 1:1.5 contorno,corto=0.75x;medio=1.0x;largo=1.4x;xl=2.0x,5,observed,high,Polvo decolorante con protector de enlaces
+CONS-0035,hair-contorno-money-piece,medio_tipico,activator_oxidant,oxidante,105,ml,1:2 + matiz 1:1.5,proporcional,5,calculated,high,Peróxido estabilizado
+CONS-0036,hair-contorno-money-piece,medio_tipico,secondary_toner_or_step,tinte_tono_sobre_tono,30,g,1:1.5,segun largo,5,observed,high,Tonalización final
+CONS-0037,hair-decoloracion-global,medio_tipico,primary_chemical,decolorante,95,g,1:2 global / 1:1.5 contorno,corto=0.75x;medio=1.0x;largo=1.4x;xl=2.0x,5,observed,high,Polvo decolorante con protector de enlaces
+CONS-0038,hair-decoloracion-global,medio_tipico,activator_oxidant,oxidante,280,ml,1:2 + matiz 1:1.5,proporcional,5,calculated,high,Peróxido estabilizado
+CONS-0039,hair-decoloracion-global,medio_tipico,secondary_toner_or_step,tinte_tono_sobre_tono,60,g,1:1.5,segun largo,5,observed,high,Tonalización final
+CONS-0040,hair-correccion-color,medio_tipico,primary_chemical,decolorante,110,g,1:2 global / 1:1.5 contorno,corto=0.75x;medio=1.0x;largo=1.4x;xl=2.0x,5,observed,high,Polvo decolorante con protector de enlaces
+CONS-0041,hair-correccion-color,medio_tipico,activator_oxidant,oxidante,310,ml,1:2 + matiz 1:1.5,proporcional,5,calculated,high,Peróxido estabilizado
+CONS-0042,hair-correccion-color,medio_tipico,secondary_toner_or_step,tinte_tono_sobre_tono,60,g,1:1.5,segun largo,5,observed,high,Tonalización final
+CONS-0043,hair-keratina-alisado,corto,primary_chemical,alisado_aminoacidos,60,ml,Aplicación directa mecha a mecha,corto=1.0x;medio=1.4x;largo=2.0x;xl=2.75x,5,observed,high,2 oz en cabello corto
+CONS-0044,hair-keratina-alisado,medio_tipico,primary_chemical,alisado_aminoacidos,85,ml,Termoactivación con plancha,medio=1.4x,5,observed,high,Consumo modal melena media (~3 oz)
+CONS-0045,hair-aminoacidos-capilares,corto,primary_chemical,alisado_aminoacidos,60,ml,Aplicación directa mecha a mecha,corto=1.0x;medio=1.4x;largo=2.0x;xl=2.75x,5,observed,high,2 oz en cabello corto
+CONS-0046,hair-aminoacidos-capilares,medio_tipico,primary_chemical,alisado_aminoacidos,85,ml,Termoactivación con plancha,medio=1.4x,5,observed,high,Consumo modal melena media (~3 oz)
+CONS-0047,hair-cirugia-capilar,corto,primary_chemical,alisado_aminoacidos,60,ml,Aplicación directa mecha a mecha,corto=1.0x;medio=1.4x;largo=2.0x;xl=2.75x,5,observed,high,2 oz en cabello corto
+CONS-0048,hair-cirugia-capilar,medio_tipico,primary_chemical,alisado_aminoacidos,85,ml,Termoactivación con plancha,medio=1.4x,5,observed,high,Consumo modal melena media (~3 oz)
+CONS-0049,hair-botox-capilar,corto,primary_chemical,alisado_aminoacidos,60,ml,Aplicación directa mecha a mecha,corto=1.0x;medio=1.4x;largo=2.0x;xl=2.75x,5,observed,high,2 oz en cabello corto
+CONS-0050,hair-botox-capilar,medio_tipico,primary_chemical,alisado_aminoacidos,55,ml,Termoactivación con plancha,medio=1.4x,5,observed,high,Consumo modal melena media (~3 oz)
+CONS-0051,hair-hidratacion-profunda,medio_tipico,topical_cosmetic,tratamiento_backbar,45,g,Masaje de absorción por mechones,corto=0.8x;medio=1.0x;largo=1.5x,0,observed,high,Mascarilla intensiva backbar
+CONS-0052,hair-repolarizacion,medio_tipico,topical_cosmetic,tratamiento_backbar,45,g,Masaje de absorción por mechones,corto=0.8x;medio=1.0x;largo=1.5x,0,observed,high,Mascarilla intensiva backbar
+CONS-0053,hair-reparacion-enlaces-plex,medio_tipico,primary_chemical,reparador_plex,12,ml,Protocolo molecular 2 pasos,corto=0.7x;medio=1.0x;largo=1.5x,0,observed,high,Olaplex No.1/No.2 o equivalente
+CONS-0054,hair-detox-cuero-cabelludo,medio_tipico,topical_cosmetic,tratamiento_backbar,45,g,Masaje de absorción por mechones,corto=0.8x;medio=1.0x;largo=1.5x,0,observed,high,Mascarilla intensiva backbar
+CONS-0055,hair-corte-en-seco-rizos,medio_tipico,topical_cosmetic,styling_rizos,20,g,Crema de peinar + gel definidor por secciones,corto=0.7x;medio=1.0x;largo=1.5x,0,estimated,high,Línea apta libre de sulfatos/siliconas insolubles
+CONS-0056,hair-definicion-rizos,medio_tipico,topical_cosmetic,styling_rizos,55,g,Crema de peinar + gel definidor por secciones,corto=0.7x;medio=1.0x;largo=1.5x,0,estimated,high,Línea apta libre de sulfatos/siliconas insolubles
+CONS-0057,hair-corte-definicion-rizos,medio_tipico,topical_cosmetic,styling_rizos,55,g,Crema de peinar + gel definidor por secciones,corto=0.7x;medio=1.0x;largo=1.5x,0,estimated,high,Línea apta libre de sulfatos/siliconas insolubles
+CONS-0058,hair-transicion-desintoxicacion-rizos,medio_tipico,topical_cosmetic,styling_rizos,55,g,Crema de peinar + gel definidor por secciones,corto=0.7x;medio=1.0x;largo=1.5x,0,estimated,high,Línea apta libre de sulfatos/siliconas insolubles
+CONS-0059,barber-corte-fade,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0060,barber-corte-fade,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0061,barber-corte-clasico-tijera,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0062,barber-corte-clasico-tijera,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0063,barber-corte-rapado-buzz,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0064,barber-corte-rapado-buzz,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0065,barber-corte-visagismo-autor,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0066,barber-corte-visagismo-autor,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0067,barber-mantenimiento-contornos,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0068,barber-mantenimiento-contornos,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0069,barber-corte-junior,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0070,barber-corte-junior,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0071,barber-perfilado-barba,session_base,topical_cosmetic,barber_afeitado_acabado,15,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0072,barber-perfilado-barba,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0073,barber-ritual-toalla-caliente,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0074,barber-ritual-toalla-caliente,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0075,barber-afeitado-tradicional,session_base,topical_cosmetic,barber_afeitado_acabado,15,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0076,barber-afeitado-tradicional,session_base,disposable_consumable,consumible_desechable,2,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0077,barber-hidratacion-barba,session_base,topical_cosmetic,barber_afeitado_acabado,15,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0078,barber-hidratacion-barba,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0079,barber-combo-corte-barba,session_base,topical_cosmetic,barber_afeitado_acabado,15,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0080,barber-combo-corte-barba,session_base,disposable_consumable,consumible_desechable,2,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0081,barber-combo-corte-barba-cejas,session_base,topical_cosmetic,barber_afeitado_acabado,15,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0082,barber-combo-corte-barba-cejas,session_base,disposable_consumable,consumible_desechable,2,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0083,barber-combo-ritual-premium,session_base,topical_cosmetic,barber_afeitado_acabado,15,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0084,barber-combo-ritual-premium,session_base,disposable_consumable,consumible_desechable,2,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0085,barber-combo-corte-cejas,session_base,topical_cosmetic,barber_afeitado_acabado,15,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0086,barber-combo-corte-cejas,session_base,disposable_consumable,consumible_desechable,2,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0087,barber-perfilado-cejas,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0088,barber-perfilado-cejas,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0089,barber-facial-express-mascarilla,session_base,topical_cosmetic,mascarilla_facial,15,g,Exfoliante + mascarilla purificante,fijo facial,0,estimated,high,Cuidado facial en silla
+CONS-0090,barber-depilacion-nariz-oidos,session_base,structural_material,cera_depilatoria,10,g,Cera baja fusión / hilo,zona pequeña,5,observed,high,Sin doble inmersión
+CONS-0091,barber-limpieza-facial-barberia,session_base,topical_cosmetic,mascarilla_facial,15,g,Exfoliante + mascarilla purificante,fijo facial,0,estimated,high,Cuidado facial en silla
+CONS-0092,barber-camuflaje-canas-cabello,corto,primary_chemical,tinte_tono_sobre_tono,30,g,1:1 o 1:1.5,cabello corto barberia,5,observed,high,Químico barbería
+CONS-0093,barber-pigmentacion-barba,corto,primary_chemical,tinte_tono_sobre_tono,20,g,1:1 o 1:1.5,cabello corto barberia,5,observed,high,Químico barbería
+CONS-0094,barber-platinado-decoloracion,corto,primary_chemical,decolorante,60,g,1:1 o 1:1.5,cabello corto barberia,5,observed,high,Químico barbería
+CONS-0095,nail-manicura-tradicional,session_base,topical_cosmetic,esmalte_tradicional,0.8,ml,Base + 2 capas + brillo secante,fijo,0,observed,high,Línea tradicional
+CONS-0096,nail-manicura-semipermanente,session_base,structural_material,esmalte_semipermanente,0.6,ml,Base + 2 capas color + top coat,combo=1.8x,0,observed,high,Libre de TPO/DMPT
+CONS-0097,nail-manicura-rusa-combinada,session_base,structural_material,esmalte_semipermanente,0.6,ml,Base + 2 capas color + top coat,combo=1.8x,0,observed,high,Libre de TPO/DMPT
+CONS-0098,nail-nivelacion-rubber-base,session_base,structural_material,rubber_base,0.6,ml,Nivelación + color gel,corto=1.0x;medio=1.3x,0,observed,high,Frasco 15ml rinde ~25-40 sets
+CONS-0099,nail-manicura-sin-esmalte,session_base,topical_cosmetic,esmalte_tradicional,0.8,ml,Base + 2 capas + brillo secante,fijo,0,observed,high,Línea tradicional
+CONS-0100,nail-acrilicas-set-nuevo,largo_una_1_2,structural_material,acrilico_monomero,5,ml,Monómero EMA + polímero,corto=1.0x;medio=1.45x;largo=2.0x,5,observed,high,Ficha rendimiento Organic Nails
+CONS-0101,nail-acrilicas-set-nuevo,largo_una_1_2,structural_material,acrilico_polimero,3.5,g,Perlas estructurales,corto=1.0x;medio=1.45x;largo=2.0x,5,observed,high,Polvo acrílico profesional
+CONS-0102,nail-polygel-set-nuevo,largo_una_1_2,structural_material,polygel,2.2,g,Tubo 30g rinde 13-20 sets reales,corto=1.0x;medio=1.4x;largo=1.9x,5,observed,high,Validación técnica TechGel/Polygel
+CONS-0103,nail-press-on-soft-gel,session_base,structural_material,rubber_base,0.6,ml,Nivelación + color gel,corto=1.0x;medio=1.3x,0,observed,high,Frasco 15ml rinde ~25-40 sets
+CONS-0104,nail-kapping-forrado,session_base,structural_material,rubber_base,0.6,ml,Nivelación + color gel,corto=1.0x;medio=1.3x,0,observed,high,Frasco 15ml rinde ~25-40 sets
+CONS-0105,nail-nail-art-diseno,session_base,topical_cosmetic,esmalte_tradicional,0.8,ml,Base + 2 capas + brillo secante,fijo,0,observed,high,Línea tradicional
+CONS-0106,nail-reparacion-una,session_base,topical_cosmetic,esmalte_tradicional,0.8,ml,Base + 2 capas + brillo secante,fijo,0,observed,high,Línea tradicional
+CONS-0107,nail-mantenimiento-acrilicas,largo_una_1_2,structural_material,acrilico_monomero,3.5,ml,Monómero EMA + polímero,corto=1.0x;medio=1.45x;largo=2.0x,5,observed,high,Ficha rendimiento Organic Nails
+CONS-0108,nail-mantenimiento-acrilicas,largo_una_1_2,structural_material,acrilico_polimero,2.2,g,Perlas estructurales,corto=1.0x;medio=1.45x;largo=2.0x,5,observed,high,Polvo acrílico profesional
+CONS-0109,nail-mantenimiento-polygel,largo_una_1_2,structural_material,polygel,1.5,g,Tubo 30g rinde 13-20 sets reales,corto=1.0x;medio=1.4x;largo=1.9x,5,observed,high,Validación técnica TechGel/Polygel
+CONS-0110,nail-retiro-semipermanente,session_base,structural_material,esmalte_semipermanente,0.6,ml,Base + 2 capas color + top coat,combo=1.8x,0,observed,high,Libre de TPO/DMPT
+CONS-0111,nail-retiro-acrilicas-polygel,session_base,primary_chemical,removedor_unas,18,ml,Envoltura aluminio + removedor,fijo,0,observed,high,Remoción segura
+CONS-0112,nail-pedicura-tradicional,session_base,topical_cosmetic,esmalte_tradicional,0.8,ml,Base + 2 capas + brillo secante,fijo,0,observed,high,Línea tradicional
+CONS-0113,nail-pedicura-semipermanente,session_base,structural_material,esmalte_semipermanente,0.6,ml,Base + 2 capas color + top coat,combo=1.8x,0,observed,high,Libre de TPO/DMPT
+CONS-0114,nail-pedicura-spa,session_base,topical_cosmetic,esmalte_tradicional,0.8,ml,Base + 2 capas + brillo secante,fijo,0,observed,high,Línea tradicional
+CONS-0115,nail-pedicura-clinica-sin-esmalte,session_base,topical_cosmetic,esmalte_tradicional,0.8,ml,Base + 2 capas + brillo secante,fijo,0,observed,high,Línea tradicional
+CONS-0116,nail-diseno-cejas-hilo-cera,session_base,topical_cosmetic,cera_depilatoria,8,g,Mapeo con hilo + depilación,fijo rostro,0,observed,high,Diseño de mirada
+CONS-0117,nail-cejas-henna,session_base,topical_cosmetic,pigmento_cejas,0.35,ml,Mapeo con hilo + depilación,fijo rostro,0,observed,high,Diseño de mirada
+CONS-0118,nail-laminado-cejas,session_base,primary_chemical,kit_lifting_laminado,1,sesion,"Sachet monodosis pasos 1, 2 y 3 + tinte",1 kit monodosis por cliente,0,observed,high,Evita oxidación del tioglicolato
+CONS-0119,nail-laminado-cejas-tinte,session_base,primary_chemical,kit_lifting_laminado,1,sesion,"Sachet monodosis pasos 1, 2 y 3 + tinte",1 kit monodosis por cliente,0,observed,high,Evita oxidación del tioglicolato
+CONS-0120,nail-depilacion-bozo-hilo-cera,session_base,topical_cosmetic,cera_depilatoria,8,g,Mapeo con hilo + depilación,fijo rostro,0,observed,high,Diseño de mirada
+CONS-0121,nail-lifting-pestanas,session_base,primary_chemical,kit_lifting_laminado,1,sesion,"Sachet monodosis pasos 1, 2 y 3 + tinte",1 kit monodosis por cliente,0,observed,high,Evita oxidación del tioglicolato
+CONS-0122,nail-extensiones-pelo-a-pelo-clasicas,session_base,structural_material,extensiones_pestanas_adhesivo,2.2,unidad,Tiras de blíster PBT + 0.15ml cianoacrilato + parches hidrogel,retoque=0.65x;set=1.0x;mega=1.5x,5,observed,high,Blíster 16 tiras
+CONS-0123,nail-extensiones-efecto-rimel-hibridas,session_base,structural_material,extensiones_pestanas_adhesivo,2.2,unidad,Tiras de blíster PBT + 0.15ml cianoacrilato + parches hidrogel,retoque=0.65x;set=1.0x;mega=1.5x,5,observed,high,Blíster 16 tiras
+CONS-0124,nail-extensiones-volumen-ruso,session_base,structural_material,extensiones_pestanas_adhesivo,2.2,unidad,Tiras de blíster PBT + 0.15ml cianoacrilato + parches hidrogel,retoque=0.65x;set=1.0x;mega=1.5x,5,observed,high,Blíster 16 tiras
+CONS-0125,nail-retoque-pestanas,session_base,structural_material,extensiones_pestanas_adhesivo,1.5,unidad,Tiras de blíster PBT + 0.15ml cianoacrilato + parches hidrogel,retoque=0.65x;set=1.0x;mega=1.5x,5,observed,high,Blíster 16 tiras
+CONS-0126,nail-retiro-pestanas,session_base,topical_cosmetic,adhesivo_pestanas,0.3,ml,Crema removedora hipoalergénica + lash shampoo,fijo,0,estimated,high,Retiro seguro
+CONS-0127,spa-limpieza-facial-profunda,session_base,primary_chemical,facial_cabina,4,ml,Ácido cosmético / principio activo + limpiadora + mascarilla 25g,fijo facial,0,observed,high,Protocolo cabina cosmetológica
+CONS-0128,spa-hidrafacial,session_base,primary_chemical,suero_hidrafacial,35,ml,Sueros hidrodermoabrasión + punta individual,fijo facial,0,estimated,medium,Diferenciado de equipo estético multimarca
+CONS-0129,spa-dermapen-microneedling,session_base,structural_material,cartucho_dermapen,1,unidad,Cartucho estéril descartable un solo uso + vial activo,obligatorio 1 por sesión,0,observed,high,Requiere guardián cortopunzante y habilitación REPS si supera epidermis
+CONS-0130,spa-peeling-quimico-suave,session_base,primary_chemical,facial_cabina,4,ml,Ácido cosmético / principio activo + limpiadora + mascarilla 25g,fijo facial,0,observed,high,Protocolo cabina cosmetológica
+CONS-0131,spa-dermaplaning-hidratacion,session_base,primary_chemical,facial_cabina,4,ml,Ácido cosmético / principio activo + limpiadora + mascarilla 25g,fijo facial,0,observed,high,Protocolo cabina cosmetológica
+CONS-0132,spa-facial-hidratante-glow,session_base,primary_chemical,facial_cabina,4,ml,Ácido cosmético / principio activo + limpiadora + mascarilla 25g,fijo facial,0,observed,high,Protocolo cabina cosmetológica
+CONS-0133,spa-masaje-relajante-60,session_base,topical_cosmetic,corporal_aceite_gel,30,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0134,spa-masaje-descontracturante,session_base,topical_cosmetic,corporal_aceite_gel,30,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0135,spa-masaje-piedras-volcanicas,session_base,topical_cosmetic,corporal_aceite_gel,30,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0136,spa-masaje-craneofacial-cuello,session_base,topical_cosmetic,corporal_aceite_gel,30,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0137,spa-masaje-reductor-sesion,session_base,topical_cosmetic,corporal_aceite_gel,30,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0138,spa-masaje-parejas,session_base,topical_cosmetic,corporal_aceite_gel,60,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0139,spa-drenaje-linfatico-manual,session_base,topical_cosmetic,corporal_aceite_gel,30,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0140,spa-maderoterapia-corporal,session_base,topical_cosmetic,corporal_aceite_gel,30,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0141,spa-exfoliacion-hidratacion-corporal,session_base,topical_cosmetic,corporal_aceite_gel,30,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0142,spa-limpieza-espalda,session_base,topical_cosmetic,corporal_aceite_gel,30,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0143,spa-radiofrecuencia-vacumterapia,session_base,topical_cosmetic,corporal_aceite_gel,30,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0144,spa-cera-axilas,zona_estandar,structural_material,cera_depilatoria,18,g,Cera baja fusión sin reutilización,pequena=18g;mediana=40-50g;grande=100g,5,observed,high,Prohibido reciclar cera (Res. 2827/2006)
+CONS-0145,spa-cera-bikini-brasileno,zona_estandar,structural_material,cera_depilatoria,38,g,Cera baja fusión sin reutilización,pequena=18g;mediana=40-50g;grande=100g,5,observed,high,Prohibido reciclar cera (Res. 2827/2006)
+CONS-0146,spa-cera-piernas-completas,zona_estandar,structural_material,cera_depilatoria,100,g,Cera baja fusión sin reutilización,pequena=18g;mediana=40-50g;grande=100g,5,observed,high,Prohibido reciclar cera (Res. 2827/2006)
+CONS-0147,spa-cera-espalda-pecho,zona_estandar,structural_material,cera_depilatoria,65,g,Cera baja fusión sin reutilización,pequena=18g;mediana=40-50g;grande=100g,5,observed,high,Prohibido reciclar cera (Res. 2827/2006)
+CONS-0148,spa-laser-zona-pequena,zona_estandar,topical_cosmetic,corporal_aceite_gel,20,ml,Gel conductor neutro refrigerado,segun area cm2,0,observed,high,Conducción óptica y enfriamiento
+CONS-0149,spa-laser-zona-mediana,zona_estandar,topical_cosmetic,corporal_aceite_gel,40,ml,Gel conductor neutro refrigerado,segun area cm2,0,observed,high,Conducción óptica y enfriamiento
+CONS-0150,spa-laser-zona-grande,zona_estandar,topical_cosmetic,corporal_aceite_gel,70,ml,Gel conductor neutro refrigerado,segun area cm2,0,observed,high,Conducción óptica y enfriamiento
+CONS-0151,lounge-maquillaje-social,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0152,lounge-maquillaje-piel-blindada,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0153,lounge-maquillaje-novia,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0154,lounge-maquillaje-editorial-fotos,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0155,lounge-maquillaje-express-ojos,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0156,lounge-clase-automaquillaje,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0157,lounge-ondas-glam-agua,session_base,topical_cosmetic,tratamiento_backbar,18,g,Termoprotector + laca fijación flexible + cera antifrizz,segun largo,0,estimated,high,Styling social/nupcial
+CONS-0158,lounge-peinado-recogido-evento,session_base,topical_cosmetic,tratamiento_backbar,18,g,Termoprotector + laca fijación flexible + cera antifrizz,segun largo,0,estimated,high,Styling social/nupcial
+CONS-0159,lounge-peinado-ondas-sueltas,session_base,topical_cosmetic,tratamiento_backbar,18,g,Termoprotector + laca fijación flexible + cera antifrizz,segun largo,0,estimated,high,Styling social/nupcial
+CONS-0160,lounge-peinado-coleta-pulida,session_base,topical_cosmetic,tratamiento_backbar,18,g,Termoprotector + laca fijación flexible + cera antifrizz,segun largo,0,estimated,high,Styling social/nupcial
+CONS-0161,lounge-peinado-novia,session_base,topical_cosmetic,tratamiento_backbar,18,g,Termoprotector + laca fijación flexible + cera antifrizz,segun largo,0,estimated,high,Styling social/nupcial
+CONS-0162,lounge-combo-maquillaje-peinado-social,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0163,lounge-paquete-novia-completo,session_base,topical_cosmetic,maquillaje_cabina,4.4,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0164,lounge-paquete-quinceanera-grado,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0165,lounge-combo-manos-pies-semipermanente,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0166,lounge-combo-mirada-cejas-pestanas,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0167,lounge-combo-refresh-express,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0168,lounge-dia-de-spa-integral,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0169,hair-corte-clasico-recto,session_base,topical_cosmetic,tratamiento_backbar,15,g,Shampoo/acondicionador + termoprotector,segun largo,0,estimated,high,Backbar lavado y acabado
+CONS-0170,hair-corte-capas-mariposa,session_base,topical_cosmetic,tratamiento_backbar,15,g,Shampoo/acondicionador + termoprotector,segun largo,0,estimated,high,Backbar lavado y acabado
+CONS-0171,hair-corte-cabello-afro,medio_tipico,topical_cosmetic,styling_rizos,55,g,Crema de peinar + gel definidor por secciones,corto=0.7x;medio=1.0x;largo=1.5x,0,estimated,high,Línea apta libre de sulfatos/siliconas insolubles
+CONS-0172,hair-highlights-mechas-tradicionales,corto,primary_chemical,decolorante,60,g,1:1.5 con oxidante,corto=1.0x;medio=1.5x;largo=2.0x;xl=2.75x,5,observed,high,Ficha BlondMe/Blond Studio base corto recalibrada
+CONS-0173,hair-highlights-mechas-tradicionales,medio_tipico,primary_chemical,decolorante,90,g,1:1.5 con oxidante,medio=1.5x sobre corto,5,observed,high,Consumo modal en salón colombiano melena media
+CONS-0174,hair-highlights-mechas-tradicionales,medio_tipico,activator_oxidant,oxidante,210,ml,1:1.5 decolorante y matiz,proporcional a gramos,5,calculated,high,Oxidante 20V montaje + 10V/7V matización
+CONS-0175,hair-highlights-mechas-tradicionales,medio_tipico,secondary_toner_or_step,tinte_tono_sobre_tono,50,g,1:1.5 loción activadora,corto=0.8x;medio=1.0x;largo=1.3x,5,observed,high,Matiz ácido post-aclaración
+CONS-0176,hair-highlights-mechas-tradicionales,medio_tipico,topical_cosmetic,tratamiento_backbar,30,g,Aplicación directa húmedo,segun largo,0,estimated,high, Sellado post-color en lavacabezas
+CONS-0177,hair-highlights-mechas-tradicionales,session_base,disposable_consumable,consumible_desechable,55,unidad,Láminas aluminio + 2 pares guantes,fijo/escala folios,0,estimated,high,Folios aluminio + guantes nitrilo + toalla desechable
+CONS-0178,hair-airtouch,corto,primary_chemical,decolorante,70,g,1:1.5 con oxidante,corto=1.0x;medio=1.5x;largo=2.0x;xl=2.75x,5,observed,high,Ficha BlondMe/Blond Studio base corto recalibrada
+CONS-0179,hair-airtouch,medio_tipico,primary_chemical,decolorante,105,g,1:1.5 con oxidante,medio=1.5x sobre corto,5,observed,high,Consumo modal en salón colombiano melena media
+CONS-0180,hair-airtouch,medio_tipico,activator_oxidant,oxidante,233,ml,1:1.5 decolorante y matiz,proporcional a gramos,5,calculated,high,Oxidante 20V montaje + 10V/7V matización
+CONS-0181,hair-airtouch,medio_tipico,secondary_toner_or_step,tinte_tono_sobre_tono,50,g,1:1.5 loción activadora,corto=0.8x;medio=1.0x;largo=1.3x,5,observed,high,Matiz ácido post-aclaración
+CONS-0182,hair-airtouch,medio_tipico,topical_cosmetic,tratamiento_backbar,30,g,Aplicación directa húmedo,segun largo,0,estimated,high, Sellado post-color en lavacabezas
+CONS-0183,hair-airtouch,session_base,disposable_consumable,consumible_desechable,55,unidad,Láminas aluminio + 2 pares guantes,fijo/escala folios,0,estimated,high,Folios aluminio + guantes nitrilo + toalla desechable
+CONS-0184,hair-retoque-balayage-mantenimiento,corto,primary_chemical,decolorante,45,g,1:1.5 con oxidante,corto=1.0x;medio=1.5x;largo=2.0x;xl=2.75x,5,observed,high,Ficha BlondMe/Blond Studio base corto recalibrada
+CONS-0185,hair-retoque-balayage-mantenimiento,medio_tipico,primary_chemical,decolorante,68,g,1:1.5 con oxidante,medio=1.5x sobre corto,5,observed,high,Consumo modal en salón colombiano melena media
+CONS-0186,hair-retoque-balayage-mantenimiento,medio_tipico,activator_oxidant,oxidante,162,ml,1:1.5 decolorante y matiz,proporcional a gramos,5,calculated,high,Oxidante 20V montaje + 10V/7V matización
+CONS-0187,hair-retoque-balayage-mantenimiento,medio_tipico,secondary_toner_or_step,tinte_tono_sobre_tono,40,g,1:1.5 loción activadora,corto=0.8x;medio=1.0x;largo=1.3x,5,observed,high,Matiz ácido post-aclaración
+CONS-0188,hair-retoque-balayage-mantenimiento,medio_tipico,topical_cosmetic,tratamiento_backbar,30,g,Aplicación directa húmedo,segun largo,0,estimated,high, Sellado post-color en lavacabezas
+CONS-0189,hair-retoque-balayage-mantenimiento,session_base,disposable_consumable,consumible_desechable,35,unidad,Láminas aluminio + 2 pares guantes,fijo/escala folios,0,estimated,high,Folios aluminio + guantes nitrilo + toalla desechable
+CONS-0190,hair-tonalizacion-post-decoloracion,medio_tipico,primary_chemical,tinte_tono_sobre_tono,65,g,1:1.5,corto=0.75x;medio=1.0x;largo=1.5x;xl=2.2x,5,observed,high,Ficha técnica Igora Royal/Vibrance
+CONS-0191,hair-tonalizacion-post-decoloracion,medio_tipico,activator_oxidant,oxidante,98,ml,1:1.5,proporcional,5,calculated,high,Loción reveladora
+CONS-0192,hair-color-fantasia-semipermanente,medio_tipico,primary_chemical,tinte_tono_sobre_tono,65,g,Directo sin oxidante,corto=0.75x;medio=1.0x;largo=1.5x;xl=2.2x,5,observed,high,Ficha técnica Igora Royal/Vibrance
+CONS-0193,hair-permanente-ondulacion,corto,primary_chemical,alisado_aminoacidos,60,ml,Aplicación directa mecha a mecha,corto=1.0x;medio=1.4x;largo=2.0x;xl=2.75x,5,observed,high,2 oz en cabello corto
+CONS-0194,hair-permanente-ondulacion,medio_tipico,primary_chemical,alisado_aminoacidos,85,ml,Termoactivación con plancha,medio=1.4x,5,observed,high,Consumo modal melena media (~3 oz)
+CONS-0195,hair-trenzas-africanas-box-braids,medio_tipico,structural_material,kanekalon_paquete,4,unidad,4 paquetes fibra kanekalon + gel trenzado,largo cintura=6 paquetes,0,observed,high,Insumo estándar trenzado protector
+CONS-0196,hair-twists-finger-coils,medio_tipico,topical_cosmetic,styling_rizos,55,g,Crema de peinar + gel definidor por secciones,corto=0.7x;medio=1.0x;largo=1.5x,0,estimated,high,Línea apta libre de sulfatos/siliconas insolubles
+CONS-0197,hair-extensiones-adhesivas-tape,session_base,structural_material,cinta_extensiones,20,unidad,No incluye el paquete de cabello humano (cotizado aparte),segun gramos instalados,0,estimated,medium,Cintas adhesivas reemplazo / queratina / removedor
+CONS-0198,hair-extensiones-queratina-punto,session_base,structural_material,cinta_extensiones,20,unidad,No incluye el paquete de cabello humano (cotizado aparte),segun gramos instalados,0,estimated,medium,Cintas adhesivas reemplazo / queratina / removedor
+CONS-0199,hair-extensiones-cortina-cosidas,session_base,structural_material,cinta_extensiones,20,unidad,No incluye el paquete de cabello humano (cotizado aparte),segun gramos instalados,0,estimated,medium,Cintas adhesivas reemplazo / queratina / removedor
+CONS-0200,hair-mantenimiento-extensiones,session_base,structural_material,cinta_extensiones,20,unidad,No incluye el paquete de cabello humano (cotizado aparte),segun gramos instalados,0,estimated,medium,Cintas adhesivas reemplazo / queratina / removedor
+CONS-0201,hair-retiro-extensiones,session_base,structural_material,cinta_extensiones,4,unidad,No incluye el paquete de cabello humano (cotizado aparte),segun gramos instalados,0,estimated,medium,Cintas adhesivas reemplazo / queratina / removedor
+CONS-0202,hair-diagnostico-prueba-mechon,medio_tipico,primary_chemical,tinte_permanente,10,g,1:1,corto=0.75x;medio=1.0x;largo=1.5x;xl=2.2x,5,observed,high,Ficha técnica Igora Royal/Vibrance
+CONS-0203,hair-diagnostico-prueba-mechon,medio_tipico,activator_oxidant,oxidante,10,ml,1:1,proporcional,5,calculated,high,Loción reveladora
+CONS-0204,hair-head-spa-japones,medio_tipico,topical_cosmetic,tratamiento_backbar,45,g,Masaje de absorción por mechones,corto=0.8x;medio=1.0x;largo=1.5x,0,observed,high,Mascarilla intensiva backbar
+CONS-0205,barber-skin-fade-navaja,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0206,barber-skin-fade-navaja,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0207,barber-taper-burst-fade,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0208,barber-taper-burst-fade,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0209,barber-corte-mullet-crop,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0210,barber-corte-mullet-crop,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0211,barber-corte-largo-tijera,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0212,barber-corte-largo-tijera,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0213,barber-diseno-lineas-freestyle,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0214,barber-diseno-lineas-freestyle,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0215,barber-coloracion-fantasia-diseno,corto,primary_chemical,decolorante,60,g,1:1 o 1:1.5,cabello corto barberia,5,observed,high,Químico barbería
+CONS-0216,barber-hidratacion-capilar-silla,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0217,barber-hidratacion-capilar-silla,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0218,barber-lavado-peinado-express,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0219,barber-lavado-peinado-express,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0220,barber-combo-corte-facial,session_base,topical_cosmetic,mascarilla_facial,15,g,Exfoliante + mascarilla purificante,fijo facial,0,estimated,high,Cuidado facial en silla
+CONS-0221,barber-paquete-novio-evento,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0222,barber-paquete-novio-evento,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0223,barber-membresia-mensual-corte,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0224,barber-membresia-mensual-corte,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0225,barber-cejas-hilo-precision,session_base,structural_material,cera_depilatoria,10,g,Cera baja fusión / hilo,zona pequeña,5,observed,high,Sin doble inmersión
+CONS-0226,barber-servicio-domicilio-vip,session_base,topical_cosmetic,barber_afeitado_acabado,6,ml,Gel afeitado + aftershave + cera/polvo,fijo por servicio,0,observed,high,Acabado barbería
+CONS-0227,barber-servicio-domicilio-vip,session_base,disposable_consumable,consumible_desechable,1,unidad,Cuchilla acero inoxidable un solo uso + cuellero,obligatorio Res. 2827/2006,0,observed,high,Descarte en guardián cortopunzante
+CONS-0228,nail-manicura-express,session_base,topical_cosmetic,esmalte_tradicional,0.8,ml,Base + 2 capas + brillo secante,fijo,0,observed,high,Línea tradicional
+CONS-0229,nail-manicura-japonesa,session_base,topical_cosmetic,esmalte_tradicional,0.8,ml,Base + 2 capas + brillo secante,fijo,0,observed,high,Línea tradicional
+CONS-0230,nail-manicura-spa-parafina,session_base,topical_cosmetic,esmalte_tradicional,0.8,ml,Base + 2 capas + brillo secante,fijo,0,observed,high,Línea tradicional
+CONS-0231,nail-mantenimiento-soft-gel-rubber,session_base,structural_material,rubber_base,0.6,ml,Nivelación + color gel,corto=1.0x;medio=1.3x,0,observed,high,Frasco 15ml rinde ~25-40 sets
+CONS-0232,nail-pedicura-express,session_base,topical_cosmetic,esmalte_tradicional,0.8,ml,Base + 2 capas + brillo secante,fijo,0,observed,high,Línea tradicional
+CONS-0233,nail-pedicura-rusa-combinada,session_base,structural_material,esmalte_semipermanente,0.6,ml,Base + 2 capas color + top coat,combo=1.8x,0,observed,high,Libre de TPO/DMPT
+CONS-0234,nail-cejas-hilo-visagismo,session_base,topical_cosmetic,cera_depilatoria,8,g,Mapeo con hilo + depilación,fijo rostro,0,observed,high,Diseño de mirada
+CONS-0235,nail-tinte-hibrido-cejas,session_base,topical_cosmetic,pigmento_cejas,0.35,ml,Mapeo con hilo + depilación,fijo rostro,0,observed,high,Diseño de mirada
+CONS-0236,nail-pestanas-volumen-tecnologico,session_base,structural_material,extensiones_pestanas_adhesivo,2.2,unidad,Tiras de blíster PBT + 0.15ml cianoacrilato + parches hidrogel,retoque=0.65x;set=1.0x;mega=1.5x,5,observed,high,Blíster 16 tiras
+CONS-0237,nail-pestanas-mega-volumen,session_base,structural_material,extensiones_pestanas_adhesivo,3.5,unidad,Tiras de blíster PBT + 0.15ml cianoacrilato + parches hidrogel,retoque=0.65x;set=1.0x;mega=1.5x,5,observed,high,Blíster 16 tiras
+CONS-0238,nail-pestanas-efecto-wispy-kim,session_base,structural_material,extensiones_pestanas_adhesivo,2.2,unidad,Tiras de blíster PBT + 0.15ml cianoacrilato + parches hidrogel,retoque=0.65x;set=1.0x;mega=1.5x,5,observed,high,Blíster 16 tiras
+CONS-0239,nail-combo-manos-pies-tradicional,session_base,topical_cosmetic,esmalte_tradicional,1.4,ml,Base + 2 capas + brillo secante,fijo,0,observed,high,Línea tradicional
+CONS-0240,nail-combo-semi-manos-tradicional-pies,session_base,topical_cosmetic,esmalte_tradicional,1.4,ml,Base + 2 capas + brillo secante,fijo,0,observed,high,Línea tradicional
+CONS-0241,nail-taller-automanicura-cuidado,session_base,topical_cosmetic,esmalte_tradicional,0.8,ml,Base + 2 capas + brillo secante,fijo,0,observed,high,Línea tradicional
+CONS-0242,spa-limpieza-facial-basica-express,session_base,primary_chemical,facial_cabina,4,ml,Ácido cosmético / principio activo + limpiadora + mascarilla 25g,fijo facial,0,observed,high,Protocolo cabina cosmetológica
+CONS-0243,spa-hidrodermoabrasion-estetica,session_base,primary_chemical,facial_cabina,4,ml,Ácido cosmético / principio activo + limpiadora + mascarilla 25g,fijo facial,0,observed,high,Protocolo cabina cosmetológica
+CONS-0244,spa-facial-despigmentante-antimanchas,session_base,primary_chemical,facial_cabina,4,ml,Ácido cosmético / principio activo + limpiadora + mascarilla 25g,fijo facial,0,observed,high,Protocolo cabina cosmetológica
+CONS-0245,spa-masaje-deportivo-descarga,session_base,topical_cosmetic,corporal_aceite_gel,30,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0246,spa-masaje-prenatal,session_base,topical_cosmetic,corporal_aceite_gel,30,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0247,spa-cavitacion-ultrasonido,session_base,topical_cosmetic,corporal_aceite_gel,30,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0248,spa-envoltura-corporal-fangoterapia,session_base,topical_cosmetic,corporal_aceite_gel,30,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0249,spa-drenaje-postoperatorio-especializado,session_base,topical_cosmetic,corporal_aceite_gel,30,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0250,spa-cera-rostro-completo,zona_estandar,structural_material,cera_depilatoria,20,g,Cera baja fusión sin reutilización,pequena=18g;mediana=40-50g;grande=100g,5,observed,high,Prohibido reciclar cera (Res. 2827/2006)
+CONS-0251,spa-cera-brazos,zona_estandar,structural_material,cera_depilatoria,50,g,Cera baja fusión sin reutilización,pequena=18g;mediana=40-50g;grande=100g,5,observed,high,Prohibido reciclar cera (Res. 2827/2006)
+CONS-0252,spa-cera-medias-piernas,zona_estandar,structural_material,cera_depilatoria,50,g,Cera baja fusión sin reutilización,pequena=18g;mediana=40-50g;grande=100g,5,observed,high,Prohibido reciclar cera (Res. 2827/2006)
+CONS-0253,spa-depilacion-hilo-rostro,zona_estandar,structural_material,cera_depilatoria,20,g,Cera baja fusión sin reutilización,pequena=18g;mediana=40-50g;grande=100g,5,observed,high,Prohibido reciclar cera (Res. 2827/2006)
+CONS-0254,spa-paquete-moldeo-10-sesiones,session_base,topical_cosmetic,corporal_aceite_gel,300,ml,Aceite vehicular / gel termoactivo o conductor,pareja=2x;paquete10=10x,0,observed,high,Protocolo cabina corporal
+CONS-0255,lounge-maquillaje-noche-glam,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0256,lounge-maquillaje-quinceanera,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0257,lounge-maquillaje-grado,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0258,lounge-prueba-maquillaje-peinado-novia,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0259,lounge-trenzas-evento-festival,session_base,topical_cosmetic,tratamiento_backbar,18,g,Termoprotector + laca fijación flexible + cera antifrizz,segun largo,0,estimated,high,Styling social/nupcial
+CONS-0260,lounge-paquete-invitadas-grupo,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0261,lounge-acompanamiento-evento-touchup,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
+CONS-0262,lounge-recargo-domicilio-urbano,session_base,disposable_consumable,consumible_desechable,1,unidad,Kit bioseguridad transporte maleta,segun distancia km,0,estimated,high,Costo logístico transporte urbano/intermunicipal
+CONS-0263,lounge-recargo-domicilio-fuera-ciudad,session_base,disposable_consumable,consumible_desechable,1,unidad,Kit bioseguridad transporte maleta,segun distancia km,0,estimated,high,Costo logístico transporte urbano/intermunicipal
+CONS-0264,lounge-asesoria-imagen-colorimetria,session_base,topical_cosmetic,maquillaje_cabina,2.2,ml,Skincare + base alta definición + sellador + polvo traslúcido,novia completa=2 sesiones,0,estimated,high,Maquillaje larga duración
