@@ -435,6 +435,7 @@ export async function crearServicioSalon(
     duracionMinutos?: number | null;
     orden?: number;
     activo?: boolean;
+    perfilExtendido?: Record<string, unknown>;
   },
   client?: SupabaseClient
 ): Promise<ServicioSalon> {
@@ -452,6 +453,7 @@ export async function crearServicioSalon(
       duracion_minutos: input.duracionMinutos ?? null,
       orden: input.orden ?? 0,
       activo: input.activo ?? true,
+      ...(input.perfilExtendido ? { perfil_extendido: input.perfilExtendido } : {}),
     })
     .select('*')
     .single();

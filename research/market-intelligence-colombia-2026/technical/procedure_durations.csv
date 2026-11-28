@@ -1,0 +1,194 @@
+duration_id,procedure_id,prep_min,exec_min_minimum,exec_min_typical,exec_min_complex_or_xl,processing_pose_min,cleanup_min,total_chair_min_typical,specialist_active_min_typical,can_overlap_client_in_pose,data_origin,confidence_level,technical_notes
+DUR-001,hair-corte-personalizado,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-002,hair-corte-cambio-look,5,40,50,68,0,5,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-003,hair-corte-puntas,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-004,hair-corte-flequillo,2,8,10,14,0,3,15,15,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-005,hair-corte-infantil,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-006,hair-cepillado-blower,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-007,hair-cepillado-plancha,5,40,50,68,0,5,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-008,hair-cepillado-ondas,5,40,50,68,0,5,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-009,hair-lavado-secado-express,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-010,hair-retoque-raiz,5,36,45,61,35,5,90,64,true,observed,high,Incluye 35m de pose donde el especialista puede solapar corte/aplicación
+DUR-011,hair-tinte-global,5,60,75,101,35,5,120,94,true,observed,high,Incluye 35m de pose donde el especialista puede solapar corte/aplicación
+DUR-012,hair-bano-de-color,5,24,30,41,20,5,60,60,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-013,hair-tinte-sin-amoniaco,5,48,60,81,35,5,105,79,true,observed,high,Incluye 35m de pose donde el especialista puede solapar corte/aplicación
+DUR-014,hair-color-fantasia,5,60,75,101,35,5,120,94,true,observed,high,Incluye 35m de pose donde el especialista puede solapar corte/aplicación
+DUR-015,hair-falso-crecimiento,5,24,30,41,35,5,75,49,true,observed,high,Incluye 35m de pose donde el especialista puede solapar corte/aplicación
+DUR-016,hair-balayage-completo,10,140,175,236,45,10,240,206,true,observed,high,Incluye 45m de pose donde el especialista puede solapar corte/aplicación
+DUR-017,hair-babylights,10,116,145,196,45,10,210,176,true,observed,high,Incluye 45m de pose donde el especialista puede solapar corte/aplicación
+DUR-018,hair-contorno-money-piece,10,52,65,88,35,10,120,94,true,observed,high,Incluye 35m de pose donde el especialista puede solapar corte/aplicación
+DUR-019,hair-decoloracion-global,10,140,175,236,45,10,240,206,true,observed,high,Incluye 45m de pose donde el especialista puede solapar corte/aplicación
+DUR-020,hair-correccion-color,10,164,205,277,45,10,270,236,true,observed,high,Incluye 45m de pose donde el especialista puede solapar corte/aplicación
+DUR-021,hair-keratina-alisado,10,100,125,169,35,10,180,154,true,observed,high,Incluye 35m de pose donde el especialista puede solapar corte/aplicación
+DUR-022,hair-aminoacidos-capilares,10,100,125,169,35,10,180,154,true,observed,high,Incluye 35m de pose donde el especialista puede solapar corte/aplicación
+DUR-023,hair-cirugia-capilar,10,76,95,128,35,10,150,124,true,observed,high,Incluye 35m de pose donde el especialista puede solapar corte/aplicación
+DUR-024,hair-botox-capilar,10,36,45,61,25,10,90,71,true,observed,high,Incluye 25m de pose donde el especialista puede solapar corte/aplicación
+DUR-025,hair-hidratacion-profunda,5,28,35,47,15,5,60,49,true,observed,high,Incluye 15m de pose donde el especialista puede solapar corte/aplicación
+DUR-026,hair-repolarizacion,5,40,50,68,15,5,75,64,true,observed,high,Incluye 15m de pose donde el especialista puede solapar corte/aplicación
+DUR-027,hair-reparacion-enlaces-plex,5,28,35,47,15,5,60,49,true,observed,high,Incluye 15m de pose donde el especialista puede solapar corte/aplicación
+DUR-028,hair-detox-cuero-cabelludo,5,28,35,47,15,5,60,49,true,observed,high,Incluye 15m de pose donde el especialista puede solapar corte/aplicación
+DUR-029,hair-corte-en-seco-rizos,5,52,65,88,0,5,75,75,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-030,hair-definicion-rizos,5,64,80,108,0,5,90,90,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-031,hair-corte-definicion-rizos,5,88,110,149,0,5,120,120,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-032,hair-transicion-desintoxicacion-rizos,5,76,95,128,0,5,105,105,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-033,barber-corte-fade,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-034,barber-corte-clasico-tijera,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-035,barber-corte-rapado-buzz,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-036,barber-corte-visagismo-autor,5,40,50,68,0,5,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-037,barber-mantenimiento-contornos,2,8,10,14,0,3,15,15,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-038,barber-corte-junior,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-039,barber-perfilado-barba,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-040,barber-ritual-toalla-caliente,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-041,barber-afeitado-tradicional,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-042,barber-hidratacion-barba,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-043,barber-combo-corte-barba,5,40,50,68,0,5,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-044,barber-combo-corte-barba-cejas,5,52,65,88,0,5,75,75,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-045,barber-combo-ritual-premium,5,64,80,108,0,5,90,90,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-046,barber-combo-corte-cejas,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-047,barber-perfilado-cejas,2,8,10,14,0,3,15,15,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-048,barber-facial-express-mascarilla,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-049,barber-depilacion-nariz-oidos,2,8,10,14,0,3,15,15,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-050,barber-limpieza-facial-barberia,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-051,barber-camuflaje-canas-cabello,5,8,10,14,10,5,30,30,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-052,barber-pigmentacion-barba,5,8,10,14,10,5,30,30,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-053,barber-platinado-decoloracion,5,60,75,101,35,5,120,94,true,observed,high,Incluye 35m de pose donde el especialista puede solapar corte/aplicación
+DUR-054,nail-manicura-tradicional,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-055,nail-manicura-semipermanente,5,40,50,68,0,5,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-056,nail-manicura-rusa-combinada,5,52,65,88,0,5,75,75,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-057,nail-nivelacion-rubber-base,5,52,65,88,0,5,75,75,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-058,nail-manicura-sin-esmalte,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-059,nail-acrilicas-set-nuevo,5,88,110,149,0,5,120,120,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-060,nail-polygel-set-nuevo,5,88,110,149,0,5,120,120,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-061,nail-press-on-soft-gel,5,64,80,108,0,5,90,90,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-062,nail-kapping-forrado,5,64,80,108,0,5,90,90,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-063,nail-nail-art-diseno,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-064,nail-reparacion-una,5,5,5,7,0,5,15,15,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-065,nail-mantenimiento-acrilicas,5,64,80,108,0,5,90,90,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-066,nail-mantenimiento-polygel,5,64,80,108,0,5,90,90,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-067,nail-retiro-semipermanente,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-068,nail-retiro-acrilicas-polygel,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-069,nail-pedicura-tradicional,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-070,nail-pedicura-semipermanente,5,40,50,68,0,5,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-071,nail-pedicura-spa,5,52,65,88,0,5,75,75,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-072,nail-pedicura-clinica-sin-esmalte,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-073,nail-diseno-cejas-hilo-cera,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-074,nail-cejas-henna,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-075,nail-laminado-cejas,5,24,30,41,20,5,60,60,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-076,nail-laminado-cejas-tinte,5,24,30,41,20,5,60,60,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-077,nail-depilacion-bozo-hilo-cera,5,5,5,7,0,5,15,15,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-078,nail-lifting-pestanas,5,24,30,41,20,5,60,60,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-079,nail-extensiones-pelo-a-pelo-clasicas,5,88,110,149,0,5,120,120,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-080,nail-extensiones-efecto-rimel-hibridas,5,100,125,169,0,5,135,135,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-081,nail-extensiones-volumen-ruso,5,112,140,189,0,5,150,150,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-082,nail-retoque-pestanas,5,52,65,88,0,5,75,75,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-083,nail-retiro-pestanas,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-084,spa-limpieza-facial-profunda,5,36,45,61,15,10,75,75,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-085,spa-hidrafacial,5,24,30,41,15,10,60,60,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-086,spa-dermapen-microneedling,5,24,30,41,15,10,60,60,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-087,spa-peeling-quimico-suave,5,12,15,20,15,10,45,45,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-088,spa-dermaplaning-hidratacion,5,24,30,41,15,10,60,60,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-089,spa-facial-hidratante-glow,5,24,30,41,15,10,60,60,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-090,spa-masaje-relajante-60,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-091,spa-masaje-descontracturante,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-092,spa-masaje-piedras-volcanicas,5,48,60,81,0,10,75,75,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-093,spa-masaje-craneofacial-cuello,5,12,15,20,0,10,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-094,spa-masaje-reductor-sesion,5,24,30,41,0,10,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-095,spa-masaje-parejas,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-096,spa-drenaje-linfatico-manual,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-097,spa-maderoterapia-corporal,5,24,30,41,0,10,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-098,spa-exfoliacion-hidratacion-corporal,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-099,spa-limpieza-espalda,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-100,spa-radiofrecuencia-vacumterapia,5,24,30,41,0,10,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-101,spa-cera-axilas,5,5,5,7,0,5,15,15,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-102,spa-cera-bikini-brasileno,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-103,spa-cera-piernas-completas,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-104,spa-cera-espalda-pecho,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-105,spa-laser-zona-pequena,5,5,5,7,0,5,15,15,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-106,spa-laser-zona-mediana,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-107,spa-laser-zona-grande,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-108,lounge-maquillaje-social,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-109,lounge-maquillaje-piel-blindada,5,48,60,81,0,10,75,75,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-110,lounge-maquillaje-novia,5,60,75,101,0,10,90,90,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-111,lounge-maquillaje-editorial-fotos,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-112,lounge-maquillaje-express-ojos,5,24,30,41,0,10,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-113,lounge-clase-automaquillaje,5,84,105,142,0,10,120,120,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-114,lounge-ondas-glam-agua,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-115,lounge-peinado-recogido-evento,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-116,lounge-peinado-ondas-sueltas,5,24,30,41,0,10,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-117,lounge-peinado-coleta-pulida,5,24,30,41,0,10,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-118,lounge-peinado-novia,5,60,75,101,0,10,90,90,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-119,lounge-combo-maquillaje-peinado-social,5,84,105,142,0,10,120,120,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-120,lounge-paquete-novia-completo,5,252,315,425,0,10,330,330,false,estimated,high,Suma de 2 citas independientes: Prueba previa (150m) + Día boda (180m)
+DUR-121,lounge-paquete-quinceanera-grado,5,108,135,182,0,10,150,150,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-122,lounge-combo-manos-pies-semipermanente,5,72,90,122,0,10,105,105,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-123,lounge-combo-mirada-cejas-pestanas,5,60,75,101,0,10,90,90,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-124,lounge-combo-refresh-express,5,72,90,122,0,10,105,105,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-125,lounge-dia-de-spa-integral,5,132,165,223,0,10,180,180,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-126,hair-corte-clasico-recto,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-127,hair-corte-capas-mariposa,5,40,50,68,0,5,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-128,hair-corte-cabello-afro,5,52,65,88,0,5,75,75,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-129,hair-highlights-mechas-tradicionales,10,116,145,196,45,10,210,176,true,observed,high,Incluye 45m de pose donde el especialista puede solapar corte/aplicación
+DUR-130,hair-airtouch,10,188,235,317,45,10,300,266,true,observed,high,Incluye 45m de pose donde el especialista puede solapar corte/aplicación
+DUR-131,hair-retoque-balayage-mantenimiento,10,92,115,155,45,10,180,146,true,observed,high,Incluye 45m de pose donde el especialista puede solapar corte/aplicación
+DUR-132,hair-tonalizacion-post-decoloracion,5,24,30,41,20,5,60,60,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-133,hair-color-fantasia-semipermanente,5,36,45,61,35,5,90,64,true,observed,high,Incluye 35m de pose donde el especialista puede solapar corte/aplicación
+DUR-134,hair-permanente-ondulacion,10,76,95,128,35,10,150,124,true,observed,high,Incluye 35m de pose donde el especialista puede solapar corte/aplicación
+DUR-135,hair-trenzas-africanas-box-braids,10,176,220,297,0,10,240,240,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-136,hair-twists-finger-coils,5,88,110,149,0,5,120,120,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-137,hair-extensiones-adhesivas-tape,10,56,70,95,0,10,90,90,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-138,hair-extensiones-queratina-punto,10,128,160,216,0,10,180,180,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-139,hair-extensiones-cortina-cosidas,10,80,100,135,0,10,120,120,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-140,hair-mantenimiento-extensiones,10,80,100,135,0,10,120,120,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-141,hair-retiro-extensiones,10,32,40,54,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-142,hair-diagnostico-prueba-mechon,5,5,5,7,15,5,30,30,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-143,hair-head-spa-japones,5,40,50,68,15,5,75,75,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-144,barber-skin-fade-navaja,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-145,barber-taper-burst-fade,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-146,barber-corte-mullet-crop,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-147,barber-corte-largo-tijera,5,40,50,68,0,5,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-148,barber-diseno-lineas-freestyle,2,8,10,14,0,3,15,15,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-149,barber-coloracion-fantasia-diseno,5,84,105,142,35,5,150,124,true,observed,high,Incluye 35m de pose donde el especialista puede solapar corte/aplicación
+DUR-150,barber-hidratacion-capilar-silla,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-151,barber-lavado-peinado-express,2,8,10,14,0,3,15,15,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-152,barber-combo-corte-facial,5,40,50,68,0,5,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-153,barber-paquete-novio-evento,5,76,95,128,0,5,105,105,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-154,barber-membresia-mensual-corte,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-155,barber-cejas-hilo-precision,2,8,10,14,0,3,15,15,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-156,barber-servicio-domicilio-vip,5,52,65,88,0,5,75,75,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-157,nail-manicura-express,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-158,nail-manicura-japonesa,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-159,nail-manicura-spa-parafina,5,40,50,68,0,5,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-160,nail-mantenimiento-soft-gel-rubber,5,52,65,88,0,5,75,75,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-161,nail-pedicura-express,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-162,nail-pedicura-rusa-combinada,5,52,65,88,0,5,75,75,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-163,nail-cejas-hilo-visagismo,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-164,nail-tinte-hibrido-cejas,5,28,35,47,0,5,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-165,nail-pestanas-volumen-tecnologico,5,88,110,149,0,5,120,120,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-166,nail-pestanas-mega-volumen,5,124,155,209,0,5,165,165,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-167,nail-pestanas-efecto-wispy-kim,5,112,140,189,0,5,150,150,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-168,nail-combo-manos-pies-tradicional,5,52,65,88,0,5,75,75,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-169,nail-combo-semi-manos-tradicional-pies,5,64,80,108,0,5,90,90,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-170,nail-taller-automanicura-cuidado,5,136,170,230,0,5,180,180,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-171,spa-limpieza-facial-basica-express,5,12,15,20,15,10,45,45,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-172,spa-hidrodermoabrasion-estetica,5,24,30,41,15,10,60,60,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-173,spa-facial-despigmentante-antimanchas,5,24,30,41,15,10,60,60,false,observed,high,100% de dedicación continua del especialista en silla/cabina
+DUR-174,spa-masaje-deportivo-descarga,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-175,spa-masaje-prenatal,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-176,spa-cavitacion-ultrasonido,5,24,30,41,0,10,45,45,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-177,spa-envoltura-corporal-fangoterapia,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-178,spa-drenaje-postoperatorio-especializado,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-179,spa-cera-rostro-completo,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-180,spa-cera-brazos,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-181,spa-cera-medias-piernas,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-182,spa-depilacion-hilo-rostro,5,16,20,27,0,5,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-183,spa-paquete-moldeo-10-sesiones,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-184,lounge-maquillaje-noche-glam,5,48,60,81,0,10,75,75,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-185,lounge-maquillaje-quinceanera,5,48,60,81,0,10,75,75,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-186,lounge-maquillaje-grado,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-187,lounge-prueba-maquillaje-peinado-novia,5,108,135,182,0,10,150,150,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-188,lounge-trenzas-evento-festival,5,36,45,61,0,10,60,60,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-189,lounge-paquete-invitadas-grupo,5,72,90,122,0,10,105,105,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-190,lounge-acompanamiento-evento-touchup,5,132,165,223,0,10,180,180,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-191,lounge-recargo-domicilio-urbano,5,12,15,20,0,10,30,30,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-192,lounge-recargo-domicilio-fuera-ciudad,5,60,75,101,0,10,90,90,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
+DUR-193,lounge-asesoria-imagen-colorimetria,5,60,75,101,0,10,90,90,false,estimated,high,100% de dedicación continua del especialista en silla/cabina
