@@ -248,7 +248,7 @@ function GaleriaTab({ consultas }: { consultas: Consulta[] }) {
   return (
     <div className="space-y-4">
       {fotoP && fotoU && (
-        <section className="v-gradient-hero v-grain relative overflow-hidden rounded-xl p-5 text-white shadow-[0_16px_40px_-8px_rgba(59,13,30,0.2)]">
+        <section className="bg-[#111111] border border-[#27272A] relative overflow-hidden rounded-xl p-5 text-white">
           <div className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#E4E4E7] mb-3">
             Evolución · primera vs última visita
           </div>
@@ -557,15 +557,15 @@ export default function ClientaPage() {
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-[#111111] font-sans relative pb-16">
       <VelvetTopHeader />
-      {/* ── Hero Velvet Studio ───────────────────────────────────────────── */}
-      <section className="v-gradient-hero v-grain relative pt-8 pb-6 px-4 sm:px-6 text-white">
+      {/* ── Cabecera Base Neutra Veli ────────────────────────────────────── */}
+      <section className="bg-white border-b border-[#E4E4E7] relative pt-6 pb-6 px-4 sm:px-6 text-[#111111]">
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center justify-between mb-4">
             <button
               type="button"
               onClick={() => router.back()}
               aria-label="Volver"
-              className="min-w-[44px] min-h-[44px] rounded-full bg-[#FAFAFA]/15 hover:bg-[#FAFAFA]/25 border border-[#E4E4E7]/25 text-white flex items-center justify-center transition-colors cursor-pointer"
+              className="min-w-[40px] min-h-[40px] rounded-lg bg-white hover:bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] flex items-center justify-center transition-colors cursor-pointer"
             >
               <ArrowLeft size={17} />
             </button>
@@ -576,7 +576,7 @@ export default function ClientaPage() {
                   type="button"
                   onClick={cancelEditing}
                   aria-label="Cancelar edición"
-                  className="min-w-[44px] min-h-[44px] rounded-full bg-[#FAFAFA]/15 hover:bg-[#FAFAFA]/25 border border-[#E4E4E7]/25 text-white flex items-center justify-center transition-colors cursor-pointer"
+                  className="min-w-[40px] min-h-[40px] rounded-lg bg-white hover:bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] flex items-center justify-center transition-colors cursor-pointer"
                 >
                   <X size={17} />
                 </button>
@@ -586,7 +586,7 @@ export default function ClientaPage() {
                     type="button"
                     onClick={startEditing}
                     aria-label="Editar"
-                    className="min-w-[44px] min-h-[44px] rounded-full bg-[#FAFAFA]/15 hover:bg-[#FAFAFA]/25 border border-[#E4E4E7]/25 text-white flex items-center justify-center transition-colors cursor-pointer"
+                    className="min-w-[40px] min-h-[40px] rounded-lg bg-white hover:bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] flex items-center justify-center transition-colors cursor-pointer"
                   >
                     <Pencil size={15} />
                   </button>
@@ -594,7 +594,7 @@ export default function ClientaPage() {
                     type="button"
                     onClick={() => setShowDelete(true)}
                     aria-label="Eliminar"
-                    className="min-w-[44px] min-h-[44px] rounded-full bg-[#FAFAFA]/15 hover:bg-[#FAFAFA]/25 border border-[#E4E4E7]/25 text-white flex items-center justify-center transition-colors cursor-pointer"
+                    className="min-w-[40px] min-h-[40px] rounded-lg bg-white hover:bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] flex items-center justify-center transition-colors cursor-pointer"
                   >
                     <MoreHorizontal size={17} />
                   </button>
@@ -603,27 +603,27 @@ export default function ClientaPage() {
             </div>
           </div>
 
-          <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#E4E4E7] tabular-nums">
+          <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#71717A] tabular-nums">
             FOLIO · {clienta.id.slice(0, 8).toUpperCase()} · DESDE{' '}
             {new Date(clienta.fechaRegistro).getFullYear()}
           </div>
-          <h1 className="m-0 font-display text-2xl md:text-3xl font-semibold !text-white tracking-tight mt-1 mb-3 truncate capitalize">
+          <h1 className="m-0 font-display text-2xl md:text-3xl font-semibold text-[#111111] tracking-tight mt-1 mb-3 truncate capitalize">
             {clienta.nombre}
           </h1>
 
           <div className="flex flex-wrap gap-2">
             {clienta.tipoRizoPrincipal && (
-              <span className="px-3 py-1 rounded-full bg-[#E4E4E7] text-[#111111] text-xs font-bold">
+              <span className="px-3 py-1 rounded-lg bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] text-xs font-bold">
                 {getRizoLabel(clienta.tipoRizoPrincipal)}
               </span>
             )}
-            <span className="px-3 py-1 rounded-full bg-[#FAFAFA]/15 border border-[#E4E4E7]/25 text-white text-xs font-semibold">
+            <span className="px-3 py-1 rounded-lg bg-[#FAFAFA] border border-[#E4E4E7] text-[#52525B] text-xs font-semibold">
               {resumenFinanciero.cantidadCierres > 0 || clienta.totalVisitas > 0
-                ? 'Clienta activa'
-                : 'Clienta nueva'}
+                ? 'Cliente activo'
+                : 'Cliente nuevo'}
             </span>
             {resumenFinanciero.cantidadCierres > 0 && (
-              <span className="px-3 py-1 rounded-full bg-[#15803D]/25 border border-[#15803D]/40 text-white text-xs font-bold tabular-nums">
+              <span className="px-3 py-1 rounded-lg bg-[#F0FDF4] border border-[#15803D]/30 text-[#15803D] text-xs font-bold tabular-nums">
                 {resumenFinanciero.cantidadCierres}{' '}
                 {resumenFinanciero.cantidadCierres === 1 ? 'cierre' : 'cierres'}
               </span>
@@ -838,7 +838,7 @@ export default function ClientaPage() {
             </div>
 
             {/* ── Segmented Control de la Ficha ────────────────────────── */}
-            <div className="grid grid-cols-3 gap-1.5 p-1.5 rounded-xl bg-white border border-[#E4E4E7] shadow-[0_4px_16px_-4px_rgba(59,13,30,0.04)] mb-5">
+            <div className="grid grid-cols-3 gap-1.5 p-1.5 rounded-xl bg-white border border-[#E4E4E7] mb-5">
               {[
                 { key: 'info' as const, label: 'Resumen & Legal' },
                 { key: 'historial' as const, label: `Historial · ${totalEventosHistorial}` },
@@ -850,9 +850,9 @@ export default function ClientaPage() {
                     key={key}
                     type="button"
                     onClick={() => setTab(key)}
-                    className={`min-h-[44px] px-2.5 py-2 rounded-xl text-xs font-bold tabular-nums transition-all cursor-pointer border-none ${
+                    className={`min-h-[44px] px-2.5 py-2 rounded-lg text-xs font-bold tabular-nums transition-all cursor-pointer border-none ${
                       active
-                        ? 'bg-[#111111] text-white shadow-[0_4px_12px_-2px_rgba(59,13,30,0.2)]'
+                        ? 'bg-[#111111] text-white'
                         : 'bg-transparent text-[#52525B] hover:bg-[#FAFAFA] hover:text-[#111111]'
                     }`}
                   >

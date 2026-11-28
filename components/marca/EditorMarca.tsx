@@ -116,8 +116,8 @@ function LabelMarca({ children }: { children: React.ReactNode }) {
         fontSize: 12,
         color: 'var(--text-tertiary)',
         marginBottom: 8,
-        fontFamily: 'var(--font-serif)',
-        fontStyle: 'italic',
+        fontFamily: 'var(--font-sans)',
+        fontWeight: 600,
       }}
     >
       {children}

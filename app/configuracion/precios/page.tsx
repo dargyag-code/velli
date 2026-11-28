@@ -797,7 +797,7 @@ export default function ConfiguracionPreciosPage() {
             type="button"
             onClick={() => router.push('/configuracion')}
             aria-label="Volver a Configuración"
-            className="min-w-[44px] min-h-[44px] rounded-full bg-white hover:bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(59,13,30,0.05)] cursor-pointer shrink-0 transition-colors"
+            className="min-w-[44px] min-h-[44px] rounded-full bg-white hover:bg-[#F4F4F5] border border-[#E4E4E7] text-[#111111] flex items-center justify-center cursor-pointer shrink-0 transition-colors"
           >
             <ArrowLeft size={18} />
           </button>
@@ -814,13 +814,13 @@ export default function ConfiguracionPreciosPage() {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-5 space-y-5">
         {/* Segmented Control de las 3 Pestañas */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 p-1.5 rounded-xl bg-white border border-[#E4E4E7] ">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 p-1.5 rounded-xl bg-white border border-[#E4E4E7]">
           <button
             type="button"
             onClick={() => setPestana('servicios')}
-            className={`min-h-[46px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border-none ${
+            className={`min-h-[46px] px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border-none ${
               pestana === 'servicios'
-                ? 'bg-[#111111] text-white shadow-[0_6px_16px_-4px_rgba(59,13,30,0.22)]'
+                ? 'bg-[#111111] text-white'
                 : 'bg-transparent text-[#52525B] hover:bg-[#FAFAFA] hover:text-[#111111]'
             }`}
           >
@@ -830,9 +830,9 @@ export default function ConfiguracionPreciosPage() {
           <button
             type="button"
             onClick={() => setPestana('quimica')}
-            className={`min-h-[46px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border-none inline-flex items-center justify-center gap-1.5 ${
+            className={`min-h-[46px] px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border-none inline-flex items-center justify-center gap-1.5 ${
               pestana === 'quimica'
-                ? 'bg-[#111111] text-white shadow-[0_6px_16px_-4px_rgba(59,13,30,0.22)]'
+                ? 'bg-[#111111] text-white'
                 : 'bg-transparent text-[#52525B] hover:bg-[#FAFAFA] hover:text-[#111111]'
             }`}
           >
@@ -843,9 +843,9 @@ export default function ConfiguracionPreciosPage() {
           <button
             type="button"
             onClick={() => setPestana('comisiones')}
-            className={`min-h-[46px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border-none inline-flex items-center justify-center gap-1.5 ${
+            className={`min-h-[46px] px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border-none inline-flex items-center justify-center gap-1.5 ${
               pestana === 'comisiones'
-                ? 'bg-[#111111] text-white shadow-[0_6px_16px_-4px_rgba(59,13,30,0.22)]'
+                ? 'bg-[#111111] text-white'
                 : 'bg-transparent text-[#52525B] hover:bg-[#FAFAFA] hover:text-[#111111]'
             }`}
           >
@@ -983,7 +983,7 @@ export default function ConfiguracionPreciosPage() {
                       onClick={() => setServicioId(srv.id)}
                       className={`min-h-[46px] px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer inline-flex items-center gap-1.5 ${
                         activo
-                          ? 'bg-[#111111] text-white border-[#111111] shadow-[0_6px_16px_-4px_rgba(59,13,30,0.2)]'
+                          ? 'bg-[#111111] text-white border-[#111111]'
                           : 'bg-[#FAFAFA] text-[#111111] border-[#E4E4E7] hover:bg-[#F4F4F5] hover:border-[#E4E4E7]'
                       }`}
                     >
@@ -1759,7 +1759,7 @@ export default function ConfiguracionPreciosPage() {
             </section>
 
             {/* SIMULADOR DE MARGEN EN VIVO */}
-            <section className="v-gradient-hero rounded-xl p-5 sm:p-6 text-white shadow-[0_18px_44px_-10px_rgba(59,13,30,0.28)] space-y-4">
+            <section className="bg-[#111111] border border-[#27272A] rounded-xl p-5 sm:p-6 text-white space-y-4">
               <div className="flex justify-between items-center gap-3">
                 <div>
                   <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#E4E4E7] block">
