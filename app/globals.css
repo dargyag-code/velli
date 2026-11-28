@@ -81,9 +81,6 @@
 
   /* ── Tipografías unificadas a Plus Jakarta Sans + JetBrains Mono ───── */
   --font-display: var(--font-sans);
-  --font-serif: var(--font-sans), system-ui, sans-serif;
-  --font-dm-serif: var(--font-sans), system-ui, sans-serif;
-  --font-dm-sans: var(--font-sans), system-ui, sans-serif;
   --font-jakarta: var(--font-sans), system-ui, sans-serif;
   --font-jetbrains: var(--font-mono), ui-monospace, monospace;
 }
@@ -159,14 +156,6 @@ th,
   font-variant-numeric: tabular-nums;
 }
 
-.font-brand,
-.v-serif,
-.v-display,
-.v-sans {
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-variant-numeric: tabular-nums;
-}
-
 .v-mono {
   font-family: var(--font-mono), ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
@@ -178,13 +167,6 @@ th,
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-ink-muted);
-}
-
-.v-eyebrow {
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 500;
   color: var(--color-ink-muted);
 }
 
@@ -201,29 +183,13 @@ th,
   background: var(--color-border);
 }
 
-.v-ticks { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
-.v-ticks::before { content: ''; display: inline-block; width: 10px; height: 1px; background: var(--color-ink); }
-.v-ticks::after  { content: ''; flex: 1; height: 1px; background: var(--color-border); }
-
 /* Superficies Base Neutra Veli (12px radio, borde 1px #E4E4E7, sin sombra pesada) */
 .v-card,
-.v-card-hi,
-.v-card-flat {
+.v-card-hi {
   background: var(--color-surface);
   border-radius: 12px;
   border: 1px solid var(--color-border);
   box-shadow: none;
-}
-
-.v-safe-top    { padding-top: 54px; }
-.v-safe-bottom { padding-bottom: 100px; }
-
-.v-photo {
-  position: relative;
-  overflow: hidden;
-  border-radius: 12px;
-  background: var(--color-surface-subtle);
-  border: 1px solid var(--color-border);
 }
 
 .v-noscroll::-webkit-scrollbar { display: none; }
@@ -237,15 +203,6 @@ th,
 }
 .card-hover:hover {
   border-color: #D4D4D8;
-}
-
-.selection-card {
-  cursor: pointer;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-.selection-card.selected {
-  border-color: var(--color-ink) !important;
-  background-color: var(--color-surface-subtle) !important;
 }
 
 /* ── Animaciones discretas de interfaz ──────────────────────────────── */
@@ -265,9 +222,7 @@ th,
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.fade-in,
-.v-fade,
-.animate-fade-in-up {
+.fade-in {
   animation: fadeIn 0.22s ease forwards;
 }
 
@@ -295,13 +250,6 @@ th,
 }
 .pulse-ring,
 .v-pulse { animation: pulse-ring 1.8s ease-in-out infinite; }
-
-@keyframes icon-pulse {
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.06); }
-}
-.icon-pulse,
-.animate-pulse-soft { animation: icon-pulse 2s ease-in-out infinite; }
 
 @keyframes shimmer {
   0%   { background-position: -200% center; }
@@ -358,4 +306,3 @@ input:focus, select:focus, textarea:focus {
 
 /* ── Safe area padding ──────────────────────────────────────────────── */
 .pb-safe { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
-.pb-nav  { padding-bottom: max(96px, calc(80px + env(safe-area-inset-bottom))); }

@@ -72,6 +72,7 @@ export const SPECIALIST_RESTRICTED_PREFIXES = [
   '/reportes',
   '/configuracion/precios',
   '/planes',
+  '/vitrina',
 ] as const;
 
 export const SPECIALIST_FALLBACK_ROUTE = '/agenda' as const;

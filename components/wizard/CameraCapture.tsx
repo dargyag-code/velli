@@ -631,7 +631,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
             <h2
               style={{
                 margin: '4px 0 6px',
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-sans)',
                 fontSize: 26,
                 letterSpacing: '-0.02em',
                 lineHeight: 1.05,
@@ -691,7 +691,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                     <span
                       style={{
-                        fontFamily: 'var(--font-serif)',
+                        fontFamily: 'var(--font-sans)',
                         fontSize: 16,
                         color: selected ? 'var(--primary-deep)' : 'var(--text-main)',
                         letterSpacing: '-0.005em',
@@ -707,7 +707,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
                   <p
                     style={{
                       margin: '6px 0 0',
-                      fontFamily: 'var(--font-serif)',
+                      fontFamily: 'var(--font-sans)',
                       fontStyle: 'italic',
                       fontSize: 11.5,
                       color: 'var(--secondary-deep)',
@@ -856,7 +856,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
               <div className="v-num" style={{ color: 'rgba(232, 194, 144, 0.9)', fontSize: 9 }}>
                 EN VIVO · IA
               </div>
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: '#fff' }}>
+              <div style={{ fontFamily: 'var(--font-sans)', fontSize: 16, color: '#fff' }}>
                 Cámara capilar
               </div>
             </div>
@@ -966,7 +966,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
               <div className="v-num" style={{ color: 'rgba(232, 194, 144, 0.85)', fontSize: 8.5 }}>
                 ÁNGULO
               </div>
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: '#fff', marginTop: 2, textTransform: 'capitalize' }}>
+              <div style={{ fontFamily: 'var(--font-sans)', fontSize: 16, color: '#fff', marginTop: 2, textTransform: 'capitalize' }}>
                 {SECUENCIA_ANGULOS[anguloIndex].titulo}
               </div>
               <div style={{ fontSize: 10, color: 'rgba(245, 237, 220, 0.7)', marginTop: 1 }}>
@@ -1185,7 +1185,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
             <h2
               style={{
                 margin: '4px 0 0',
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-sans)',
                 fontSize: 26,
                 letterSpacing: '-0.02em',
                 lineHeight: 1.05,
@@ -1219,7 +1219,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
             >
               <span
                 style={{
-                  fontFamily: 'var(--font-serif)',
+                  fontFamily: 'var(--font-sans)',
                   fontSize: 44,
                   letterSpacing: '-0.025em',
                   color:
@@ -1415,7 +1415,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
           <h3
             style={{
               margin: 0,
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-sans)',
               fontSize: 24,
               letterSpacing: '-0.02em',
               color: 'var(--text-main)',
@@ -1455,7 +1455,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
             <h2
               style={{
                 margin: '4px 0 0',
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-sans)',
                 fontSize: 26,
                 letterSpacing: '-0.02em',
                 lineHeight: 1.05,
@@ -1486,7 +1486,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
             <span
               style={{
                 display: 'block',
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-sans)',
                 fontStyle: 'italic',
                 fontSize: 80,
                 letterSpacing: '-0.04em',
@@ -1590,7 +1590,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
             <p
               style={{
                 margin: '6px 0 0',
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-sans)',
                 fontStyle: 'italic',
                 fontSize: 14,
                 lineHeight: 1.45,
@@ -1678,7 +1678,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
             <h2
               style={{
                 margin: '4px 0 0',
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-sans)',
                 fontSize: 24,
                 letterSpacing: '-0.02em',
                 lineHeight: 1.05,
@@ -1818,7 +1818,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
             <h2
               style={{
                 margin: '4px 0 6px',
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-sans)',
                 fontSize: 24,
                 letterSpacing: '-0.02em',
                 lineHeight: 1.05,
@@ -1898,7 +1898,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
             <h2
               style={{
                 margin: '4px 0 6px',
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-sans)',
                 fontSize: 24,
                 letterSpacing: '-0.02em',
                 lineHeight: 1.05,
@@ -1934,7 +1934,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
                 <ImageIcon size={18} strokeWidth={1.7} />
               </div>
               <div>
-                <p style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--text-main)' }}>
+                <p style={{ margin: 0, fontFamily: 'var(--font-sans)', fontSize: 16, color: 'var(--text-main)' }}>
                   Subir foto desde galería
                 </p>
                 <p style={{ margin: '2px 0 0', fontSize: 11.5, color: 'var(--text-tertiary)' }}>
@@ -2070,7 +2070,7 @@ export default function CameraCapture({ onComplete, onCorrectAI, onCancel, onMan
             <h3
               style={{
                 margin: 0,
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-sans)',
                 fontSize: 22,
                 lineHeight: 1.15,
                 letterSpacing: '-0.015em',

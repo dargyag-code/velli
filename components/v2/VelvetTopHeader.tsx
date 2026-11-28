@@ -23,8 +23,9 @@ import {
   type OrgRole,
 } from '@/lib/organizations';
 import { getProfile } from '@/lib/profile';
-import { getSuscripcionEfectiva } from '@/lib/subscription/estado';
+import { getSuscripcionEfectiva, type SuscripcionEfectiva } from '@/lib/subscription/estado';
 import { obtenerOrganizacionActivaPanel } from '@/lib/vitrina';
+import SubscriptionBanner from '@/components/subscription/SubscriptionBanner';
 
 let rolOrganizacionCacheado: OrgRole | null | undefined;
 let slugOrganizacionCacheado: string | null | undefined;
@@ -97,6 +98,7 @@ export default function VelvetTopHeader({
   const [nombreLocal, setNombreLocal] = useState('Tu Estudio');
   const [ciudadLocal, setCiudadLocal] = useState('Colombia');
   const [planIALocal, setPlanIALocal] = useState(true);
+  const [subLocal, setSubLocal] = useState<SuscripcionEfectiva | null>(null);
   const [slugLocal, setSlugLocal] = useState<string | null>(
     slugOrganizacionCacheado ?? null
   );
@@ -134,7 +136,7 @@ export default function VelvetTopHeader({
 
   useEffect(() => {
     const necesitaPerfil = nombreProp === undefined || ciudadProp === undefined;
-    const necesitaSub = planIAProp === undefined;
+    const necesitaSub = true;
     const necesitaOrg =
       (rolProp === undefined && rolOrganizacionCacheado === undefined) ||
       slugOrganizacionCacheado === undefined;
@@ -167,6 +169,7 @@ export default function VelvetTopHeader({
         if (!org?.city?.trim() && prof.ciudad?.trim()) setCiudadLocal(prof.ciudad.trim());
       }
       if (sub) {
+        setSubLocal(sub);
         setPlanIALocal(sub.plan === 'pro_ia' || sub.estado === 'trialing');
       }
     });
@@ -202,6 +205,10 @@ export default function VelvetTopHeader({
   const hrefVitrinaRapida = slugLocal ? `/s/${slugLocal}` : '/vitrina';
   const mostrarAccesoVitrinaTop =
     Boolean(slugLocal) || rolEfectivo !== 'specialist';
+  const mostrarBannerSuscripcion =
+    !pathname.startsWith('/planes') &&
+    mostrarPlanes &&
+    (rolEfectivo === 'owner' || rolEfectivo === 'manager' || rolEfectivo === null);
 
   return (
     <>
@@ -376,6 +383,8 @@ export default function VelvetTopHeader({
           </Link>
         </div>
       </header>
+
+      {mostrarBannerSuscripcion && <SubscriptionBanner suscripcion={subLocal} />}
 
       {/* ── BARRA INFERIOR LIMPIA MÓVIL (390px) ──────────────────────────── */}
       <nav
