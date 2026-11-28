@@ -47,6 +47,7 @@ import {
   resolverRedireccionPorRol,
 } from '@/lib/organizations/navegacion';
 import { protegerRutaSoloAdminEnServidor } from '@/lib/organizations/servidor';
+import VitrinaProtectedLayout from '@/app/vitrina/layout';
 import {
   crearCotizacionOperativaSilla,
   listarCotizacionesOperativasSilla,
@@ -382,11 +383,57 @@ describe('3. Guardias reales de rol specialist y proyección operativa en Silla 
     expect(esRutaRestringidaParaSpecialist('/reportes')).toBe(true);
     expect(esRutaRestringidaParaSpecialist('/configuracion/precios')).toBe(true);
     expect(esRutaRestringidaParaSpecialist('/planes/confirmacion')).toBe(true);
+    expect(esRutaRestringidaParaSpecialist('/vitrina')).toBe(true);
+    expect(esRutaRestringidaParaSpecialist('/vitrina/pedidos')).toBe(true);
     expect(esRutaRestringidaParaSpecialist('/agenda')).toBe(false);
 
     expect(resolverRedireccionPorRol('/reportes', 'specialist')).toBe(SPECIALIST_FALLBACK_ROUTE);
     expect(resolverRedireccionPorRol('/configuracion/precios', 'specialist')).toBe('/agenda');
+    expect(resolverRedireccionPorRol('/vitrina', 'specialist')).toBe('/agenda');
+    expect(resolverRedireccionPorRol('/vitrina', 'manager')).toBeNull();
     expect(resolverRedireccionPorRol('/reportes', 'owner')).toBeNull();
+  });
+
+  it('bloquea en servidor el acceso directo de specialist a /vitrina mediante VitrinaProtectedLayout', async () => {
+    const construirSupabaseMembresia = (role: 'owner' | 'manager' | 'specialist') => ({
+      auth: {
+        getUser: async () => ({ data: { user: { id: 'usr-vitrina-1' } } }),
+      },
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            eq: () => ({
+              order: () => ({
+                limit: async () => ({
+                  data: [
+                    {
+                      id: 'mem-vit-1',
+                      organization_id: ORG_ID_A,
+                      user_id: 'usr-vitrina-1',
+                      role,
+                      active: true,
+                      created_at: '2026-11-28T10:00:00Z',
+                    },
+                  ],
+                  error: null,
+                }),
+              }),
+            }),
+          }),
+        }),
+      }),
+    });
+
+    mockCreateServerClient.mockResolvedValueOnce(construirSupabaseMembresia('specialist'));
+    await expect(VitrinaProtectedLayout({ children: 'panel-vitrina' })).rejects.toThrow(
+      'NEXT_REDIRECT:/agenda'
+    );
+    expect(mockRedirect).toHaveBeenCalledWith('/agenda');
+
+    mockRedirect.mockClear();
+    mockCreateServerClient.mockResolvedValueOnce(construirSupabaseMembresia('manager'));
+    await expect(VitrinaProtectedLayout({ children: 'panel-vitrina' })).resolves.toBeTruthy();
+    expect(mockRedirect).not.toHaveBeenCalled();
   });
 
   it('redirige en servidor a /agenda cuando un specialist entra directo a rutas financieras', async () => {
