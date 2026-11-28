@@ -67,9 +67,24 @@ import {
 } from '@/lib/cotizador';
 import {
   obtenerSemillaServicio,
+  AJUSTES_VELVET_STUDIO_DEFECTO,
   normalizarAjustesVelvetStudio,
 } from '@/lib/semilla-financiera';
 import { REGLA_COMISION_SALUDABLE_DEFECTO } from '@/lib/comision';
+import { createClient } from '@/lib/supabase/client';
+import type { VerticalSalon } from '@/lib/flags/verticales';
+import { obtenerContextoOrganizacionActivaCliente } from '@/lib/organizations';
+import { normalizarTextoBusqueda } from '@/lib/catalogos/catalogoMaestroColombia';
+import {
+  inferirCodigoCiudadColombia,
+  validarTerminosRestringidosColombia,
+  type CodigoCiudadColombia,
+  type SegmentoMercadoColombia,
+} from '@/lib/catalogos/referenciasMercadoColombia';
+import SelectorCatalogoColombia, {
+  type ItemCatalogoSeleccionado,
+} from '@/components/catalogos/SelectorCatalogoColombia';
+import TarjetaGuiaMedicionVertical from '@/components/datos/TarjetaGuiaMedicionVertical';
 
 type PestanaPrecios = 'servicios' | 'quimica' | 'comisiones';
 
@@ -125,6 +140,13 @@ export default function ConfiguracionPreciosPage() {
   // Servicio activo en el editor
   const [servicioId, setServicioId] = useState<string>('');
   const [creandoServicio, setCreandoServicio] = useState(false);
+  const [importandoCatalogo, setImportandoCatalogo] = useState(false);
+  const [guardandoImportacion, setGuardandoImportacion] = useState(false);
+  const [verticalOrg, setVerticalOrg] = useState<VerticalSalon>('hair_studio');
+  const [cityCodeCatalogo, setCityCodeCatalogo] = useState<CodigoCiudadColombia>('BOG');
+  const [segmentoCatalogo, setSegmentoCatalogo] = useState<SegmentoMercadoColombia>('estandar');
+  const [errorRestriccionServicio, setErrorRestriccionServicio] = useState<string | null>(null);
+  const [errorRestriccionProd, setErrorRestriccionProd] = useState<string | null>(null);
   const [nuevoServicioNombre, setNuevoServicioNombre] = useState('');
   const [nuevoServicioCategoria, setNuevoServicioCategoria] =
     useState<CategoriaServicioDB>('tratamiento');
@@ -188,8 +210,10 @@ export default function ConfiguracionPreciosPage() {
   const cargarTodo = useCallback(async () => {
     setCargando(true);
     try {
-      const [prof, subEf, svcsIniciales, plantillas, ests, prods, coms] = await Promise.all([
+      const supabase = createClient();
+      const [prof, orgCtx, subEf, svcsIniciales, plantillas, ests, prods, coms] = await Promise.all([
         getProfile().catch(() => null),
+        obtenerContextoOrganizacionActivaCliente(supabase).catch(() => null),
         getSuscripcionEfectiva().catch(() => null),
         listarServiciosSalon({ soloActivos: false }).catch(() => [] as ServicioSalon[]),
         listarPlantillasVigentes().catch(() => [] as PlantillaPrecio[]),
@@ -198,6 +222,8 @@ export default function ConfiguracionPreciosPage() {
         listarComisionesVigentes().catch(() => [] as ComisionSalon[]),
       ]);
 
+      if (orgCtx?.vertical) setVerticalOrg(orgCtx.vertical);
+      setCityCodeCatalogo(inferirCodigoCiudadColombia(orgCtx?.city ?? prof?.ciudad));
       setSub(subEf);
       let svcs = svcsIniciales;
       if (svcs.length === 0) {
@@ -360,6 +386,13 @@ export default function ConfiguracionPreciosPage() {
       showToast('Escribe el nombre del servicio', 'error');
       return;
     }
+    const validacion = validarTerminosRestringidosColombia(nuevoServicioNombre);
+    if (!validacion.permitido) {
+      setErrorRestriccionServicio(validacion.orientacionPreventiva);
+      showToast('Nombre bloqueado por lineamiento sanitario preventivo', 'error');
+      return;
+    }
+    setErrorRestriccionServicio(null);
     try {
       const esColor =
         nuevoServicioCategoria === 'color' || nuevoServicioCategoria === 'decoloracion';
@@ -377,6 +410,84 @@ export default function ConfiguracionPreciosPage() {
     } catch (err) {
       console.error('[precios.crearServicio]', err);
       showToast('No se pudo crear el servicio', 'error');
+    }
+  };
+
+  const handleImportarDesdeCatalogo = async (items: ItemCatalogoSeleccionado[]) => {
+    if (items.length === 0) return;
+    setGuardandoImportacion(true);
+    try {
+      const nombresActuales = new Set(servicios.map((s) => normalizarTextoBusqueda(s.nombre)));
+      const aCrear = items.filter((it) => !nombresActuales.has(normalizarTextoBusqueda(it.nombre)));
+      if (aCrear.length === 0) {
+        showToast('Todos los servicios seleccionados ya existen en tu menú.', 'info');
+        return;
+      }
+
+      const nuevosServicios: ServicioSalon[] = [];
+      const nuevasPlantillas: Record<string, PlantillaPrecio> = {};
+
+      for (let i = 0; i < aCrear.length; i++) {
+        const item = aCrear[i];
+        const creado = await crearServicioSalon({
+          nombre: item.nombre,
+          categoria: item.categoriaDb,
+          usaFormulaColor: item.usaSinBascula,
+          duracionMinutos: item.duracionMin,
+          orden: servicios.length + i,
+          activo: true,
+          perfilExtendido: {
+            marketProcedureId: item.esPersonalizado ? null : item.id,
+            costTrackingMode: item.costTrackingMode,
+            unidadBase: item.unidadBase,
+            esPrecioDesde: item.esPrecioDesde,
+            cicloRetornoDias: item.cicloRetornoDias,
+          },
+        });
+        const semillaSrv = obtenerSemillaServicio(creado);
+        const usaOx =
+          item.unidadBase === 'ml'
+            ? 0
+            : item.categoriaDb === 'decoloracion'
+              ? 1.5
+              : item.categoriaDb === 'color'
+                ? 1.0
+                : 0;
+
+        await publicarPlantillaPrecio({
+          servicioId: creado.id,
+          precioBase: Math.max(5000, Math.round(item.precioBaseCop)),
+          ajustes: AJUSTES_VELVET_STUDIO_DEFECTO,
+          consumo: {
+            usaFormulaColor: item.usaSinBascula,
+            gramosTinteBase:
+              item.gramosBase && item.gramosBase > 0 ? item.gramosBase : semillaSrv.gramosBase,
+            unidadBase: item.unidadBase ?? 'g',
+            factores: FACTORES_CONSUMO_DEFECTO,
+            proporcionOxidante: usaOx,
+            insumosFijos: semillaSrv.insumosFijosCop,
+          },
+          redondeo: 1000,
+          vigenciaDias: 15,
+        });
+        const vigente = await obtenerPlantillaVigente(creado.id);
+        if (vigente) nuevasPlantillas[creado.id] = vigente;
+        nuevosServicios.push(creado);
+      }
+
+      setServicios((prev) => [...prev, ...nuevosServicios]);
+      setPlantillasMap((prev) => ({ ...prev, ...nuevasPlantillas }));
+      if (nuevosServicios[0]) setServicioId(nuevosServicios[0].id);
+      setImportandoCatalogo(false);
+      showToast(
+        `${nuevosServicios.length} servicio(s) agregados sin modificar tus tarifas existentes`,
+        'success'
+      );
+    } catch (err) {
+      console.error('[precios.importarCatalogo]', err);
+      showToast('No se pudieron importar todos los servicios', 'error');
+    } finally {
+      setGuardandoImportacion(false);
     }
   };
 
@@ -449,6 +560,15 @@ export default function ConfiguracionPreciosPage() {
       showToast('Completa nombre, presentación (> 0) y costo', 'error');
       return;
     }
+    const validacionProd = validarTerminosRestringidosColombia(
+      `${prodNombre} ${prodMarca}`
+    );
+    if (!validacionProd.permitido) {
+      setErrorRestriccionProd(validacionProd.orientacionPreventiva);
+      showToast('Insumo bloqueado por lineamiento sanitario preventivo', 'error');
+      return;
+    }
+    setErrorRestriccionProd(null);
     setGuardandoProd(true);
     try {
       const creado = await crearProductoSalon({
@@ -734,21 +854,54 @@ export default function ConfiguracionPreciosPage() {
           </button>
         </div>
 
+        {/* Guía educativa colapsable/descartable adaptada a la vertical */}
+        <TarjetaGuiaMedicionVertical vertical={verticalOrg} />
+
         {/* Selector horizontal de servicio activo (visible en Pestaña 1 y 2) */}
         {(pestana === 'servicios' || pestana === 'quimica') && (
           <section className="bg-white rounded-xl border border-[#E4E4E7] p-5  space-y-3.5">
-            <div className="flex justify-between items-center gap-2">
+            <div className="flex flex-wrap justify-between items-center gap-2">
               <span className="font-sans text-[11px] font-bold uppercase tracking-[0.08em] text-[#52525B]">
-                Servicios de tu salón
+                Servicios de tu estudio
               </span>
-              <button
-                type="button"
-                onClick={() => setCreandoServicio((v) => !v)}
-                className="min-h-[40px] px-3.5 rounded-xl bg-[#F4F4F5] hover:bg-[#E4E4E7]/60 border border-[#E4E4E7] text-[#111111] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
-              >
-                <Plus size={14} /> Nuevo servicio
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImportandoCatalogo((v) => !v);
+                    setCreandoServicio(false);
+                  }}
+                  className="min-h-[40px] px-3.5 rounded-lg bg-[#111111] hover:bg-[#27272A] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Sparkles size={13} /> Importar desde Catálogo Colombia
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCreandoServicio((v) => !v);
+                    setImportandoCatalogo(false);
+                  }}
+                  className="min-h-[40px] px-3.5 rounded-lg bg-[#F4F4F5] hover:bg-[#E4E4E7]/60 border border-[#E4E4E7] text-[#111111] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Plus size={14} /> Nuevo servicio
+                </button>
+              </div>
             </div>
+
+            {importandoCatalogo && (
+              <SelectorCatalogoColombia
+                modo="importacion"
+                vertical={verticalOrg}
+                onChangeVertical={setVerticalOrg}
+                cityCode={cityCodeCatalogo}
+                onChangeCityCode={setCityCodeCatalogo}
+                segmento={segmentoCatalogo}
+                onChangeSegmento={setSegmentoCatalogo}
+                nombresYaExistentes={servicios.map((s) => s.nombre)}
+                onConfirmImport={handleImportarDesdeCatalogo}
+                importando={guardandoImportacion}
+              />
+            )}
 
             {creandoServicio && (
               <div className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] space-y-3">
@@ -796,6 +949,14 @@ export default function ConfiguracionPreciosPage() {
                     Cancelar
                   </Btn>
                 </div>
+                {errorRestriccionServicio && (
+                  <div
+                    role="alert"
+                    className="p-3 rounded-lg bg-[#FEF2F2] border border-[#DC2626]/30 text-xs text-[#DC2626]"
+                  >
+                    {errorRestriccionServicio}
+                  </div>
+                )}
               </div>
             )}
 
@@ -1269,6 +1430,15 @@ export default function ConfiguracionPreciosPage() {
                   Agregar insumo químico
                 </Btn>
               </div>
+
+              {errorRestriccionProd && (
+                <div
+                  role="alert"
+                  className="p-3 rounded-lg bg-[#FEF2F2] border border-[#DC2626]/30 text-xs text-[#DC2626]"
+                >
+                  {errorRestriccionProd}
+                </div>
+              )}
 
               {productos.length > 0 && (
                 <div className="space-y-2 pt-1">

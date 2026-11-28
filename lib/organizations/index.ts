@@ -102,3 +102,66 @@ export async function actualizarLogoBrandSettings(
     throw error;
   }
 }
+
+export interface ContextoOrganizacionCliente {
+  organizationId: string;
+  vertical: import('@/lib/flags/verticales').VerticalSalon;
+  city: string | null;
+  role: import('./rbac').OrgRole;
+}
+
+export async function obtenerContextoOrganizacionActivaCliente(
+  supabase: SupabaseClient
+): Promise<ContextoOrganizacionCliente | null> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const mem = await obtenerMembresiaActiva(supabase, user.id);
+  if (!mem) return null;
+
+  const { normalizarVerticalSalon } = await import('@/lib/flags/verticales');
+  const { data } = await supabase
+    .from('organizations')
+    .select('id, vertical, city')
+    .eq('id', mem.organizationId)
+    .maybeSingle();
+
+  const row = (data ?? {}) as Record<string, unknown>;
+  return {
+    organizationId: mem.organizationId,
+    vertical: normalizarVerticalSalon(typeof row.vertical === 'string' ? row.vertical : null),
+    city: typeof row.city === 'string' ? row.city : null,
+    role: mem.role,
+  };
+}
+
+export async function actualizarContextoOrganizacionCliente(
+  supabase: SupabaseClient,
+  params: {
+    organizationId: string;
+    vertical?: import('@/lib/flags/verticales').VerticalSalon;
+    city?: string | null;
+  }
+): Promise<void> {
+  const patch: Record<string, unknown> = {};
+  if (params.vertical) patch.vertical = params.vertical;
+  if (params.city !== undefined) patch.city = params.city?.trim() || null;
+  if (Object.keys(patch).length === 0) return;
+
+  const { error } = await supabase
+    .from('organizations')
+    .update(patch)
+    .eq('id', params.organizationId);
+
+  if (
+    error &&
+    error.code !== '42P01' &&
+    error.code !== 'PGRST205' &&
+    error.code !== 'PGRST202'
+  ) {
+    // No bloquear onboarding si la columna o permiso falla en entorno local sin migración
+    console.warn('[organizations.updateContext]', error.message);
+  }
+}

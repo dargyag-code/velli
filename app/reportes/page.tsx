@@ -22,10 +22,26 @@ import { showToast } from '@/lib/toast';
 import {
   listarCotizacionesSalon,
   listarEstilistas,
+  listarServiciosSalon,
+  listarPlantillasVigentes,
+  listarProductosSalon,
+  listarComisionesVigentes,
   formatearPrecioCop,
   type Cotizacion,
   type EstilistaSalon,
+  type ServicioSalon,
+  type PlantillaPrecio,
+  type ProductoSalon,
+  type ComisionSalon,
 } from '@/lib/cotizador';
+import { createClient } from '@/lib/supabase/client';
+import type { VerticalSalon } from '@/lib/flags/verticales';
+import { obtenerContextoOrganizacionActivaCliente } from '@/lib/organizations';
+import {
+  calcularMadurezDatosNegocio,
+  type ClienteMadurezSnapshot,
+} from '@/lib/datos/madurezDatos';
+import TarjetaMadurezDatos from '@/components/datos/TarjetaMadurezDatos';
 
 type PeriodoFiltro = 'semana' | 'mes_actual' | 'treinta_dias' | 'todo';
 
@@ -77,19 +93,58 @@ export default function ReportesBIPage() {
   const [cargando, setCargando] = useState(true);
   const [nombreSalon, setNombreSalon] = useState('Tu Salón');
   const [ciudadSalon, setCiudadSalon] = useState('Colombia');
+  const [verticalOrg, setVerticalOrg] = useState<VerticalSalon>('hair_studio');
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
   const [estilistasMap, setEstilistasMap] = useState<Record<string, string>>({});
+  const [serviciosSalon, setServiciosSalon] = useState<ServicioSalon[]>([]);
+  const [plantillasSalon, setPlantillasSalon] = useState<PlantillaPrecio[]>([]);
+  const [productosSalon, setProductosSalon] = useState<ProductoSalon[]>([]);
+  const [comisionesSalon, setComisionesSalon] = useState<ComisionSalon[]>([]);
+  const [clientesMadurez, setClientesMadurez] = useState<ClienteMadurezSnapshot[]>([]);
+  const [citasCompletadasRecientes, setCitasCompletadasRecientes] = useState<number>(0);
 
   const cargarDashboard = useCallback(async () => {
     setCargando(true);
     try {
-      const [prof, cots, ests] = await Promise.all([
+      const supabase = createClient();
+      const hace45DiasIso = new Date(Date.now() - 45 * 86_400_000).toISOString();
+
+      const [
+        prof,
+        orgCtx,
+        cots,
+        ests,
+        svcs,
+        plants,
+        prods,
+        coms,
+        clientasRes,
+        citasCountRes,
+      ] = await Promise.all([
         getProfile().catch(() => null),
+        obtenerContextoOrganizacionActivaCliente(supabase).catch(() => null),
         listarCotizacionesSalon({ estados: ['cobrada', 'enviada'] }).catch(
           () => [] as Cotizacion[]
         ),
         listarEstilistas({ soloActivas: false }).catch(() => [] as EstilistaSalon[]),
+        listarServiciosSalon({ soloActivos: false }).catch(() => [] as ServicioSalon[]),
+        listarPlantillasVigentes().catch(() => [] as PlantillaPrecio[]),
+        listarProductosSalon({ soloActivos: false }).catch(() => [] as ProductoSalon[]),
+        listarComisionesVigentes().catch(() => [] as ComisionSalon[]),
+        supabase
+          .from('clientas')
+          .select('id, telefono, alergias, tipo_cabello_principal, ultima_visita, total_visitas')
+          .limit(300)
+          .then((r) => (Array.isArray(r.data) ? r.data : []), () => []),
+        supabase
+          .from('appointments')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'completed')
+          .gte('starts_at', hace45DiasIso)
+          .then((r) => r.count ?? 0, () => 0),
       ]);
+
+      if (orgCtx?.vertical) setVerticalOrg(orgCtx.vertical);
 
       if (prof?.nombreSalon?.trim()) {
         setNombreSalon(prof.nombreSalon.trim());
@@ -104,6 +159,23 @@ export default function ReportesBIPage() {
       for (const e of ests) mapaEst[e.id] = e.nombre;
       setEstilistasMap(mapaEst);
       setCotizaciones(cots);
+      setServiciosSalon(svcs);
+      setPlantillasSalon(plants);
+      setProductosSalon(prods);
+      setComisionesSalon(coms);
+      setCitasCompletadasRecientes(citasCountRes);
+      setClientesMadurez(
+        clientasRes.map((cl: Record<string, unknown>) => ({
+          id: String(cl.id ?? ''),
+          tieneContacto: Boolean(typeof cl.telefono === 'string' && cl.telefono.trim().length >= 7),
+          tieneFichaONotasTecnicas: Boolean(
+            (typeof cl.tipo_cabello_principal === 'string' && cl.tipo_cabello_principal.trim()) ||
+              (typeof cl.alergias === 'string' && cl.alergias.trim()) ||
+              Number(cl.total_visitas ?? 0) > 0
+          ),
+          ultimaVisitaAt: typeof cl.ultima_visita === 'string' ? cl.ultima_visita : null,
+        }))
+      );
     } finally {
       setCargando(false);
     }
@@ -333,6 +405,61 @@ export default function ReportesBIPage() {
     [rankingServicios]
   );
 
+  const madurezDatos = useMemo(() => {
+    const plantMap = new Map<string, PlantillaPrecio>();
+    for (const p of plantillasSalon) {
+      if (!p.vigenteHasta) plantMap.set(p.servicioId, p);
+    }
+
+    return calcularMadurezDatosNegocio({
+      servicios: serviciosSalon.map((s) => {
+        const pl = plantMap.get(s.id);
+        return {
+          id: s.id,
+          activo: s.activo,
+          duracionMinutos: s.duracionMinutos ?? null,
+          tienePlantillaPrecio: Boolean(pl),
+          precioBaseCop: pl?.precioBase ?? 0,
+          usaQuimicaOSinBascula: s.usaFormulaColor,
+        };
+      }),
+      productos: productosSalon.map((p) => ({
+        id: p.id,
+        activo: p.activo,
+        precioCompraCop: p.precioCompra,
+        presentacionCantidad: p.presentacionCantidad,
+        precioActualizadoAt: p.precioActualizadoAt,
+        esSemillaSinRevisar: Boolean(
+          p.perfilExtendido?.['codigo'] && p.precioActualizadoAt === p.createdAt
+        ),
+      })),
+      cotizacionesCobradas: cotizaciones
+        .filter((c) => c.estado === 'cobrada')
+        .map((c) => ({
+          id: c.id,
+          cobradoAt: c.cobradoAt || c.createdAt,
+          precioCobradoCop: c.precioCobrado ?? c.precioCotizado,
+          costoProductoCop: c.costoProductoEstimado ?? 0,
+          comisionCop: c.comisionEstimada ?? 0,
+          registroConsumoEnSilla: Boolean(
+            typeof c.formula?.['gramosTinte'] === 'number' ||
+              (c.costoDetalle && c.costoDetalle.gramosTinte > 0)
+          ),
+        })),
+      citasCompletadasRecientes,
+      clientes: clientesMadurez,
+      tieneReglaComisionActiva: comisionesSalon.length > 0,
+    });
+  }, [
+    serviciosSalon,
+    plantillasSalon,
+    productosSalon,
+    cotizaciones,
+    citasCompletadasRecientes,
+    clientesMadurez,
+    comisionesSalon,
+  ]);
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-[#111111] pb-32 lg:pb-12">
       <VelvetTopHeader nombreSalon={nombreSalon} ciudadSalon={ciudadSalon} />
@@ -481,6 +608,11 @@ export default function ReportesBIPage() {
             </div>
           </article>
         </section>
+
+        {/* ── Madurez de Datos del Negocio (exclusivo owner/manager) ─── */}
+        {!cargando && (
+          <TarjetaMadurezDatos resultado={madurezDatos} vertical={verticalOrg} />
+        )}
 
         {!cargando && cobradasPeriodo.length === 0 ? (
           <section className="bg-white rounded-xl p-10 border border-[#E4E4E7] text-center ">
